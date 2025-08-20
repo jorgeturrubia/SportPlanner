@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "*",
+      "Bash(C:ProyectosPlanSport.agent-ossetupproject.sh)",
+      "Bash(bash:*)",
+      "mcp__tailwind-svelte-assistant__get_tailwind_info",
+      "mcp__angular-cli__get_best_practices"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
