@@ -4,7 +4,13 @@ import { authGuard, guestGuard } from './core/guards/auth.guard';
 export const routes: Routes = [
   {
     path: '',
+    redirectTo: '/dashboard',
+    pathMatch: 'full'
+  },
+  {
+    path: 'landing',
     loadComponent: () => import('./pages/landing/landing.component').then(m => m.LandingComponent),
+    canActivate: [guestGuard],
     title: 'PlanSport - Planifica tu temporada deportiva como un profesional'
   },
   {
