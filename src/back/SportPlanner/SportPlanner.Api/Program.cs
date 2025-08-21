@@ -111,6 +111,8 @@ builder.Services.AddSwaggerGen(c =>
 
 // Register services
 builder.Services.AddScoped<IAuthService, SupabaseAuthService>();
+builder.Services.AddScoped<IJwtValidationService, SupabaseJwtValidationService>();
+builder.Services.AddHttpContextAccessor();
 
 // Initialize Supabase client
 var supabaseUrl = configuration["Supabase:Url"] ?? throw new InvalidOperationException("Supabase URL not configured");
@@ -148,6 +150,7 @@ app.UseHttpsRedirection();
 app.UseCors("DefaultPolicy");
 
 app.UseAuthentication();
+app.UseJwtValidation(); // Add JWT validation middleware
 app.UseAuthorization();
 
 app.MapControllers();
