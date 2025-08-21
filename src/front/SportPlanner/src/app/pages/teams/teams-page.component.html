@@ -1,0 +1,179 @@
+<div class="teams-page min-h-screen bg-gray-50 dark:bg-gray-900">
+  <!-- Page Header -->
+  <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="py-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
+              {{ pageTitle }}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              Administra los equipos de tu organización deportiva
+            </p>
+          </div>
+          
+          <button
+            type="button"
+            (click)="openCreateModal()"
+            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors"
+            [attr.aria-label]="'Crear nuevo equipo'"
+          >
+            <ng-icon name="heroPlus" class="-ml-1 mr-2 h-5 w-5" aria-hidden="true"></ng-icon>
+            Crear Equipo
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <!-- Search and Filters -->
+    <div class="mb-6">
+      <div class="relative max-w-md">
+        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+          <ng-icon name="heroMagnifyingGlass" class="h-5 w-5 text-gray-400" aria-hidden="true"></ng-icon>
+        </div>
+        <input
+          type="text"
+          (input)="onSearch($event)"
+          [value]="searchTerm()"
+          class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
+          placeholder="Buscar equipos por nombre, deporte o categoría..."
+          [attr.aria-label]="'Buscar equipos'"
+        />
+      </div>
+    </div>
+
+    <!-- Error State -->
+    @if (error()) {
+      <div class="mb-6 rounded-md bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800">
+        <div class="flex">
+          <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
+            </svg>
+          </div>
+          <div class="ml-3 flex-1">
+            <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
+              Error al cargar equipos
+            </h3>
+            <div class="mt-2 text-sm text-red-700 dark:text-red-300">
+              <p>{{ error() }}</p>
+            </div>
+            <div class="mt-4">
+              <div class="flex space-x-2">
+                <button
+                  type="button"
+                  (click)="retryLoad()"
+                  class="bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-md text-sm font-medium text-red-800 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 transition-colors"
+                >
+                  Reintentar
+                </button>
+                <button
+                  type="button"
+                  (click)="clearError()"
+                  class="bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-md text-sm font-medium text-red-800 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 transition-colors"
+                >
+                  Cerrar
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Loading State -->
+    @if (isLoading()) {
+      <div class="flex justify-center items-center py-12">
+        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <span class="ml-3 text-gray-600 dark:text-gray-400">Cargando equipos...</span>
+      </div>
+    }
+
+    <!-- Empty State -->
+    @else if (showEmptyState() && !searchTerm()) {
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay equipos</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          Comienza creando tu primer equipo.
+        </p>
+        <div class="mt-6">
+          <button
+            type="button"
+            (click)="openCreateModal()"
+            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors"
+          >
+            <ng-icon name="heroPlus" class="-ml-1 mr-2 h-5 w-5" aria-hidden="true"></ng-icon>
+            Crear Primer Equipo
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- No Search Results -->
+    @else if (searchTerm() && filteredTeams().length === 0 && !isLoading()) {
+      <div class="text-center py-12">
+        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+        </svg>
+        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No se encontraron equipos</h3>
+        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          No hay equipos que coincidan con "{{ searchTerm() }}"
+        </p>
+      </div>
+    }
+
+    <!-- Teams Grid -->
+    @else if (filteredTeams().length > 0) {
+      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        @for (team of filteredTeams(); track team.id) {
+          <app-team-card
+            [team]="team"
+            (edit)="openEditModal($event)"
+            (delete)="openDeleteModal($event)"
+            class="transform transition-transform hover:scale-105"
+          ></app-team-card>
+        }
+      </div>
+    }
+  </div>
+
+  <!-- Modals -->
+  @if (showCreateModal()) {
+    <app-team-modal
+      [isOpen]="showCreateModal()"
+      mode="create"
+      (save)="onTeamCreated($event)"
+      (close)="closeModals()"
+    ></app-team-modal>
+  }
+
+  @if (showEditModal() && selectedTeam()) {
+    <app-team-modal
+      [isOpen]="showEditModal()"
+      mode="edit"
+      [team]="selectedTeam()!"
+      (save)="onTeamUpdated($event)"
+      (close)="closeModals()"
+    ></app-team-modal>
+  }
+
+  @if (showDeleteModal() && selectedTeam()) {
+    <app-confirmation-modal
+      [isOpen]="showDeleteModal()"
+      title="Eliminar Equipo"
+      [message]="'¿Estás seguro de que deseas eliminar el equipo \"' + selectedTeam()!.name + '\"? Esta acción no se puede deshacer.'"
+      confirmText="Eliminar"
+      cancelText="Cancelar"
+      type="danger"
+      (confirm)="onTeamDeleted()"
+      (cancel)="closeModals()"
+    ></app-confirmation-modal>
+  }
+</div>

@@ -193,7 +193,7 @@ export class SidebarComponent implements OnInit, OnDestroy {
     {
       label: 'Equipos',
       icon: 'heroUsers',
-      route: '/dashboard/teams'
+      route: '/teams'
     },
     {
       label: 'Estadísticas',

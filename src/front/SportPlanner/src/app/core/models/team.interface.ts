@@ -1,0 +1,29 @@
+export interface Team {
+  id: string;
+  name: string;
+  sport: string;
+  category: string;
+  playersCount: number;
+  membersCount: number;
+  coachName?: string;
+  status: 'active' | 'inactive' | 'suspended';
+  description?: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateTeamRequest {
+  name: string;
+  sport: string;
+  category: string;
+  playersCount: number;
+  description?: string;
+}
+
+export interface UpdateTeamRequest {
+  name?: string;
+  sport?: string;
+  category?: string;
+  playersCount?: number;
+  description?: string;
+}

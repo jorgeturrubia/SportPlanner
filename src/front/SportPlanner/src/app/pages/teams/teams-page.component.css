@@ -1,0 +1,90 @@
+/* Teams Page Styles */
+.teams-page {
+  /* Custom animations for loading states */
+}
+
+/* Loading animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Hover effects for team cards */
+.team-card-container:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Focus styles for accessibility */
+.teams-page button:focus,
+.teams-page input:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Dark mode transitions */
+.teams-page * {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s ease;
+}
+
+/* Grid responsive adjustments */
+@media (max-width: 640px) {
+  .teams-page .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .teams-page .grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1025px) and (max-width: 1280px) {
+  .teams-page .grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+@media (min-width: 1281px) {
+  .teams-page .grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Custom scrollbar for better UX */
+.teams-page ::-webkit-scrollbar {
+  width: 6px;
+}
+
+.teams-page ::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+.teams-page ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+.teams-page ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Dark mode scrollbar */
+@media (prefers-color-scheme: dark) {
+  .teams-page ::-webkit-scrollbar-track {
+    background: #1e293b;
+  }
+  
+  .teams-page ::-webkit-scrollbar-thumb {
+    background: #475569;
+  }
+  
+  .teams-page ::-webkit-scrollbar-thumb:hover {
+    background: #64748b;
+  }
+}

@@ -26,6 +26,12 @@ export const routes: Routes = [
     title: 'Dashboard - PlanSport'
   },
   {
+    path: 'teams',
+    loadComponent: () => import('./pages/teams/teams-page.component').then(m => m.TeamsPageComponent),
+    canActivate: [authGuard],
+    title: 'Gestión de Equipos - PlanSport'
+  },
+  {
     path: '**',
     redirectTo: ''
   }
