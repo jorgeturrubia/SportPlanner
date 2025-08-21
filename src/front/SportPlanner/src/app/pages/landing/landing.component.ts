@@ -78,7 +78,11 @@ export class LandingComponent {
   ];
 
   onGetStarted() {
-    this.router.navigate(['/register']);
+    this.router.navigate(['/auth']);
+  }
+
+  onAuthClick() {
+    this.router.navigate(['/auth']);
   }
 
   onViewDemo() {

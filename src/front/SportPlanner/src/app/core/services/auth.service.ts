@@ -1,25 +1,43 @@
 import { Injectable, inject } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { BehaviorSubject, Observable, from } from 'rxjs';
-import { AuthChangeEvent, Session, User } from '@supabase/supabase-js';
-import { SupabaseService } from './supabase.service';
+import { BehaviorSubject, Observable, tap, catchError, of } from 'rxjs';
 
 export interface AuthUser {
   id: string;
   email: string;
-  name?: string;
+  name: string;
   role?: string;
+}
+
+export interface LoginRequest {
+  email: string;
+  password: string;
+}
+
+export interface RegisterRequest {
+  email: string;
+  password: string;
+  name: string;
+}
+
+export interface AuthResponse {
+  success: boolean;
+  token?: string;
+  user?: AuthUser;
+  message?: string;
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private supabase = inject(SupabaseService);
+  private http = inject(HttpClient);
   private router = inject(Router);
 
+  private apiUrl = 'https://localhost:7001/api';
   private currentUserSubject = new BehaviorSubject<AuthUser | null>(null);
-  private loadingSubject = new BehaviorSubject<boolean>(true);
+  private loadingSubject = new BehaviorSubject<boolean>(false);
 
   public currentUser$ = this.currentUserSubject.asObservable();
   public loading$ = this.loadingSubject.asObservable();
@@ -28,105 +46,83 @@ export class AuthService {
     this.initializeAuth();
   }
 
-  private async initializeAuth() {
-    try {
-      const { data: { session } } = await this.supabase.client.auth.getSession();
-      
-      if (session?.user) {
-        this.setCurrentUser(session.user);
-      }
+  private initializeAuth() {
+    const token = localStorage.getItem('auth_token');
+    if (token) {
+      this.validateToken(token).subscribe();
+    }
+  }
 
-      this.supabase.client.auth.onAuthStateChange((event: AuthChangeEvent, session: Session | null) => {
-        if (session?.user) {
-          this.setCurrentUser(session.user);
+  private validateToken(token: string): Observable<void> {
+    this.http.get<AuthResponse>(`${this.apiUrl}/auth/validate`, {
+      headers: { Authorization: `Bearer ${token}` }
+    }).pipe(
+      tap(response => {
+        if (response.success && response.user) {
+          this.currentUserSubject.next(response.user);
         } else {
-          this.currentUserSubject.next(null);
+          this.signOut();
+        }
+      }),
+      catchError(() => {
+        this.signOut();
+        return of(null);
+      })
+    ).subscribe();
+    
+    return of(undefined);
+  }
+
+  signUp(data: RegisterRequest): Observable<AuthResponse> {
+    this.loadingSubject.next(true);
+    
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/register`, data).pipe(
+      tap(response => {
+        if (response.success && response.token && response.user) {
+          localStorage.setItem('auth_token', response.token);
+          this.currentUserSubject.next(response.user);
+          this.router.navigate(['/dashboard']);
         }
         this.loadingSubject.next(false);
-      });
-    } catch (error) {
-      console.error('Error initializing auth:', error);
-    } finally {
-      this.loadingSubject.next(false);
-    }
+      }),
+      catchError(error => {
+        this.loadingSubject.next(false);
+        return of({ success: false, message: error.error?.message || 'Error during registration' });
+      })
+    );
   }
 
-  private setCurrentUser(user: User) {
-    const authUser: AuthUser = {
-      id: user.id,
-      email: user.email || '',
-      name: user.user_metadata?.['name'] || user.email,
-      role: user.user_metadata?.['role'] || 'user'
-    };
-    this.currentUserSubject.next(authUser);
-  }
-
-  async signUp(email: string, password: string, name: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      const { data, error } = await this.supabase.client.auth.signUp({
-        email,
-        password,
-        options: {
-          data: {
-            name: name
-          }
+  signIn(data: LoginRequest): Observable<AuthResponse> {
+    this.loadingSubject.next(true);
+    
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/login`, data).pipe(
+      tap(response => {
+        if (response.success && response.token && response.user) {
+          localStorage.setItem('auth_token', response.token);
+          this.currentUserSubject.next(response.user);
+          this.router.navigate(['/dashboard']);
         }
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Error during registration' };
-    }
+        this.loadingSubject.next(false);
+      }),
+      catchError(error => {
+        this.loadingSubject.next(false);
+        return of({ success: false, message: error.error?.message || 'Error during login' });
+      })
+    );
   }
 
-  async signIn(email: string, password: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      const { data, error } = await this.supabase.client.auth.signInWithPassword({
-        email,
-        password
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      if (data.user) {
-        this.router.navigate(['/dashboard']);
-      }
-
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Error during login' };
-    }
+  signOut(): void {
+    localStorage.removeItem('auth_token');
+    this.currentUserSubject.next(null);
+    this.router.navigate(['/']);
   }
 
-  async signOut(): Promise<void> {
-    try {
-      await this.supabase.client.auth.signOut();
-      this.router.navigate(['/']);
-    } catch (error) {
-      console.error('Error signing out:', error);
-    }
-  }
-
-  async resetPassword(email: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      const { error } = await this.supabase.client.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`
-      });
-
-      if (error) {
-        return { success: false, error: error.message };
-      }
-
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: 'Error sending reset email' };
-    }
+  resetPassword(email: string): Observable<AuthResponse> {
+    return this.http.post<AuthResponse>(`${this.apiUrl}/auth/reset-password`, { email }).pipe(
+      catchError(error => {
+        return of({ success: false, message: error.error?.message || 'Error sending reset email' });
+      })
+    );
   }
 
   get currentUser(): AuthUser | null {
@@ -137,7 +133,7 @@ export class AuthService {
     return !!this.currentUserSubject.value;
   }
 
-  getCurrentSession(): Observable<Session | null> {
-    return from(this.supabase.client.auth.getSession().then(({ data }) => data.session));
+  getAuthToken(): string | null {
+    return localStorage.getItem('auth_token');
   }
 }

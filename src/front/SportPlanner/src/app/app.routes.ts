@@ -8,16 +8,10 @@ export const routes: Routes = [
     title: 'PlanSport - Planifica tu temporada deportiva como un profesional'
   },
   {
-    path: 'login',
-    loadComponent: () => import('./pages/auth/login/login.component').then(m => m.LoginComponent),
+    path: 'auth',
+    loadComponent: () => import('./pages/auth/auth.component').then(m => m.AuthComponent),
     canActivate: [guestGuard],
-    title: 'Iniciar sesión - PlanSport'
-  },
-  {
-    path: 'register',
-    loadComponent: () => import('./pages/auth/register/register.component').then(m => m.RegisterComponent),
-    canActivate: [guestGuard],
-    title: 'Registrarse - PlanSport'
+    title: 'Autenticación - PlanSport'
   },
   {
     path: 'dashboard',

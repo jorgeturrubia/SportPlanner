@@ -7,7 +7,10 @@
       "mcp__tailwind-svelte-assistant__get_tailwind_info",
       "mcp__angular-cli__get_best_practices",
       "Bash(npm start)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(rm:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
