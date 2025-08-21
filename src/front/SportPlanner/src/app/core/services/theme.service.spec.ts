@@ -26,15 +26,15 @@ describe('ThemeService', () => {
       // Mock matchMedia for dark theme
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
-        value: jest.fn().mockImplementation(query => ({
+        value: jasmine.createSpy().and.callFake((query: string) => ({
           matches: query === '(prefers-color-scheme: dark)',
           media: query,
           onchange: null,
-          addListener: jest.fn(),
-          removeListener: jest.fn(),
-          addEventListener: jest.fn(),
-          removeEventListener: jest.fn(),
-          dispatchEvent: jest.fn(),
+          addListener: jasmine.createSpy(),
+          removeListener: jasmine.createSpy(),
+          addEventListener: jasmine.createSpy(),
+          removeEventListener: jasmine.createSpy(),
+          dispatchEvent: jasmine.createSpy(),
         })),
       });
 
@@ -92,15 +92,15 @@ describe('ThemeService', () => {
       // Mock system preference as dark
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
-        value: jest.fn().mockImplementation(query => ({
+        value: jasmine.createSpy().and.callFake((query: string) => ({
           matches: query === '(prefers-color-scheme: dark)',
           media: query,
           onchange: null,
-          addListener: jest.fn(),
-          removeListener: jest.fn(),
-          addEventListener: jest.fn(),
-          removeEventListener: jest.fn(),
-          dispatchEvent: jest.fn(),
+          addListener: jasmine.createSpy(),
+          removeListener: jasmine.createSpy(),
+          addEventListener: jasmine.createSpy(),
+          removeEventListener: jasmine.createSpy(),
+          dispatchEvent: jasmine.createSpy(),
         })),
       });
 
@@ -109,23 +109,23 @@ describe('ThemeService', () => {
     });
 
     it('should update when system preference changes', () => {
-      let mediaQueryCallback: ((event: MediaQueryListEvent) => void) | null = null;
+      let mediaQueryCallback: any = null;
       
       Object.defineProperty(window, 'matchMedia', {
         writable: true,
-        value: jest.fn().mockImplementation(query => ({
+        value: jasmine.createSpy().and.callFake(query => ({
           matches: false,
           media: query,
           onchange: null,
-          addListener: jest.fn(),
-          removeListener: jest.fn(),
-          addEventListener: jest.fn().mockImplementation((event, callback) => {
+          addListener: jasmine.createSpy(),
+          removeListener: jasmine.createSpy(),
+          addEventListener: jasmine.createSpy().and.callFake((event: string, callback: any) => {
             if (event === 'change') {
               mediaQueryCallback = callback;
             }
           }),
-          removeEventListener: jest.fn(),
-          dispatchEvent: jest.fn(),
+          removeEventListener: jasmine.createSpy(),
+          dispatchEvent: jasmine.createSpy(),
         })),
       });
 
