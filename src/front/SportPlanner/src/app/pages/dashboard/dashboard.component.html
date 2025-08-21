@@ -1,0 +1,101 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-sm border-b border-gray-200">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16">
+        <div class="flex items-center">
+          <div class="flex-shrink-0 flex items-center">
+            <div class="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
+              <span class="text-white font-bold text-lg">P</span>
+            </div>
+            <span class="ml-2 text-xl font-bold text-gray-900">PlanSport</span>
+          </div>
+        </div>
+        
+        <div class="flex items-center space-x-4">
+          @if (currentUser$ | async; as user) {
+            <span class="text-gray-700">Hola, {{ user.name }}</span>
+            <button
+              (click)="onSignOut()"
+              class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
+            >
+              Cerrar sesión
+            </button>
+          }
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
+    <!-- Dashboard Header -->
+    <div class="px-4 py-6 sm:px-0">
+      <div class="border-4 border-dashed border-gray-200 rounded-lg p-8">
+        <div class="text-center">
+          <h1 class="text-3xl font-bold text-gray-900 mb-4">
+            ¡Bienvenido a tu Dashboard!
+          </h1>
+          <p class="text-gray-600 mb-8">
+            Planifica y gestiona tu temporada deportiva de forma profesional
+          </p>
+          
+          <!-- Quick Actions -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <div class="text-center">
+                <div class="text-3xl mb-4">⚽</div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                  Crear Entrenamiento
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Diseña entrenamientos personalizados para tu equipo
+                </p>
+                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
+                  Comenzar
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <div class="text-center">
+                <div class="text-3xl mb-4">📊</div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                  Ver Estadísticas
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Analiza el rendimiento y progreso del equipo
+                </p>
+                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
+                  Ver datos
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+              <div class="text-center">
+                <div class="text-3xl mb-4">📅</div>
+                <h3 class="text-lg font-semibold text-gray-900 mb-2">
+                  Calendario
+                </h3>
+                <p class="text-gray-600 mb-4">
+                  Organiza partidos, entrenamientos y eventos
+                </p>
+                <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md">
+                  Abrir
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Status Message -->
+          <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <p class="text-blue-800">
+              🚧 <strong>En desarrollo:</strong> Estas funcionalidades se implementarán en las próximas versiones
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
