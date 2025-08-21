@@ -1,101 +1,196 @@
-<div class="min-h-screen bg-gray-50">
-  <!-- Navigation -->
-  <nav class="bg-white shadow-sm border-b border-gray-200">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16">
-        <div class="flex items-center">
-          <div class="flex-shrink-0 flex items-center">
-            <div class="h-8 w-8 bg-blue-600 rounded-full flex items-center justify-center">
-              <span class="text-white font-bold text-lg">P</span>
-            </div>
-            <span class="ml-2 text-xl font-bold text-gray-900">PlanSport</span>
-          </div>
+<div class="min-h-screen bg-[var(--color-dashboard-bg)] transition-colors duration-200">
+  <!-- Sidebar -->
+  <app-sidebar></app-sidebar>
+  
+  <!-- Mobile Overlay -->
+  <div 
+    *ngIf="sidebarService.isMobileOpen()"
+    class="fixed inset-0 bg-black/50 z-40 lg:hidden"
+    (click)="sidebarService.closeMobile()">
+  </div>
+  
+  <!-- Main Content Area -->
+  <div 
+    class="transition-all duration-300 ease-in-out"
+    [style.margin-left]="contentMarginLeft()">
+    
+    <!-- Top Navigation Bar -->
+    <nav class="bg-[var(--color-navbar-bg)] border-b border-[var(--color-navbar-border)] px-4 py-3 lg:px-6">
+      <div class="flex items-center justify-between">
+        <!-- Left Side: Mobile Menu Button + Title -->
+        <div class="flex items-center space-x-4">
+          <!-- Mobile Menu Toggle -->
+          <button
+            class="lg:hidden p-2 rounded-lg text-[var(--color-sidebar-text)] hover:bg-[var(--color-sidebar-hover)] transition-colors duration-200"
+            (click)="sidebarService.toggleMobile()"
+            [attr.aria-label]="sidebarService.isMobileOpen() ? 'Cerrar menú' : 'Abrir menú'">
+            
+            <ng-icon 
+              [name]="sidebarService.isMobileOpen() ? 'heroXMark' : 'heroBars3'" 
+              size="24">
+            </ng-icon>
+          </button>
+          
+          <!-- Desktop Sidebar Toggle -->
+          <button
+            class="hidden lg:block p-2 rounded-lg text-[var(--color-sidebar-text)] hover:bg-[var(--color-sidebar-hover)] transition-colors duration-200"
+            (click)="sidebarService.toggle()"
+            [attr.aria-label]="sidebarService.isCollapsed() ? 'Expandir sidebar' : 'Colapsar sidebar'">
+            
+            <ng-icon name="heroBars3" size="20"></ng-icon>
+          </button>
+          
+          <!-- Page Title -->
+          <h1 class="text-xl font-semibold text-[var(--color-sidebar-text)] truncate">
+            {{ pageTitle }}
+          </h1>
         </div>
         
-        <div class="flex items-center space-x-4">
-          @if (currentUser$ | async; as user) {
-            <span class="text-gray-700">Hola, {{ user.name }}</span>
-            <button
-              (click)="onSignOut()"
-              class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Cerrar sesión
-            </button>
-          }
-        </div>
-      </div>
-    </div>
-  </nav>
-
-  <!-- Main Content -->
-  <main class="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-    <!-- Dashboard Header -->
-    <div class="px-4 py-6 sm:px-0">
-      <div class="border-4 border-dashed border-gray-200 rounded-lg p-8">
-        <div class="text-center">
-          <h1 class="text-3xl font-bold text-gray-900 mb-4">
-            ¡Bienvenido a tu Dashboard!
-          </h1>
-          <p class="text-gray-600 mb-8">
-            Planifica y gestiona tu temporada deportiva de forma profesional
-          </p>
+        <!-- Right Side: Theme Toggle + User Actions -->
+        <div class="flex items-center space-x-3">
+          <!-- Theme Toggle -->
+          <app-theme-toggle 
+            variant="dropdown"
+            [showLabel]="false"
+            size="20">
+          </app-theme-toggle>
           
-          <!-- Quick Actions -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div class="text-center">
-                <div class="text-3xl mb-4">⚽</div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                  Crear Entrenamiento
-                </h3>
-                <p class="text-gray-600 mb-4">
-                  Diseña entrenamientos personalizados para tu equipo
-                </p>
-                <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md">
-                  Comenzar
-                </button>
-              </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div class="text-center">
-                <div class="text-3xl mb-4">📊</div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                  Ver Estadísticas
-                </h3>
-                <p class="text-gray-600 mb-4">
-                  Analiza el rendimiento y progreso del equipo
-                </p>
-                <button class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md">
-                  Ver datos
-                </button>
-              </div>
-            </div>
-
-            <div class="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-              <div class="text-center">
-                <div class="text-3xl mb-4">📅</div>
-                <h3 class="text-lg font-semibold text-gray-900 mb-2">
-                  Calendario
-                </h3>
-                <p class="text-gray-600 mb-4">
-                  Organiza partidos, entrenamientos y eventos
-                </p>
-                <button class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md">
-                  Abrir
-                </button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Status Message -->
-          <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <p class="text-blue-800">
-              🚧 <strong>En desarrollo:</strong> Estas funcionalidades se implementarán en las próximas versiones
-            </p>
+          <!-- User Info and Logout -->
+          <div class="flex items-center space-x-3">
+            @if (currentUser$ | async; as user) {
+              <span class="hidden sm:block text-[var(--color-sidebar-text)] text-sm">Hola, {{ user.name }}</span>
+              <button
+                (click)="onSignOut()"
+                class="bg-[var(--color-theme-toggle-bg)] hover:bg-[var(--color-theme-toggle-hover)] text-[var(--color-sidebar-text)] px-3 py-2 rounded-lg text-sm font-medium transition-colors duration-200"
+              >
+                Cerrar sesión
+              </button>
+            }
           </div>
         </div>
       </div>
-    </div>
-  </main>
+    </nav>
+
+    
+    <!-- Page Content -->
+    <main 
+      class="p-4 lg:p-6 min-h-[calc(100vh-73px)] bg-[var(--color-dashboard-bg)]"
+      [attr.aria-label]="'Contenido principal: ' + pageTitle">
+      
+      <!-- Content Container -->
+      <div class="max-w-full">
+        <!-- Router Outlet for Page Content -->
+        <router-outlet></router-outlet>
+        
+        <!-- Default Content (when no route is active) -->
+        <div *ngIf="showDefaultContent" class="text-center py-12">
+          <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold text-[var(--color-sidebar-text)] mb-4">
+              ¡Bienvenido a tu Dashboard!
+            </h2>
+            <p class="text-[var(--color-sidebar-text-secondary)] mb-8">
+              Planifica y gestiona tu temporada deportiva de forma profesional
+            </p>
+            
+            <!-- Quick Actions -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              <div class="p-6 bg-[var(--color-sidebar-bg)] rounded-lg border border-[var(--color-sidebar-border)] hover:shadow-lg transition-shadow duration-200">
+                <div class="text-center">
+                  <div class="text-4xl mb-4">⚽</div>
+                  <h3 class="text-lg font-semibold text-[var(--color-sidebar-text)] mb-2">
+                    Crear Entrenamiento
+                  </h3>
+                  <p class="text-[var(--color-sidebar-text-secondary)] mb-4">
+                    Diseña entrenamientos personalizados para tu equipo
+                  </p>
+                  <button class="bg-[var(--color-theme-toggle-active)] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-opacity duration-200">
+                    Comenzar
+                  </button>
+                </div>
+              </div>
+              
+              <div class="p-6 bg-[var(--color-sidebar-bg)] rounded-lg border border-[var(--color-sidebar-border)] hover:shadow-lg transition-shadow duration-200">
+                <div class="text-center">
+                  <div class="text-4xl mb-4">📊</div>
+                  <h3 class="text-lg font-semibold text-[var(--color-sidebar-text)] mb-2">
+                    Analizar Rendimiento
+                  </h3>
+                  <p class="text-[var(--color-sidebar-text-secondary)] mb-4">
+                    Revisa estadísticas y progreso del equipo
+                  </p>
+                  <button class="bg-[var(--color-theme-toggle-active)] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-opacity duration-200">
+                    Ver Análisis
+                  </button>
+                </div>
+              </div>
+              
+              <div class="p-6 bg-[var(--color-sidebar-bg)] rounded-lg border border-[var(--color-sidebar-border)] hover:shadow-lg transition-shadow duration-200">
+                <div class="text-center">
+                  <div class="text-4xl mb-4">📅</div>
+                  <h3 class="text-lg font-semibold text-[var(--color-sidebar-text)] mb-2">
+                    Planificar Temporada
+                  </h3>
+                  <p class="text-[var(--color-sidebar-text-secondary)] mb-4">
+                    Organiza partidos, entrenamientos y eventos
+                  </p>
+                  <button class="bg-[var(--color-theme-toggle-active)] hover:opacity-90 text-white px-4 py-2 rounded-lg text-sm font-medium transition-opacity duration-200">
+                    Planificar
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <!-- Dashboard Stats -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <!-- Recent Activity -->
+              <div class="bg-[var(--color-sidebar-bg)] rounded-lg border border-[var(--color-sidebar-border)] p-6">
+                <h3 class="text-lg font-semibold text-[var(--color-sidebar-text)] mb-4">
+                  Actividad Reciente
+                </h3>
+                <div class="space-y-3">
+                  <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span class="text-[var(--color-sidebar-text-secondary)] text-sm">Entrenamiento completado - Hace 2 horas</span>
+                  </div>
+                  <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-blue-500 rounded-full"></div>
+                    <span class="text-[var(--color-sidebar-text-secondary)] text-sm">Nuevo jugador agregado - Hace 1 día</span>
+                  </div>
+                  <div class="flex items-center space-x-3">
+                    <div class="w-2 h-2 bg-yellow-500 rounded-full"></div>
+                    <span class="text-[var(--color-sidebar-text-secondary)] text-sm">Partido programado - Hace 2 días</span>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Quick Stats -->
+              <div class="bg-[var(--color-sidebar-bg)] rounded-lg border border-[var(--color-sidebar-border)] p-6">
+                <h3 class="text-lg font-semibold text-[var(--color-sidebar-text)] mb-4">
+                  Estadísticas Rápidas
+                </h3>
+                <div class="grid grid-cols-2 gap-4">
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-[var(--color-theme-toggle-active)]">24</div>
+                    <div class="text-sm text-[var(--color-sidebar-text-secondary)]">Entrenamientos</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-green-500">18</div>
+                    <div class="text-sm text-[var(--color-sidebar-text-secondary)]">Jugadores</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-purple-500">12</div>
+                    <div class="text-sm text-[var(--color-sidebar-text-secondary)]">Partidos</div>
+                  </div>
+                  <div class="text-center">
+                    <div class="text-2xl font-bold text-orange-500">8</div>
+                    <div class="text-sm text-[var(--color-sidebar-text-secondary)]">Victorias</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
 </div>
