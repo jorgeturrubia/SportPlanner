@@ -1,8 +1,13 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators, AbstractControl } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { AuthService, LoginRequest, RegisterRequest } from '../../core/services/auth.service';
+
+interface SportOption {
+  value: string;
+  label: string;
+}
 
 @Component({
   selector: 'app-auth',
@@ -24,6 +29,28 @@ export class AuthComponent {
   loginForm: FormGroup;
   registerForm: FormGroup;
 
+  // Sport options for registration
+  sportOptions: SportOption[] = [
+    { value: 'futbol', label: 'Fútbol' },
+    { value: 'baloncesto', label: 'Baloncesto' },
+    { value: 'tenis', label: 'Tenis' },
+    { value: 'voleibol', label: 'Voleibol' },
+    { value: 'atletismo', label: 'Atletismo' },
+    { value: 'natacion', label: 'Natación' },
+    { value: 'gimnasia', label: 'Gimnasia' },
+    { value: 'padel', label: 'Padel' },
+    { value: 'hockey', label: 'Hockey' },
+    { value: 'handball', label: 'Balonmano' },
+    { value: 'rugby', label: 'Rugby' },
+    { value: 'otro', label: 'Otro' }
+  ];
+
+  // Password strength indicator
+  passwordStrength = computed(() => {
+    const password = this.registerForm?.get('password')?.value || '';
+    return this.calculatePasswordStrength(password);
+  });
+
   constructor() {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -34,7 +61,8 @@ export class AuthComponent {
       name: ['', [Validators.required, Validators.minLength(2)]],
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required, Validators.minLength(6)]],
-      confirmPassword: ['', [Validators.required]]
+      confirmPassword: ['', [Validators.required]],
+      sport: ['', [Validators.required]]
     }, {
       validators: this.passwordMatchValidator
     });
@@ -87,7 +115,8 @@ export class AuthComponent {
       const registerData: RegisterRequest = {
         name: this.registerForm.value.name,
         email: this.registerForm.value.email,
-        password: this.registerForm.value.password
+        password: this.registerForm.value.password,
+        sport: this.registerForm.value.sport
       };
 
       this.authService.signUp(registerData).subscribe({
@@ -109,6 +138,51 @@ export class AuthComponent {
 
   onBackToHome() {
     this.router.navigate(['/']);
+  }
+
+  // Password strength methods
+  calculatePasswordStrength(password: string): number {
+    if (!password) return 0;
+    
+    let strength = 0;
+    
+    // Length check
+    if (password.length >= 6) strength++;
+    
+    // Contains lowercase
+    if (/[a-z]/.test(password)) strength++;
+    
+    // Contains uppercase
+    if (/[A-Z]/.test(password)) strength++;
+    
+    // Contains numbers
+    if (/\d/.test(password)) strength++;
+    
+    // Contains special characters
+    if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength++;
+    
+    return Math.min(strength, 4);
+  }
+
+  getPasswordStrengthText(strength: number): string {
+    switch (strength) {
+      case 0: return '';
+      case 1: return 'Muy débil';
+      case 2: return 'Débil';
+      case 3: return 'Fuerte';
+      case 4: return 'Muy fuerte';
+      default: return '';
+    }
+  }
+
+  getPasswordStrengthColor(strength: number): string {
+    switch (strength) {
+      case 1: return 'bg-red-500';
+      case 2: return 'bg-orange-500';
+      case 3: return 'bg-yellow-500';
+      case 4: return 'bg-green-500';
+      default: return 'bg-gray-300';
+    }
   }
 
   // Form getters
@@ -134,5 +208,9 @@ export class AuthComponent {
 
   get confirmPasswordControl() {
     return this.registerForm.get('confirmPassword');
+  }
+
+  get sportControl() {
+    return this.registerForm.get('sport');
   }
 }

@@ -57,7 +57,7 @@ describe('AuthComponent', () => {
       expect(component.registerForm.get('email')).toBeTruthy();
       expect(component.registerForm.get('password')).toBeTruthy();
       expect(component.registerForm.get('confirmPassword')).toBeTruthy();
-      // expect(component.registerForm.get('sport')).toBeTruthy();
+      expect(component.registerForm.get('sport')).toBeTruthy();
     });
 
     it('should initialize all signals with correct default values', () => {
@@ -156,13 +156,13 @@ describe('AuthComponent', () => {
         const emailControl = component.registerForm.get('email');
         const passwordControl = component.registerForm.get('password');
         const confirmPasswordControl = component.registerForm.get('confirmPassword');
-        // const sportControl = component.registerForm.get('sport');
+        const sportControl = component.registerForm.get('sport');
 
         expect(nameControl?.hasError('required')).toBeTruthy();
         expect(emailControl?.hasError('required')).toBeTruthy();
         expect(passwordControl?.hasError('required')).toBeTruthy();
         expect(confirmPasswordControl?.hasError('required')).toBeTruthy();
-        // expect(sportControl?.hasError('required')).toBeTruthy();
+        expect(sportControl?.hasError('required')).toBeTruthy();
       });
 
       it('should validate name minimum length', () => {
@@ -195,7 +195,8 @@ describe('AuthComponent', () => {
           name: 'John Doe',
           email: 'john@example.com',
           password: 'password123',
-          confirmPassword: 'password123'
+          confirmPassword: 'password123',
+          sport: 'futbol'
         });
 
         expect(component.registerForm.valid).toBeTruthy();
@@ -203,32 +204,38 @@ describe('AuthComponent', () => {
     });
   });
 
-  // Password Strength Indicator tests - commented out as these methods are not implemented yet
-  // describe('Password Strength Indicator', () => {
-  //   it('should calculate password strength correctly', () => {
-  //     expect(component.calculatePasswordStrength('123')).toBe(1);
-  //     expect(component.calculatePasswordStrength('password')).toBe(2);
-  //     expect(component.calculatePasswordStrength('Password123')).toBe(3);
-  //     expect(component.calculatePasswordStrength('Password123!')).toBe(4);
-  //   });
+  describe('Password Strength Indicator', () => {
+    it('should calculate password strength correctly', () => {
+      expect(component.calculatePasswordStrength('123')).toBe(1);
+      expect(component.calculatePasswordStrength('password')).toBe(2);
+      expect(component.calculatePasswordStrength('Password123')).toBe(3);
+      expect(component.calculatePasswordStrength('Password123!')).toBe(4);
+    });
 
-  //   it('should return strength level text in Spanish', () => {
-  //     expect(component.getPasswordStrengthText(1)).toBe('Muy débil');
-  //     expect(component.getPasswordStrengthText(2)).toBe('Débil');
-  //     expect(component.getPasswordStrengthText(3)).toBe('Fuerte');
-  //     expect(component.getPasswordStrengthText(4)).toBe('Muy fuerte');
-  //   });
+    it('should return strength level text in Spanish', () => {
+      expect(component.getPasswordStrengthText(1)).toBe('Muy débil');
+      expect(component.getPasswordStrengthText(2)).toBe('Débil');
+      expect(component.getPasswordStrengthText(3)).toBe('Fuerte');
+      expect(component.getPasswordStrengthText(4)).toBe('Muy fuerte');
+    });
 
-    // it('should update password strength when password changes', () => {
-    //   const passwordControl = component.registerForm.get('password');
-    //   passwordControl?.setValue('weak');
-    //   
-    //   expect(component.passwordStrength()).toBe(2);
+    it('should return correct strength colors', () => {
+      expect(component.getPasswordStrengthColor(1)).toBe('bg-red-500');
+      expect(component.getPasswordStrengthColor(2)).toBe('bg-orange-500');
+      expect(component.getPasswordStrengthColor(3)).toBe('bg-yellow-500');
+      expect(component.getPasswordStrengthColor(4)).toBe('bg-green-500');
+    });
 
-    //   passwordControl?.setValue('StrongPassword123!');
-    //   expect(component.passwordStrength()).toBe(4);
-    // });
-  // });
+    it('should update password strength signal when password changes', () => {
+      const passwordControl = component.registerForm.get('password');
+      passwordControl?.setValue('weak');
+      
+      expect(component.passwordStrength()).toBe(2);
+
+      passwordControl?.setValue('StrongPassword123!');
+      expect(component.passwordStrength()).toBe(4);
+    });
+  });
 
   describe('Form Submission', () => {
     describe('Login', () => {
@@ -301,7 +308,8 @@ describe('AuthComponent', () => {
           name: 'John Doe',
           email: 'john@example.com',
           password: 'password123',
-          confirmPassword: 'password123'
+          confirmPassword: 'password123',
+          sport: 'futbol'
         });
       });
 
@@ -380,28 +388,35 @@ describe('AuthComponent', () => {
       expect(component.registerEmailControl).toBe(component.registerForm.get('email'));
       expect(component.registerPasswordControl).toBe(component.registerForm.get('password'));
       expect(component.confirmPasswordControl).toBe(component.registerForm.get('confirmPassword'));
-      // expect(component.sportControl).toBe(component.registerForm.get('sport'));
+      expect(component.sportControl).toBe(component.registerForm.get('sport'));
     });
   });
 
-  // Sport Selection tests - commented out as sport field is not implemented
-  // describe('Sport Selection', () => {
-  //   it('should have sport options available', () => {
-  //     expect(component.sportOptions.length).toBeGreaterThan(0);
-  //     expect(component.sportOptions[0]).toEqual(jasmine.objectContaining({
-  //       value: jasmine.any(String),
-  //       label: jasmine.any(String)
-  //     }));
-  //   });
+  describe('Sport Selection', () => {
+    it('should have sport options available', () => {
+      expect(component.sportOptions.length).toBeGreaterThan(0);
+      expect(component.sportOptions[0]).toEqual(jasmine.objectContaining({
+        value: jasmine.any(String),
+        label: jasmine.any(String)
+      }));
+    });
 
-  //   it('should validate sport selection', () => {
-  //     const sportControl = component.registerForm.get('sport');
-  //     expect(sportControl?.hasError('required')).toBeTruthy();
+    it('should validate sport selection', () => {
+      const sportControl = component.registerForm.get('sport');
+      expect(sportControl?.hasError('required')).toBeTruthy();
 
-  //     sportControl?.setValue('futbol');
-  //     expect(sportControl?.hasError('required')).toBeFalsy();
-  //   });
-  // });
+      sportControl?.setValue('futbol');
+      expect(sportControl?.hasError('required')).toBeFalsy();
+    });
+
+    it('should include common sports in options', () => {
+      const sportValues = component.sportOptions.map(option => option.value);
+      expect(sportValues).toContain('futbol');
+      expect(sportValues).toContain('baloncesto');
+      expect(sportValues).toContain('tenis');
+      expect(sportValues).toContain('voleibol');
+    });
+  });
 
   describe('Error Messages', () => {
     it('should show validation errors in Spanish', () => {
