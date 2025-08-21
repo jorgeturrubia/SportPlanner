@@ -36,8 +36,18 @@ export const routes: Routes = [
         title: 'Gestión de Equipos - PlanSport'
       },
       {
+        path: 'objectives',
+        loadComponent: () => import('./pages/objectives/objectives-page.component').then(m => m.ObjectivesPageComponent),
+        title: 'Objetivos - PlanSport'
+      },
+      {
+        path: 'exercises',
+        loadComponent: () => import('./pages/exercises/exercises-page.component').then(m => m.ExercisesPageComponent),
+        title: 'Ejercicios - PlanSport'
+      },
+      {
         path: 'planning',
-        loadComponent: () => import('./pages/dashboard/dashboard-content.component').then(m => m.DashboardContentComponent),
+        loadComponent: () => import('./pages/planning/planning-page.component').then(m => m.PlanningPageComponent),
         title: 'Planificación - PlanSport'
       },
       {

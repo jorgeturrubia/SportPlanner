@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, catchError, throwError } from 'rxjs';
+import { Observable, BehaviorSubject, tap, catchError, throwError, map } from 'rxjs';
 import { 
   Objective, 
   CreateObjectiveRequest, 
@@ -160,7 +160,7 @@ export class ObjectivesService {
    */
   getObjectivesBySport(sport: string): Observable<Objective[]> {
     return this.getObjectives({ sport, isPublic: true }).pipe(
-      tap(response => response.objectives)
+      map(response => response.objectives)
     );
   }
 
@@ -176,7 +176,7 @@ export class ObjectivesService {
       search: query,
       ...filters 
     }).pipe(
-      tap(response => response.objectives)
+      map(response => response.objectives)
     );
   }
 
