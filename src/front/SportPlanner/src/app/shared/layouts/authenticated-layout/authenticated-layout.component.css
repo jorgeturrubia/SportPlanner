@@ -1,0 +1,33 @@
+/* Authenticated Layout Styles */
+.layout-container {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Ensure proper z-index stacking */
+.sidebar-container {
+  z-index: 50;
+}
+
+.navbar-container {
+  z-index: 30;
+}
+
+.main-content {
+  flex: 1;
+  overflow-x: auto;
+}
+
+/* Mobile responsive adjustments */
+@media (max-width: 1024px) {
+  .desktop-sidebar-toggle {
+    display: none !important;
+  }
+}
+
+@media (min-width: 1025px) {
+  .mobile-menu-toggle {
+    display: none !important;
+  }
+}

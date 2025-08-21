@@ -1,7 +1,7 @@
 /* You can add global styles to this file, and also import other style files */
 @import "tailwindcss";
 
-@theme {
+:root {
   /* Sidebar Variables */
   --sidebar-width: 280px;
   --sidebar-width-collapsed: 64px;
@@ -44,6 +44,36 @@
   --color-theme-toggle-bg-dark: oklch(25% 0 0);
   --color-theme-toggle-hover-dark: oklch(30% 0 0);
   --color-theme-toggle-active-dark: oklch(47.8% 0.224 264.5);
+}
+
+/* Fallback utility classes for common patterns */
+.px-3 {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.bg-red-600 {
+  background-color: rgb(220 38 38);
+}
+
+.bg-blue-600 {
+  background-color: rgb(37 99 235);
+}
+
+.bg-green-100 {
+  background-color: rgb(220 252 231);
+}
+
+.text-green-800 {
+  color: rgb(22 101 52);
+}
+
+.bg-red-100 {
+  background-color: rgb(254 226 226);
+}
+
+.text-red-800 {
+  color: rgb(153 27 27);
 }
 
 /* Dark mode overrides */
@@ -94,4 +124,10 @@
 
 .sidebar-scrollbar::-webkit-scrollbar-thumb:hover {
   background: var(--color-sidebar-text-muted);
+}
+
+/* Loading animation keyframes */
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }

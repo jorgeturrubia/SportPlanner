@@ -7,6 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using Serilog;
 using SportPlanner.Api.Configuration;
+using SportPlanner.Api.Data;
 using SportPlanner.Api.Middleware;
 using SportPlanner.Api.Services;
 using SportPlanner.Api.Validators;
@@ -27,6 +28,10 @@ builder.Services.AddControllers();
 builder.Services.AddFluentValidationAutoValidation();
 builder.Services.AddFluentValidationClientsideAdapters();
 builder.Services.AddValidatorsFromAssemblyContaining<LoginRequestValidator>();
+
+// Configure Entity Framework
+builder.Services.AddDbContext<SportPlannerDbContext>(options =>
+    options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
 
 // Configure CORS from appsettings
 var corsSettings = configuration.GetSection("Cors");
@@ -112,6 +117,7 @@ builder.Services.AddSwaggerGen(c =>
 // Register services
 builder.Services.AddScoped<IAuthService, SupabaseAuthService>();
 builder.Services.AddScoped<IJwtValidationService, SupabaseJwtValidationService>();
+builder.Services.AddScoped<ITeamsService, TeamsService>();
 builder.Services.AddHttpContextAccessor();
 
 // Initialize Supabase client
@@ -132,6 +138,13 @@ builder.Services.AddSingleton(provider =>
 builder.Services.AddRateLimiting(configuration);
 
 var app = builder.Build();
+
+// Ensure database is created
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<SportPlannerDbContext>();
+    context.Database.EnsureCreated();
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

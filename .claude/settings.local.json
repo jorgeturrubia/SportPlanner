@@ -21,7 +21,20 @@
       "Bash(git commit:*)",
       "Bash(dotnet run:*)",
       "Bash(dotnet test:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "mcp__filesystem__list_allowed_directories",
+      "mcp__filesystem__directory_tree",
+      "mcp__filesystem__list_directory",
+      "mcp__filesystem__read_text_file",
+      "mcp__filesystem__write_file",
+      "mcp__filesystem__create_directory",
+      "mcp__filesystem__edit_file",
+      "Bash(npm run test:*)",
+      "mcp__sequential-thinking__sequentialthinking",
+      "mcp__filesystem__search_files",
+      "Bash(npm run build:*)",
+      "Bash(npm start:*)",
+      "WebFetch(domain:tailwindcss.com)"
     ],
     "deny": [],
     "ask": []

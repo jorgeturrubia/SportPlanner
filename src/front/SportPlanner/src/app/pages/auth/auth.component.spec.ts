@@ -329,7 +329,8 @@ describe('AuthComponent', () => {
         expect(mockAuthService.signUp).toHaveBeenCalledWith({
           name: 'John Doe',
           email: 'john@example.com',
-          password: 'password123'
+          password: 'password123',
+          sport: 'futbol'
         });
       });
 

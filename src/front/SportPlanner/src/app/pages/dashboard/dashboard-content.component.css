@@ -1,0 +1,21 @@
+/* Dashboard Content Styles */
+.quick-action-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.quick-action-card:hover {
+  transform: translateY(-2px);
+}
+
+.stats-card {
+  backdrop-filter: blur(10px);
+}
+
+.activity-item {
+  padding: 0.75rem 0;
+  border-bottom: 1px solid var(--color-sidebar-border);
+}
+
+.activity-item:last-child {
+  border-bottom: none;
+}

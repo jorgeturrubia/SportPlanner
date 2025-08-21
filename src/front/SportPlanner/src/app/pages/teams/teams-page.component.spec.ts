@@ -6,41 +6,62 @@ import { By } from '@angular/platform-browser';
 
 import { TeamsPageComponent } from './teams-page.component';
 import { TeamsService } from '../../core/services/teams.service';
-import { Team } from '../../core/models/team.interface';
+import { Team, TeamsListResponse, Sport, TeamStatus, TeamMemberRole, TeamMemberStatus } from '../../core/models/team.interface';
 
 describe('TeamsPageComponent', () => {
   let component: TeamsPageComponent;
   let fixture: ComponentFixture<TeamsPageComponent>;
   let mockTeamsService: jasmine.SpyObj<TeamsService>;
 
+  const mockSport: Sport = {
+    id: '1',
+    name: 'Fútbol',
+    category: 'Deportes de Equipo',
+    defaultMaxPlayers: 25
+  };
+
   const mockTeams: Team[] = [
     {
       id: '1',
       name: 'Real Madrid',
-      sport: 'Fútbol',
+      sport: mockSport,
       category: 'Profesional',
+      gender: 'Masculino',
+      level: 'Profesional',
       playersCount: 25,
-      membersCount: 25,
-      coachName: 'Carlo Ancelotti',
-      status: 'active',
+      coachesCount: 2,
+      totalMembersCount: 27,
+      maxPlayers: 25,
+      status: TeamStatus.Active,
       description: 'Equipo profesional de fútbol',
       createdAt: new Date('2024-01-01'),
-      updatedAt: new Date('2024-01-01')
+      updatedAt: new Date('2024-01-01'),
+      members: []
     },
     {
       id: '2',
       name: 'Barcelona FC',
-      sport: 'Fútbol',
+      sport: mockSport,
       category: 'Profesional',
+      gender: 'Masculino',
+      level: 'Profesional',
       playersCount: 23,
-      membersCount: 23,
-      coachName: 'Xavi Hernández',
-      status: 'active',
+      coachesCount: 2,
+      totalMembersCount: 25,
+      maxPlayers: 25,
+      status: TeamStatus.Active,
       description: 'Equipo profesional de fútbol',
       createdAt: new Date('2024-01-02'),
-      updatedAt: new Date('2024-01-02')
+      updatedAt: new Date('2024-01-02'),
+      members: []
     }
   ];
+
+  const mockTeamsResponse: TeamsListResponse = {
+    teams: mockTeams,
+    totalCount: mockTeams.length,
+    page: 1
+  };
 
   beforeEach(async () => {
     mockTeamsService = jasmine.createSpyObj('TeamsService', [
@@ -98,7 +119,7 @@ describe('TeamsPageComponent', () => {
 
   describe('Teams Loading', () => {
     it('should load teams on init', () => {
-      mockTeamsService.getTeams.and.returnValue(of(mockTeams));
+      mockTeamsService.getTeams.and.returnValue(of(mockTeamsResponse));
       
       component.ngOnInit();
       
@@ -107,7 +128,7 @@ describe('TeamsPageComponent', () => {
     });
 
     it('should handle loading state during teams fetch', () => {
-      mockTeamsService.getTeams.and.returnValue(of(mockTeams));
+      mockTeamsService.getTeams.and.returnValue(of(mockTeamsResponse));
       
       component.loadTeams();
       
@@ -164,30 +185,44 @@ describe('TeamsPageComponent', () => {
   describe('Team Operations', () => {
     it('should handle team creation', () => {
       const newTeam = mockTeams[0];
+      const createRequest = {
+        name: newTeam.name,
+        sportId: newTeam.sport.id,
+        category: newTeam.category,
+        gender: newTeam.gender,
+        level: newTeam.level,
+        description: newTeam.description,
+        maxPlayers: newTeam.maxPlayers
+      };
+      const newTeamsResponse = { ...mockTeamsResponse, teams: [newTeam] };
       mockTeamsService.createTeam.and.returnValue(of(newTeam));
-      mockTeamsService.getTeams.and.returnValue(of([newTeam]));
+      mockTeamsService.getTeams.and.returnValue(of(newTeamsResponse));
       
-      component.onTeamCreated(newTeam);
+      component.onTeamCreated(createRequest);
       
-      expect(mockTeamsService.createTeam).toHaveBeenCalledWith(newTeam);
+      expect(mockTeamsService.createTeam).toHaveBeenCalledWith(createRequest);
       expect(component.showCreateModal()).toBe(false);
     });
 
     it('should handle team update', () => {
       const updatedTeam = { ...mockTeams[0], name: 'Updated Team' };
+      const updateRequest = { name: 'Updated Team' };
+      const updatedTeamsResponse = { ...mockTeamsResponse, teams: [updatedTeam] };
       mockTeamsService.updateTeam.and.returnValue(of(updatedTeam));
-      mockTeamsService.getTeams.and.returnValue(of([updatedTeam]));
+      mockTeamsService.getTeams.and.returnValue(of(updatedTeamsResponse));
+      component.selectedTeam.set(mockTeams[0]);
       
-      component.onTeamUpdated(updatedTeam);
+      component.onTeamUpdated(updateRequest);
       
-      expect(mockTeamsService.updateTeam).toHaveBeenCalledWith(updatedTeam.id, updatedTeam);
+      expect(mockTeamsService.updateTeam).toHaveBeenCalledWith(mockTeams[0].id, updateRequest);
       expect(component.showEditModal()).toBe(false);
     });
 
     it('should handle team deletion', () => {
       const teamToDelete = mockTeams[0];
+      const emptyTeamsResponse = { ...mockTeamsResponse, teams: [], totalCount: 0 };
       mockTeamsService.deleteTeam.and.returnValue(of(void 0));
-      mockTeamsService.getTeams.and.returnValue(of([]));
+      mockTeamsService.getTeams.and.returnValue(of(emptyTeamsResponse));
       component.selectedTeam.set(teamToDelete);
       
       component.onTeamDeleted();
@@ -199,7 +234,7 @@ describe('TeamsPageComponent', () => {
 
   describe('Template Rendering', () => {
     beforeEach(() => {
-      mockTeamsService.getTeams.and.returnValue(of(mockTeams));
+      mockTeamsService.getTeams.and.returnValue(of(mockTeamsResponse));
       component.teams.set(mockTeams);
       fixture.detectChanges();
     });

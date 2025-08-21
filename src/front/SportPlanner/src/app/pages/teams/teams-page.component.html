@@ -1,179 +1,312 @@
-<div class="teams-page min-h-screen bg-gray-50 dark:bg-gray-900">
+<!-- Teams Page Content -->
+<div class="max-w-7xl mx-auto">
+  
   <!-- Page Header -->
-  <div class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="py-6">
-        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <h1 class="text-2xl font-bold text-gray-900 dark:text-white">
-              {{ pageTitle }}
-            </h1>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-              Administra los equipos de tu organización deportiva
-            </p>
-          </div>
-          
-          <button
-            type="button"
-            (click)="openCreateModal()"
-            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors"
-            [attr.aria-label]="'Crear nuevo equipo'"
-          >
-            <ng-icon name="heroPlus" class="-ml-1 mr-2 h-5 w-5" aria-hidden="true"></ng-icon>
-            Crear Equipo
-          </button>
-        </div>
+  <div class="mb-8">
+    <div class="flex justify-between items-start">
+      <div>
+        <p class="text-[var(--color-sidebar-text-secondary)] mt-1">Administra los equipos de tu organización deportiva</p>
       </div>
+      
+      <button type="button" (click)="openCreateModal()" data-testid="create-team-btn"
+              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
+              [attr.aria-label]="'Crear nuevo equipo'">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Crear Equipo
+      </button>
     </div>
   </div>
 
-  <!-- Main Content -->
-  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <!-- Search and Filters -->
-    <div class="mb-6">
-      <div class="relative max-w-md">
-        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-          <ng-icon name="heroMagnifyingGlass" class="h-5 w-5 text-gray-400" aria-hidden="true"></ng-icon>
-        </div>
-        <input
-          type="text"
-          (input)="onSearch($event)"
-          [value]="searchTerm()"
-          class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm transition-colors"
-          placeholder="Buscar equipos por nombre, deporte o categoría..."
-          [attr.aria-label]="'Buscar equipos'"
-        />
+  <!-- Search and Filters -->
+  <div class="mb-6">
+    <input type="text" (input)="onSearch($event)" [value]="searchTerm()"
+           class="w-full max-w-md px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+           placeholder="Buscar equipos por nombre, deporte o categoría..." [attr.aria-label]="'Buscar equipos'" />
+  </div>
+
+  @if (error()) {
+    <div data-testid="error-message" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
+      <h3 class="text-red-900 font-semibold mb-2">Error al cargar equipos</h3>
+      <p class="text-red-700 mb-3">{{ error() }}</p>
+      <div class="flex gap-2">
+        <button (click)="retryLoad()" class="bg-red-50 border border-red-200 px-3 py-1.5 rounded text-red-900 hover:bg-red-100 cursor-pointer">Reintentar</button>
+        <button (click)="clearError()" class="bg-red-50 border border-red-200 px-3 py-1.5 rounded text-red-900 hover:bg-red-100 cursor-pointer">Cerrar</button>
       </div>
     </div>
+  }
 
-    <!-- Error State -->
-    @if (error()) {
-      <div class="mb-6 rounded-md bg-red-50 dark:bg-red-900/20 p-4 border border-red-200 dark:border-red-800">
-        <div class="flex">
-          <div class="flex-shrink-0">
-            <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd" />
-            </svg>
+  @if (isLoading()) {
+    <div data-testid="loading-state" class="flex justify-center items-center py-12">
+      <div class="w-8 h-8 border-2 border-gray-200 border-t-blue-600 rounded-full animate-spin"></div>
+      <span class="ml-3 text-gray-600">Cargando equipos...</span>
+    </div>
+  }
+
+  @else if (showEmptyState() && !searchTerm()) {
+    <div data-testid="empty-state" class="text-center py-12">
+      <div class="text-5xl mb-4">👥</div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">No hay equipos</h3>
+      <p class="text-sm text-gray-600 mb-6">Comienza creando tu primer equipo.</p>
+      <button (click)="openCreateModal()" 
+              class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+        </svg>
+        Crear Primer Equipo
+      </button>
+    </div>
+  }
+
+  @else if (searchTerm() && filteredTeams().length === 0 && !isLoading()) {
+    <div class="text-center py-12">
+      <div class="text-5xl mb-4">🔍</div>
+      <h3 class="text-lg font-semibold text-gray-900 mb-2">No se encontraron equipos</h3>
+      <p class="text-sm text-gray-600">No hay equipos que coincidan con "{{ searchTerm() }}"</p>
+    </div>
+  }
+
+  @else if (filteredTeams().length > 0) {
+    <div data-testid="teams-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (team of filteredTeams(); track team.id) {
+        <app-team-card [team]="team" (edit)="openEditModal($event)" (delete)="openDeleteModal($event)"></app-team-card>
+      }
+    </div>
+  }
+
+  <!-- Create Team Modal -->
+  @if (showCreateModal()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeModals()">
+      <div class="bg-white rounded-lg max-w-2xl w-11/12 mx-4 max-h-[90vh] overflow-y-auto" (click)="$event.stopPropagation()">
+        <!-- Modal Header -->
+        <div class="sticky top-0 bg-white border-b border-gray-200 px-6 py-4 rounded-t-lg">
+          <div class="flex items-center justify-between">
+            <h2 class="text-xl font-semibold text-gray-900">Crear Nuevo Equipo</h2>
+            <button 
+              (click)="closeModals()"
+              class="text-gray-400 hover:text-gray-600 focus:outline-none focus:text-gray-600">
+              <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
           </div>
-          <div class="ml-3 flex-1">
-            <h3 class="text-sm font-medium text-red-800 dark:text-red-200">
-              Error al cargar equipos
-            </h3>
-            <div class="mt-2 text-sm text-red-700 dark:text-red-300">
-              <p>{{ error() }}</p>
-            </div>
-            <div class="mt-4">
-              <div class="flex space-x-2">
-                <button
-                  type="button"
-                  (click)="retryLoad()"
-                  class="bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-md text-sm font-medium text-red-800 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 transition-colors"
-                >
-                  Reintentar
-                </button>
-                <button
-                  type="button"
-                  (click)="clearError()"
-                  class="bg-red-50 dark:bg-red-900/20 px-2 py-1.5 rounded-md text-sm font-medium text-red-800 dark:text-red-200 hover:bg-red-100 dark:hover:bg-red-900/40 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-gray-800 transition-colors"
-                >
-                  Cerrar
-                </button>
+        </div>
+
+        <!-- Modal Body -->
+        <form [formGroup]="teamForm" (ngSubmit)="onCreateTeam()" class="p-6">
+          <!-- Error Message -->
+          @if (createError()) {
+            <div class="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+              <div class="flex">
+                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                </svg>
+                <div class="ml-3">
+                  <p class="text-sm text-red-700">{{ createError() }}</p>
+                </div>
               </div>
             </div>
+          }
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Team Name -->
+            <div class="md:col-span-2">
+              <label for="team-name" class="block text-sm font-medium text-gray-700 mb-2">
+                Nombre del Equipo *
+              </label>
+              <input
+                type="text"
+                id="team-name"
+                formControlName="name"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Ej: Real Madrid Juvenil A">
+              @if (teamForm.get('name')?.invalid && teamForm.get('name')?.touched) {
+                <div class="mt-1">
+                  @if (teamForm.get('name')?.errors?.['required']) {
+                    <p class="text-sm text-red-600">El nombre es obligatorio</p>
+                  }
+                  @if (teamForm.get('name')?.errors?.['minlength']) {
+                    <p class="text-sm text-red-600">El nombre debe tener al menos 2 caracteres</p>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Sport -->
+            <div>
+              <label for="sport" class="block text-sm font-medium text-gray-700 mb-2">
+                Deporte *
+              </label>
+              <select
+                id="sport"
+                formControlName="sport"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Selecciona un deporte</option>
+                @for (sport of sports; track sport.id) {
+                  <option [value]="sport.id">{{ sport.name }}</option>
+                }
+              </select>
+              @if (teamForm.get('sport')?.invalid && teamForm.get('sport')?.touched) {
+                <p class="mt-1 text-sm text-red-600">El deporte es obligatorio</p>
+              }
+            </div>
+
+            <!-- Category -->
+            <div>
+              <label for="category" class="block text-sm font-medium text-gray-700 mb-2">
+                Categoría *
+              </label>
+              <select
+                id="category"
+                formControlName="category"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Selecciona la categoría</option>
+                @for (category of categories; track category) {
+                  <option [value]="category.toLowerCase()">{{ category }}</option>
+                }
+              </select>
+              @if (teamForm.get('category')?.invalid && teamForm.get('category')?.touched) {
+                <p class="mt-1 text-sm text-red-600">La categoría es obligatoria</p>
+              }
+            </div>
+
+            <!-- Gender -->
+            <div>
+              <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">
+                Género *
+              </label>
+              <select
+                id="gender"
+                formControlName="gender"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Selecciona el género</option>
+                @for (gender of genders; track gender.id) {
+                  <option [value]="gender.id">{{ gender.name }}</option>
+                }
+              </select>
+              @if (teamForm.get('gender')?.invalid && teamForm.get('gender')?.touched) {
+                <p class="mt-1 text-sm text-red-600">El género es obligatorio</p>
+              }
+            </div>
+
+            <!-- Level -->
+            <div>
+              <label for="level" class="block text-sm font-medium text-gray-700 mb-2">
+                Nivel *
+              </label>
+              <select
+                id="level"
+                formControlName="level"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                <option value="">Selecciona el nivel</option>
+                @for (level of levels; track level.id) {
+                  <option [value]="level.id">{{ level.name }}</option>
+                }
+              </select>
+              @if (teamForm.get('level')?.invalid && teamForm.get('level')?.touched) {
+                <p class="mt-1 text-sm text-red-600">El nivel es obligatorio</p>
+              }
+            </div>
+
+            <!-- Max Players -->
+            <div>
+              <label for="maxPlayers" class="block text-sm font-medium text-gray-700 mb-2">
+                Máximo de Jugadores *
+              </label>
+              <input
+                type="number"
+                id="maxPlayers"
+                formControlName="maxPlayers"
+                min="1"
+                max="100"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              @if (teamForm.get('maxPlayers')?.invalid && teamForm.get('maxPlayers')?.touched) {
+                <div class="mt-1">
+                  @if (teamForm.get('maxPlayers')?.errors?.['required']) {
+                    <p class="text-sm text-red-600">El número máximo de jugadores es obligatorio</p>
+                  }
+                  @if (teamForm.get('maxPlayers')?.errors?.['min']) {
+                    <p class="text-sm text-red-600">Debe ser al menos 1 jugador</p>
+                  }
+                  @if (teamForm.get('maxPlayers')?.errors?.['max']) {
+                    <p class="text-sm text-red-600">No puede ser más de 100 jugadores</p>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Description -->
+            <div class="md:col-span-2">
+              <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
+                Descripción
+              </label>
+              <textarea
+                id="description"
+                formControlName="description"
+                rows="3"
+                class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Descripción opcional del equipo...">
+              </textarea>
+            </div>
           </div>
-        </div>
-      </div>
-    }
 
-    <!-- Loading State -->
-    @if (isLoading()) {
-      <div class="flex justify-center items-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        <span class="ml-3 text-gray-600 dark:text-gray-400">Cargando equipos...</span>
+          <!-- Form Actions -->
+          <div class="flex justify-end space-x-3 pt-6 border-t border-gray-200 mt-6">
+            <button
+              type="button"
+              (click)="closeModals()"
+              [disabled]="isCreating()"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50">
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              [disabled]="teamForm.invalid || isCreating()"
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              @if (isCreating()) {
+                <span class="inline-flex items-center">
+                  <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creando...
+                </span>
+              } @else {
+                Crear Equipo
+              }
+            </button>
+          </div>
+        </form>
       </div>
-    }
-
-    <!-- Empty State -->
-    @else if (showEmptyState() && !searchTerm()) {
-      <div class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No hay equipos</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          Comienza creando tu primer equipo.
-        </p>
-        <div class="mt-6">
-          <button
-            type="button"
-            (click)="openCreateModal()"
-            class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-gray-800 transition-colors"
-          >
-            <ng-icon name="heroPlus" class="-ml-1 mr-2 h-5 w-5" aria-hidden="true"></ng-icon>
-            Crear Primer Equipo
-          </button>
-        </div>
-      </div>
-    }
-
-    <!-- No Search Results -->
-    @else if (searchTerm() && filteredTeams().length === 0 && !isLoading()) {
-      <div class="text-center py-12">
-        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-        </svg>
-        <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No se encontraron equipos</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
-          No hay equipos que coincidan con "{{ searchTerm() }}"
-        </p>
-      </div>
-    }
-
-    <!-- Teams Grid -->
-    @else if (filteredTeams().length > 0) {
-      <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        @for (team of filteredTeams(); track team.id) {
-          <app-team-card
-            [team]="team"
-            (edit)="openEditModal($event)"
-            (delete)="openDeleteModal($event)"
-            class="transform transition-transform hover:scale-105"
-          ></app-team-card>
-        }
-      </div>
-    }
-  </div>
-
-  <!-- Modals -->
-  @if (showCreateModal()) {
-    <app-team-modal
-      [isOpen]="showCreateModal()"
-      mode="create"
-      (save)="onTeamCreated($event)"
-      (close)="closeModals()"
-    ></app-team-modal>
+    </div>
   }
 
   @if (showEditModal() && selectedTeam()) {
-    <app-team-modal
-      [isOpen]="showEditModal()"
-      mode="edit"
-      [team]="selectedTeam()!"
-      (save)="onTeamUpdated($event)"
-      (close)="closeModals()"
-    ></app-team-modal>
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg max-w-lg w-11/12 mx-4">
+        <h2 class="text-xl font-semibold mb-4">Editar Equipo: {{ selectedTeam()!.name }}</h2>
+        <p class="text-gray-600 mb-4">Modal de edición - En desarrollo</p>
+        <button (click)="closeModals()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors">
+          Cerrar
+        </button>
+      </div>
+    </div>
   }
 
   @if (showDeleteModal() && selectedTeam()) {
-    <app-confirmation-modal
-      [isOpen]="showDeleteModal()"
-      title="Eliminar Equipo"
-      [message]="'¿Estás seguro de que deseas eliminar el equipo \"' + selectedTeam()!.name + '\"? Esta acción no se puede deshacer.'"
-      confirmText="Eliminar"
-      cancelText="Cancelar"
-      type="danger"
-      (confirm)="onTeamDeleted()"
-      (cancel)="closeModals()"
-    ></app-confirmation-modal>
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white p-6 rounded-lg max-w-md w-11/12 mx-4">
+        <h2 class="text-xl font-semibold mb-4">Eliminar Equipo</h2>
+        <p class="text-gray-700 mb-6">¿Estás seguro de que deseas eliminar el equipo "{{ selectedTeam()!.name }}"? Esta acción no se puede deshacer.</p>
+        <div class="flex gap-3 justify-end">
+          <button (click)="closeModals()" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600 transition-colors">
+            Cancelar
+          </button>
+          <button (click)="onTeamDeleted()" class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition-colors">
+            Eliminar
+          </button>
+        </div>
+      </div>
+    </div>
   }
-</div>
