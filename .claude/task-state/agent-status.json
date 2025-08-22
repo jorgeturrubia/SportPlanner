@@ -1,9 +1,11 @@
 {
   "stack-coordinator": "ready",
-  "angular-specialist": "ready",
+  "angular-specialist": "ready", 
   "api-architect": "ready",
   "integration-validator": "ready",
   "supabase-manager": "ready",
   "ui-designer": "ready",
+  "business-analyst": "ready",
+  "clean-code-architect": "ready",
   "last_updated": "2025-01-27T00:00:00Z"
 }
