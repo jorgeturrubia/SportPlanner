@@ -16,6 +16,13 @@ public class SportPlannerDbContext : DbContext
     public DbSet<Sport> Sports { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<TeamMember> TeamMembers { get; set; }
+    public DbSet<Objective> Objectives { get; set; }
+    public DbSet<Exercise> Exercises { get; set; }
+    public DbSet<ExerciseReview> ExerciseReviews { get; set; }
+    public DbSet<ExerciseMedia> ExerciseMedia { get; set; }
+    public DbSet<Planning> Plannings { get; set; }
+    public DbSet<TrainingSession> TrainingSessions { get; set; }
+    public DbSet<PlanningTemplate> PlanningTemplates { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -86,6 +93,167 @@ public class SportPlannerDbContext : DbContext
         modelBuilder.Entity<TeamMember>()
             .Property(tm => tm.Status)
             .HasConversion<int>();
+
+        // Configure Objective entity
+        modelBuilder.Entity<Objective>(entity =>
+        {
+            entity.HasKey(o => o.Id);
+            entity.Property(o => o.Title).IsRequired().HasMaxLength(200);
+            entity.Property(o => o.Description).IsRequired().HasMaxLength(1000);
+            entity.Property(o => o.TargetAgeGroup).IsRequired().HasMaxLength(100);
+            entity.Property(o => o.Sport).IsRequired().HasMaxLength(50);
+            entity.Property(o => o.Tags).HasDefaultValue("[]");
+            entity.Property(o => o.Prerequisites).HasDefaultValue(null);
+            entity.Property(o => o.EquipmentNeeded).HasDefaultValue("[]");
+            
+            // Enum conversions
+            entity.Property(o => o.Category).HasConversion<int>();
+            entity.Property(o => o.Difficulty).HasConversion<int>();
+            entity.Property(o => o.Status).HasConversion<int>();
+            
+            // Indexes
+            entity.HasIndex(o => o.Category);
+            entity.HasIndex(o => o.Sport);
+            entity.HasIndex(o => o.IsPublic);
+        });
+
+        // Configure Exercise entity
+        modelBuilder.Entity<Exercise>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(2000);
+            entity.Property(e => e.Sport).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.SpaceRequired).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.TargetAgeGroup).HasDefaultValue("[]");
+            entity.Property(e => e.Objectives).HasDefaultValue("[]");
+            entity.Property(e => e.Instructions).HasDefaultValue("[]");
+            entity.Property(e => e.SafetyNotes).HasDefaultValue("[]");
+            entity.Property(e => e.Equipment).HasDefaultValue("[]");
+            entity.Property(e => e.Variations).HasDefaultValue("[]");
+            entity.Property(e => e.Tags).HasDefaultValue("[]");
+            
+            // Enum conversions
+            entity.Property(e => e.Category).HasConversion<int>();
+            entity.Property(e => e.Difficulty).HasConversion<int>();
+            entity.Property(e => e.Status).HasConversion<int>();
+            
+            // Indexes
+            entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.Sport);
+            entity.HasIndex(e => e.IsPublic);
+            entity.HasIndex(e => e.IsVerified);
+        });
+
+        // Configure ExerciseReview entity
+        modelBuilder.Entity<ExerciseReview>(entity =>
+        {
+            entity.HasKey(er => er.Id);
+            entity.Property(er => er.UserName).IsRequired().HasMaxLength(100);
+            entity.Property(er => er.Comment).IsRequired().HasMaxLength(1000);
+            
+            // Relationships
+            entity.HasOne(er => er.Exercise)
+                .WithMany(e => e.Reviews)
+                .HasForeignKey(er => er.ExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // Constraints
+            entity.HasIndex(er => new { er.ExerciseId, er.UserId }).IsUnique();
+        });
+
+        // Configure ExerciseMedia entity
+        modelBuilder.Entity<ExerciseMedia>(entity =>
+        {
+            entity.HasKey(em => em.Id);
+            entity.Property(em => em.Url).IsRequired().HasMaxLength(500);
+            entity.Property(em => em.Caption).HasMaxLength(200);
+            
+            // Enum conversions
+            entity.Property(em => em.Type).HasConversion<int>();
+            
+            // Relationships
+            entity.HasOne(em => em.Exercise)
+                .WithMany(e => e.Media)
+                .HasForeignKey(em => em.ExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configure Planning entity
+        modelBuilder.Entity<Planning>(entity =>
+        {
+            entity.HasKey(p => p.Id);
+            entity.Property(p => p.Name).IsRequired().HasMaxLength(200);
+            entity.Property(p => p.Description).IsRequired().HasMaxLength(1000);
+            entity.Property(p => p.Sport).IsRequired().HasMaxLength(50);
+            entity.Property(p => p.Objectives).HasDefaultValue("[]");
+            entity.Property(p => p.Tags).HasDefaultValue("[]");
+            entity.Property(p => p.TemplateName).HasMaxLength(100);
+            
+            // Enum conversions
+            entity.Property(p => p.Type).HasConversion<int>();
+            entity.Property(p => p.Status).HasConversion<int>();
+            
+            // Relationships
+            entity.HasOne(p => p.Team)
+                .WithMany()
+                .HasForeignKey(p => p.TeamId)
+                .OnDelete(DeleteBehavior.Restrict);
+            
+            // Indexes
+            entity.HasIndex(p => p.TeamId);
+            entity.HasIndex(p => p.IsTemplate);
+            entity.HasIndex(p => p.Status);
+        });
+
+        // Configure TrainingSession entity
+        modelBuilder.Entity<TrainingSession>(entity =>
+        {
+            entity.HasKey(ts => ts.Id);
+            entity.Property(ts => ts.Name).IsRequired().HasMaxLength(200);
+            entity.Property(ts => ts.StartTime).IsRequired().HasMaxLength(10);
+            entity.Property(ts => ts.Location).HasMaxLength(200);
+            entity.Property(ts => ts.Notes).HasMaxLength(1000);
+            entity.Property(ts => ts.CompletionNotes).HasMaxLength(1000);
+            entity.Property(ts => ts.Weather).HasMaxLength(100);
+            entity.Property(ts => ts.Objectives).HasDefaultValue("[]");
+            entity.Property(ts => ts.Exercises).HasDefaultValue("[]");
+            entity.Property(ts => ts.Attendance).HasDefaultValue("[]");
+            
+            // Enum conversions
+            entity.Property(ts => ts.Type).HasConversion<int>();
+            
+            // Relationships
+            entity.HasOne(ts => ts.Planning)
+                .WithMany(p => p.Sessions)
+                .HasForeignKey(ts => ts.PlanningId)
+                .OnDelete(DeleteBehavior.Cascade);
+            
+            // Indexes
+            entity.HasIndex(ts => ts.PlanningId);
+            entity.HasIndex(ts => ts.Date);
+            entity.HasIndex(ts => ts.IsCompleted);
+        });
+
+        // Configure PlanningTemplate entity
+        modelBuilder.Entity<PlanningTemplate>(entity =>
+        {
+            entity.HasKey(pt => pt.Id);
+            entity.Property(pt => pt.Name).IsRequired().HasMaxLength(200);
+            entity.Property(pt => pt.Description).IsRequired().HasMaxLength(1000);
+            entity.Property(pt => pt.Sport).IsRequired().HasMaxLength(50);
+            entity.Property(pt => pt.TargetLevel).IsRequired().HasMaxLength(50);
+            entity.Property(pt => pt.Objectives).HasDefaultValue("[]");
+            entity.Property(pt => pt.SessionTemplates).HasDefaultValue("[]");
+            
+            // Enum conversions
+            entity.Property(pt => pt.Type).HasConversion<int>();
+            
+            // Indexes
+            entity.HasIndex(pt => pt.Sport);
+            entity.HasIndex(pt => pt.IsPublic);
+            entity.HasIndex(pt => pt.Type);
+        });
 
         // Seed data for Sports
         SeedSports(modelBuilder);

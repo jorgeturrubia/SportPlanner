@@ -118,6 +118,9 @@ builder.Services.AddSwaggerGen(c =>
 builder.Services.AddScoped<IAuthService, SupabaseAuthService>();
 builder.Services.AddScoped<IJwtValidationService, SupabaseJwtValidationService>();
 builder.Services.AddScoped<ITeamsService, TeamsService>();
+builder.Services.AddScoped<IObjectivesService, ObjectivesService>();
+builder.Services.AddScoped<IExercisesService, ExercisesService>();
+builder.Services.AddScoped<IPlanningsService, PlanningsService>();
 builder.Services.AddHttpContextAccessor();
 
 // Initialize Supabase client

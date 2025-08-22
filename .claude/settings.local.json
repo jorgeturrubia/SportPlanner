@@ -34,7 +34,9 @@
       "mcp__filesystem__search_files",
       "Bash(npm run build:*)",
       "Bash(npm start:*)",
-      "WebFetch(domain:tailwindcss.com)"
+      "WebFetch(domain:tailwindcss.com)",
+      "Bash(dotnet ef migrations:*)",
+      "Bash(dotnet ef database:*)"
     ],
     "deny": [],
     "ask": []
