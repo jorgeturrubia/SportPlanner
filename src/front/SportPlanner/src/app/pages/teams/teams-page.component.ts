@@ -2,9 +2,14 @@ import { Component, inject, signal, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { heroPlus, heroMagnifyingGlass } from '@ng-icons/heroicons/outline';
+
 import { TeamsService } from '../../core/services/teams.service';
-import { Team, TeamsListResponse } from '../../core/models/team.interface';
-import { TeamCardComponent } from '../../shared/components/team-card/team-card.component';
+import { Team } from '../../core/models/team.interface';
+import { TeamCardComponent } from './components/team-card/team-card.component';
+import { TeamModalComponent } from './components/team-modal/team-modal.component';
+import { ConfirmationModalComponent } from '../../shared/components/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-teams-page',
@@ -13,9 +18,17 @@ import { TeamCardComponent } from '../../shared/components/team-card/team-card.c
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
-    TeamCardComponent
+    NgIconComponent,
+    TeamCardComponent,
+    TeamModalComponent,
+    ConfirmationModalComponent
   ],
-  providers: [],
+  providers: [
+    provideIcons({
+      heroPlus,
+      heroMagnifyingGlass
+    })
+  ],
   templateUrl: './teams-page.component.html',
   styleUrls: ['./teams-page.component.css']
 })
@@ -26,8 +39,47 @@ export class TeamsPageComponent implements OnInit {
   // Page configuration
   readonly pageTitle = 'Gestión de Equipos';
 
+  // Form and loading state
+  teamForm: FormGroup = this.fb.group({
+    name: ['', [Validators.required, Validators.minLength(2)]],
+    sport: ['', Validators.required],
+    category: ['', Validators.required],
+    gender: ['', Validators.required],
+    level: ['', Validators.required],
+    description: [''],
+    maxPlayers: [25, [Validators.required, Validators.min(1), Validators.max(50)]]
+  });
+  readonly isCreating = signal(false);
+  readonly createError = signal<string | null>(null);
+
   // Component state signals
   readonly teams = signal<Team[]>([]);
+  
+  // Form options
+  readonly sports = [
+    { id: 'football', name: 'Fútbol' },
+    { id: 'basketball', name: 'Baloncesto' },
+    { id: 'volleyball', name: 'Voleibol' },
+    { id: 'tennis', name: 'Tenis' },
+    { id: 'handball', name: 'Balonmano' }
+  ];
+  
+  readonly categories = [
+    'Juvenil', 'Senior', 'Veterano', 'Infantil', 'Cadete'
+  ];
+  
+  readonly genders = [
+    { id: 'male', name: 'Masculino' },
+    { id: 'female', name: 'Femenino' },
+    { id: 'mixed', name: 'Mixto' }
+  ];
+  
+  readonly levels = [
+    { id: 'beginner', name: 'Principiante' },
+    { id: 'intermediate', name: 'Intermedio' },
+    { id: 'advanced', name: 'Avanzado' },
+    { id: 'professional', name: 'Profesional' }
+  ];
   readonly isLoading = signal(false);
   readonly error = signal<string | null>(null);
   readonly searchTerm = signal('');
@@ -43,59 +95,6 @@ export class TeamsPageComponent implements OnInit {
   readonly hasTeams = signal(false);
   readonly showEmptyState = signal(false);
 
-  // Form and options
-  teamForm: FormGroup = this.fb.group({
-    name: ['', [Validators.required, Validators.minLength(2)]],
-    sport: ['', Validators.required],
-    category: ['', Validators.required],
-    gender: ['', Validators.required],
-    level: ['', Validators.required],
-    description: [''],
-    maxPlayers: [22, [Validators.required, Validators.min(1), Validators.max(100)]]
-  });
-
-  // Form state
-  readonly isCreating = signal(false);
-  readonly createError = signal<string | null>(null);
-
-  // Form options
-  readonly sports = [
-    { id: 'futbol', name: 'Fútbol', category: 'Colectivo' },
-    { id: 'baloncesto', name: 'Baloncesto', category: 'Colectivo' },
-    { id: 'voleibol', name: 'Voleibol', category: 'Colectivo' },
-    { id: 'balonmano', name: 'Balonmano', category: 'Colectivo' },
-    { id: 'tenis', name: 'Tenis', category: 'Individual' },
-    { id: 'padel', name: 'Pádel', category: 'Individual' },
-    { id: 'hockey', name: 'Hockey', category: 'Colectivo' },
-    { id: 'rugby', name: 'Rugby', category: 'Colectivo' },
-    { id: 'atletismo', name: 'Atletismo', category: 'Individual' },
-    { id: 'natacion', name: 'Natación', category: 'Individual' }
-  ];
-
-  readonly categories = [
-    'Prebenjamín',
-    'Benjamín', 
-    'Alevín',
-    'Infantil',
-    'Cadete',
-    'Juvenil',
-    'Junior',
-    'Senior',
-    'Veterano'
-  ];
-
-  readonly genders = [
-    { id: 'masculino', name: 'Masculino' },
-    { id: 'femenino', name: 'Femenino' },
-    { id: 'mixto', name: 'Mixto' }
-  ];
-
-  readonly levels = [
-    { id: 'A', name: 'Nivel A (Alto)' },
-    { id: 'B', name: 'Nivel B (Medio)' },
-    { id: 'C', name: 'Nivel C (Iniciación)' }
-  ];
-
   ngOnInit(): void {
     this.loadTeams();
   }
@@ -108,11 +107,11 @@ export class TeamsPageComponent implements OnInit {
     this.error.set(null);
 
     this.teamsService.getTeams().subscribe({
-      next: (response: TeamsListResponse) => {
-        this.teams.set(response.teams);
+      next: (teams) => {
+        this.teams.set(teams);
         this.updateFilteredTeams();
-        this.hasTeams.set(response.teams.length > 0);
-        this.showEmptyState.set(response.teams.length === 0);
+        this.hasTeams.set(teams.length > 0);
+        this.showEmptyState.set(teams.length === 0);
         this.isLoading.set(false);
       },
       error: (error) => {
@@ -136,7 +135,7 @@ export class TeamsPageComponent implements OnInit {
 
     const filtered = teams.filter(team =>
       team.name.toLowerCase().includes(searchTerm) ||
-      team.sport.name.toLowerCase().includes(searchTerm) ||
+      team.sport.toLowerCase().includes(searchTerm) ||
       team.category.toLowerCase().includes(searchTerm)
     );
 
@@ -157,16 +156,6 @@ export class TeamsPageComponent implements OnInit {
    */
   openCreateModal(): void {
     this.selectedTeam.set(null);
-    this.teamForm.reset({
-      name: '',
-      sport: '',
-      category: '',
-      gender: '',
-      level: '',
-      description: '',
-      maxPlayers: 22
-    });
-    this.createError.set(null);
     this.showCreateModal.set(true);
   }
 
@@ -197,7 +186,7 @@ export class TeamsPageComponent implements OnInit {
   }
 
   /**
-   * Handle team creation form submission
+   * Handle team creation from form
    */
   onCreateTeam(): void {
     if (this.teamForm.invalid) {
@@ -206,30 +195,33 @@ export class TeamsPageComponent implements OnInit {
     }
 
     this.isCreating.set(true);
-    this.createError.set(null);
-
-    const formValue = this.teamForm.value;
-    const selectedSport = this.sports.find(sport => sport.id === formValue.sport);
+    const teamData = this.teamForm.value;
     
-    const teamData = {
-      name: formValue.name,
-      sportId: formValue.sport,
-      category: formValue.category,
-      gender: formValue.gender,
-      level: formValue.level,
-      description: formValue.description,
-      maxPlayers: formValue.maxPlayers
-    };
-
     this.teamsService.createTeam(teamData).subscribe({
       next: () => {
         this.loadTeams();
         this.closeModals();
+        this.teamForm.reset();
         this.isCreating.set(false);
       },
       error: (error) => {
-        this.createError.set(error.message || 'Error al crear el equipo');
+        this.error.set(error.message);
         this.isCreating.set(false);
+      }
+    });
+  }
+
+  /**
+   * Handle team creation from modal
+   */
+  onTeamCreated(team: Team): void {
+    this.teamsService.createTeam(team).subscribe({
+      next: () => {
+        this.loadTeams();
+        this.closeModals();
+      },
+      error: (error) => {
+        this.error.set(error.message);
       }
     });
   }
@@ -237,11 +229,8 @@ export class TeamsPageComponent implements OnInit {
   /**
    * Handle team update
    */
-  onTeamUpdated(teamData: any): void {
-    const team = this.selectedTeam();
-    if (!team) return;
-    
-    this.teamsService.updateTeam(team.id, teamData).subscribe({
+  onTeamUpdated(team: Team): void {
+    this.teamsService.updateTeam(team.id, team).subscribe({
       next: () => {
         this.loadTeams();
         this.closeModals();

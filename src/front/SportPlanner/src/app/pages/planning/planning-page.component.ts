@@ -181,7 +181,7 @@ export class PlanningPageComponent implements OnInit {
   loadTeams(): void {
     this.teamsService.getTeams().subscribe({
       next: (response) => {
-        this.teams.set(response.teams);
+        this.teams.set(response);
       },
       error: (error) => {
         console.error('Error loading teams:', error);

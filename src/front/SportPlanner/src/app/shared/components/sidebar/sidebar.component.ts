@@ -11,10 +11,7 @@ import {
   heroChevronLeft,
   heroChevronRight,
   heroBars3,
-  heroXMark,
-  heroFlag,
-  heroCommandLine,
-  heroClipboardDocumentList
+  heroXMark
 } from '@ng-icons/heroicons/outline';
 
 import { SidebarService } from '../../../core/services/sidebar.service';
@@ -42,10 +39,7 @@ export interface NavigationItem {
       heroChevronLeft,
       heroChevronRight,
       heroBars3,
-      heroXMark,
-      heroFlag,
-      heroCommandLine,
-      heroClipboardDocumentList
+      heroXMark
     })
   ],
   template: `
@@ -192,29 +186,24 @@ export class SidebarComponent implements OnInit, OnDestroy {
       route: '/dashboard'
     },
     {
+      label: 'Calendario',
+      icon: 'heroCalendarDays',
+      route: '/dashboard/calendar'
+    },
+    {
       label: 'Equipos',
       icon: 'heroUsers',
       route: '/teams'
     },
     {
-      label: 'Objetivos',
-      icon: 'heroFlag',
-      route: '/objectives'
-    },
-    {
-      label: 'Ejercicios',
-      icon: 'heroCommandLine',
-      route: '/exercises'
-    },
-    {
-      label: 'Planificación',
-      icon: 'heroClipboardDocumentList',
-      route: '/planning'
+      label: 'Estadísticas',
+      icon: 'heroChartBarSquare',
+      route: '/dashboard/stats'
     },
     {
       label: 'Configuración',
       icon: 'heroCog6Tooth',
-      route: '/settings'
+      route: '/dashboard/settings'
     }
   ];
 

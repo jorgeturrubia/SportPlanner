@@ -5,36 +5,25 @@ import { NgIconComponent, provideIcons } from '@ng-icons/core';
 import { heroUsers, heroPencilSquare, heroTrash } from '@ng-icons/heroicons/outline';
 
 import { TeamCardComponent } from './team-card.component';
-import { Team, Sport, TeamStatus, TeamMemberRole, TeamMemberStatus } from '../../../../core/models/team.interface';
+import { Team } from '../../../../core/models/team.interface';
 
 describe('TeamCardComponent', () => {
   let component: TeamCardComponent;
   let fixture: ComponentFixture<TeamCardComponent>;
   let compiled: HTMLElement;
 
-  const mockSport: Sport = {
-    id: '1',
-    name: 'Fútbol',
-    category: 'Deportes de Equipo',
-    defaultMaxPlayers: 25
-  };
-
   const mockTeam: Team = {
     id: '1',
     name: 'Equipo Test',
-    sport: mockSport,
+    sport: 'Fútbol',
     category: 'Senior',
-    gender: 'Masculino',
-    level: 'Profesional',
     playersCount: 15,
-    coachesCount: 2,
-    totalMembersCount: 17,
-    maxPlayers: 25,
     description: 'Descripción del equipo de prueba',
-    status: TeamStatus.Active,
+    membersCount: 15,
+    coachName: 'Juan Pérez',
+    status: 'active',
     createdAt: new Date('2024-01-15'),
-    updatedAt: new Date('2024-01-20'),
-    members: []
+    updatedAt: new Date('2024-01-20')
   };
 
   beforeEach(async () => {
@@ -92,7 +81,7 @@ describe('TeamCardComponent', () => {
 
     it('should display team sport', () => {
       const sportElement = compiled.querySelector('[data-testid="team-sport"]');
-      expect(sportElement?.textContent?.trim()).toBe(mockTeam.sport.name);
+      expect(sportElement?.textContent?.trim()).toBe(mockTeam.sport);
     });
 
     it('should display team category', () => {
@@ -107,12 +96,12 @@ describe('TeamCardComponent', () => {
 
     it('should display members count', () => {
       const membersElement = compiled.querySelector('[data-testid="team-members"]');
-      expect(membersElement?.textContent).toContain(mockTeam.totalMembersCount.toString());
+      expect(membersElement?.textContent).toContain(mockTeam.membersCount.toString());
     });
 
-    it('should display coaches count', () => {
-      const coachElement = compiled.querySelector('[data-testid="team-coaches"]');
-      expect(coachElement?.textContent).toContain(mockTeam.coachesCount.toString());
+    it('should display coach name when provided', () => {
+      const coachElement = compiled.querySelector('[data-testid="team-coach"]');
+      expect(coachElement?.textContent).toContain(mockTeam.coachName);
     });
 
     it('should show active status badge when team is active', () => {
@@ -122,7 +111,7 @@ describe('TeamCardComponent', () => {
     });
 
     it('should show inactive status badge when team is not active', () => {
-      const inactiveTeam = { ...mockTeam, status: TeamStatus.Inactive };
+      const inactiveTeam = { ...mockTeam, status: 'inactive' };
       fixture.componentRef.setInput('team', inactiveTeam);
       fixture.detectChanges();
 
@@ -205,17 +194,17 @@ describe('TeamCardComponent', () => {
       expect(descriptionElement).toBeFalsy();
     });
 
-    it('should handle team without coaches', () => {
-      const teamWithoutCoaches = { ...mockTeam, coachesCount: 0 };
-      fixture.componentRef.setInput('team', teamWithoutCoaches);
+    it('should handle team without coach', () => {
+      const teamWithoutCoach = { ...mockTeam, coachName: undefined };
+      fixture.componentRef.setInput('team', teamWithoutCoach);
       fixture.detectChanges();
 
-      const coachElement = compiled.querySelector('[data-testid="team-coaches"]');
-      expect(coachElement?.textContent).toContain('0');
+      const coachElement = compiled.querySelector('[data-testid="team-coach"]');
+      expect(coachElement?.textContent).toContain('Sin entrenador');
     });
 
     it('should handle zero members count', () => {
-      const teamWithZeroMembers = { ...mockTeam, totalMembersCount: 0 };
+      const teamWithZeroMembers = { ...mockTeam, membersCount: 0 };
       fixture.componentRef.setInput('team', teamWithZeroMembers);
       fixture.detectChanges();
 

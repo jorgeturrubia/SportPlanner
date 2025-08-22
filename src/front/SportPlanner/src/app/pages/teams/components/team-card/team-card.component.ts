@@ -1,16 +1,24 @@
 import { Component, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NgIconComponent, provideIcons } from '@ng-icons/core';
+import { heroUsers, heroPencilSquare, heroTrash } from '@ng-icons/heroicons/outline';
 
-
-import { Team, TeamStatus } from '../../../../core/models/team.interface';
+import { Team } from '../../../../core/models/team.interface';
 
 @Component({
   selector: 'app-team-card',
   standalone: true,
   imports: [
-    CommonModule
+    CommonModule,
+    NgIconComponent
   ],
-  providers: [],
+  providers: [
+    provideIcons({
+      heroUsers,
+      heroPencilSquare,
+      heroTrash
+    })
+  ],
   templateUrl: './team-card.component.html',
   styleUrls: ['./team-card.component.css']
 })
@@ -66,7 +74,7 @@ export class TeamCardComponent {
 
     const baseClasses = 'inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium';
     
-    if (currentTeam.status === TeamStatus.Active) {
+    if (currentTeam.status === 'active') {
       return `${baseClasses} bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400`;
     } else {
       return `${baseClasses} bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400`;
@@ -80,7 +88,7 @@ export class TeamCardComponent {
     const currentTeam = this.team();
     if (!currentTeam) return '';
 
-    const count = currentTeam.totalMembersCount;
+    const count = currentTeam.membersCount;
     return count === 1 ? '1 miembro' : `${count} miembros`;
   }
 
@@ -91,8 +99,7 @@ export class TeamCardComponent {
     const currentTeam = this.team();
     if (!currentTeam) return '';
 
-    const coachesCount = currentTeam.coachesCount;
-    return coachesCount === 1 ? '1 entrenador' : `${coachesCount} entrenadores`;
+    return currentTeam.coachName || 'Sin entrenador';
   }
 
   /**

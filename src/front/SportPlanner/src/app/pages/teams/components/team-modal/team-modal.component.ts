@@ -47,11 +47,10 @@ export class TeamModalComponent {
   private createForm(): FormGroup {
     return this.fb.group({
       name: ['', [Validators.required, Validators.minLength(2)]],
-      sportId: ['', Validators.required],
+      sport: ['', Validators.required],
       category: ['', Validators.required],
-      gender: ['', Validators.required],
-      level: ['', Validators.required],
-      maxPlayers: [15, [Validators.required, Validators.min(1)]],
+      playersCount: [0, [Validators.required, Validators.min(1)]],
+      coachName: [''],
       description: ['']
     });
   }
@@ -59,11 +58,10 @@ export class TeamModalComponent {
   private populateForm(team: Team): void {
     this.teamForm.patchValue({
       name: team.name,
-      sportId: team.sport.id,
+      sport: team.sport,
       category: team.category,
-      gender: team.gender,
-      level: team.level,
-      maxPlayers: team.maxPlayers,
+      playersCount: team.playersCount,
+      coachName: team.coachName || '',
       description: team.description || ''
     });
   }
@@ -71,11 +69,10 @@ export class TeamModalComponent {
   private resetForm(): void {
     this.teamForm.reset({
       name: '',
-      sportId: '',
+      sport: '',
       category: '',
-      gender: '',
-      level: '',
-      maxPlayers: 15,
+      playersCount: 0,
+      coachName: '',
       description: ''
     });
   }
@@ -86,23 +83,14 @@ export class TeamModalComponent {
       
       if (this.isEditMode()) {
         const updateRequest: UpdateTeamRequest = {
-          name: formValue.name,
-          category: formValue.category,
-          gender: formValue.gender,
-          level: formValue.level,
-          maxPlayers: Number(formValue.maxPlayers),
-          description: formValue.description
+          ...formValue,
+          playersCount: Number(formValue.playersCount)
         };
         this.save.emit(updateRequest);
       } else {
         const createRequest: CreateTeamRequest = {
-          name: formValue.name,
-          sportId: formValue.sportId,
-          category: formValue.category,
-          gender: formValue.gender,
-          level: formValue.level,
-          maxPlayers: Number(formValue.maxPlayers),
-          description: formValue.description
+          ...formValue,
+          playersCount: Number(formValue.playersCount)
         };
         this.save.emit(createRequest);
       }
@@ -139,11 +127,10 @@ export class TeamModalComponent {
   private getFieldLabel(fieldName: string): string {
     const labels: { [key: string]: string } = {
       name: 'Nombre del equipo',
-      sportId: 'Deporte',
+      sport: 'Deporte',
       category: 'Categoría',
-      gender: 'Género',
-      level: 'Nivel',
-      maxPlayers: 'Máximo de jugadores',
+      playersCount: 'Número de jugadores',
+      coachName: 'Nombre del entrenador',
       description: 'Descripción'
     };
     return labels[fieldName] || fieldName;
