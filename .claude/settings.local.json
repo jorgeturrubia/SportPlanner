@@ -36,7 +36,10 @@
       "Bash(npm start:*)",
       "WebFetch(domain:tailwindcss.com)",
       "Bash(dotnet ef migrations:*)",
-      "Bash(dotnet ef database:*)"
+      "Bash(dotnet ef database:*)",
+      "mcp__filesystem__read_multiple_files",
+      "Bash(npx playwright:*)",
+      "Bash(chmod:*)"
     ],
     "deny": [],
     "ask": []
