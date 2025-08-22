@@ -1,0 +1,12 @@
+{
+  "status": "initialized",
+  "description": "PlanSport Full-Stack Project",
+  "stack": {
+    "frontend": "Angular 20",
+    "backend": ".NET 8",
+    "database": "Supabase",
+    "styling": "Tailwind CSS v4"
+  },
+  "timestamp": "2025-01-27",
+  "phase": "setup"
+}
