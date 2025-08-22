@@ -12,8 +12,8 @@ using SportPlanner.Api.Data;
 namespace SportPlanner.Api.Migrations
 {
     [DbContext(typeof(SportPlannerDbContext))]
-    [Migration("20250821220224_AddObjectivesExercisesPlanning")]
-    partial class AddObjectivesExercisesPlanning
+    [Migration("20250822070032_dsf")]
+    partial class dsf
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -524,56 +524,56 @@ namespace SportPlanner.Api.Migrations
                         {
                             Id = new Guid("11111111-1111-1111-1111-111111111111"),
                             Category = "Deportes de Equipo",
-                            CreatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5838),
+                            CreatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9680),
                             DefaultMaxPlayers = 25,
                             Description = "Deporte de equipo jugado entre dos conjuntos de once jugadores",
                             IsActive = true,
                             Name = "Fútbol",
-                            UpdatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5839)
+                            UpdatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9682)
                         },
                         new
                         {
                             Id = new Guid("22222222-2222-2222-2222-222222222222"),
                             Category = "Deportes de Equipo",
-                            CreatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5845),
+                            CreatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9701),
                             DefaultMaxPlayers = 15,
                             Description = "Deporte de equipo jugado entre dos conjuntos de cinco jugadores",
                             IsActive = true,
                             Name = "Baloncesto",
-                            UpdatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5845)
+                            UpdatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9701)
                         },
                         new
                         {
                             Id = new Guid("33333333-3333-3333-3333-333333333333"),
                             Category = "Deportes de Equipo",
-                            CreatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5852),
+                            CreatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9706),
                             DefaultMaxPlayers = 12,
                             Description = "Deporte de equipo jugado entre dos conjuntos de seis jugadores",
                             IsActive = true,
                             Name = "Voleibol",
-                            UpdatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5852)
+                            UpdatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9706)
                         },
                         new
                         {
                             Id = new Guid("44444444-4444-4444-4444-444444444444"),
                             Category = "Deportes Individuales",
-                            CreatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5875),
+                            CreatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9713),
                             DefaultMaxPlayers = 4,
                             Description = "Deporte individual o de parejas",
                             IsActive = true,
                             Name = "Tenis",
-                            UpdatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5876)
+                            UpdatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9713)
                         },
                         new
                         {
                             Id = new Guid("55555555-5555-5555-5555-555555555555"),
                             Category = "Deportes Individuales",
-                            CreatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5883),
+                            CreatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9717),
                             DefaultMaxPlayers = 30,
                             Description = "Conjunto de disciplinas deportivas que comprenden carreras, saltos y lanzamientos",
                             IsActive = true,
                             Name = "Atletismo",
-                            UpdatedAt = new DateTime(2025, 8, 21, 22, 2, 23, 544, DateTimeKind.Utc).AddTicks(5884)
+                            UpdatedAt = new DateTime(2025, 8, 22, 7, 0, 32, 389, DateTimeKind.Utc).AddTicks(9717)
                         });
                 });
 

@@ -78,7 +78,7 @@ public class SportPlannerDbContext : DbContext
             entity.HasIndex(tm => new { tm.TeamId, tm.UserId }).IsUnique();
             entity.HasIndex(tm => new { tm.TeamId, tm.JerseyNumber })
                 .IsUnique()
-                .HasFilter("[JerseyNumber] IS NOT NULL");
+                .HasFilter("\"JerseyNumber\" IS NOT NULL");
         });
 
         // Configure enum conversions

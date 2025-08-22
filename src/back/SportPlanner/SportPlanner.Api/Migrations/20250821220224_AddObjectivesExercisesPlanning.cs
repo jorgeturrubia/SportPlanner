@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -406,7 +406,7 @@ namespace SportPlanner.Api.Migrations
                 table: "TeamMembers",
                 columns: new[] { "TeamId", "JerseyNumber" },
                 unique: true,
-                filter: "[JerseyNumber] IS NOT NULL");
+                filter: "\"JerseyNumber\" IS NOT NULL");
 
             migrationBuilder.CreateIndex(
                 name: "IX_TeamMembers_TeamId_UserId",
