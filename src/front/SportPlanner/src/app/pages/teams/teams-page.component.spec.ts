@@ -198,7 +198,18 @@ describe('TeamsPageComponent', () => {
       mockTeamsService.createTeam.and.returnValue(of(newTeam));
       mockTeamsService.getTeams.and.returnValue(of(newTeamsResponse));
       
-      component.onTeamCreated(createRequest);
+      // Configure the form with the team data
+      component.teamForm.patchValue({
+        name: createRequest.name,
+        sport: createRequest.sportId,
+        category: createRequest.category,
+        gender: createRequest.gender,
+        level: createRequest.level,
+        description: createRequest.description,
+        maxPlayers: createRequest.maxPlayers
+      });
+      
+      component.onCreateTeam();
       
       expect(mockTeamsService.createTeam).toHaveBeenCalledWith(createRequest);
       expect(component.showCreateModal()).toBe(false);
