@@ -4,10 +4,6 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/app",
-    "moduleResolution": "bundler",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "lib": ["ES2022", "dom"],
     "types": [
       "node"
     ]

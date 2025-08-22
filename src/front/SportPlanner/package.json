@@ -7,19 +7,7 @@
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "serve:ssr:SportPlanner": "node dist/SportPlanner/server/server.mjs",
-    "test:e2e": "playwright test",
-    "test:e2e:headed": "playwright test --headed",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:report": "playwright show-report",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:validate": "playwright test e2e/validate-setup.ts",
-    "test:e2e:teams": "playwright test e2e/tests/teams/",
-    "test:e2e:exercises": "playwright test e2e/tests/exercises/",
-    "test:e2e:objectives": "playwright test e2e/tests/objectives/",
-    "test:e2e:auth": "playwright test e2e/tests/auth/",
-    "test:e2e:performance": "playwright test e2e/tests/performance/",
-    "test:e2e:validation": "playwright test e2e/tests/validation/"
+    "serve:ssr:SportPlanner": "node dist/SportPlanner/server/server.mjs"
   },
   "prettier": {
     "overrides": [
@@ -41,13 +29,8 @@
     "@angular/platform-server": "^20.1.0",
     "@angular/router": "^20.1.0",
     "@angular/ssr": "^20.1.4",
-    "@ng-icons/core": "^32.1.0",
-    "@ng-icons/heroicons": "^32.1.0",
-    "@tailwindcss/postcss": "^4.1.12",
     "express": "^5.1.0",
-    "postcss": "^8.5.6",
     "rxjs": "~7.8.0",
-    "tailwindcss": "^4.1.12",
     "tslib": "^2.3.0",
     "zone.js": "~0.15.0"
   },
@@ -55,20 +38,15 @@
     "@angular/build": "^20.1.4",
     "@angular/cli": "^20.1.4",
     "@angular/compiler-cli": "^20.1.0",
-    "@playwright/test": "^1.55.0",
-    "@supabase/supabase-js": "^2.56.0",
     "@types/express": "^5.0.1",
     "@types/jasmine": "~5.1.0",
     "@types/node": "^20.17.19",
-    "@types/uuid": "^10.0.0",
-    "axios": "^1.11.0",
     "jasmine-core": "~5.8.0",
     "karma": "~6.4.0",
     "karma-chrome-launcher": "~3.2.0",
     "karma-coverage": "~2.2.0",
     "karma-jasmine": "~5.1.0",
     "karma-jasmine-html-reporter": "~2.1.0",
-    "typescript": "~5.8.2",
-    "uuid": "^11.1.0"
+    "typescript": "~5.8.2"
   }
 }

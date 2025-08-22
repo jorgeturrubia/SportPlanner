@@ -17,6 +17,10 @@
         "hooks": [
           {
             "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR\\.claude\\hooks\\business-context.py"
+          },
+          {
+            "type": "command",
             "command": "$CLAUDE_PROJECT_DIR\\.claude\\hooks\\validation-hooks.py"
           }
         ]
