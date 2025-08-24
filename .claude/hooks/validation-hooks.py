@@ -330,15 +330,25 @@ Best Practices: Standalone components, minimal APIs, RLS policies, modern CSS pa
 
 
 if __name__ == "__main__":
-    # Determine which hook to run based on script name or argument
-    script_name = Path(sys.argv[0]).name
-    
-    if 'validate-stack-compatibility' in script_name:
-        validate_stack_compatibility()
-    elif 'enrich-context' in script_name:
-        enrich_context()
-    elif 'load-project-context' in script_name:
-        load_project_context()
-    else:
-        # Default behavior - run all validations
-        validate_stack_compatibility()
+    try:
+        # Determine which hook to run based on environment or stdin data
+        input_data = json.load(sys.stdin)
+        hook_event = input_data.get('hook_event_name', '')
+        
+        if hook_event == 'PreToolUse':
+            validate_stack_compatibility()
+        elif hook_event == 'UserPromptSubmit':
+            enrich_context()
+        elif hook_event == 'SessionStart':
+            load_project_context()
+        else:
+            # Default behavior for backwards compatibility
+            validate_stack_compatibility()
+            
+    except (json.JSONDecodeError, KeyError):
+        # Fallback if no proper input data
+        print("✅ Hook script loaded successfully")
+        sys.exit(0)
+    except Exception as e:
+        print(f"Hook execution error: {e}", file=sys.stderr)
+        sys.exit(1)
