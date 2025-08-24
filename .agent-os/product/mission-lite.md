@@ -1,5 +1,0 @@
-# Product Mission (Lite)
-
-PlanSport es una plataforma multi-deporte de planificación deportiva que permite a entrenadores crear, compartir y ejecutar planificaciones de entrenamiento de manera colaborativa. Con muy pocos clicks, los usuarios pueden acceder a planificaciones completas con objetivos, ejercicios y entrenamientos creados por la comunidad, facilitando el desarrollo deportivo a través de un marketplace de conocimiento.
-
-PlanSport sirve a entrenadores, clubes deportivos y directores que necesitan herramientas unificadas de gestión deportiva multi-deporte. A diferencia de aplicaciones genéricas de planificación, PlanSport proporciona un ecosistema integrado con marketplace comunitario, generación automática de entrenamientos y analytics en tiempo real que optimiza la coordinación de entrenamiento y desarrollo deportivo. El usuario debe elegir un deporte específico durante el registro para acceder a conceptos, ejercicios y planificaciones especializadas.
