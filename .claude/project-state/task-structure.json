@@ -1,0 +1,184 @@
+{
+  "project": "SportPlanner",
+  "version": "1.0.0",
+  "created": "2025-01-24",
+  "sprints": {
+    "sprint-1": {
+      "name": "Fundación del Sistema",
+      "duration": "2 semanas",
+      "status": "planned",
+      "startDate": "2025-01-27",
+      "endDate": "2025-02-07",
+      "tasks": {
+        "BACK-001": {
+          "title": "Configurar proyecto .NET 8 con arquitectura limpia",
+          "type": "backend",
+          "priority": "alta",
+          "estimatedHours": 8,
+          "status": "pending",
+          "dependencies": [],
+          "assignee": "backend-developer",
+          "description": "Crear estructura de proyecto con Clean Architecture, configurar DI, logging, y middleware básico"
+        },
+        "BACK-002": {
+          "title": "Implementar autenticación con Supabase",
+          "type": "backend",
+          "priority": "alta",
+          "estimatedHours": 12,
+          "status": "pending",
+          "dependencies": ["BACK-001", "DB-001"],
+          "assignee": "backend-developer",
+          "description": "Integrar Supabase Auth, JWT tokens, middleware de autenticación"
+        },
+        "BACK-003": {
+          "title": "Crear modelos de datos y DbContext",
+          "type": "backend",
+          "priority": "alta",
+          "estimatedHours": 10,
+          "status": "pending",
+          "dependencies": ["BACK-001", "DB-002"],
+          "assignee": "backend-developer",
+          "description": "Implementar Entity Framework, modelos, configuraciones y migraciones"
+        },
+        "BACK-004": {
+          "title": "Implementar endpoints de usuarios y suscripciones",
+          "type": "backend",
+          "priority": "alta",
+          "estimatedHours": 15,
+          "status": "pending",
+          "dependencies": ["BACK-003"],
+          "assignee": "backend-developer",
+          "description": "Controllers, DTOs, validaciones para gestión de usuarios y suscripciones"
+        },
+        "BACK-005": {
+          "title": "Crear sistema de roles y permisos",
+          "type": "backend",
+          "priority": "alta",
+          "estimatedHours": 12,
+          "status": "pending",
+          "dependencies": ["BACK-004"],
+          "assignee": "backend-developer",
+          "description": "Implementar authorization policies, claims, y middleware de permisos"
+        },
+        "FRONT-001": {
+          "title": "Configurar proyecto Angular 20 con Tailwind CSS",
+          "type": "frontend",
+          "priority": "alta",
+          "estimatedHours": 6,
+          "status": "pending",
+          "dependencies": [],
+          "assignee": "frontend-developer",
+          "description": "Crear proyecto Angular, configurar Tailwind, estructura de carpetas, y configuraciones base"
+        },
+        "FRONT-002": {
+          "title": "Implementar componentes de autenticación",
+          "type": "frontend",
+          "priority": "alta",
+          "estimatedHours": 12,
+          "status": "pending",
+          "dependencies": ["FRONT-001"],
+          "assignee": "frontend-developer",
+          "description": "Login, registro, recuperación de contraseña, servicios de auth"
+        },
+        "FRONT-003": {
+          "title": "Crear páginas de suscripción",
+          "type": "frontend",
+          "priority": "alta",
+          "estimatedHours": 10,
+          "status": "pending",
+          "dependencies": ["FRONT-002"],
+          "assignee": "frontend-developer",
+          "description": "Selección de planes, procesamiento de pagos, confirmación"
+        },
+        "FRONT-004": {
+          "title": "Desarrollar layout principal y navegación",
+          "type": "frontend",
+          "priority": "alta",
+          "estimatedHours": 8,
+          "status": "pending",
+          "dependencies": ["FRONT-001"],
+          "assignee": "frontend-developer",
+          "description": "Header, sidebar, footer, navegación responsive"
+        },
+        "FRONT-005": {
+          "title": "Implementar guards de autenticación",
+          "type": "frontend",
+          "priority": "alta",
+          "estimatedHours": 6,
+          "status": "pending",
+          "dependencies": ["FRONT-002"],
+          "assignee": "frontend-developer",
+          "description": "Route guards, interceptors, manejo de tokens"
+        },
+        "DB-001": {
+          "title": "Configurar Supabase y PostgreSQL",
+          "type": "database",
+          "priority": "alta",
+          "estimatedHours": 4,
+          "status": "pending",
+          "dependencies": [],
+          "assignee": "backend-developer",
+          "description": "Crear proyecto Supabase, configurar conexiones, variables de entorno"
+        },
+        "DB-002": {
+          "title": "Crear tablas principales",
+          "type": "database",
+          "priority": "alta",
+          "estimatedHours": 8,
+          "status": "pending",
+          "dependencies": ["DB-001"],
+          "assignee": "backend-developer",
+          "description": "Users, Subscriptions, Organizations con constraints y relaciones"
+        },
+        "DB-003": {
+          "title": "Configurar RLS (Row Level Security)",
+          "type": "database",
+          "priority": "alta",
+          "estimatedHours": 6,
+          "status": "pending",
+          "dependencies": ["DB-002"],
+          "assignee": "backend-developer",
+          "description": "Políticas de seguridad a nivel de fila para multi-tenancy"
+        },
+        "DB-004": {
+          "title": "Crear triggers y funciones básicas",
+          "type": "database",
+          "priority": "media",
+          "estimatedHours": 4,
+          "status": "pending",
+          "dependencies": ["DB-003"],
+          "assignee": "backend-developer",
+          "description": "Triggers para auditoría, funciones de utilidad"
+        }
+      }
+    }
+  },
+  "teamStructure": {
+    "roles": {
+      "backend-developer": {
+        "name": "Backend Developer",
+        "responsibilities": ["API development", "Database design", "Business logic", "Authentication"],
+        "technologies": [".NET 8", "Entity Framework", "PostgreSQL", "Supabase"]
+      },
+      "frontend-developer": {
+        "name": "Frontend Developer",
+        "responsibilities": ["UI/UX implementation", "Component development", "State management", "Responsive design"],
+        "technologies": ["Angular 20", "TypeScript", "Tailwind CSS", "RxJS"]
+      }
+    }
+  },
+  "deliverables": {
+    "sprint-1": [
+      "Sistema de autenticación funcional",
+      "Gestión básica de suscripciones",
+      "Layout principal responsive",
+      "Base de datos configurada con seguridad"
+    ]
+  },
+  "qualityGates": {
+    "codeReview": "Obligatorio para todas las tareas",
+    "testing": "Unit tests mínimo 80% coverage",
+    "documentation": "README actualizado por sprint",
+    "security": "Validación de vulnerabilidades antes de merge"
+  }
+}

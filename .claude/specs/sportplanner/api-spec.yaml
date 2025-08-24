@@ -1,0 +1,783 @@
+openapi: 3.0.3
+info:
+  title: SportPlanner API
+  description: API para gestión de planificaciones deportivas
+  version: 1.0.0
+  contact:
+    name: SportPlanner Team
+
+servers:
+  - url: https://api.sportplanner.com/v1
+    description: Production server
+  - url: http://localhost:5000/api/v1
+    description: Development server
+
+security:
+  - BearerAuth: []
+
+paths:
+  # Authentication
+  /auth/login:
+    post:
+      tags: [Authentication]
+      summary: User login
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                  format: email
+                password:
+                  type: string
+              required: [email, password]
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  /auth/register:
+    post:
+      tags: [Authentication]
+      summary: User registration
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+      responses:
+        '201':
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AuthResponse'
+
+  # Subscriptions
+  /subscriptions:
+    get:
+      tags: [Subscriptions]
+      summary: Get available subscription types
+      responses:
+        '200':
+          description: List of subscription types
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/SubscriptionType'
+
+    post:
+      tags: [Subscriptions]
+      summary: Create new subscription
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSubscriptionRequest'
+      responses:
+        '201':
+          description: Subscription created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Subscription'
+
+  /subscriptions/my:
+    get:
+      tags: [Subscriptions]
+      summary: Get user's active subscriptions
+      responses:
+        '200':
+          description: User subscriptions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Subscription'
+
+  # Organizations
+  /organizations:
+    get:
+      tags: [Organizations]
+      summary: Get user's organizations
+      responses:
+        '200':
+          description: List of organizations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Organization'
+
+    post:
+      tags: [Organizations]
+      summary: Create new organization
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateOrganizationRequest'
+      responses:
+        '201':
+          description: Organization created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+
+  /organizations/{id}:
+    get:
+      tags: [Organizations]
+      summary: Get organization by ID
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Organization details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+
+  # Teams
+  /organizations/{orgId}/teams:
+    get:
+      tags: [Teams]
+      summary: Get teams in organization
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: List of teams
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+
+    post:
+      tags: [Teams]
+      summary: Create new team
+      parameters:
+        - name: orgId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateTeamRequest'
+      responses:
+        '201':
+          description: Team created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+
+  # Plannings
+  /plannings:
+    get:
+      tags: [Plannings]
+      summary: Get user's plannings
+      parameters:
+        - name: teamId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: isPublic
+          in: query
+          schema:
+            type: boolean
+      responses:
+        '200':
+          description: List of plannings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Planning'
+
+    post:
+      tags: [Plannings]
+      summary: Create new planning
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePlanningRequest'
+      responses:
+        '201':
+          description: Planning created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planning'
+
+  /plannings/marketplace:
+    get:
+      tags: [Plannings]
+      summary: Browse marketplace plannings
+      parameters:
+        - name: sport
+          in: query
+          schema:
+            type: string
+        - name: level
+          in: query
+          schema:
+            type: string
+        - name: minRating
+          in: query
+          schema:
+            type: number
+            minimum: 1
+            maximum: 5
+      responses:
+        '200':
+          description: Marketplace plannings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Planning'
+
+  /plannings/{id}/import:
+    post:
+      tags: [Plannings]
+      summary: Import planning from marketplace
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                teamId:
+                  type: string
+                  format: uuid
+              required: [teamId]
+      responses:
+        '201':
+          description: Planning imported
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Planning'
+
+  # Trainings
+  /trainings:
+    get:
+      tags: [Trainings]
+      summary: Get trainings
+      parameters:
+        - name: teamId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: planningId
+          in: query
+          schema:
+            type: string
+            format: uuid
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of trainings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Training'
+
+  /trainings/{id}:
+    get:
+      tags: [Trainings]
+      summary: Get training details
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Training details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingDetail'
+
+    put:
+      tags: [Trainings]
+      summary: Update training
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTrainingRequest'
+      responses:
+        '200':
+          description: Training updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Training'
+
+  /trainings/{id}/start:
+    post:
+      tags: [Trainings]
+      summary: Start training session
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Training session started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingSession'
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    AuthResponse:
+      type: object
+      properties:
+        token:
+          type: string
+        user:
+          $ref: '#/components/schemas/User'
+        expiresAt:
+          type: string
+          format: date-time
+
+    RegisterRequest:
+      type: object
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          minLength: 8
+        name:
+          type: string
+      required: [email, password, name]
+
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+          format: email
+        name:
+          type: string
+        role:
+          type: string
+          enum: [admin, director, trainer, member]
+        createdAt:
+          type: string
+          format: date-time
+
+    SubscriptionType:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [free, trainer, club]
+        name:
+          type: string
+        price:
+          type: number
+        features:
+          type: array
+          items:
+            type: string
+        limits:
+          type: object
+          properties:
+            teams:
+              type: integer
+            trainings:
+              type: integer
+
+    Subscription:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        type:
+          type: string
+          enum: [free, trainer, club]
+        price:
+          type: number
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        isActive:
+          type: boolean
+
+    CreateSubscriptionRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          enum: [free, trainer, club]
+      required: [type]
+
+    Organization:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        isVisible:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateOrganizationRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+      required: [name]
+
+    Team:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, mixed]
+        ageCategory:
+          type: string
+        level:
+          type: string
+          enum: [A, B, C]
+        isVisible:
+          type: boolean
+        createdAt:
+          type: string
+          format: date-time
+
+    CreateTeamRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        gender:
+          type: string
+          enum: [male, female, mixed]
+        ageCategory:
+          type: string
+        level:
+          type: string
+          enum: [A, B, C]
+      required: [name, gender, ageCategory, level]
+
+    Planning:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        trainingDays:
+          type: array
+          items:
+            type: integer
+            minimum: 0
+            maximum: 6
+        trainingHours:
+          type: object
+        isFullCourt:
+          type: boolean
+        isPublic:
+          type: boolean
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+        ratingCount:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+
+    CreatePlanningRequest:
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        startDate:
+          type: string
+          format: date
+        endDate:
+          type: string
+          format: date
+        trainingDays:
+          type: array
+          items:
+            type: integer
+        trainingHours:
+          type: object
+        isFullCourt:
+          type: boolean
+        teamId:
+          type: string
+          format: uuid
+      required: [name, startDate, endDate, trainingDays, teamId]
+
+    Training:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        planningId:
+          type: string
+          format: uuid
+        trainingDate:
+          type: string
+          format: date
+        startTime:
+          type: string
+          format: time
+        endTime:
+          type: string
+          format: time
+        location:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled]
+        createdAt:
+          type: string
+          format: date-time
+
+    TrainingDetail:
+      allOf:
+        - $ref: '#/components/schemas/Training'
+        - type: object
+          properties:
+            exercises:
+              type: array
+              items:
+                $ref: '#/components/schemas/TrainingExercise'
+
+    TrainingExercise:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        exerciseId:
+          type: string
+          format: uuid
+        exercise:
+          $ref: '#/components/schemas/Exercise'
+        orderIndex:
+          type: integer
+        durationMinutes:
+          type: integer
+        isCompleted:
+          type: boolean
+
+    Exercise:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        description:
+          type: string
+        instructions:
+          type: string
+        durationMinutes:
+          type: integer
+        difficultyLevel:
+          type: integer
+          minimum: 1
+          maximum: 5
+        rating:
+          type: number
+          minimum: 1
+          maximum: 5
+
+    UpdateTrainingRequest:
+      type: object
+      properties:
+        location:
+          type: string
+        status:
+          type: string
+          enum: [scheduled, in_progress, completed, cancelled]
+        executionNotes:
+          type: object
+
+    TrainingSession:
+      type: object
+      properties:
+        trainingId:
+          type: string
+          format: uuid
+        currentExerciseIndex:
+          type: integer
+        startedAt:
+          type: string
+          format: date-time
+        exercises:
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainingExercise'
+
+    Error:
+      type: object
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+        details:
+          type: object
+      required: [code, message]
+
+  responses:
+    BadRequest:
+      description: Bad request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
