@@ -2,6 +2,7 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, RouterOutlet } from '@angular/router';
 import { NgIcon } from '@ng-icons/core';
+import { AuthService } from '../../services';
 
 @Component({
   selector: 'app-dashboard-layout',
@@ -120,6 +121,8 @@ export class DashboardLayoutComponent {
   sidebarCollapsed = signal(false);
   showUserMenu = signal(false);
 
+  constructor(private authService: AuthService) {}
+
   toggleSidebar(): void {
     this.sidebarCollapsed.set(!this.sidebarCollapsed());
   }
@@ -129,8 +132,21 @@ export class DashboardLayoutComponent {
   }
 
   logout(): void {
-    // TODO: Implement actual logout logic
-    console.log('Logout clicked');
     this.showUserMenu.set(false);
+    
+    // Use the logout with confirmation method
+    this.authService.logoutWithConfirmation().subscribe({
+      next: (confirmed) => {
+        if (confirmed) {
+          // Logout was successful, user will be redirected by the auth service
+          console.log('User logged out successfully');
+        }
+        // If not confirmed, do nothing
+      },
+      error: (error) => {
+        console.error('Logout error:', error);
+        // Even on error, the auth service should handle cleanup
+      }
+    });
   }
 }

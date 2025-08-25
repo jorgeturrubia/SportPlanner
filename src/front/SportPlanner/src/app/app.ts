@@ -1,9 +1,10 @@
 import { Component, signal } from '@angular/core';
 import { RouterOutlet, RouterModule } from '@angular/router';
+import { NotificationComponent } from './components/shared/notification.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterModule],
+  imports: [RouterOutlet, RouterModule, NotificationComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

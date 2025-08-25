@@ -1,18 +1,19 @@
 export interface User {
   id: string;
   email: string;
-  firstName?: string;
-  lastName?: string;
-  avatar?: string;
+  firstName: string;
+  lastName: string;
+  supabaseId: string;
   role: UserRole;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin',
-  COACH = 'coach'
+  Administrator = 0,
+  Director = 1,
+  Coach = 2,
+  Assistant = 3
 }
 
 export interface LoginRequest {
@@ -24,8 +25,8 @@ export interface LoginRequest {
 export interface RegisterRequest {
   email: string;
   password: string;
-  firstName?: string;
-  lastName?: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface AuthResponse {

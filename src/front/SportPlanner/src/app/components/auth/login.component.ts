@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
+import { AuthService } from '../../services';
 
 @Component({
   selector: 'app-login',
@@ -117,7 +118,10 @@ export class LoginComponent {
   isLoading = signal(false);
   errorMessage = signal('');
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService
+  ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]],
@@ -134,14 +138,19 @@ export class LoginComponent {
       this.isLoading.set(true);
       this.errorMessage.set('');
       
-      // TODO: Implement actual login logic
-      console.log('Login form submitted:', this.loginForm.value);
+      const { email, password, rememberMe } = this.loginForm.value;
       
-      // Simulate API call
-      setTimeout(() => {
-        this.isLoading.set(false);
-        this.errorMessage.set('Funcionalidad de login por implementar');
-      }, 1000);
+      this.authService.login({ email, password, rememberMe }).subscribe({
+        next: (response) => {
+          this.isLoading.set(false);
+          // Navigate to the appropriate route after successful login
+          this.authService.navigateAfterLogin();
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(error.message || 'Error al iniciar sesión');
+        }
+      });
     }
   }
 }

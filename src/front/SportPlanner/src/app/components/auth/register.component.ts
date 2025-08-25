@@ -9,6 +9,7 @@ import {
   AbstractControl,
 } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
+import { AuthService } from '../../services';
 
 @Component({
   selector: 'app-register',
@@ -205,7 +206,10 @@ export class RegisterComponent {
   errorMessage = signal('');
   successMessage = signal('');
 
-  constructor(private fb: FormBuilder) {
+  constructor(
+    private fb: FormBuilder,
+    private authService: AuthService
+  ) {
     this.registerForm = this.fb.group(
       {
         email: ['', [Validators.required, Validators.email]],
@@ -249,14 +253,25 @@ export class RegisterComponent {
       this.errorMessage.set('');
       this.successMessage.set('');
 
-      // TODO: Implement actual registration logic
-      console.log('Register form submitted:', this.registerForm.value);
-
-      // Simulate API call
-      setTimeout(() => {
-        this.isLoading.set(false);
-        this.errorMessage.set('Funcionalidad de registro por implementar');
-      }, 1000);
+      const { email, password } = this.registerForm.value;
+      
+      this.authService.register({ 
+        email, 
+        password,
+        firstName: '', // These would come from additional form fields
+        lastName: ''
+      }).subscribe({
+        next: (response) => {
+          this.isLoading.set(false);
+          this.successMessage.set('Cuenta creada exitosamente');
+          // Navigate to the appropriate route after successful registration
+          this.authService.navigateAfterLogin();
+        },
+        error: (error) => {
+          this.isLoading.set(false);
+          this.errorMessage.set(error.message || 'Error al crear la cuenta');
+        }
+      });
     }
   }
 }
