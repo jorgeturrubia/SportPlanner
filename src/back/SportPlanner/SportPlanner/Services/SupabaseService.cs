@@ -3,7 +3,6 @@ using SportPlanner.Data;
 using SportPlanner.Models;
 using SportPlanner.Models.DTOs;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace SportPlanner.Services;
 

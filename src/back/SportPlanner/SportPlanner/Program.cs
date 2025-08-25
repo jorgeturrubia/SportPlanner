@@ -30,6 +30,13 @@ builder.Services.AddSingleton(provider => new Supabase.Client(supabaseUrl, supab
 
 // Authentication services
 builder.Services.AddScoped<ISupabaseService, SupabaseService>();
+builder.Services.AddScoped<IUserContextService, UserContextService>();
+
+// Team services
+builder.Services.AddScoped<ITeamService, TeamService>();
+
+// HTTP Context Accessor for UserContextService
+builder.Services.AddHttpContextAccessor();
 
 // JWT Authentication configuration
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -74,10 +81,11 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins("http://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
               .AllowAnyHeader()
               .AllowAnyMethod()
-              .AllowCredentials();
+              .AllowCredentials()
+              .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
     });
 });
 
@@ -95,6 +103,12 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add security headers middleware
+app.UseMiddleware<SecurityHeadersMiddleware>();
+
+// Add global exception handling middleware
+app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseCors("AllowAngularApp");
 

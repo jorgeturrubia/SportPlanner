@@ -1,7 +1,4 @@
-using Microsoft.EntityFrameworkCore;
-using SportPlanner.Data;
 using SportPlanner.Services;
-using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 
 namespace SportPlanner.Middleware;
@@ -17,7 +14,7 @@ public class JwtMiddleware
         _logger = logger;
     }
 
-    public async Task InvokeAsync(HttpContext context, ISupabaseService supabaseService, SportPlannerDbContext dbContext)
+    public async Task InvokeAsync(HttpContext context, ISupabaseService supabaseService)
     {
         var token = ExtractTokenFromHeader(context);
 

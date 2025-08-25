@@ -1,152 +1,154 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SportPlanner.Data;
-using SportPlanner.Models;
+using SportPlanner.Models.DTOs;
+using SportPlanner.Services;
+using System.Security.Claims;
 
 namespace SportPlanner.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class TeamsController : ControllerBase
 {
-    private readonly SportPlannerDbContext _context;
+    private readonly ITeamService _teamService;
+    private readonly ILogger<TeamsController> _logger;
 
-    public TeamsController(SportPlannerDbContext context)
+    public TeamsController(ITeamService teamService, ILogger<TeamsController> logger)
     {
-        _context = context;
+        _teamService = teamService;
+        _logger = logger;
     }
 
     // GET: api/teams
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Team>>> GetTeams()
+    public async Task<ActionResult<IEnumerable<TeamDto>>> GetTeams()
     {
-        return await _context.Teams
-            .Include(t => t.Organization)
-            .Include(t => t.CreatedBy)
-            .Where(t => t.IsActive && t.IsVisible)
-            .ToListAsync();
+        try
+        {
+            var userId = GetCurrentUserId();
+            var teams = await _teamService.GetUserTeamsAsync(userId);
+            return Ok(teams);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting teams for user");
+            return StatusCode(500, "An error occurred while retrieving teams");
+        }
     }
 
     // GET: api/teams/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Team>> GetTeam(Guid id)
+    public async Task<ActionResult<TeamDto>> GetTeam(Guid id)
     {
-        var team = await _context.Teams
-            .Include(t => t.Organization)
-            .Include(t => t.CreatedBy)
-            .Include(t => t.UserTeams)
-            .ThenInclude(ut => ut.User)
-            .FirstOrDefaultAsync(t => t.Id == id);
-
-        if (team == null)
+        try
         {
-            return NotFound();
-        }
+            var userId = GetCurrentUserId();
+            var team = await _teamService.GetTeamAsync(id, userId);
 
-        return team;
+            if (team == null)
+            {
+                return NotFound($"Team with ID {id} not found or access denied");
+            }
+
+            return Ok(team);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting team {TeamId}", id);
+            return StatusCode(500, "An error occurred while retrieving the team");
+        }
     }
 
     // POST: api/teams
     [HttpPost]
-    public async Task<ActionResult<Team>> CreateTeam(CreateTeamRequest request)
+    public async Task<ActionResult<TeamDto>> CreateTeam(CreateTeamRequest request)
     {
-        var team = new Team
+        try
         {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Sport = request.Sport,
-            Category = request.Category,
-            Gender = request.Gender,
-            Level = request.Level,
-            Description = request.Description,
-            OrganizationId = request.OrganizationId,
-            CreatedByUserId = request.CreatedByUserId, // En producción esto vendría del token JWT
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        _context.Teams.Add(team);
-        await _context.SaveChangesAsync();
+            var userId = GetCurrentUserId();
+            var team = await _teamService.CreateTeamAsync(request, userId);
 
-        return CreatedAtAction(nameof(GetTeam), new { id = team.Id }, team);
+            return CreatedAtAction(nameof(GetTeam), new { id = team.Id }, team);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating team");
+            return StatusCode(500, "An error occurred while creating the team");
+        }
     }
 
     // PUT: api/teams/5
     [HttpPut("{id}")]
-    public async Task<IActionResult> UpdateTeam(Guid id, UpdateTeamRequest request)
+    public async Task<ActionResult<TeamDto>> UpdateTeam(Guid id, UpdateTeamRequest request)
     {
-        var team = await _context.Teams.FindAsync(id);
-        if (team == null)
-        {
-            return NotFound();
-        }
-
-        team.Name = request.Name;
-        team.Sport = request.Sport;
-        team.Category = request.Category;
-        team.Gender = request.Gender;
-        team.Level = request.Level;
-        team.Description = request.Description;
-        team.UpdatedAt = DateTime.UtcNow;
-
         try
         {
-            await _context.SaveChangesAsync();
-        }
-        catch (DbUpdateConcurrencyException)
-        {
-            if (!TeamExists(id))
+            if (!ModelState.IsValid)
             {
-                return NotFound();
+                return BadRequest(ModelState);
             }
-            throw;
-        }
 
-        return NoContent();
+            var userId = GetCurrentUserId();
+            var team = await _teamService.UpdateTeamAsync(id, request, userId);
+
+            return Ok(team);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Team with ID {id} not found");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid("You do not have permission to update this team");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating team {TeamId}", id);
+            return StatusCode(500, "An error occurred while updating the team");
+        }
     }
 
     // DELETE: api/teams/5
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTeam(Guid id)
     {
-        var team = await _context.Teams.FindAsync(id);
-        if (team == null)
+        try
         {
-            return NotFound();
+            var userId = GetCurrentUserId();
+            await _teamService.DeleteTeamAsync(id, userId);
+
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Team with ID {id} not found");
+        }
+        catch (UnauthorizedAccessException)
+        {
+            return Forbid("You do not have permission to delete this team");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting team {TeamId}", id);
+            return StatusCode(500, "An error occurred while deleting the team");
+        }
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("User ID not found in token");
         }
 
-        team.IsActive = false;
-        team.UpdatedAt = DateTime.UtcNow;
-        await _context.SaveChangesAsync();
-
-        return NoContent();
+        return userId;
     }
-
-    private bool TeamExists(Guid id)
-    {
-        return _context.Teams.Any(e => e.Id == id);
-    }
-}
-
-// DTOs para las requests
-public class CreateTeamRequest
-{
-    public string Name { get; set; } = string.Empty;
-    public string Sport { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
-    public Gender Gender { get; set; }
-    public TeamLevel Level { get; set; }
-    public string Description { get; set; } = string.Empty;
-    public Guid? OrganizationId { get; set; }
-    public Guid CreatedByUserId { get; set; }
-}
-
-public class UpdateTeamRequest
-{
-    public string Name { get; set; } = string.Empty;
-    public string Sport { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
-    public Gender Gender { get; set; }
-    public TeamLevel Level { get; set; }
-    public string Description { get; set; } = string.Empty;
 }
