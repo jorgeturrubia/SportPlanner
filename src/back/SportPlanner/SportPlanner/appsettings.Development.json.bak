@@ -1,0 +1,11 @@
+{
+  "ConnectionStrings": {
+    "DefaultConnection": "Host=db.uyvcgsjrqgzpsbptmqxp.supabase.co;Database=postgres;Username=postgres;Password=Mercedes@2604.52;SSL Mode=Require;Trust Server Certificate=true"
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft.AspNetCore": "Warning"
+    }
+  }
+}
