@@ -1,8 +1,8 @@
 export const environment = {
   production: true,
   apiUrl: 'https://your-production-api.com',
-  supabase: {
-    url: 'your_supabase_url',
-    anonKey: 'your_supabase_anon_key'
-  }
+  supabaseUrl: 'your_supabase_url',
+  supabaseAnonKey: 'your_supabase_anon_key',
+  appName: 'SportPlanner',
+  version: '1.0.0'
 };
