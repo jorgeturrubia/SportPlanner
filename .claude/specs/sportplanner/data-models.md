@@ -25,8 +25,10 @@ erDiagram
     User {
         uuid id PK
         string email UK
-        string name
-        string role
+        string first_name
+        string last_name
+        string supabase_id UK
+        int role
         datetime created_at
         datetime updated_at
         boolean is_active
@@ -210,10 +212,10 @@ enum SubscriptionType {
 ### Roles de Usuario
 ```typescript
 enum UserRole {
-  ADMIN = 'admin',
-  DIRECTOR = 'director',
-  TRAINER = 'trainer',
-  MEMBER = 'member'
+  Administrator = 0,
+  Director = 1,
+  Coach = 2,
+  Member = 3
 }
 ```
 

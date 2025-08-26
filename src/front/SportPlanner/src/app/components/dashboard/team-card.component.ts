@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, signal } from '@angular/core';
+import { Component, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgIcon } from '@ng-icons/core';
 import { Team, Gender, TeamLevel } from '../../models/team.model';
@@ -95,48 +95,14 @@ import { Team, Gender, TeamLevel } from '../../models/team.model';
           </div>
 
           <!-- Delete Button -->
-          <div class="relative">
-            <button
-              (click)="toggleDeleteConfirmation()"
-              class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-error-700 bg-error-50 hover:bg-error-100 rounded-md transition-colors duration-200"
-              [class.bg-error-100]="showDeleteConfirmation()"
-              [attr.aria-label]="'Eliminar ' + team.name"
-            >
-              <ng-icon name="heroTrash" class="h-3 w-3 mr-1"></ng-icon>
-              Eliminar
-            </button>
-
-            <!-- Delete Confirmation Dropdown -->
-            @if (showDeleteConfirmation()) {
-              <div class="absolute right-0 bottom-full mb-2 w-64 bg-white rounded-lg shadow-lg border border-secondary-200 p-4 z-10">
-                <div class="flex items-start space-x-3">
-                  <div class="flex-shrink-0">
-                    <ng-icon name="heroExclamationTriangle" class="h-5 w-5 text-error-500"></ng-icon>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <h4 class="text-sm font-medium text-secondary-900 mb-1">¿Eliminar equipo?</h4>
-                    <p class="text-xs text-secondary-600 mb-3">
-                      Esta acción no se puede deshacer. Se eliminará permanentemente "{{ team.name }}".
-                    </p>
-                    <div class="flex items-center space-x-2">
-                      <button
-                        (click)="onDelete()"
-                        class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-white bg-error-600 hover:bg-error-700 rounded-md transition-colors duration-200"
-                      >
-                        Eliminar
-                      </button>
-                      <button
-                        (click)="toggleDeleteConfirmation()"
-                        class="inline-flex items-center px-2.5 py-1.5 text-xs font-medium text-secondary-700 bg-white hover:bg-secondary-50 border border-secondary-200 rounded-md transition-colors duration-200"
-                      >
-                        Cancelar
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            }
-          </div>
+          <button
+            (click)="onDelete()"
+            class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-error-700 bg-error-50 hover:bg-error-100 rounded-md transition-colors duration-200"
+            [attr.aria-label]="'Eliminar ' + team.name"
+          >
+            <ng-icon name="heroTrash" class="h-3 w-3 mr-1"></ng-icon>
+            Eliminar
+          </button>
         </div>
       </div>
     </div>
@@ -158,8 +124,6 @@ export class TeamCardComponent {
   @Output() edit = new EventEmitter<Team>();
   @Output() delete = new EventEmitter<Team>();
 
-  showDeleteConfirmation = signal(false);
-
   onView(): void {
     this.view.emit(this.team);
   }
@@ -170,11 +134,6 @@ export class TeamCardComponent {
 
   onDelete(): void {
     this.delete.emit(this.team);
-    this.showDeleteConfirmation.set(false);
-  }
-
-  toggleDeleteConfirmation(): void {
-    this.showDeleteConfirmation.set(!this.showDeleteConfirmation());
   }
 
   getGenderLabel(gender: Gender): string {

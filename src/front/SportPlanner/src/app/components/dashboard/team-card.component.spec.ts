@@ -84,48 +84,13 @@ describe('TeamCardComponent', () => {
     expect(component.edit.emit).toHaveBeenCalledWith(mockTeam);
   });
 
-  it('should show delete confirmation when delete button is clicked', () => {
-    const deleteButton = fixture.debugElement.query(By.css('button[aria-label*="Eliminar"]'));
-    deleteButton.nativeElement.click();
-    fixture.detectChanges();
-    
-    expect(component.showDeleteConfirmation()).toBe(true);
-    
-    const confirmationDialog = fixture.debugElement.query(By.css('.absolute.right-0.bottom-full'));
-    expect(confirmationDialog).toBeTruthy();
-    expect(confirmationDialog.nativeElement.textContent).toContain('¿Eliminar equipo?');
-  });
-
-  it('should emit delete event when delete is confirmed', () => {
+  it('should emit delete event when delete button is clicked', () => {
     spyOn(component.delete, 'emit');
     
-    // Open confirmation dialog
     const deleteButton = fixture.debugElement.query(By.css('button[aria-label*="Eliminar"]'));
     deleteButton.nativeElement.click();
-    fixture.detectChanges();
-    
-    // Click confirm delete
-    const confirmButton = fixture.debugElement.query(By.css('.bg-error-600'));
-    confirmButton.nativeElement.click();
     
     expect(component.delete.emit).toHaveBeenCalledWith(mockTeam);
-    expect(component.showDeleteConfirmation()).toBe(false);
-  });
-
-  it('should hide delete confirmation when cancel is clicked', () => {
-    // Open confirmation dialog
-    const deleteButton = fixture.debugElement.query(By.css('button[aria-label*="Eliminar"]'));
-    deleteButton.nativeElement.click();
-    fixture.detectChanges();
-    
-    expect(component.showDeleteConfirmation()).toBe(true);
-    
-    // Click cancel
-    const cancelButton = fixture.debugElement.query(By.css('button:contains("Cancelar")'));
-    if (cancelButton) {
-      cancelButton.nativeElement.click();
-      expect(component.showDeleteConfirmation()).toBe(false);
-    }
   });
 
   describe('getGenderLabel', () => {

@@ -5,3 +5,4 @@ export * from './notification.service';
 export * from './error-handler.service';
 export * from './loading.service';
 export * from './team.service';
+export * from './modal.service';

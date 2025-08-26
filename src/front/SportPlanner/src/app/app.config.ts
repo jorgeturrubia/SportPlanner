@@ -20,7 +20,9 @@ import {
   heroAcademicCap,
   heroCalendarDays,
   heroPencil,
-  heroTrash
+  heroTrash,
+  heroArrowPath,
+  heroMagnifyingGlass
 } from '@ng-icons/heroicons/outline';
 
 import { routes } from './app.routes';
@@ -51,7 +53,9 @@ export const appConfig: ApplicationConfig = {
       heroAcademicCap,
       heroCalendarDays,
       heroPencil,
-      heroTrash
+      heroTrash,
+      heroArrowPath,
+      heroMagnifyingGlass
     }),
     {
       provide: HTTP_INTERCEPTORS,
