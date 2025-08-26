@@ -16,7 +16,11 @@ import {
   heroEyeSlash,
   heroExclamationTriangle,
   heroCheckCircle,
-  heroInformationCircle
+  heroInformationCircle,
+  heroAcademicCap,
+  heroCalendarDays,
+  heroPencil,
+  heroTrash
 } from '@ng-icons/heroicons/outline';
 
 import { routes } from './app.routes';
@@ -43,7 +47,11 @@ export const appConfig: ApplicationConfig = {
       heroEyeSlash,
       heroExclamationTriangle,
       heroCheckCircle,
-      heroInformationCircle
+      heroInformationCircle,
+      heroAcademicCap,
+      heroCalendarDays,
+      heroPencil,
+      heroTrash
     }),
     {
       provide: HTTP_INTERCEPTORS,

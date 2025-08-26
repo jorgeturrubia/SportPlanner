@@ -1,4 +1,4 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import {
@@ -10,6 +10,7 @@ import {
 } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
 import { AuthService } from '../../services';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-register',
@@ -26,6 +27,46 @@ import { AuthService } from '../../services';
         (ngSubmit)="onSubmit()"
         class="space-y-6"
       >
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label
+              for="firstName"
+              class="block text-sm font-medium text-secondary-700 mb-2"
+            >
+              Nombre
+            </label>
+            <input
+              id="firstName"
+              type="text"
+              formControlName="firstName"
+              class="input-field"
+              placeholder="Tu nombre"
+            />
+            @if (getFieldError('firstName')) {
+              <p class="text-error-500 text-sm mt-1">{{ getFieldError('firstName') }}</p>
+            }
+          </div>
+
+          <div>
+            <label
+              for="lastName"
+              class="block text-sm font-medium text-secondary-700 mb-2"
+            >
+              Apellido
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              formControlName="lastName"
+              class="input-field"
+              placeholder="Tu apellido"
+            />
+            @if (getFieldError('lastName')) {
+              <p class="text-error-500 text-sm mt-1">{{ getFieldError('lastName') }}</p>
+            }
+          </div>
+        </div>
+
         <div>
           <label
             for="email"
@@ -40,11 +81,8 @@ import { AuthService } from '../../services';
             class="input-field"
             placeholder="tu@email.com"
           />
-          @if (registerForm.get('email')?.invalid &&
-          registerForm.get('email')?.touched) {
-          <p class="text-error-500 text-sm mt-1">
-            Por favor ingresa un email válido
-          </p>
+          @if (getFieldError('email')) {
+            <p class="text-error-500 text-sm mt-1">{{ getFieldError('email') }}</p>
           }
         </div>
 
@@ -74,11 +112,8 @@ import { AuthService } from '../../services';
               ></ng-icon>
             </button>
           </div>
-          @if (registerForm.get('password')?.invalid &&
-          registerForm.get('password')?.touched) {
-          <p class="text-error-500 text-sm mt-1">
-            La contraseña debe tener al menos 8 caracteres
-          </p>
+          @if (getFieldError('password')) {
+            <p class="text-error-500 text-sm mt-1">{{ getFieldError('password') }}</p>
           }
         </div>
 
@@ -108,11 +143,8 @@ import { AuthService } from '../../services';
               ></ng-icon>
             </button>
           </div>
-          @if (registerForm.get('confirmPassword')?.invalid &&
-          registerForm.get('confirmPassword')?.touched) {
-          <p class="text-error-500 text-sm mt-1">
-            Las contraseñas no coinciden
-          </p>
+          @if (getFieldError('confirmPassword')) {
+            <p class="text-error-500 text-sm mt-1">{{ getFieldError('confirmPassword') }}</p>
           }
         </div>
 
@@ -133,11 +165,8 @@ import { AuthService } from '../../services';
             >
           </label>
         </div>
-        @if (registerForm.get('acceptTerms')?.invalid &&
-        registerForm.get('acceptTerms')?.touched) {
-        <p class="text-error-500 text-sm mt-1">
-          Debes aceptar los términos y condiciones
-        </p>
+        @if (getFieldError('acceptTerms')) {
+          <p class="text-error-500 text-sm mt-1">{{ getFieldError('acceptTerms') }}</p>
         } @if (errorMessage()) {
         <div
           class="bg-error-50 border border-error-200 text-error-700 px-4 py-3 rounded-lg"
@@ -198,13 +227,16 @@ import { AuthService } from '../../services';
     </div>
   `,
 })
-export class RegisterComponent {
+export class RegisterComponent implements OnDestroy {
   registerForm: FormGroup;
   showPassword = signal(false);
   showConfirmPassword = signal(false);
-  isLoading = signal(false);
-  errorMessage = signal('');
   successMessage = signal('');
+  private destroy$ = new Subject<void>();
+
+  // Auth service signals
+  isLoading: any;
+  errorMessage: any;
 
   constructor(
     private fb: FormBuilder,
@@ -212,6 +244,8 @@ export class RegisterComponent {
   ) {
     this.registerForm = this.fb.group(
       {
+        firstName: ['', [Validators.required, Validators.minLength(2)]],
+        lastName: ['', [Validators.required, Validators.minLength(2)]],
         email: ['', [Validators.required, Validators.email]],
         password: ['', [Validators.required, Validators.minLength(8)]],
         confirmPassword: ['', [Validators.required]],
@@ -219,6 +253,15 @@ export class RegisterComponent {
       },
       { validators: this.passwordMatchValidator }
     );
+
+    // Initialize auth service signals
+    this.isLoading = this.authService.getLoadingState();
+    this.errorMessage = this.authService.getAuthError();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   passwordMatchValidator(
@@ -249,29 +292,79 @@ export class RegisterComponent {
 
   onSubmit(): void {
     if (this.registerForm.valid) {
-      this.isLoading.set(true);
-      this.errorMessage.set('');
-      this.successMessage.set('');
+      this.clearMessages();
+      this.markFormGroupTouched();
 
-      const { email, password } = this.registerForm.value;
+      const { firstName, lastName, email, password } = this.registerForm.value;
       
       this.authService.register({ 
+        firstName,
+        lastName,
         email, 
-        password,
-        firstName: '', // These would come from additional form fields
-        lastName: ''
-      }).subscribe({
+        password
+      })
+      .pipe(takeUntil(this.destroy$))
+      .subscribe({
         next: (response) => {
-          this.isLoading.set(false);
-          this.successMessage.set('Cuenta creada exitosamente');
-          // Navigate to the appropriate route after successful registration
-          this.authService.navigateAfterLogin();
+          this.successMessage.set('¡Cuenta creada exitosamente! Redirigiendo...');
+          // Small delay to show success message before navigation
+          setTimeout(() => {
+            this.authService.navigateAfterLogin();
+          }, 1500);
         },
         error: (error) => {
-          this.isLoading.set(false);
-          this.errorMessage.set(error.message || 'Error al crear la cuenta');
+          // Error is handled by the auth service and displayed via subscription
+          console.error('Registration error:', error);
         }
       });
+    } else {
+      this.markFormGroupTouched();
     }
+  }
+
+  private clearMessages(): void {
+    this.successMessage.set('');
+    this.authService.clearAuthError();
+  }
+
+  private markFormGroupTouched(): void {
+    Object.keys(this.registerForm.controls).forEach(key => {
+      const control = this.registerForm.get(key);
+      control?.markAsTouched();
+    });
+  }
+
+  getFieldError(fieldName: string): string {
+    const field = this.registerForm.get(fieldName);
+    if (field?.errors && field.touched) {
+      if (field.errors['required']) {
+        return `${this.getFieldLabel(fieldName)} es requerido`;
+      }
+      if (field.errors['email']) {
+        return 'Por favor ingresa un email válido';
+      }
+      if (field.errors['minlength']) {
+        return `${this.getFieldLabel(fieldName)} debe tener al menos ${field.errors['minlength'].requiredLength} caracteres`;
+      }
+      if (field.errors['passwordMismatch']) {
+        return 'Las contraseñas no coinciden';
+      }
+      if (field.errors['requiredTrue']) {
+        return 'Debes aceptar los términos y condiciones';
+      }
+    }
+    return '';
+  }
+
+  private getFieldLabel(fieldName: string): string {
+    const labels: { [key: string]: string } = {
+      firstName: 'El nombre',
+      lastName: 'El apellido',
+      email: 'El correo electrónico',
+      password: 'La contraseña',
+      confirmPassword: 'La confirmación de contraseña',
+      acceptTerms: 'Los términos y condiciones'
+    };
+    return labels[fieldName] || fieldName;
   }
 }

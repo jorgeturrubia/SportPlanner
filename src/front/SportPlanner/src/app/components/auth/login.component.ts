@@ -1,9 +1,10 @@
-import { Component, signal } from '@angular/core';
+import { Component, signal, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
 import { AuthService } from '../../services';
+import { Subject, takeUntil } from 'rxjs';
 
 @Component({
   selector: 'app-login',
@@ -25,8 +26,8 @@ import { AuthService } from '../../services';
             class="input-field"
             placeholder="tu@email.com"
           />
-          @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-            <p class="text-error-500 text-sm mt-1">Por favor ingresa un email válido</p>
+          @if (getFieldError('email')) {
+            <p class="text-error-500 text-sm mt-1">{{ getFieldError('email') }}</p>
           }
         </div>
 
@@ -50,8 +51,8 @@ import { AuthService } from '../../services';
               <ng-icon [name]="showPassword() ? 'heroEyeSlash' : 'heroEye'" class="h-5 w-5 text-secondary-400"></ng-icon>
             </button>
           </div>
-          @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-            <p class="text-error-500 text-sm mt-1">La contraseña es requerida</p>
+          @if (getFieldError('password')) {
+            <p class="text-error-500 text-sm mt-1">{{ getFieldError('password') }}</p>
           }
         </div>
 
@@ -77,6 +78,15 @@ import { AuthService } from '../../services';
             <div class="flex items-center">
               <ng-icon name="heroExclamationTriangle" class="h-5 w-5 mr-2"></ng-icon>
               {{ errorMessage() }}
+            </div>
+          </div>
+        }
+
+        @if (successMessage()) {
+          <div class="bg-success-50 border border-success-200 text-success-700 px-4 py-3 rounded-lg">
+            <div class="flex items-center">
+              <ng-icon name="heroCheckCircle" class="h-5 w-5 mr-2"></ng-icon>
+              {{ successMessage() }}
             </div>
           </div>
         }
@@ -112,11 +122,15 @@ import { AuthService } from '../../services';
     </div>
   `
 })
-export class LoginComponent {
+export class LoginComponent implements OnDestroy {
   loginForm: FormGroup;
   showPassword = signal(false);
-  isLoading = signal(false);
-  errorMessage = signal('');
+  successMessage = signal('');
+  private destroy$ = new Subject<void>();
+
+  // Auth service signals
+  isLoading: any;
+  errorMessage: any;
 
   constructor(
     private fb: FormBuilder,
@@ -124,9 +138,18 @@ export class LoginComponent {
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]],
+      password: ['', [Validators.required, Validators.minLength(6)]],
       rememberMe: [false]
     });
+
+    // Initialize auth service signals
+    this.isLoading = this.authService.getLoadingState();
+    this.errorMessage = this.authService.getAuthError();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   togglePassword(): void {
@@ -135,22 +158,64 @@ export class LoginComponent {
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      this.isLoading.set(true);
-      this.errorMessage.set('');
+      this.clearMessages();
+      this.markFormGroupTouched();
       
       const { email, password, rememberMe } = this.loginForm.value;
       
-      this.authService.login({ email, password, rememberMe }).subscribe({
-        next: (response) => {
-          this.isLoading.set(false);
-          // Navigate to the appropriate route after successful login
-          this.authService.navigateAfterLogin();
-        },
-        error: (error) => {
-          this.isLoading.set(false);
-          this.errorMessage.set(error.message || 'Error al iniciar sesión');
-        }
-      });
+      this.authService.login({ email, password, rememberMe })
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: (response) => {
+            this.successMessage.set('¡Inicio de sesión exitoso! Redirigiendo...');
+            // Small delay to show success message before navigation
+            setTimeout(() => {
+              this.authService.navigateAfterLogin();
+            }, 1000);
+          },
+          error: (error) => {
+            // Error is handled by the auth service and displayed via subscription
+            console.error('Login error:', error);
+          }
+        });
+    } else {
+      this.markFormGroupTouched();
     }
+  }
+
+  private clearMessages(): void {
+    this.successMessage.set('');
+    this.authService.clearAuthError();
+  }
+
+  private markFormGroupTouched(): void {
+    Object.keys(this.loginForm.controls).forEach(key => {
+      const control = this.loginForm.get(key);
+      control?.markAsTouched();
+    });
+  }
+
+  getFieldError(fieldName: string): string {
+    const field = this.loginForm.get(fieldName);
+    if (field?.errors && field.touched) {
+      if (field.errors['required']) {
+        return `${this.getFieldLabel(fieldName)} es requerido`;
+      }
+      if (field.errors['email']) {
+        return 'Por favor ingresa un email válido';
+      }
+      if (field.errors['minlength']) {
+        return `${this.getFieldLabel(fieldName)} debe tener al menos ${field.errors['minlength'].requiredLength} caracteres`;
+      }
+    }
+    return '';
+  }
+
+  private getFieldLabel(fieldName: string): string {
+    const labels: { [key: string]: string } = {
+      email: 'El correo electrónico',
+      password: 'La contraseña'
+    };
+    return labels[fieldName] || fieldName;
   }
 }
