@@ -16,77 +16,54 @@ security:
   - BearerAuth: []
 
 paths:
-  # Authentication
-  /auth/login:
-    post:
+  # Authentication (handled by Supabase Auth + SupabaseService)
+  # Note: Authentication is managed client-side through SupabaseService
+  # Backend validates JWT tokens from Supabase Auth
+  
+  /auth/profile:
+    get:
       tags: [Authentication]
-      summary: User login
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                email:
-                  type: string
-                  format: email
-                password:
-                  type: string
-              required: [email, password]
+      summary: Get current user profile
+      description: Returns the authenticated user's profile information
       responses:
         '200':
-          description: Login successful
+          description: User profile retrieved successfully
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AuthResponse'
-
-  /auth/register:
-    post:
-      tags: [Authentication]
-      summary: User registration
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RegisterRequest'
-      responses:
-        '201':
-          description: User registered successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
-
-  /auth/refresh:
-    post:
-      tags: [Authentication]
-      summary: Refresh access token
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                refreshToken:
-                  type: string
-                  description: Valid refresh token
-              required: [refreshToken]
-      responses:
-        '200':
-          description: Token refreshed successfully
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/AuthResponse'
+                $ref: '#/components/schemas/User'
         '401':
-          description: Invalid or expired refresh token
+          description: User not authenticated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    put:
+      tags: [Authentication]
+      summary: Update user profile
+      description: Updates the authenticated user's profile information
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                lastName:
+                  type: string
+              required: [firstName, lastName]
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          description: Invalid input data
           content:
             application/json:
               schema:
@@ -442,34 +419,9 @@ components:
       bearerFormat: JWT
 
   schemas:
-    AuthResponse:
-      type: object
-      properties:
-        user:
-          $ref: '#/components/schemas/User'
-        accessToken:
-          type: string
-          description: JWT access token
-        refreshToken:
-          type: string
-          description: JWT refresh token for token renewal
-        expiresIn:
-          type: integer
-          description: Token expiration time in seconds
-      required: [user, accessToken, refreshToken, expiresIn]
-
-    RegisterRequest:
-      type: object
-      properties:
-        email:
-          type: string
-          format: email
-        password:
-          type: string
-          minLength: 8
-        name:
-          type: string
-      required: [email, password, name]
+    # Note: Authentication schemas handled by Supabase Auth
+    # Frontend uses SupabaseService for login/register/logout
+    # Backend only validates JWT tokens and manages user profiles
 
     User:
       type: object

@@ -31,6 +31,7 @@
     "@angular/ssr": "^20.1.4",
     "@ng-icons/core": "^32.1.0",
     "@ng-icons/heroicons": "^32.1.0",
+    "@supabase/supabase-js": "^2.56.0",
     "@tailwindcss/postcss": "^4.1.12",
     "express": "^5.1.0",
     "postcss": "^8.5.6",

@@ -119,7 +119,7 @@ describe('DeleteConfirmationDialogComponent', () => {
     component.isProcessing.set(true);
     fixture.detectChanges();
     
-    const spinner = fixture.nativeElement.querySelector('.animate-spin');
+    const spinner = fixture.nativeElement.querySelector('.loading-spinner');
     expect(spinner).toBeTruthy();
   });
 
@@ -157,7 +157,7 @@ describe('DeleteConfirmationDialogComponent', () => {
     const confirmButton = fixture.nativeElement.querySelector('button:last-child') as HTMLButtonElement;
     const cancelButton = fixture.nativeElement.querySelector('button:first-child') as HTMLButtonElement;
     
-    expect(confirmButton.classList).toContain('bg-error-600');
-    expect(cancelButton.classList).toContain('bg-white');
+    expect(confirmButton.classList).toContain('btn-delete');
+    expect(cancelButton.classList).toContain('btn-cancel');
   });
 });

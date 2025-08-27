@@ -6,44 +6,45 @@ using System.IdentityModel.Tokens.Jwt;
 
 namespace SportPlanner.Services;
 
-public class SupabaseService : ISupabaseService
+public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbContext context, ILogger<SupabaseService> logger) : ISupabaseService
 {
-    private readonly Supabase.Client _supabaseClient;
-    private readonly SportPlannerDbContext _context;
-    private readonly ILogger<SupabaseService> _logger;
-
-    public SupabaseService(Supabase.Client supabaseClient, SportPlannerDbContext context, ILogger<SupabaseService> logger)
-    {
-        _supabaseClient = supabaseClient;
-        _context = context;
-        _logger = logger;
-    }
+    private readonly Supabase.Client _supabaseClient = supabaseClient;
+    private readonly SportPlannerDbContext _context = context;
+    private readonly ILogger<SupabaseService> _logger = logger;
 
     public async Task<AuthResponse> AuthenticateAsync(string email, string password)
     {
         try
         {
-            var session = await _supabaseClient.Auth.SignIn(email, password);
-            
-            if (session?.User == null)
+            _logger.LogInformation("Attempting authentication for email: {Email}", email);
+
+            var response = await _supabaseClient.Auth.SignInWithPassword(email, password);
+
+            if (response?.User is null)
             {
+                _logger.LogWarning("Authentication failed - no session or user returned for email: {Email}", email);
                 throw new UnauthorizedAccessException("Invalid credentials");
             }
 
-            var user = await GetOrCreateUserAsync(session.User);
-            
+            _logger.LogInformation("Supabase authentication successful for email: {Email}", email);
+
+            var user = await GetOrCreateUserAsync(response.User);
+
+            // Get current session for tokens
+            var session = _supabaseClient.Auth.CurrentSession;
+
             return new AuthResponse
             {
                 User = MapToUserDto(user),
-                AccessToken = session.AccessToken ?? string.Empty,
-                RefreshToken = session.RefreshToken ?? string.Empty,
-                ExpiresIn = (int)session.ExpiresIn
+                AccessToken = session?.AccessToken ?? string.Empty,
+                RefreshToken = session?.RefreshToken ?? string.Empty,
+                ExpiresIn = (int)(session?.ExpiresIn ?? 0)
             };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during authentication for email: {Email}", email);
-            throw new UnauthorizedAccessException("Authentication failed");
+            throw new UnauthorizedAccessException($"Authentication failed: {ex.Message}");
         }
     }
 
@@ -51,27 +52,42 @@ public class SupabaseService : ISupabaseService
     {
         try
         {
-            var session = await _supabaseClient.Auth.SignUp(email, password);
-            
-            if (session?.User == null)
+            _logger.LogInformation("Attempting registration for email: {Email}", email);
+
+            var response = await _supabaseClient.Auth.SignUp(email, password, new Supabase.Gotrue.SignUpOptions
             {
+                Data = new Dictionary<string, object>
+                {
+                    { "first_name", firstName },
+                    { "last_name", lastName }
+                }
+            });
+
+            if (response?.User is null)
+            {
+                _logger.LogWarning("Registration failed - no session or user returned for email: {Email}", email);
                 throw new InvalidOperationException("Registration failed");
             }
 
-            var user = await CreateUserAsync(session.User, firstName, lastName);
-            
+            _logger.LogInformation("Supabase registration successful for email: {Email}", email);
+
+            var user = await CreateUserAsync(response.User, firstName, lastName);
+
+            // Get current session for tokens
+            var session = _supabaseClient.Auth.CurrentSession;
+
             return new AuthResponse
             {
                 User = MapToUserDto(user),
-                AccessToken = session.AccessToken ?? string.Empty,
-                RefreshToken = session.RefreshToken ?? string.Empty,
-                ExpiresIn = (int)session.ExpiresIn
+                AccessToken = session?.AccessToken ?? string.Empty,
+                RefreshToken = session?.RefreshToken ?? string.Empty,
+                ExpiresIn = (int)(session?.ExpiresIn ?? 0)
             };
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error during registration for email: {Email}", email);
-            throw new InvalidOperationException("Registration failed");
+            throw new InvalidOperationException($"Registration failed: {ex.Message}");
         }
     }
 
@@ -81,10 +97,11 @@ public class SupabaseService : ISupabaseService
         {
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadJwtToken(token);
-            
+
             // Check if token is expired
             if (jsonToken.ValidTo < DateTime.UtcNow)
             {
+                _logger.LogWarning("Token is expired");
                 return false;
             }
 
@@ -104,8 +121,8 @@ public class SupabaseService : ISupabaseService
         try
         {
             var supabaseUser = await _supabaseClient.Auth.GetUser(token);
-            
-            if (supabaseUser == null)
+
+            if (supabaseUser is null)
             {
                 throw new UnauthorizedAccessException("Invalid token");
             }
@@ -144,27 +161,30 @@ public class SupabaseService : ISupabaseService
     {
         try
         {
-            var session = await _supabaseClient.Auth.RefreshSession();
-            
-            if (session?.User == null)
+            var response = await _supabaseClient.Auth.RefreshSession();
+
+            if (response?.User is null)
             {
                 throw new UnauthorizedAccessException("Invalid refresh token");
             }
 
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.SupabaseId == session.User.Id);
+                .FirstOrDefaultAsync(u => u.SupabaseId == response.User.Id);
 
             if (user == null)
             {
                 throw new UnauthorizedAccessException("User not found");
             }
 
+            // Get current session for tokens
+            var session = _supabaseClient.Auth.CurrentSession;
+
             return new AuthResponse
             {
                 User = MapToUserDto(user),
-                AccessToken = session.AccessToken ?? string.Empty,
-                RefreshToken = session.RefreshToken ?? string.Empty,
-                ExpiresIn = (int)session.ExpiresIn
+                AccessToken = session?.AccessToken ?? string.Empty,
+                RefreshToken = session?.RefreshToken ?? string.Empty,
+                ExpiresIn = (int)(session?.ExpiresIn ?? 0)
             };
         }
         catch (Exception ex)
@@ -174,7 +194,7 @@ public class SupabaseService : ISupabaseService
         }
     }
 
-    private async Task<Models.User> GetOrCreateUserAsync(Supabase.Gotrue.User supabaseUser)
+    private async Task<User> GetOrCreateUserAsync(Supabase.Gotrue.User supabaseUser)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.SupabaseId == supabaseUser.Id);
@@ -184,16 +204,16 @@ public class SupabaseService : ISupabaseService
             // Extract user metadata from Supabase user
             var firstName = supabaseUser.UserMetadata?.GetValueOrDefault("first_name")?.ToString() ?? string.Empty;
             var lastName = supabaseUser.UserMetadata?.GetValueOrDefault("last_name")?.ToString() ?? string.Empty;
-            
+
             user = await CreateUserAsync(supabaseUser, firstName, lastName);
         }
 
         return user;
     }
 
-    private async Task<Models.User> CreateUserAsync(Supabase.Gotrue.User supabaseUser, string firstName, string lastName)
+    private async Task<User> CreateUserAsync(Supabase.Gotrue.User supabaseUser, string firstName, string lastName)
     {
-        var user = new Models.User
+        var user = new User
         {
             Id = Guid.NewGuid(),
             Email = supabaseUser.Email ?? string.Empty,
@@ -212,7 +232,7 @@ public class SupabaseService : ISupabaseService
         return user;
     }
 
-    private static UserDto MapToUserDto(Models.User user)
+    private static UserDto MapToUserDto(User user)
     {
         return new UserDto
         {

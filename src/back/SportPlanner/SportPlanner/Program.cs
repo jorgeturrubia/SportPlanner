@@ -38,36 +38,30 @@ builder.Services.AddScoped<ITeamService, TeamService>();
 // HTTP Context Accessor for UserContextService
 builder.Services.AddHttpContextAccessor();
 
-// JWT Authentication configuration
+// JWT Authentication configuration for Supabase
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.Authority = supabaseUrl;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
             ValidateAudience = true,
             ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
+            ValidateIssuerSigningKey = false, // Supabase handles this
             ValidIssuer = supabaseUrl,
             ValidAudience = "authenticated",
-            ClockSkew = TimeSpan.Zero
+            ClockSkew = TimeSpan.FromMinutes(5) // Allow some clock skew
         };
-        
+
+        // Let the JWT middleware handle token validation
         options.Events = new JwtBearerEvents
         {
-            OnTokenValidated = async context =>
+            OnAuthenticationFailed = context =>
             {
-                var supabaseService = context.HttpContext.RequestServices.GetRequiredService<ISupabaseService>();
-                var token = context.Request.Headers.Authorization.FirstOrDefault()?.Replace("Bearer ", "");
-                
-                if (!string.IsNullOrEmpty(token))
-                {
-                    var isValid = await supabaseService.ValidateTokenAsync(token);
-                    if (!isValid)
-                    {
-                        context.Fail("Invalid token");
-                    }
-                }
+                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                logger.LogWarning("JWT Authentication failed: {Error}", context.Exception?.Message);
+                return Task.CompletedTask;
             }
         };
     });

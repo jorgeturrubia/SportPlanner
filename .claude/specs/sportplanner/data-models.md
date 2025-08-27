@@ -27,8 +27,8 @@ erDiagram
         string email UK
         string first_name
         string last_name
-        string supabase_id UK
-        int role
+        string supabase_id UK "Supabase Auth user ID"
+        int role "0=Admin, 1=Director, 2=Coach, 3=Member"
         datetime created_at
         datetime updated_at
         boolean is_active
@@ -261,6 +261,13 @@ CREATE INDEX idx_planning_public_rating ON plannings(is_public, rating DESC);
 2. **Validación límites suscripción**: Antes de crear equipos/entrenamientos
 3. **Actualización ratings**: Al recibir nuevas valoraciones
 4. **Audit trail**: Registro de cambios en entidades críticas
+5. **Sincronización Supabase**: Trigger para crear/actualizar usuarios cuando se registran en Supabase Auth
+
+### Integración con Supabase Auth
+- **supabase_id**: Campo que vincula usuarios locales con Supabase Auth
+- **RLS Policies**: Configuradas en Supabase para seguridad a nivel de fila
+- **JWT Validation**: Tokens de Supabase validados en backend .NET
+- **User Sync**: Función para sincronizar usuarios entre Supabase Auth y tabla local
 
 ---
 **Estado**: Modelo completo definido

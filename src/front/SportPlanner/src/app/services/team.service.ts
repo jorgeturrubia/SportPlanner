@@ -6,6 +6,8 @@ import { Team, CreateTeamRequest, UpdateTeamRequest } from '../models/team.model
 import { LoadingService } from './loading.service';
 import { NotificationService } from './notification.service';
 import { ErrorHandlerService } from './error-handler.service';
+import { ErrorBoundaryService } from './error-boundary.service';
+import { RetryService } from './retry.service';
 
 @Injectable({
   providedIn: 'root'
@@ -25,7 +27,9 @@ export class TeamService {
     private http: HttpClient,
     private loadingService: LoadingService,
     private notificationService: NotificationService,
-    private errorHandler: ErrorHandlerService
+    private errorHandler: ErrorHandlerService,
+    private errorBoundary: ErrorBoundaryService,
+    private retryService: RetryService
   ) {}
 
   /**
@@ -45,7 +49,7 @@ export class TeamService {
     this.setLoading(true);
     this.clearError();
 
-    return this.http.get<Team[]>(`${this.apiUrl}/api/teams`)
+    const operation = () => this.http.get<Team[]>(`${this.apiUrl}/api/teams`)
       .pipe(
         tap(teams => {
           // Convert date strings to Date objects
@@ -59,12 +63,20 @@ export class TeamService {
           this.lastFetchTime = now;
           this.teamsSubject.next(processedTeams);
         }),
-        catchError(error => {
-          this.handleError('Error al cargar los equipos', error);
-          return throwError(() => error);
-        }),
         finalize(() => this.setLoading(false))
       );
+
+    return this.errorBoundary.wrapObservable(operation(), {
+      context: 'cargar equipos',
+      retryConfig: {
+        maxRetries: 2,
+        delayMs: 1000,
+        exponentialBackoff: true
+      },
+      onError: (error) => {
+        this.handleError('Error al cargar los equipos', error);
+      }
+    });
   }
 
   /**
@@ -96,7 +108,7 @@ export class TeamService {
     this.setLoading(true);
     this.clearError();
 
-    return this.http.post<Team>(`${this.apiUrl}/api/teams`, teamData)
+    const operation = () => this.http.post<Team>(`${this.apiUrl}/api/teams`, teamData)
       .pipe(
         tap(newTeam => {
           // Convert date strings to Date objects
@@ -106,18 +118,30 @@ export class TeamService {
           // Add to cache and update subject
           this.teamsCache.push(newTeam);
           this.teamsSubject.next([...this.teamsCache]);
-          
-          this.notificationService.showSuccess(
-            'Equipo creado',
-            `El equipo "${newTeam.name}" ha sido creado exitosamente`
-          );
-        }),
-        catchError(error => {
-          this.handleError('Error al crear el equipo', error);
-          return throwError(() => error);
         }),
         finalize(() => this.setLoading(false))
       );
+
+    return this.errorBoundary.wrapObservable(operation(), {
+      context: 'crear equipo',
+      retryConfig: {
+        maxRetries: 1,
+        delayMs: 1000,
+        retryCondition: (error) => {
+          // Don't retry validation errors or conflicts
+          return ![400, 409, 422].includes(error.status);
+        }
+      },
+      onSuccess: (newTeam) => {
+        this.notificationService.showSuccess(
+          'Equipo creado',
+          `El equipo "${newTeam.name}" ha sido creado exitosamente`
+        );
+      },
+      onError: (error) => {
+        this.handleError('Error al crear el equipo', error);
+      }
+    });
   }
 
   /**

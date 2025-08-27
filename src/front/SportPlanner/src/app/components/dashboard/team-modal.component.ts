@@ -7,7 +7,10 @@ import { Subject, takeUntil, finalize } from 'rxjs';
 import { ModalRef } from '../../services/modal.service';
 import { TeamService } from '../../services/team.service';
 import { NotificationService } from '../../services/notification.service';
+import { FormErrorHandlerService } from '../../services/form-error-handler.service';
+import { ErrorBoundaryService } from '../../services/error-boundary.service';
 import { Team, CreateTeamRequest, UpdateTeamRequest, Gender, TeamLevel } from '../../models/team.model';
+import { FormErrorDisplayComponent } from '../shared/form-error-display.component';
 
 export interface TeamModalData {
   team?: Team;
@@ -17,7 +20,7 @@ export interface TeamModalData {
 @Component({
   selector: 'app-team-modal',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, NgIcon],
+  imports: [CommonModule, ReactiveFormsModule, NgIcon, FormErrorDisplayComponent],
   styleUrl: './team-modal.component.css',
   template: `
     <div class="w-full max-w-md mx-auto">
@@ -47,24 +50,14 @@ export interface TeamModalData {
             id="name"
             type="text"
             formControlName="name"
-            class="w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
-            [class.border-error-500]="isFieldInvalid('name')"
+            [class]="formErrorHandler.getFieldClasses(teamForm.get('name'), 'w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2')"
             placeholder="Ingresa el nombre del equipo"
             [disabled]="isSubmitting()"
           />
-          @if (isFieldInvalid('name')) {
-            <p class="mt-1 text-sm text-error-600">
-              @if (teamForm.get('name')?.errors?.['required']) {
-                El nombre del equipo es obligatorio
-              }
-              @if (teamForm.get('name')?.errors?.['minlength']) {
-                El nombre debe tener al menos 2 caracteres
-              }
-              @if (teamForm.get('name')?.errors?.['maxlength']) {
-                El nombre no puede exceder 50 caracteres
-              }
-            </p>
-          }
+          <app-form-error-display
+            [control]="teamForm.get('name')"
+            fieldName="name"
+          />
         </div>
 
         <!-- Sport -->
@@ -75,8 +68,7 @@ export interface TeamModalData {
           <select
             id="sport"
             formControlName="sport"
-            class="w-full px-3 py-2 border border-secondary-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-primary-600 focus:border-primary-600"
-            [class.border-error-500]="isFieldInvalid('sport')"
+            [class]="formErrorHandler.getFieldClasses(teamForm.get('sport'), 'w-full px-3 py-2 border rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2')"
             [disabled]="isSubmitting()"
           >
             <option value="">Selecciona un deporte</option>
@@ -84,11 +76,10 @@ export interface TeamModalData {
               <option [value]="sport.value">{{ sport.label }}</option>
             }
           </select>
-          @if (isFieldInvalid('sport')) {
-            <p class="mt-1 text-sm text-error-600">
-              Debes seleccionar un deporte
-            </p>
-          }
+          <app-form-error-display
+            [control]="teamForm.get('sport')"
+            fieldName="sport"
+          />
         </div>
 
         <!-- Category -->
@@ -221,6 +212,8 @@ export class TeamModalComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly teamService = inject(TeamService);
   private readonly notificationService = inject(NotificationService);
+  readonly formErrorHandler = inject(FormErrorHandlerService);
+  private readonly errorBoundary = inject(ErrorBoundaryService);
 
   // Modal reference and data
   modalRef?: ModalRef<TeamModalComponent>;
@@ -318,13 +311,12 @@ export class TeamModalComponent implements OnInit, OnDestroy {
   }
 
   isFieldInvalid(fieldName: string): boolean {
-    const field = this.teamForm.get(fieldName);
-    return !!(field && field.invalid && (field.dirty || field.touched));
+    return this.formErrorHandler.isFieldInvalid(this.teamForm.get(fieldName));
   }
 
   onSubmit(): void {
     if (this.teamForm.invalid || this.isSubmitting()) {
-      this.markAllFieldsAsTouched();
+      this.formErrorHandler.markAllFieldsAsTouched(this.teamForm);
       return;
     }
 
@@ -340,51 +332,39 @@ export class TeamModalComponent implements OnInit, OnDestroy {
       description: formValue.description?.trim() || undefined
     };
 
-    const operation$ = this.isEditMode() 
+    const operation = () => this.isEditMode() 
       ? this.teamService.updateTeam(this.currentTeam()!.id, teamData as UpdateTeamRequest)
       : this.teamService.createTeam(teamData as CreateTeamRequest);
 
-    operation$
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.isSubmitting.set(false))
-      )
-      .subscribe({
-        next: (team) => {
-          const message = this.isEditMode() 
-            ? `El equipo "${team.name}" ha sido actualizado exitosamente`
-            : `El equipo "${team.name}" ha sido creado exitosamente`;
-          
-          this.notificationService.showSuccess(
-            this.isEditMode() ? 'Equipo actualizado' : 'Equipo creado',
-            message
-          );
-          
-          this.close(team);
-        },
-        error: (error) => {
-          console.error('Error saving team:', error);
-          
-          let errorMessage = 'Ha ocurrido un error inesperado';
-          
-          if (error.status === 409) {
-            errorMessage = 'Ya existe un equipo con ese nombre';
-          } else if (error.status === 400) {
-            errorMessage = error.error?.message || 'Los datos del equipo no son válidos';
-          } else if (error.status === 401) {
-            errorMessage = 'No tienes autorización para realizar esta acción';
-          } else if (error.status === 403) {
-            errorMessage = 'No tienes permisos para realizar esta acción';
-          } else if (error.status >= 500) {
-            errorMessage = 'Error del servidor. Intenta nuevamente más tarde';
-          }
-
-          this.notificationService.showError(
-            this.isEditMode() ? 'Error al actualizar equipo' : 'Error al crear equipo',
-            errorMessage
-          );
+    this.errorBoundary.handleFormSubmission(operation, {
+      form: this.teamForm,
+      context: this.isEditMode() ? 'actualizar equipo' : 'crear equipo',
+      successMessage: this.isEditMode() 
+        ? `El equipo "${teamData.name}" ha sido actualizado exitosamente`
+        : `El equipo "${teamData.name}" ha sido creado exitosamente`,
+      retryConfig: {
+        maxRetries: 1,
+        delayMs: 1000,
+        retryCondition: (error) => {
+          // Don't retry validation errors or conflicts
+          return ![400, 409, 422].includes(error.status);
         }
-      });
+      },
+      onSuccess: (team) => {
+        this.close(team);
+      },
+      onError: (error) => {
+        // Handle form-specific validation errors
+        if (error.status === 422 && error.error?.errors) {
+          this.formErrorHandler.handleServerValidationErrors(this.teamForm, error.error.errors);
+        }
+      }
+    })
+    .pipe(
+      takeUntil(this.destroy$),
+      finalize(() => this.isSubmitting.set(false))
+    )
+    .subscribe();
   }
 
   close(result?: any): void {
@@ -399,12 +379,5 @@ export class TeamModalComponent implements OnInit, OnDestroy {
     }
   }
 
-  private markAllFieldsAsTouched(): void {
-    Object.keys(this.teamForm.controls).forEach(key => {
-      const control = this.teamForm.get(key);
-      if (control) {
-        control.markAsTouched();
-      }
-    });
-  }
+
 }

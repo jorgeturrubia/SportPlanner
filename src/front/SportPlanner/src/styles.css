@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme {
+@theme default {
   /* Color Palette - Verde claro como principal */
   --color-primary-50: oklch(0.97 0.02 142);
   --color-primary-100: oklch(0.94 0.05 142);

@@ -39,7 +39,7 @@ Successfully enhanced the frontend authentication service with comprehensive Sup
 - **Location**: `src/environments/environment.ts`
 - **Status**: Updated with correct backend configuration
 - **Changes**:
-  - Updated apiUrl to match backend (https://localhost:7001)
+  - Updated apiUrl to match backend (https://localhost:7072)
   - Added real Supabase configuration
   - Removed placeholder values
 

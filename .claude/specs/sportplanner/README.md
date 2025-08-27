@@ -57,7 +57,7 @@ graph TB
 
 ## Módulos Principales
 
-1. **Autenticación y Suscripciones**
+1. **✅ Autenticación y Suscripciones** - SupabaseService implementado
 2. **Gestión de Equipos y Organizaciones**
 3. **Planificaciones y Conceptos**
 4. **Entrenamientos y Ejercicios**
@@ -65,13 +65,32 @@ graph TB
 6. **Informes y Analytics**
 7. **Vista Dinámica de Entrenamientos**
 
-## Próximos Documentos
-- `architecture.md` - Diseño detallado del sistema
-- `data-models.md` - Esquemas de base de datos
-- `api-spec.yaml` - Especificación OpenAPI
+## Estado de Implementación
+
+### ✅ Completado
+- **SupabaseService**: Servicio Angular completo para autenticación
+  - Gestión de sesiones con BehaviorSubject
+  - Métodos reactivos (login, registro, logout, reset password)
+  - Integración automática con cambios de estado de Supabase Auth
+  - Utilidades para verificación de autenticación y obtención de tokens
+
+### 🚧 En Progreso
+- Componentes de UI para autenticación (login, registro)
+- Guards de ruta para protección de páginas
+- Interceptor HTTP para tokens automáticos
+
+### 📋 Pendiente
+- Backend .NET con validación JWT
+- Sincronización de usuarios entre Supabase Auth y base de datos local
+- Sistema de suscripciones
+
+## Documentos Disponibles
+- ✅ `data-models.md` - Esquemas de base de datos
+- ✅ `api-spec.yaml` - Especificación OpenAPI
+- ✅ `authentication.md` - Documentación completa de autenticación
 - `ui-components.md` - Componentes de frontend
 - `test-cases.md` - Casos de prueba
 
 ---
-**Estado**: Documento base creado
-**Siguiente**: Definición de modelos de datos
+**Estado**: SupabaseService implementado y documentado
+**Siguiente**: Componentes de UI para autenticación

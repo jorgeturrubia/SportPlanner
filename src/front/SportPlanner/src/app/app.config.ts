@@ -1,4 +1,4 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, ErrorHandler } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptorsFromDi } from '@angular/common/http';
 import { HTTP_INTERCEPTORS } from '@angular/common/http';
@@ -22,12 +22,17 @@ import {
   heroPencil,
   heroTrash,
   heroArrowPath,
-  heroMagnifyingGlass
+  heroMagnifyingGlass,
+  heroLockClosed,
+  heroKey,
+  heroServerStack
 } from '@ng-icons/heroicons/outline';
 
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
 import { AuthInterceptor } from './interceptors';
+import { ErrorInterceptor } from './interceptors/error.interceptor';
+import { GlobalErrorHandlerService } from './services/global-error-handler.service';
 
 export const appConfig: ApplicationConfig = {
   providers: [
@@ -55,11 +60,25 @@ export const appConfig: ApplicationConfig = {
       heroPencil,
       heroTrash,
       heroArrowPath,
-      heroMagnifyingGlass
+      heroMagnifyingGlass,
+      heroLockClosed,
+      heroKey,
+      heroServerStack
     }),
+    // Global error handler
+    {
+      provide: ErrorHandler,
+      useClass: GlobalErrorHandlerService
+    },
+    // HTTP Interceptors
     {
       provide: HTTP_INTERCEPTORS,
       useClass: AuthInterceptor,
+      multi: true
+    },
+    {
+      provide: HTTP_INTERCEPTORS,
+      useClass: ErrorInterceptor,
       multi: true
     }
   ]
