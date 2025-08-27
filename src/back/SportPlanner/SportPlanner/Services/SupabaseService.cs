@@ -194,8 +194,24 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
         }
     }
 
+    public async Task ResetPasswordForEmailAsync(string email)
+    {
+        try
+        {
+            _logger.LogInformation("Attempting password reset for email: {Email}", email);
+            await _supabaseClient.Auth.ResetPasswordForEmail(email);
+            _logger.LogInformation("Password reset email sent to: {Email}", email);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during password reset for email: {Email}", email);
+            throw new InvalidOperationException($"Password reset failed: {ex.Message}");
+        }
+    }
+
     private async Task<User> GetOrCreateUserAsync(Supabase.Gotrue.User supabaseUser)
     {
+
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.SupabaseId == supabaseUser.Id);
 

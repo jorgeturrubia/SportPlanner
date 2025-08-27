@@ -53,7 +53,7 @@ export class SupabaseService {
     return from(this.supabase.auth.signOut());
   }
 
-  resetPassword(email: string): Observable<{ error: any }> {
+  resetPasswordForEmail(email: string): Observable<{ error: any }> {
     return from(this.supabase.auth.resetPasswordForEmail(email));
   }
 

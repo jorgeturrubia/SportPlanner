@@ -34,11 +34,9 @@ public class RegisterRequest
     public string LastName { get; set; } = string.Empty;
 }
 
-public class RefreshTokenRequest
-{
-    [Required]
-    public string RefreshToken { get; set; } = string.Empty;
-}
+public record RefreshTokenRequest([Required] string RefreshToken);
+
+public record ResetPasswordRequest([Required] string Email);
 
 public class AuthResponse
 {

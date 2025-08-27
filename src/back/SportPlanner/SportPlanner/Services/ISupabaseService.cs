@@ -10,4 +10,5 @@ public interface ISupabaseService
     Task<UserDto> GetUserFromTokenAsync(string token);
     Task RevokeTokenAsync(string token);
     Task<AuthResponse> RefreshTokenAsync(string refreshToken);
+    Task ResetPasswordForEmailAsync(string email);
 }

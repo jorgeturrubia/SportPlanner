@@ -167,8 +167,32 @@ public class AuthController : ControllerBase
         }
     }
 
+    [HttpPost("reset-password")]
+    public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordRequest request)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            await _supabaseService.ResetPasswordForEmailAsync(request.Email);
+            
+            _logger.LogInformation("Password reset email sent to {Email}", request.Email);
+            
+            return Ok(new { message = "Password reset email sent" });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error during password reset for email: {Email}", request.Email);
+            return StatusCode(500, new { message = "An error occurred during password reset" });
+        }
+    }
+
     private string? ExtractTokenFromHeader()
     {
+
         var authHeader = Request.Headers.Authorization.FirstOrDefault();
         
         if (string.IsNullOrEmpty(authHeader) || !authHeader.StartsWith("Bearer "))
