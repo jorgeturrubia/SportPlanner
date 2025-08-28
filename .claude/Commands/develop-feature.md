@@ -26,13 +26,13 @@ The coordinator can delegate to these specialized agents:
 - **Handles**: Angular/TypeScript frontend development
 - **Files**: `*.ts`, `*.html`, `*.scss`, `*.spec.ts`
 - **Tasks**: Components, services, routing, forms, testing
-- **Conventions**: Uses conventions-shared.md + conventions-angular.md
+- **Conventions**: Uses Conventions/shared.md + Conventions/angular.md
 
 ### **dotnet-developer** 
 - **Handles**: .NET/C# backend development
 - **Files**: `*.cs`, `*.csproj`, configuration files
 - **Tasks**: APIs, business logic, data access, validation
-- **Conventions**: Uses conventions-shared.md + conventions-dotnet.md
+- **Conventions**: Uses Conventions/shared.md + Conventions/dotnet.md
 
 ### **integration-developer**
 - **Handles**: Cross-technology integration and coordination
@@ -43,7 +43,7 @@ The coordinator can delegate to these specialized agents:
 
 ### Phase 1: Specification Analysis
 1. **Read Complete Specs**: Load requirements.md, design.md, tasks.md
-2. **Context Integration**: Reference all steering files and conventions
+2. **Context Integration**: Reference all steering files and conventions from Conventions/ directory
 3. **Task Inventory**: Analyze all implementation tasks
 4. **Agent Mapping**: Determine which agent handles each task
 

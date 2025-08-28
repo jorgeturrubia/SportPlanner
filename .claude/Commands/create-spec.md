@@ -12,7 +12,7 @@ Use the specs-generator agent to create detailed specifications for a new featur
 
 This command activates the `specs-generator` agent which will:
 
-1. **Read All Steering Context**: Automatically loads product.md, tech.md, structure.md, and all convention files
+1. **Read All Steering Context**: Automatically loads product.md, tech.md, structure.md, and all convention files from Conventions/ directory
 2. **Generate Requirements**: Create detailed user stories with EARS notation
 3. **Design Technical Architecture**: Plan implementation following project conventions
 4. **Create Implementation Tasks**: Break down work into actionable, technology-tagged tasks
@@ -30,7 +30,7 @@ The agent follows a structured 3-phase approach:
 ### Phase 2: Technical Design
 - References technology stack from tech.md
 - Applies architectural patterns from structure.md
-- Incorporates technology-specific conventions
+- Incorporates technology-specific conventions from Conventions/ directory
 - Designs APIs, components, and data models
 
 ### Phase 3: Implementation Planning

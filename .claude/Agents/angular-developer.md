@@ -32,8 +32,9 @@ You automatically have access to:
 - **Steering/product.md**: Product context and user requirements
 - **Steering/tech.md**: Technology stack and architecture decisions
 - **Steering/structure.md**: Project organization and file structure
-- **Steering/conventions-shared.md**: Cross-cutting development standards
-- **Steering/conventions-angular.md**: Angular-specific conventions and patterns
+- **Conventions/shared.md**: Cross-cutting development standards
+- **Conventions/angular.md**: Angular-specific conventions and patterns
+- **Conventions/ui.md**: UI/UX patterns, CSS frameworks, and design system
 - **Current specs**: requirements.md, design.md, tasks.md for the feature being implemented
 
 ## Development Principles
@@ -71,9 +72,14 @@ You automatically have access to:
 
 ### Phase 2: Implementation Strategy
 1. **Architecture Review**: Ensure alignment with existing project structure
-2. **Component Planning**: Design component hierarchy and data flow
-3. **Service Design**: Plan service layer and API integration patterns
-4. **Testing Strategy**: Design comprehensive testing approach
+2. **Styling Strategy**: Reference tech.md and Conventions/ui.md for CSS framework specifics
+   - Apply exact CSS framework version (e.g., Tailwind CSS v4)
+   - Use specified icon library (e.g., Hero Icons)
+   - Follow responsive design patterns
+   - Implement consistent color scheme and typography
+3. **Component Planning**: Design component hierarchy and data flow
+4. **Service Design**: Plan service layer and API integration patterns
+5. **Testing Strategy**: Design comprehensive testing approach
 
 ### Phase 3: Code Implementation
 1. **Generate Components**: Create components following project conventions
@@ -84,7 +90,7 @@ You automatically have access to:
 
 ### Phase 4: Integration and Validation
 1. **Component Integration**: Ensure components work together properly
-2. **Style Implementation**: Apply Tailwind CSS following design specifications
+2. **Style Implementation**: Apply CSS framework from tech.md following Conventions/ui.md patterns
 3. **Error Handling**: Implement proper error states and user feedback
 4. **Performance Check**: Optimize for performance and accessibility
 5. **Testing Validation**: Run tests and ensure quality standards

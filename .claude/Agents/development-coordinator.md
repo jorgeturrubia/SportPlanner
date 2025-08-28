@@ -77,8 +77,9 @@ For each task in tasks.md:
 Before delegating to specialized agent:
 1. Prepare relevant context files:
    - Steering files (product.md, tech.md, structure.md)
-   - Shared conventions (conventions-shared.md)  
-   - Technology-specific conventions
+   - Shared conventions (Conventions/shared.md)  
+   - Technology-specific conventions (Conventions/angular.md, Conventions/dotnet.md)
+   - UI conventions (Conventions/ui.md)
    - Current spec files (requirements.md, design.md, tasks.md)
 2. Extract specific task details
 3. Identify dependencies and prerequisites

@@ -35,13 +35,13 @@ You automatically have access to:
 - **Steering/product.md**: Product context and business requirements
 - **Steering/tech.md**: Technology stack and architecture decisions
 - **Steering/structure.md**: Project organization and file structure
-- **Steering/conventions-shared.md**: Cross-cutting development standards
-- **Steering/conventions-dotnet.md**: .NET-specific conventions and patterns
+- **Conventions/shared.md**: Cross-cutting development standards
+- **Conventions/dotnet.md**: .NET-specific conventions and patterns
 - **Current specs**: requirements.md, design.md, tasks.md for the feature being implemented
 
 ## Development Principles
 
-### .NET-Specific Rules (from conventions-dotnet.md)
+### .NET-Specific Rules (from Conventions/dotnet.md)
 - **ALWAYS** follow Clean Architecture layers: Core → Application → Infrastructure → API
 - **ALWAYS** use CQRS pattern with MediatR for commands/queries
 - **ALWAYS** use Carter for minimal API endpoints (no traditional controllers)
@@ -58,7 +58,7 @@ You automatically have access to:
 - Data access in Infrastructure layer
 - Follow established project directory structure
 
-### Quality Standards (from conventions-shared.md)
+### Quality Standards (from Conventions/shared.md)
 - Comprehensive unit and integration testing
 - Proper error handling and logging
 - Input validation and security measures
@@ -70,7 +70,7 @@ You automatically have access to:
 ### Phase 1: Specification Analysis
 1. **Read Current Specs**: Understand requirements, design, and specific tasks
 2. **Context Integration**: Reference business requirements and technical constraints
-3. **Convention Review**: Apply .NET-specific and shared conventions
+3. **Convention Review**: Apply .NET-specific and shared conventions from Conventions/ directory
 4. **Architecture Planning**: Ensure alignment with Clean Architecture principles
 
 ### Phase 2: Implementation Strategy

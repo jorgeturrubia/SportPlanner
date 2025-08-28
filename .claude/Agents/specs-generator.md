@@ -17,12 +17,13 @@ Transform feature ideas into comprehensive specifications by creating three crit
 
 ## Input Sources
 
-You MUST read and synthesize information from all steering files:
+You MUST read and synthesize information from all steering and convention files:
 - **Steering/product.md**: Product context, users, business objectives
 - **Steering/tech.md**: Technology stack, architecture patterns
 - **Steering/structure.md**: Project organization, file conventions
-- **Steering/conventions-shared.md**: Cross-cutting development standards
-- **Steering/conventions-[tech].md**: Technology-specific conventions (as relevant)
+- **Conventions/shared.md**: Cross-cutting development standards
+- **Conventions/ui.md**: UI/UX patterns, CSS frameworks, design system
+- **Conventions/[tech].md**: Technology-specific conventions (e.g., Conventions/angular.md, Conventions/dotnet.md)
 
 ## Specification Generation Process
 
@@ -69,9 +70,14 @@ THE SYSTEM SHALL [expected behavior]
 
 **Process:**
 1. **Architecture Analysis**: Reference tech.md for patterns and stack
-2. **Component Design**: Define necessary components based on structure.md
-3. **Data Design**: Model entities, APIs, and data flow
-4. **Technology Mapping**: Apply appropriate conventions from conventions files
+2. **Technology Stack Integration**: ALWAYS include specific versions and tools from tech.md
+   - Extract CSS framework details (e.g., "Tailwind CSS v4")
+   - Identify icon libraries (e.g., "Hero Icons")
+   - Note testing frameworks, build tools, and dependencies
+3. **Component Design**: Define necessary components based on structure.md
+4. **Data Design**: Model entities, APIs, and data flow
+5. **Styling Strategy**: Define UI implementation approach using tech stack specifics
+6. **Technology Mapping**: Apply appropriate conventions from conventions files
 
 **Design Template:**
 ```markdown
@@ -81,10 +87,17 @@ THE SYSTEM SHALL [expected behavior]
 [High-level component interaction, following tech.md patterns]
 
 ## Frontend Design
-[Angular/React components, services, routing - following conventions-angular.md]
+[Angular/React components, services, routing - following Conventions/angular.md]
+
+### UI/UX Implementation Strategy
+**CSS Framework**: [Specific framework and version from tech.md - e.g., Tailwind CSS v4]
+**Icons**: [Icon library from tech.md - e.g., Hero Icons]
+**Responsive Design**: [Approach - e.g., Mobile-first with Tailwind breakpoints]
+**Component Styling**: [Patterns - e.g., Utility-first classes with component-specific patterns]
+**Color Scheme**: [Brand/theme guidelines if applicable]
 
 ## Backend Design  
-[.NET APIs, services, controllers - following conventions-dotnet.md]
+[.NET APIs, services, controllers - following Conventions/dotnet.md]
 
 ## Data Models
 [Entities, DTOs, database schema]
@@ -97,6 +110,12 @@ THE SYSTEM SHALL [expected behavior]
 
 ## Technical Decisions
 [Rationale for specific implementation choices]
+
+## Implementation Guidelines
+**Frontend Conventions**: Reference Conventions/angular.md for component patterns
+**Backend Conventions**: Reference Conventions/dotnet.md for API and service patterns
+**Styling Conventions**: Apply specific CSS framework patterns from tech.md
+**Shared Conventions**: Follow Conventions/shared.md for cross-cutting concerns
 ```
 
 ### Phase 3: Implementation Tasks (tasks.md)
@@ -161,9 +180,12 @@ After generating each specification file:
 
 ### Design Quality  
 - **Consistent**: Follows established architecture patterns from tech.md
+- **Technology-Specific**: MUST include specific framework versions, styling tools, and libraries from tech.md
+- **Implementation-Ready**: Contains enough detail for agents to implement without guessing
 - **Detailed**: Sufficient detail for implementation without ambiguity
 - **Modular**: Components follow structure.md organization
 - **Conventional**: Adheres to relevant conventions files
+- **Self-Contained**: Specs should be readable independently while referencing steering context
 
 ### Task Quality
 - **Actionable**: Each task has clear deliverables
