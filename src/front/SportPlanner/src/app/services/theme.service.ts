@@ -26,7 +26,7 @@ export class ThemeService {
 
   private getInitialTheme(): boolean {
     if (!isPlatformBrowser(this.platformId)) {
-      return false; // Default to light mode on server
+      return true; // Default to dark mode on server
     }
     
     // Check localStorage first
@@ -35,8 +35,8 @@ export class ThemeService {
       return savedTheme === 'dark';
     }
     
-    // Fall back to system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+    // Default to dark mode instead of system preference
+    return true;
   }
 
   private applyTheme(isDark: boolean): void {
