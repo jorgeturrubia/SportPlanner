@@ -56,6 +56,13 @@ body {
   font-family: var(--font-sans);
   color: var(--color-secondary-800);
   background-color: var(--color-secondary-50);
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* Dark mode styles */
+.dark body {
+  color: var(--color-secondary-200);
+  background-color: var(--color-secondary-900);
 }
 
 /* Responsive images */

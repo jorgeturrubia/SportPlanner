@@ -1,0 +1,40 @@
+/* Footer component styles */
+footer {
+  margin-top: auto;
+}
+
+/* Smooth transitions for theme changes */
+footer, footer * {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Enhanced link hover effects */
+a {
+  position: relative;
+}
+
+a::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background-color: currentColor;
+  transition: width 0.2s ease;
+}
+
+a:hover::after {
+  width: 100%;
+}
+
+/* Responsive grid adjustments */
+@media (max-width: 768px) {
+  .grid {
+    text-align: center;
+  }
+  
+  .grid > div:first-child {
+    margin-bottom: 2rem;
+  }
+}

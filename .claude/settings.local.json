@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(if [ ! -d \"C:\\ProjectPP\\SportPlanner\\SportPlanner\\Steering\" ])",
+      "Bash(then mkdir \"C:\\ProjectPP\\SportPlanner\\SportPlanner\\Steering\")",
+      "Bash(else echo \"Steering directory already exists\")",
+      "Bash(fi)",
+      "Bash(dotnet build)",
+      "Bash(npm start)",
+      "Bash(curl:*)",
+      "Bash(/dev/null)",
+      "Bash(bg)",
+      "Bash(ng build)",
+      "Bash(pkill:*)",
+      "Bash(ng serve:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
