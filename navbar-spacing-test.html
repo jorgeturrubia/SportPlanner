@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Navbar Spacing Test - Tailwind v4</title>
+    <style>
+        /* Test CSS to verify our spacing approach works */
+        .desktop-nav-links {
+            display: flex !important;
+            align-items: center !important;
+            gap: 3rem !important; /* 48px between nav links */
+            background-color: #f0f0f0;
+            padding: 10px;
+            border: 2px solid #ccc;
+        }
+        
+        .desktop-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 1.5rem !important; /* 24px between theme toggle and login */
+            background-color: #e0e0e0;
+            padding: 10px;
+            border: 2px solid #999;
+        }
+        
+        .mobile-actions {
+            display: flex !important;
+            align-items: center !important;
+            gap: 0.75rem !important; /* 12px between mobile elements */
+            background-color: #d0d0d0;
+            padding: 10px;
+            border: 2px solid #666;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <h1>Navbar Spacing Test - Tailwind v4</h1>
+    
+    <h2>Desktop Navigation Links (48px gaps)</h2>
+    <div class="desktop-nav-links">
+        <button>Características</button>
+        <button>Marketplace</button>
+        <button>Suscripciones</button>
+    </div>
+    
+    <h2>Desktop Actions (24px gap)</h2>
+    <div class="desktop-actions">
+        <button>🌙 Theme Toggle</button>
+        <button>Iniciar Sesión</button>
+    </div>
+    
+    <h2>Mobile Actions (12px gap)</h2>
+    <div class="mobile-actions">
+        <button>🌙</button>
+        <button>☰</button>
+    </div>
+    
+    <h3>Expected Results:</h3>
+    <ul>
+        <li>Desktop nav links should have 48px gaps (3rem)</li>
+        <li>Desktop actions should have 24px gap (1.5rem)</li>
+        <li>Mobile actions should have 12px gap (0.75rem)</li>
+    </ul>
+</body>
+</html>

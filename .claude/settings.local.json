@@ -12,7 +12,10 @@
       "Bash(bg)",
       "Bash(ng build)",
       "Bash(pkill:*)",
-      "Bash(ng serve:*)"
+      "Bash(ng serve:*)",
+      "Bash(npx tailwindcss:*)",
+      "Bash(npx ng build:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

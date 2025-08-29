@@ -1,4 +1,4 @@
-<nav class="bg-white/90 dark:bg-secondary-100/90 backdrop-blur-md shadow-sm sticky top-0 z-50 transition-colors duration-200">
+<nav class="navbar-component bg-white/90 dark:bg-secondary-100/90 backdrop-blur-md shadow-sm sticky top-0 z-50 transition-colors duration-200">
   <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
     <div class="flex justify-between items-center h-16">
       
@@ -6,40 +6,40 @@
       <div class="flex-shrink-0">
         <button 
           (click)="navigateToHome()"
-          class="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-2 py-1"
+          class="text-2xl font-bold text-primary-600 hover:text-primary-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded-lg px-2 py-1 cursor-pointer"
         >
           SportPlanner
         </button>
       </div>
 
       <!-- Desktop Navigation -->
-      <div class="hidden md:flex items-center space-x-8">
+      <div class="hidden md:flex items-center desktop-nav-links">
         <button 
           (click)="scrollToSection('caracteristicas')"
-          class="text-secondary-600 hover:text-primary-600 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded px-2 py-1"
+          class="text-secondary-600 hover:text-primary-600 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded px-3 py-2 cursor-pointer"
         >
           Características
         </button>
         <button 
           (click)="scrollToSection('marketplace')"
-          class="text-secondary-600 hover:text-primary-600 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded px-2 py-1"
+          class="text-secondary-600 hover:text-primary-600 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded px-3 py-2 cursor-pointer"
         >
           Marketplace
         </button>
         <button 
           (click)="scrollToSection('suscripciones')"
-          class="text-secondary-600 hover:text-primary-600 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded px-2 py-1"
+          class="text-secondary-600 hover:text-primary-600 font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 rounded px-3 py-2 cursor-pointer"
         >
           Suscripciones
         </button>
       </div>
 
       <!-- Right Side Actions -->
-      <div class="hidden md:flex items-center space-x-4">
+      <div class="hidden md:flex items-center desktop-actions">
         <!-- Theme Toggle -->
         <button 
           (click)="toggleTheme()"
-          class="p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
           [attr.aria-label]="themeService.isDarkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
         >
           @if (themeService.isDarkMode()) {
@@ -56,18 +56,18 @@
         <!-- Login Button -->
         <button 
           (click)="navigateToAuth()"
-          class="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md"
+          class="bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer"
         >
-          Iniciar Sesión
+          Iniciar Sesión/Registro
         </button>
       </div>
 
       <!-- Mobile Menu Button -->
-      <div class="md:hidden flex items-center space-x-2">
+      <div class="md:hidden flex items-center mobile-actions">
         <!-- Mobile Theme Toggle -->
         <button 
           (click)="toggleTheme()"
-          class="p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
           [attr.aria-label]="themeService.isDarkMode() ? 'Cambiar a modo claro' : 'Cambiar a modo oscuro'"
         >
           @if (themeService.isDarkMode()) {
@@ -84,7 +84,7 @@
         <!-- Hamburger Menu -->
         <button 
           (click)="toggleMenu()"
-          class="p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="p-2 rounded-lg text-secondary-600 hover:text-primary-600 hover:bg-primary-50 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer"
           [attr.aria-expanded]="isMenuOpen()"
           aria-label="Abrir menú"
         >
@@ -99,31 +99,31 @@
 
     <!-- Mobile Menu -->
     @if (isMenuOpen()) {
-      <div class="md:hidden border-t border-secondary-200 py-4 space-y-2">
+      <div class="md:hidden border-t border-secondary-200 py-4">
         <button 
           (click)="scrollToSection('caracteristicas')"
-          class="block w-full text-left px-4 py-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="block w-full text-left px-4 py-3 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer mobile-menu-item"
         >
           Características
         </button>
         <button 
           (click)="scrollToSection('marketplace')"
-          class="block w-full text-left px-4 py-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="block w-full text-left px-4 py-3 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer mobile-menu-item"
         >
           Marketplace
         </button>
         <button 
           (click)="scrollToSection('suscripciones')"
-          class="block w-full text-left px-4 py-2 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          class="block w-full text-left px-4 py-3 text-secondary-600 hover:text-primary-600 hover:bg-primary-50 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 cursor-pointer mobile-menu-item"
         >
           Suscripciones
         </button>
         <div class="px-4 pt-2">
           <button 
             (click)="navigateToAuth()"
-            class="w-full bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200 shadow-sm"
+            class="w-full bg-primary-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-all duration-200 shadow-sm cursor-pointer"
           >
-            Iniciar Sesión
+            Iniciar Sesión/Registro
           </button>
         </div>
       </div>

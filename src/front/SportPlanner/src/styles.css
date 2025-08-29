@@ -1,6 +1,6 @@
 @import "tailwindcss";
 
-@theme default {
+@theme {
   /* Color Palette - Verde claro como principal */
   --color-primary-50: oklch(0.97 0.02 142);
   --color-primary-100: oklch(0.94 0.05 142);
@@ -36,6 +36,16 @@
   --color-error-50: oklch(0.97 0.05 25);
   --color-error-500: oklch(0.65 0.15 25);
   --color-error-600: oklch(0.55 0.13 25);
+
+  /* Ensure spacing utilities are available */
+  --spacing-3: 0.75rem;   /* 12px */
+  --spacing-6: 1.5rem;    /* 24px */
+  --spacing-12: 3rem;     /* 48px */
+  
+  /* Custom navbar spacing utilities */
+  --navbar-nav-gap: 3rem;        /* 48px between desktop nav links */
+  --navbar-action-gap: 1.5rem;   /* 24px between theme toggle and login */
+  --navbar-mobile-gap: 0.75rem;  /* 12px for mobile elements */
 }
 
 /* Base Styles */
@@ -92,4 +102,30 @@ button, [type='button'], [type='reset'], [type='submit'] {
 :focus-visible {
   outline: 2px solid var(--color-primary-600);
   outline-offset: 2px;
+}
+
+/* Custom navbar spacing utilities for Tailwind v4 */
+.navbar-nav-gap {
+  gap: var(--navbar-nav-gap);
+}
+
+.navbar-action-gap {
+  gap: var(--navbar-action-gap);
+}
+
+.navbar-mobile-gap {
+  gap: var(--navbar-mobile-gap);
+}
+
+/* Custom margin utilities for spacing */
+.mr-48px {
+  margin-right: var(--navbar-nav-gap);
+}
+
+.mr-24px {
+  margin-right: var(--navbar-action-gap);
+}
+
+.mr-12px {
+  margin-right: var(--navbar-mobile-gap);
 }
