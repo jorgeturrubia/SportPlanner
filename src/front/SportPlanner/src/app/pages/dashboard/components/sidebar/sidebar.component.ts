@@ -29,6 +29,7 @@ export class SidebarComponent {
 
   readonly currentUser = this.authService.currentUser;
   readonly isAuthenticated = this.authService.isAuthenticated;
+  readonly isCollapsed = signal<boolean>(false);
 
   readonly navigationItems: NavigationItem[] = [
     { path: '/dashboard/home', label: 'Inicio', icon: 'heroHome' },
@@ -67,5 +68,9 @@ export class SidebarComponent {
       this.notificationService.showError('Error al cerrar sesión');
       console.error('Logout error:', error);
     }
+  }
+
+  onToggleSidebar(): void {
+    this.isCollapsed.update(current => !current);
   }
 }

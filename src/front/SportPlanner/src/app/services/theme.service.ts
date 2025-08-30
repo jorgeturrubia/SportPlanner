@@ -10,7 +10,7 @@ export class ThemeService {
   // Signal to track current theme
   isDarkMode = signal<boolean>(this.getInitialTheme());
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor(@Inject(PLATFORM_ID) private platformId: object) {
     // Apply initial theme
     this.applyTheme(this.isDarkMode());
     

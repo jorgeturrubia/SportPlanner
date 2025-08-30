@@ -27,6 +27,7 @@ export interface RegisterRequest {
   password: string;
   firstName: string;
   lastName: string;
+  role?: UserRole;
 }
 
 export interface AuthResponse {

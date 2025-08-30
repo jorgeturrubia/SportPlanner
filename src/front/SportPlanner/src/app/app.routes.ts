@@ -22,7 +22,6 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [authGuard],
-<<<<<<< HEAD
     title: 'SportPlanner - Dashboard',
     children: [
       {
@@ -41,9 +40,6 @@ export const routes: Routes = [
         title: 'SportPlanner - Equipos'
       }
     ]
-=======
-    title: 'SportPlanner - Dashboard'
->>>>>>> 380c1add8e8cf1ce94f85df55d3515c3cb032174
   },
   {
     path: '**',

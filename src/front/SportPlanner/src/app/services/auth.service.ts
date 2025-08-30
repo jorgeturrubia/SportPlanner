@@ -1,13 +1,13 @@
-import { Injectable, inject, signal, computed, effect, PLATFORM_ID, Inject } from '@angular/core';
+import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { Router } from '@angular/router';
 import { createClient, SupabaseClient, User as SupabaseUser, Session } from '@supabase/supabase-js';
-import { BehaviorSubject, Observable, from, throwError, timer, EMPTY } from 'rxjs';
-import { switchMap, catchError, tap, filter, take } from 'rxjs/operators';
+import { BehaviorSubject, Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { User, LoginRequest, RegisterRequest, AuthResponse, UserRole } from '../models/user.model';
 import { NotificationService } from './notification.service';
 
+// Types for stored auth data
 interface StoredAuthData {
   accessToken: string;
   refreshToken: string;
@@ -22,6 +22,7 @@ export class AuthService {
   private readonly supabase: SupabaseClient;
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
+  private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser: boolean;
 
   // Auth state signals
@@ -31,12 +32,10 @@ export class AuthService {
   private readonly _isInitialized = signal<boolean>(false);
 
   // Session management
-  private session: Session | null = null;
-  private refreshTimer?: number;
-  
-  // Storage keys
-  private readonly STORAGE_KEY = 'sportplanner_auth';
-  private readonly REMEMBER_ME_KEY = 'sportplanner_remember_me';
+  private refreshTimer?: ReturnType<typeof setTimeout>;
+  private readonly STORAGE_KEY = 'sportplanner-auth';
+  private readonly REMEMBER_ME_KEY = 'sportplanner-remember-me';
+  private session = new BehaviorSubject<Session | null>(null);
 
   // Public computed signals
   public readonly isAuthenticated = computed(() => this._isAuthenticated());
@@ -45,7 +44,7 @@ export class AuthService {
   public readonly isInitialized = computed(() => this._isInitialized());
   public readonly isGuest = computed(() => !this._isAuthenticated());
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+  constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
     
     // Initialize Supabase client with lock-safe configuration
@@ -53,13 +52,12 @@ export class AuthService {
       auth: {
         autoRefreshToken: false, // Disable auto refresh to prevent lock conflicts
         persistSession: false, // We handle persistence manually
-        detectSessionInUrl: false, // Disable URL session detection to prevent locks
+        detectSessionInUrl: true,
         flowType: 'pkce'
-        // Remove lock property as it's causing TypeScript errors
       }
     });
 
-    // Initialize auth state synchronously
+    // Initialize auth state synchronously first (SSR safe)
     this.initializeAuthStateSync();
 
     // Set up auth state listener (only in browser)
@@ -81,11 +79,14 @@ export class AuthService {
     this._currentUser.set(null);
     this._isLoading.set(true);
     
-    // Mark as initialized for server-side rendering
-    if (!this.isBrowser) {
-      this._isLoading.set(false);
-      this._isInitialized.set(true);
-    }
+    // Mark as initialized once basic setup is done
+    // Actual auth state will be resolved in initializeAuthStateAsync
+    setTimeout(() => {
+      if (!this.isBrowser) {
+        this._isInitialized.set(true);
+        this._isLoading.set(false);
+      }
+    }, 0);
   }
 
   /**
@@ -105,19 +106,26 @@ export class AuthService {
           refresh_token: storedAuth.refreshToken
         });
 
-        if (session && !error) {
-          this.session = session;
-          this._currentUser.set(storedAuth.user);
-          this._isAuthenticated.set(true);
-          this.scheduleTokenRefresh();
+        if (!error && session) {
+          console.log('✅ Restored auth session from storage');
+          this.updateAuthState(session, storedAuth.user);
         } else {
-          // Invalid session, clear stored data
+          console.log('❌ Stored session invalid, clearing auth data');
+          this.clearStoredAuthData();
+          this.updateAuthState(null, null);
+        }
+      } else {
+        // No valid stored session
+        console.log('ℹ️ No valid stored auth session found');
+        if (storedAuth) {
           this.clearStoredAuthData();
         }
+        this.updateAuthState(null, null);
       }
     } catch (error) {
-      console.error('Failed to initialize auth state:', error);
+      console.error('❌ Error initializing auth state:', error);
       this.clearStoredAuthData();
+      this.updateAuthState(null, null);
     } finally {
       this._isLoading.set(false);
       this._isInitialized.set(true);
@@ -125,82 +133,96 @@ export class AuthService {
   }
 
   /**
-   * Set up auth state change listener
+   * Set up auth state listener
    */
   private setupAuthStateListener(): void {
     this.supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('Auth state changed:', event, session);
+      console.log('🔄 Auth state change:', event, session?.user?.email);
       
-      this.session = session;
-      
-      if (session?.user && event === 'SIGNED_IN') {
-        // User signed in
-        try {
-          const user = await this.createUserFromSupabaseUser(session.user);
-          this._currentUser.set(user);
-          this._isAuthenticated.set(true);
-          this.scheduleTokenRefresh();
-        } catch (error) {
-          console.error('Failed to create user from Supabase user:', error);
-          this.handleAuthError('Failed to authenticate user');
-        }
-      } else if (event === 'SIGNED_OUT' || event === 'TOKEN_REFRESHED') {
+      if (session && session.user) {
+        const user = this.mapSupabaseUser(session.user);
+        this.updateAuthState(session, user);
+        this.scheduleTokenRefresh();
+      } else {
+        this.updateAuthState(null, null);
+        this.clearTokenRefresh();
+        
+        // Handle logout/sign out
         if (event === 'SIGNED_OUT') {
-          this._currentUser.set(null);
-          this._isAuthenticated.set(false);
-          this.clearTokenRefresh();
           this.clearStoredAuthData();
-        } else if (event === 'TOKEN_REFRESHED' && session) {
-          // Update stored tokens after refresh
-          const currentUser = this._currentUser();
-          if (currentUser) {
-            this.storeAuthData(session, currentUser);
-            this.scheduleTokenRefresh();
-          }
+          await this.router.navigate(['/auth']);
         }
       }
     });
   }
 
   /**
+   * Update auth state
+   */
+  private updateAuthState(session: Session | null, user: User | null): void {
+    this.session.next(session);
+    this._currentUser.set(user);
+    this._isAuthenticated.set(!!session && !!user);
+    
+    if (!this._isInitialized()) {
+      this._isLoading.set(false);
+      this._isInitialized.set(true);
+    }
+  }
+
+  /**
    * Login with email and password
    */
-  async login(loginData: LoginRequest): Promise<AuthResponse> {
+  async login(credentials: LoginRequest): Promise<AuthResponse> {
     try {
       this._isLoading.set(true);
 
       const { data, error } = await this.supabase.auth.signInWithPassword({
-        email: loginData.email,
-        password: loginData.password
+        email: credentials.email,
+        password: credentials.password,
       });
 
       if (error) {
-        throw new Error(error.message);
+        console.error('Login error:', error);
+        this.notificationService.showError(`Error de inicio de sesión: ${error.message}`);
+        throw error;
       }
 
       if (!data.session || !data.user) {
-        throw new Error('Login failed: No session or user data received');
+        const errorMsg = 'No se recibió sesión válida del servidor';
+        this.notificationService.showError(errorMsg);
+        throw new Error(errorMsg);
       }
 
-      const user = await this.createUserFromSupabaseUser(data.user);
-      
-      // Store auth data based on remember me preference
-      this.storeAuthData(data.session, user, loginData.rememberMe);
+      // Map user data and store auth info
+      const user = this.mapSupabaseUser(data.user);
+      this.storeAuthData(data.session, user, credentials.rememberMe || false);
 
-      const authResponse: AuthResponse = {
+      console.log('✅ Login successful:', user.email);
+      this.notificationService.showSuccess(`¡Bienvenido, ${user.firstName || user.email}!`);
+
+      return {
         user,
         accessToken: data.session.access_token,
         refreshToken: data.session.refresh_token,
         expiresIn: data.session.expires_in || 3600
       };
 
-      this.notificationService.showSuccess('¡Bienvenido! Sesión iniciada correctamente.');
+    } catch (error: unknown) {
+      console.error('Login failed:', error);
       
-      return authResponse;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error al iniciar sesión';
-      this.notificationService.showError(message);
-      throw error;
+      let errorMessage = 'Error desconocido durante el inicio de sesión';
+      if (error instanceof Error) {
+        if (error.message?.includes('Invalid login credentials')) {
+          errorMessage = 'Credenciales incorrectas. Verifica tu email y contraseña.';
+        } else if (error.message?.includes('Email not confirmed')) {
+          errorMessage = 'Por favor confirma tu email antes de iniciar sesión.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      throw new Error(errorMessage);
     } finally {
       this._isLoading.set(false);
     }
@@ -209,54 +231,73 @@ export class AuthService {
   /**
    * Register new user
    */
-  async register(registerData: RegisterRequest): Promise<AuthResponse> {
+  async register(userData: RegisterRequest): Promise<AuthResponse> {
     try {
       this._isLoading.set(true);
 
       const { data, error } = await this.supabase.auth.signUp({
-        email: registerData.email,
-        password: registerData.password,
+        email: userData.email,
+        password: userData.password,
         options: {
           data: {
-            first_name: registerData.firstName,
-            last_name: registerData.lastName
+            first_name: userData.firstName,
+            last_name: userData.lastName,
+            role: UserRole.Coach
           }
         }
       });
 
       if (error) {
-        throw new Error(error.message);
+        console.error('Registration error:', error);
+        this.notificationService.showError(`Error de registro: ${error.message}`);
+        throw error;
       }
 
       if (!data.user) {
-        throw new Error('Registration failed: No user data received');
+        const errorMsg = 'No se pudo crear el usuario';
+        this.notificationService.showError(errorMsg);
+        throw new Error(errorMsg);
       }
 
-      // Check if email confirmation is required
-      if (!data.session) {
-        this.notificationService.showInfo('Por favor, confirma tu email antes de iniciar sesión.');
-        throw new Error('Email confirmation required');
+      const user = this.mapSupabaseUser(data.user);
+
+      // If session exists (email confirmation not required), store auth data
+      if (data.session) {
+        this.storeAuthData(data.session, user, false);
+        console.log('✅ Registration successful with immediate login:', user.email);
+        this.notificationService.showSuccess(`¡Bienvenido, ${user.firstName}! Tu cuenta ha sido creada.`);
+      } else {
+        console.log('✅ Registration successful, confirmation needed:', user.email);
+        this.notificationService.showInfo('Revisa tu email para confirmar tu cuenta antes de iniciar sesión.');
       }
 
-      const user = await this.createUserFromSupabaseUser(data.user);
-      
-      // Auto-login after successful registration
-      this.storeAuthData(data.session, user, false);
+      if (data.session) {
+        return {
+          user,
+          accessToken: data.session.access_token,
+          refreshToken: data.session.refresh_token,
+          expiresIn: data.session.expires_in || 3600
+        };
+      } else {
+        // No session means email confirmation required
+        throw new Error('Registro exitoso. Confirma tu email para continuar.');
+      }
 
-      const authResponse: AuthResponse = {
-        user,
-        accessToken: data.session.access_token,
-        refreshToken: data.session.refresh_token,
-        expiresIn: data.session.expires_in || 3600
-      };
-
-      this.notificationService.showSuccess('¡Cuenta creada exitosamente! Bienvenido a SportPlanner.');
+    } catch (error: unknown) {
+      console.error('Registration failed:', error);
       
-      return authResponse;
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error al crear la cuenta';
-      this.notificationService.showError(message);
-      throw error;
+      let errorMessage = 'Error desconocido durante el registro';
+      if (error instanceof Error) {
+        if (error.message?.includes('User already registered')) {
+          errorMessage = 'Este email ya está registrado. Intenta iniciar sesión.';
+        } else if (error.message?.includes('Password should be')) {
+          errorMessage = 'La contraseña debe tener al menos 6 caracteres.';
+        } else {
+          errorMessage = error.message;
+        }
+      }
+
+      throw new Error(errorMessage);
     } finally {
       this._isLoading.set(false);
     }
@@ -269,106 +310,43 @@ export class AuthService {
     try {
       this._isLoading.set(true);
       
-      // Sign out from Supabase
-      const { error } = await this.supabase.auth.signOut();
-      
-      if (error) {
-        console.error('Supabase logout error:', error);
-      }
-
-      // Clear local state regardless of Supabase response
-      this._currentUser.set(null);
-      this._isAuthenticated.set(false);
-      this.session = null;
-      this.clearTokenRefresh();
+      // Clear local state first
       this.clearStoredAuthData();
-
-      this.notificationService.showInfo('Sesión cerrada correctamente.');
+      this.clearTokenRefresh();
       
-      // Navigate to home page
-      await this.router.navigate(['/']);
+      // Supabase logout
+      await this.supabase.auth.signOut();
+      
+      // Update local state
+      this.updateAuthState(null, null);
+      
+      console.log('✅ Logout successful');
+      this.notificationService.showInfo('Sesión cerrada correctamente');
+      
+      // Navigate to auth page
+      await this.router.navigate(['/auth']);
+      
     } catch (error) {
       console.error('Logout error:', error);
-      // Still clear local state even if there's an error
-      this._currentUser.set(null);
-      this._isAuthenticated.set(false);
-      this.clearStoredAuthData();
+      // Even if Supabase logout fails, clear local state
+      this.updateAuthState(null, null);
+      await this.router.navigate(['/auth']);
     } finally {
       this._isLoading.set(false);
     }
   }
 
   /**
-   * Refresh access token
+   * Map Supabase user to our User model
    */
-  async refreshToken(): Promise<boolean> {
-    try {
-      if (!this.session?.refresh_token) {
-        throw new Error('No refresh token available');
-      }
-
-      const { data, error } = await this.supabase.auth.refreshSession({
-        refresh_token: this.session.refresh_token
-      });
-
-      if (error || !data.session) {
-        throw new Error(error?.message || 'Failed to refresh token');
-      }
-
-      this.session = data.session;
-      const currentUser = this._currentUser();
-      
-      if (currentUser) {
-        this.storeAuthData(data.session, currentUser);
-        this.scheduleTokenRefresh();
-      }
-
-      return true;
-    } catch (error) {
-      console.error('Token refresh failed:', error);
-      // Force logout on refresh failure
-      await this.logout();
-      return false;
-    }
-  }
-
-  /**
-   * Check if user is authenticated (useful for guards)
-   */
-  async checkAuthState(): Promise<boolean> {
-    // Wait for initialization if not completed
-    if (!this._isInitialized()) {
-      await new Promise<void>(resolve => {
-        const unsubscribe = effect(() => {
-          if (this._isInitialized()) {
-            unsubscribe.destroy();
-            resolve();
-          }
-        });
-      });
-    }
-    
-    return this._isAuthenticated();
-  }
-
-  /**
-   * Get current auth token
-   */
-  getAccessToken(): string | null {
-    return this.session?.access_token || null;
-  }
-
-  /**
-   * Create User object from Supabase user
-   */
-  private async createUserFromSupabaseUser(supabaseUser: SupabaseUser): Promise<User> {
+  private mapSupabaseUser(supabaseUser: SupabaseUser): User {
     return {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       firstName: supabaseUser.user_metadata?.['first_name'] || '',
       lastName: supabaseUser.user_metadata?.['last_name'] || '',
       supabaseId: supabaseUser.id,
-      role: UserRole.Coach, // Default role, should be determined by backend
+      role: (supabaseUser.user_metadata?.['role'] as UserRole) || UserRole.Coach,
       createdAt: new Date(supabaseUser.created_at),
       updatedAt: new Date()
     };
@@ -377,7 +355,7 @@ export class AuthService {
   /**
    * Store auth data in local/session storage
    */
-  private storeAuthData(session: Session, user: User, rememberMe: boolean = false): void {
+  private storeAuthData(session: Session, user: User, rememberMe = false): void {
     // Only store auth data in browser environment
     if (!this.isBrowser) {
       return;
@@ -430,16 +408,15 @@ export class AuthService {
 
       const authData: StoredAuthData = JSON.parse(stored);
       
-      // Check if token is expired
-      if (authData.expiresAt <= Date.now()) {
-        this.clearStoredAuthData();
+      // Validate structure
+      if (!authData.accessToken || !authData.refreshToken || !authData.user) {
+        console.warn('Invalid stored auth data structure');
         return null;
       }
 
       return authData;
     } catch (error) {
-      console.error('Failed to parse stored auth data:', error);
-      this.clearStoredAuthData();
+      console.error('Error parsing stored auth data:', error);
       return null;
     }
   }
@@ -479,15 +456,15 @@ export class AuthService {
     
     this.clearTokenRefresh();
 
-    const session = this.session;
-    if (!session?.expires_at) return;
+    const sessionValue = this.session.getValue();
+    if (!sessionValue?.expires_at) return;
 
     // Refresh 5 minutes before expiration
-    const refreshTime = (session.expires_at * 1000) - Date.now() - (5 * 60 * 1000);
+    const refreshTime = (sessionValue.expires_at * 1000) - Date.now() - (5 * 60 * 1000);
     
     if (refreshTime > 0) {
-      this.refreshTimer = window.setTimeout(() => {
-        this.refreshToken();
+      this.refreshTimer = setTimeout(async () => {
+        await this.supabase.auth.refreshSession();
       }, refreshTime);
     }
   }
@@ -508,11 +485,38 @@ export class AuthService {
   }
 
   /**
+   * Check authentication state
+   */
+  async checkAuthState(): Promise<boolean> {
+    // Wait for initialization if still loading
+    if (!this.isInitialized()) {
+      await new Promise<void>((resolve) => {
+        const checkInterval = setInterval(() => {
+          if (this.isInitialized()) {
+            clearInterval(checkInterval);
+            resolve();
+          }
+        }, 50);
+      });
+    }
+
+    return this.isAuthenticated();
+  }
+
+  /**
+   * Get current access token
+   */
+  getAccessToken(): string | null {
+    const sessionValue = this.session.getValue();
+    return sessionValue?.access_token || null;
+  }
+
+  /**
    * Handle authentication errors
    */
-  private handleAuthError(message: string): void {
-    console.error('Auth error:', message);
-    this.notificationService.showError(message);
+  private handleAuthError(error: unknown): void {
+    console.error('Authentication error:', error);
+    this.notificationService.showError('Error de autenticación. Por favor, inicia sesión nuevamente.');
     this.logout();
   }
 
@@ -534,9 +538,10 @@ export class AuthService {
       }
 
       this.notificationService.showSuccess('Se ha enviado un email para restablecer tu contraseña.');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error al enviar email de recuperación';
-      this.notificationService.showError(message);
+    } catch (error: unknown) {
+      console.error('Password reset error:', error);
+      const message = error instanceof Error ? error.message : 'Error desconocido';
+      this.notificationService.showError(`Error: ${message}`);
       throw error;
     }
   }
@@ -555,10 +560,56 @@ export class AuthService {
       }
 
       this.notificationService.showSuccess('Contraseña actualizada correctamente.');
-    } catch (error) {
-      const message = error instanceof Error ? error.message : 'Error al actualizar contraseña';
-      this.notificationService.showError(message);
+    } catch (error: unknown) {
+      console.error('Password update error:', error);
+      const message = error instanceof Error ? error.message : 'Error desconocido';
+      this.notificationService.showError(`Error: ${message}`);
       throw error;
     }
+  }
+
+  /**
+   * Refresh current session
+   */
+  async refreshSession(): Promise<void> {
+    try {
+      const { data, error } = await this.supabase.auth.refreshSession();
+      
+      if (error) throw error;
+      
+      if (data.session && data.user) {
+        const user = this.mapSupabaseUser(data.user);
+        this.updateAuthState(data.session, user);
+        
+        // Update stored auth data
+        const rememberMe = localStorage?.getItem(this.REMEMBER_ME_KEY) === 'true';
+        this.storeAuthData(data.session, user, rememberMe);
+      }
+    } catch (error) {
+      console.error('Session refresh failed:', error);
+      this.handleAuthError(error);
+    }
+  }
+
+  /**
+   * Get current session observable
+   */
+  getSession(): Observable<Session | null> {
+    return this.session.asObservable();
+  }
+
+  /**
+   * Check if user has specific role
+   */
+  hasRole(role: UserRole): boolean {
+    return this.currentUser()?.role === role;
+  }
+
+  /**
+   * Check if user has any of the specified roles
+   */
+  hasAnyRole(roles: UserRole[]): boolean {
+    const userRole = this.currentUser()?.role;
+    return userRole ? roles.includes(userRole) : false;
   }
 }
