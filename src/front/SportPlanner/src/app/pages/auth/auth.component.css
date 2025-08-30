@@ -1,25 +1,43 @@
 /* Auth page animations and effects */
 
-/* Form container animation */
+/* Form container animation with enhanced entrance */
 .auth-container {
-  animation: fadeInUp 0.6s ease-out;
+  animation: fadeInUp 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+/* Enhanced backdrop blur and glassmorphism effects */
+.backdrop-blur-sm {
+  backdrop-filter: blur(8px);
+}
+
+.backdrop-blur-md {
+  backdrop-filter: blur(12px);
 }
 
 /* Tab switching animation */
 .tab-content {
-  animation: fadeIn 0.3s ease-out;
+  animation: tabFadeIn 0.4s ease-out;
 }
 
-/* Input focus effects */
+/* Enhanced input focus effects */
 input:focus {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.15);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(16, 185, 129, 0.2), 0 4px 10px rgba(16, 185, 129, 0.1);
 }
 
-/* Button hover effects */
+/* Input hover effects */
+input:hover:not(:focus) {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: all 0.2s ease;
+}
+
+/* Enhanced button hover effects */
 .btn-primary {
   position: relative;
   overflow: hidden;
+  background-size: 200% 100%;
+  background-position: 0% 50%;
 }
 
 .btn-primary::before {
@@ -29,12 +47,23 @@ input:focus {
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.5s;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1;
 }
 
 .btn-primary:hover::before {
   left: 100%;
+}
+
+.btn-primary:hover {
+  background-position: 100% 50%;
+  box-shadow: 0 10px 30px rgba(16, 185, 129, 0.4), 0 6px 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Button active state */
+.btn-primary:active {
+  transform: scale(0.98) translateY(1px);
 }
 
 /* Loading spinner animation */
@@ -51,9 +80,20 @@ input:focus {
   }
 }
 
-/* Form validation animations */
+/* Enhanced error message animations */
 .error-message {
-  animation: fadeInDown 0.3s ease-out;
+  animation: errorSlideIn 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+@keyframes errorSlideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
 }
 
 .success-message {
@@ -92,14 +132,36 @@ input:focus {
   }
 }
 
-/* Social buttons hover effects */
+@keyframes tabFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Enhanced social buttons hover effects */
 .social-btn {
-  transition: all 0.2s ease;
+  position: relative;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.9), rgba(248, 250, 252, 0.8));
+}
+
+.dark .social-btn {
+  background: linear-gradient(145deg, rgba(30, 41, 59, 0.9), rgba(51, 65, 85, 0.8));
 }
 
 .social-btn:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15), 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.social-btn:active {
+  transform: translateY(-1px) scale(1.01);
+  transition-duration: 0.1s;
 }
 
 /* Password strength indicator */
@@ -139,59 +201,181 @@ button:focus-visible {
   outline: none;
 }
 
-/* Responsive adjustments */
+/* Enhanced tab transition effects */
+.tab-active {
+  transform: scale(1.02);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Enhanced input icon animations */
+.input-icon {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.input-icon:hover {
+  transform: scale(1.15) rotate(5deg);
+  filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.3));
+}
+
+/* Password toggle icon special animation */
+.input-icon[class*="eye"] {
+  transition: all 0.3s ease;
+}
+
+.input-icon[class*="eye"]:hover {
+  transform: scale(1.1);
+  color: rgb(16, 185, 129);
+}
+
+/* Loading state enhancements */
+.form-submitting {
+  pointer-events: none;
+  opacity: 0.7;
+  filter: blur(1px);
+  transition: all 0.3s ease;
+}
+
+/* Enhanced checkbox custom styling */
+input[type="checkbox"] {
+  transition: all 0.2s ease;
+  border-radius: 6px;
+}
+
+input[type="checkbox"]:checked {
+  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
+  background-color: rgb(16, 185, 129);
+  border-color: rgb(16, 185, 129);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+  transform: scale(1.05);
+}
+
+input[type="checkbox"]:hover {
+  border-color: rgb(16, 185, 129);
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+input[type="checkbox"]:focus {
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+/* Enhanced link hover effects */
+.link-hover {
+  position: relative;
+  overflow: hidden;
+}
+
+.link-hover::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgb(16, 185, 129), rgb(34, 197, 94));
+  transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border-radius: 1px;
+}
+
+.link-hover:hover::after {
+  width: 100%;
+}
+
+/* General link styling */
+a {
+  transition: all 0.2s ease;
+}
+
+a:hover {
+  transform: translateY(-1px);
+}
+
+/* Enhanced responsive adjustments */
 @media (max-width: 640px) {
   .auth-container {
-    margin: 1rem;
+    margin: 0.5rem;
+    padding: 1rem;
   }
   
   .form-grid {
     grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  /* Adjust button sizes on mobile */
+  .btn-primary {
+    padding: 0.875rem 1.5rem;
+    font-size: 0.875rem;
+  }
+  
+  /* Social buttons stack on very small screens */
+  @media (max-width: 480px) {
+    .social-btn {
+      padding: 0.75rem 1rem;
+      font-size: 0.8rem;
+    }
   }
 }
 
-/* Tab transition effects */
-.tab-active {
-  transform: scale(1.02);
-  transition: transform 0.2s ease;
-}
-
-/* Input icon animations */
-.input-icon {
-  transition: color 0.2s ease, transform 0.2s ease;
-}
-
-.input-icon:hover {
-  transform: scale(1.1);
-}
-
-/* Form submission states */
-.form-submitting {
-  pointer-events: none;
-  opacity: 0.7;
-}
-
-/* Checkbox custom styling */
-input[type="checkbox"]:checked {
-  background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='m13.854 3.646-7.5 7.5a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6 10.293l7.146-7.147a.5.5 0 0 1 .708.708z'/%3e%3c/svg%3e");
-}
-
-/* Link hover effects */
-a {
+/* Floating label effect */
+.floating-label {
   position: relative;
 }
 
-a::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background-color: currentColor;
-  transition: width 0.2s ease;
+.floating-label input:focus + label,
+.floating-label input:not(:placeholder-shown) + label {
+  transform: translateY(-1.5rem) scale(0.85);
+  color: rgb(16, 185, 129);
 }
 
-a:hover::after {
-  width: 100%;
+.floating-label label {
+  position: absolute;
+  top: 0.75rem;
+  left: 1rem;
+  transition: all 0.2s ease;
+  pointer-events: none;
+  background: white;
+  padding: 0 0.25rem;
+}
+
+/* Gradient text animation */
+@keyframes gradientShift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.gradient-text {
+  background: linear-gradient(270deg, rgb(16, 185, 129), rgb(34, 197, 94), rgb(5, 150, 105));
+  background-size: 200% 200%;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: gradientShift 3s ease infinite;
+}
+
+/* Pulse animation for loading states */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.pulse {
+  animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Glass effect for modern UI elements */
+.glass {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }

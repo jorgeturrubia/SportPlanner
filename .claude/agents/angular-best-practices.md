@@ -55,5 +55,11 @@ When working within the SportPlanner project:
 - Integrate with the existing Supabase authentication flow
 - Maintain consistency with the current service architecture
 - Use the established API communication patterns
+- **REQUIRED**: Implement the notification system for user feedback on actions
+  - Use `NotificationService` (located at `services/notification.service.ts`) for user feedback
+  - Inject with `private notificationService = inject(NotificationService)`
+  - Show appropriate notifications for: form submissions, API calls, errors, success actions
+  - Examples: `showSuccess('Team created!')`, `showError('Failed to save')`, `showWarning('Session expires soon')`
+  - Always consider where user feedback would improve UX when creating new components/features
 
 Always verify you're implementing the most current Angular v20+ patterns and explain your technical decisions. Focus on creating maintainable, performant, and type-safe Angular applications that leverage the full power of modern Angular features.
