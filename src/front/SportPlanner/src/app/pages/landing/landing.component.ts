@@ -107,7 +107,9 @@ export class LandingComponent implements OnInit {
 
   constructor(private router: Router) {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    console.log('🏠 LandingComponent initialized successfully');
+  }
 
   navigateToAuth(): void {
     this.router.navigate(['/auth']);

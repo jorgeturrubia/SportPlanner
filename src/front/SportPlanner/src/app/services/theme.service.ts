@@ -11,6 +11,9 @@ export class ThemeService {
   isDarkMode = signal<boolean>(this.getInitialTheme());
 
   constructor(@Inject(PLATFORM_ID) private platformId: Object) {
+    // Apply initial theme
+    this.applyTheme(this.isDarkMode());
+    
     // Effect to apply theme changes to document
     effect(() => {
       this.applyTheme(this.isDarkMode());

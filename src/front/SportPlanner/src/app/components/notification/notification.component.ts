@@ -1,13 +1,7 @@
 import { Component, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgIconsModule } from '@ng-icons/core';
-import { 
-  heroCheckCircleSolid, 
-  heroExclamationTriangleSolid, 
-  heroInformationCircleSolid, 
-  heroXCircleSolid,
-  heroXMarkSolid 
-} from '@ng-icons/heroicons/solid';
+// Removed solid icon imports temporarily to fix loading issue
 import { NotificationService } from '../../services/notification.service';
 import { Notification, NotificationType } from '../../models/notification.model';
 
@@ -43,7 +37,7 @@ import { Notification, NotificationType } from '../../models/notification.model'
               aria-label="Dismiss notification"
             >
               <ng-icon 
-                name="heroXMarkSolid" 
+                name="heroXMark" 
                 class="text-current"
                 size="16"
               />
@@ -208,10 +202,10 @@ export class NotificationComponent {
 
   protected getIconName(type: NotificationType): string {
     const iconMap = {
-      success: 'heroCheckCircleSolid',
-      error: 'heroXCircleSolid',
-      warning: 'heroExclamationTriangleSolid',
-      info: 'heroInformationCircleSolid'
+      success: 'heroCheckCircle',
+      error: 'heroXMark',
+      warning: 'heroExclamationTriangle',
+      info: 'heroInformationCircle'
     };
     return iconMap[type];
   }

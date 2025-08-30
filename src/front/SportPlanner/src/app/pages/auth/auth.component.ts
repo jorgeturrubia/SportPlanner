@@ -1,10 +1,13 @@
-import { Component, OnInit, OnDestroy, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, signal, inject, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
+import { AuthService } from '../../services/auth.service';
+import { NotificationService } from '../../services/notification.service';
+import { LoginRequest, RegisterRequest } from '../../models/user.model';
 
 @Component({
   selector: 'app-auth',
@@ -16,6 +19,11 @@ import { takeUntil } from 'rxjs/operators';
 })
 export class AuthComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private readonly authService = inject(AuthService);
+  private readonly notificationService = inject(NotificationService);
+  private readonly router = inject(Router);
+  private readonly activatedRoute = inject(ActivatedRoute);
+  private readonly fb = inject(FormBuilder);
   
   currentTab = signal<'login' | 'register'>('login');
   showPassword = signal<boolean>(false);
@@ -24,16 +32,28 @@ export class AuthComponent implements OnInit, OnDestroy {
   
   loginForm: FormGroup;
   registerForm: FormGroup;
+  private redirectUrl = '/dashboard';
 
-  constructor(
-    private fb: FormBuilder,
-    private router: Router
-  ) {
+  constructor() {
     this.loginForm = this.createLoginForm();
     this.registerForm = this.createRegisterForm();
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    // Get redirect URL from query params
+    this.activatedRoute.queryParams
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(params => {
+        if (params['redirectUrl']) {
+          this.redirectUrl = params['redirectUrl'];
+        }
+      });
+
+    // Check if user is already authenticated
+    if (this.authService.isAuthenticated()) {
+      this.router.navigate([this.redirectUrl]);
+    }
+  }
 
   ngOnDestroy(): void {
     this.destroy$.next();
@@ -43,7 +63,8 @@ export class AuthComponent implements OnInit, OnDestroy {
   private createLoginForm(): FormGroup {
     return this.fb.group({
       email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required, Validators.minLength(6)]]
+      password: ['', [Validators.required, Validators.minLength(6)]],
+      rememberMe: [false]
     });
   }
 
@@ -94,37 +115,70 @@ export class AuthComponent implements OnInit, OnDestroy {
     this.showConfirmPassword.update(current => !current);
   }
 
-  onLogin(): void {
+  async onLogin(): Promise<void> {
     if (this.loginForm.valid) {
       this.isLoading.set(true);
       
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Login attempted with:', this.loginForm.value);
+      try {
+        const formValue = this.loginForm.value;
+        const loginRequest: LoginRequest = {
+          email: formValue.email,
+          password: formValue.password,
+          rememberMe: formValue.rememberMe || false
+        };
+
+        const response = await this.authService.login(loginRequest);
+        
+        // Navigate to redirect URL or dashboard
+        await this.router.navigate([this.redirectUrl]);
+        
+      } catch (error) {
+        console.error('Login error:', error);
+        // Error notification is handled by AuthService
+      } finally {
         this.isLoading.set(false);
-        // Here you would integrate with your authentication service
-        // For now, just navigate to a success page or dashboard
-        this.router.navigate(['/dashboard']);
-      }, 1500);
+      }
     } else {
       this.markFormGroupTouched(this.loginForm);
+      this.notificationService.showWarning('Por favor, completa todos los campos requeridos.');
     }
   }
 
-  onRegister(): void {
+  async onRegister(): Promise<void> {
     if (this.registerForm.valid) {
       this.isLoading.set(true);
       
-      // Simulate API call
-      setTimeout(() => {
-        console.log('Registration attempted with:', this.registerForm.value);
+      try {
+        const formValue = this.registerForm.value;
+        const registerRequest: RegisterRequest = {
+          email: formValue.email,
+          password: formValue.password,
+          firstName: formValue.firstName,
+          lastName: formValue.lastName
+        };
+
+        const response = await this.authService.register(registerRequest);
+        
+        // Navigate to redirect URL or dashboard after successful registration
+        await this.router.navigate([this.redirectUrl]);
+        
+      } catch (error) {
+        console.error('Registration error:', error);
+        
+        // Handle specific registration errors
+        const errorMessage = error instanceof Error ? error.message : 'Error al crear la cuenta';
+        
+        if (errorMessage.includes('Email confirmation required')) {
+          // User needs to confirm email, switch to login tab
+          this.switchTab('login');
+        }
+        // Other error notifications are handled by AuthService
+      } finally {
         this.isLoading.set(false);
-        // Here you would integrate with your authentication service
-        // For now, just switch to login tab
-        this.switchTab('login');
-      }, 1500);
+      }
     } else {
       this.markFormGroupTouched(this.registerForm);
+      this.notificationService.showWarning('Por favor, completa todos los campos requeridos.');
     }
   }
 
@@ -152,5 +206,27 @@ export class AuthComponent implements OnInit, OnDestroy {
   hasError(formName: 'login' | 'register', controlName: string, errorType: string): boolean {
     const control = this.getFormControl(formName, controlName);
     return !!(control?.errors?.[errorType] && control?.touched);
+  }
+
+  async onForgotPassword(): Promise<void> {
+    const emailControl = this.loginForm.get('email');
+    
+    if (!emailControl?.value) {
+      this.notificationService.showWarning('Por favor, ingresa tu correo electrónico.');
+      emailControl?.markAsTouched();
+      return;
+    }
+
+    if (emailControl.errors?.['email']) {
+      this.notificationService.showWarning('Por favor, ingresa un correo electrónico válido.');
+      return;
+    }
+
+    try {
+      await this.authService.resetPassword(emailControl.value);
+    } catch (error) {
+      console.error('Password reset error:', error);
+      // Error notification is handled by AuthService
+    }
   }
 }
