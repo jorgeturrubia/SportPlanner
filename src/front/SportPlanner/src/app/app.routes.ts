@@ -22,7 +22,24 @@ export const routes: Routes = [
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
     canActivate: [authGuard],
-    title: 'SportPlanner - Dashboard'
+    title: 'SportPlanner - Dashboard',
+    children: [
+      {
+        path: '',
+        redirectTo: 'home',
+        pathMatch: 'full'
+      },
+      {
+        path: 'home',
+        loadComponent: () => import('./pages/dashboard/pages/home/home.component').then(m => m.DashboardHomeComponent),
+        title: 'SportPlanner - Dashboard'
+      },
+      {
+        path: 'teams',
+        loadComponent: () => import('./pages/dashboard/pages/teams/teams.component').then(m => m.TeamsComponent),
+        title: 'SportPlanner - Equipos'
+      }
+    ]
   },
   {
     path: '**',

@@ -1,0 +1,117 @@
+<div 
+  class="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-all duration-200 cursor-pointer group"
+  (click)="onCardClick($event)"
+>
+  <!-- Card Header -->
+  <div class="flex items-start justify-between p-6 pb-4">
+    <div class="flex items-center space-x-3">
+      <!-- Team Avatar -->
+      <div class="w-12 h-12 bg-gradient-to-br from-green-400 to-green-600 rounded-lg flex items-center justify-center text-white font-bold text-sm shadow-lg">
+        {{ teamInitials() }}
+      </div>
+      
+      <!-- Team Info -->
+      <div class="min-w-0 flex-1">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white truncate group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
+          {{ team.name }}
+        </h3>
+        <p class="text-sm text-gray-600 dark:text-gray-400">
+          {{ team.sport }}
+          @if (team.category) {
+            • {{ team.category }}
+          }
+        </p>
+      </div>
+    </div>
+
+    <!-- Actions Menu -->
+    <div class="relative actions-menu" (click)="$event.stopPropagation()">
+      <button
+        (click)="toggleMenu()"
+        class="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
+        [class.bg-gray-100]="isMenuOpen()"
+        [class.dark:bg-gray-700]="isMenuOpen()"
+      >
+        <ng-icon name="heroChevronDown" class="w-4 h-4 text-gray-500 dark:text-gray-400" />
+      </button>
+
+      <!-- Dropdown Menu -->
+      @if (isMenuOpen()) {
+        <div 
+          class="absolute right-0 mt-2 w-48 bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 py-1 z-10"
+          (click)="$event.stopPropagation()"
+        >
+          <button
+            (click)="onEdit()"
+            class="flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+          >
+            <ng-icon name="heroPencil" class="w-4 h-4 mr-3" />
+            Editar
+          </button>
+          <button
+            (click)="onDelete()"
+            class="flex items-center w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors duration-200"
+          >
+            <ng-icon name="heroTrash" class="w-4 h-4 mr-3" />
+            Eliminar
+          </button>
+        </div>
+      }
+
+      <!-- Backdrop -->
+      @if (isMenuOpen()) {
+        <div 
+          class="fixed inset-0 z-0"
+          (click)="closeMenu()"
+        ></div>
+      }
+    </div>
+  </div>
+
+  <!-- Card Body -->
+  <div class="px-6 pb-4">
+    @if (team.description) {
+      <p class="text-sm text-gray-600 dark:text-gray-400 mb-4 line-clamp-2">
+        {{ team.description }}
+      </p>
+    }
+
+    <!-- Stats -->
+    <div class="flex items-center justify-between">
+      <div class="flex items-center space-x-4">
+        <!-- Players Count -->
+        <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+          <ng-icon name="heroUser" class="w-4 h-4 mr-1" />
+          <span>{{ team.playersCount }} jugadores</span>
+        </div>
+
+        @if (team.season) {
+          <div class="flex items-center text-sm text-gray-600 dark:text-gray-400">
+            <ng-icon name="heroCalendarDays" class="w-4 h-4 mr-1" />
+            <span>{{ team.season }}</span>
+          </div>
+        }
+      </div>
+
+      <!-- Status Badge -->
+      <span [class]="statusColor() + ' px-2 py-1 text-xs font-medium rounded-full'">
+        {{ statusText() }}
+      </span>
+    </div>
+  </div>
+
+  <!-- Card Footer -->
+  <div class="px-6 py-3 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50 rounded-b-xl">
+    <div class="flex items-center justify-between">
+      <span class="text-xs text-gray-500 dark:text-gray-400">
+        Actualizado: {{ formattedDate() }}
+      </span>
+      
+      <div class="flex items-center text-xs text-gray-500 dark:text-gray-400">
+        <span class="group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
+          Ver detalles →
+        </span>
+      </div>
+    </div>
+  </div>
+</div>

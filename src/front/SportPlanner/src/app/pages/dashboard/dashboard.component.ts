@@ -1,44 +1,23 @@
 import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { NgIconComponent } from '@ng-icons/core';
-import { NotificationService } from '../../services/notification.service';
+import { RouterOutlet } from '@angular/router';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
+import { AuthService } from '../../services/auth.service';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, NgIconComponent],
+  imports: [RouterOutlet, SidebarComponent, NavbarComponent],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.css'],
-  changeDetection: ChangeDetectionStrategy.OnPush
+  styleUrl: './dashboard.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'block h-full'
+  }
 })
 export class DashboardComponent {
-  private readonly notificationService = inject(NotificationService);
+  private authService = inject(AuthService);
   
-  constructor(private router: Router) {}
-
-  goHome(): void {
-    this.router.navigate(['/']);
-  }
-
-  // Demo methods to show notification usage
-  showSuccessNotification(): void {
-    this.notificationService.showSuccess('Team created successfully!');
-  }
-
-  showErrorNotification(): void {
-    this.notificationService.showError('Failed to create team. Please try again.');
-  }
-
-  showWarningNotification(): void {
-    this.notificationService.showWarning('Your session will expire in 5 minutes.');
-  }
-
-  showInfoNotification(): void {
-    this.notificationService.showInfo('New feature available: Team analytics dashboard.');
-  }
-
-  showCustomDurationNotification(): void {
-    this.notificationService.showSuccess('This notification will disappear in 10 seconds!', 10000);
-  }
+  readonly currentUser = this.authService.currentUser;
+  readonly isAuthenticated = this.authService.isAuthenticated;
 }
