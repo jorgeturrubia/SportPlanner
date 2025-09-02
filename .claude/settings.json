@@ -1,0 +1,67 @@
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[PreTask] Agente invocado' >> C:\\Proyectos\\ClaudePm\\logs\\agent-activity.log"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[FileModified] Archivo actualizado' >> C:\\Proyectos\\ClaudePm\\logs\\modifications.log"
+          }
+        ]
+      }
+    ],
+    "SubagentStop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[AgentCompleted] Subagente finalizado' >> C:\\Proyectos\\ClaudePm\\logs\\agent-activity.log"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "echo '[SessionEnd] Sesión completada' >> C:\\Proyectos\\ClaudePm\\logs\\session.log"
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Read",
+      "Write",
+      "Edit",
+      "Task",
+      "Bash(echo:*)",
+      "Bash(dir:*)",
+      "Bash(type:*)"
+    ],
+    "deny": [
+      "Bash(rm:*)",
+      "Bash(del:*)",
+      "Read(.env)",
+      "Write(./prod/**)"
+    ]
+  },
+  "env": {
+    "PROJECT_ROOT": "C:\\Proyectos\\ClaudePm",
+    "CLAUDE_PM_VERSION": "1.0.0"
+  }
+}
