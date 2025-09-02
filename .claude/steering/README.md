@@ -1,79 +1,79 @@
-# Documentación Técnica - SportPlanner
+# Technical Documentation - SportPlanner
 
-## Descripción General
+## Overview
 
-SportPlanner es una aplicación full-stack para la gestión integral de equipos deportivos y planificación de entrenamientos. La plataforma está diseñada para entrenadores, clubes deportivos y organizaciones que buscan una solución completa para organizar, planificar y gestionar sus actividades deportivas.
+SportPlanner is a full-stack application for comprehensive sports team management and training planning. The platform is designed for coaches, sports clubs, and organizations seeking a complete solution to organize, plan, and manage their sports activities.
 
-### Stack Tecnológico
+### Technology Stack
 
 - **Backend**: ASP.NET Core 8.0 + Entity Framework Core + PostgreSQL
 - **Frontend**: Angular 20+ + Tailwind CSS v4 + TypeScript
-- **Autenticación**: Supabase JWT
-- **Base de Datos**: PostgreSQL con migraciones automáticas
+- **Authentication**: Supabase JWT
+- **Database**: PostgreSQL with automatic migrations
 - **Deployment**: Docker, Azure, IIS/Nginx
 
-## Índice de Documentación
+## Documentation Index
 
-### 🏗️ [1. Arquitectura del Sistema](./01-system-architecture.md)
-Descripción completa de la arquitectura de la aplicación, patrones implementados y decisiones de diseño.
+### 🏗️ [1. System Architecture](./01-system-architecture.md)
+Complete description of application architecture, implemented patterns, and design decisions.
 
-**Contenido:**
-- Arquitectura de alto nivel
-- Componentes principales (Frontend, Backend, Base de Datos)
-- Patrones de arquitectura utilizados
-- Configuración de seguridad
-- Escalabilidad y performance
+**Content:**
+- High-level architecture
+- Main components (Frontend, Backend, Database)
+- Implemented architecture patterns
+- Security configuration
+- Scalability and performance
 
-### 🗄️ [2. Esquema de Base de Datos](./02-database-schema.md)
-Documentación detallada del esquema de base de datos, entidades y relaciones.
+### 🗄️ [2. Database Schema](./02-database-schema.md)
+Detailed documentation of database schema, entities, and relationships.
 
-**Contenido:**
-- Diagrama ERD completo
-- Descripción de todas las entidades
-- Relaciones y constraints
-- Índices y optimizaciones
-- Estrategia de migraciones
+**Content:**
+- Complete ERD diagram
+- Description of all entities
+- Relationships and constraints
+- Indexes and optimizations
+- Migration strategy
 
-### 🔌 [3. Documentación de API](./03-api-documentation.md)
-Guía completa de todos los endpoints de la API REST con ejemplos.
+### 🔌 [3. API Documentation](./03-api-documentation.md)
+Complete guide of all REST API endpoints with examples.
 
-**Contenido:**
-- Endpoints de autenticación
-- Endpoints de gestión de equipos
-- Endpoints de planificaciones
-- Modelos de datos y DTOs
-- Manejo de errores y códigos HTTP
+**Content:**
+- Authentication endpoints
+- Team management endpoints
+- Planning endpoints
+- Data models and DTOs
+- Error handling and HTTP codes
 
-### 🎨 [4. Arquitectura Frontend](./04-frontend-architecture.md)
-Documentación de la arquitectura del frontend Angular y patrones utilizados.
+### 🎨 [4. Frontend Architecture](./04-frontend-architecture.md)
+Documentation of Angular frontend architecture and patterns used.
 
-**Contenido:**
-- Estructura de componentes standalone
-- Sistema de diseño con Tailwind CSS v4
-- Gestión de estado con Signals
+**Content:**
+- Standalone component structure
+- Design system with Tailwind CSS v4
+- State management with Signals
 - Server-Side Rendering (SSR)
-- Optimizaciones de performance
+- Performance optimizations
 
-### 🛠️ [5. Guía de Desarrollo](./05-development-guide.md)
-Manual completo para configurar el entorno de desarrollo local.
+### 🛠️ [5. Development Guide](./05-development-guide.md)
+Complete manual for setting up local development environment.
 
-**Contenido:**
-- Requisitos del sistema
-- Setup paso a paso
-- Configuración de base de datos
-- Comandos de desarrollo
-- Debugging y testing
-- Herramientas recomendadas
+**Content:**
+- System requirements
+- Step-by-step setup
+- Database configuration
+- Development commands
+- Debugging and testing
+- Recommended tools
 
-### 🚀 [6. Guía de Deployment](./06-deployment-guide.md)
-Instrucciones completas para desplegar la aplicación en diferentes entornos.
+### 🚀 [6. Deployment Guide](./06-deployment-guide.md)
+Complete instructions for deploying the application in different environments.
 
-**Contenido:**
-- Deployment tradicional (IIS/Linux)
+**Content:**
+- Traditional deployment (IIS/Linux)
 - Cloud deployment (Azure/AWS)
-- Containerización con Docker
-- CI/CD con GitHub Actions
-- Monitoreo y logging
+- Containerization with Docker
+- CI/CD with GitHub Actions
+- Monitoring and logging
 
 ## Quick Start
 
@@ -104,43 +104,43 @@ Instrucciones completas para desplegar la aplicación en diferentes entornos.
    ng serve
    ```
 
-### Para DevOps/Deployment
+### For DevOps/Deployment
 
-1. **Revisar guías de deployment**:
-   - [Guía de Deployment](./06-deployment-guide.md) - Para todas las opciones de deployment
+1. **Review deployment guides**:
+   - [Deployment Guide](./06-deployment-guide.md) - For all deployment options
 
-2. **Configurar entorno de producción**:
-   - Seguir checklist de pre-deployment
-   - Configurar variables de entorno
-   - Ejecutar pipeline de CI/CD
+2. **Configure production environment**:
+   - Follow pre-deployment checklist
+   - Configure environment variables
+   - Execute CI/CD pipeline
 
-## Funcionalidades Principales
+## Main Features
 
-### ⚽ Gestión de Equipos
-- Creación y administración de equipos deportivos
-- Categorización por deporte, edad, género y nivel
-- Gestión de miembros y roles
-- Integración con organizaciones
+### ⚽ Team Management
+- Creation and administration of sports teams
+- Categorization by sport, age, gender, and level
+- Member and role management
+- Organization integration
 
-### 📅 Planificación de Entrenamientos
-- Creación de planificaciones temporalizadas
-- Generación automática de sesiones
-- Gestión de conceptos técnicos y ejercicios
-- Sistema de itinerarios reutilizables
+### 📅 Training Planning
+- Creation of time-based plannings
+- Automatic session generation
+- Technical concept and exercise management
+- Reusable itinerary system
 
-### 👥 Sistema de Usuarios
-- Autenticación segura con Supabase
-- Roles diferenciados (Entrenador, Director, Administrator)
-- Sistema de suscripciones (Free, Coach, Club)
-- Gestión de permisos granular
+### 👥 User System
+- Secure authentication with Supabase
+- Differentiated roles (Coach, Director, Administrator)
+- Subscription system (Free, Coach, Club)
+- Granular permission management
 
 ### 🏪 Marketplace
-- Compartir planificaciones públicamente
-- Sistema de calificaciones y comentarios
-- Búsqueda y filtros avanzados
-- Reutilización de contenido de la comunidad
+- Share plannings publicly
+- Rating and comment system
+- Advanced search and filters
+- Community content reusability
 
-## Arquitectura de Alto Nivel
+## High-Level Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────┐
