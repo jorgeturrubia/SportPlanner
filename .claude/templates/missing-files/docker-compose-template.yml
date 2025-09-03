@@ -1,0 +1,213 @@
+version: '3.8'
+
+services:
+  # Database Service
+  {{#DATABASE_POSTGRESQL}}
+  postgres:
+    image: postgres:15-alpine
+    container_name: {{PROJECT_NAME_LOWER}}-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: {{DB_USER}}
+      POSTGRES_PASSWORD: {{DB_PASSWORD}}
+      POSTGRES_DB: {{DB_NAME}}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - {{PROJECT_NAME_LOWER}}-network
+  {{/DATABASE_POSTGRESQL}}
+  
+  {{#DATABASE_SQLSERVER}}
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: {{PROJECT_NAME_LOWER}}-sqlserver
+    restart: unless-stopped
+    environment:
+      SA_PASSWORD: {{DB_PASSWORD}}
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver_data:/var/opt/mssql
+    networks:
+      - {{PROJECT_NAME_LOWER}}-network
+  {{/DATABASE_SQLSERVER}}
+
+  # Backend API Service
+  {{#BACKEND_DOTNET}}
+  api:
+    build:
+      context: ./src/{{BACKEND_FOLDER}}
+      dockerfile: Dockerfile
+    container_name: {{PROJECT_NAME_LOWER}}-api
+    restart: unless-stopped
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      {{#DATABASE_POSTGRESQL}}
+      - ConnectionStrings__DefaultConnection=Host=postgres;Database={{DB_NAME}};Username={{DB_USER}};Password={{DB_PASSWORD}}
+      {{/DATABASE_POSTGRESQL}}
+      {{#DATABASE_SQLSERVER}}
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database={{DB_NAME}};User Id=sa;Password={{DB_PASSWORD}};TrustServerCertificate=true;
+      {{/DATABASE_SQLSERVER}}
+      {{#AUTH_JWT}}
+      - JWT__SecretKey={{JWT_SECRET_KEY}}
+      - JWT__Issuer={{JWT_ISSUER}}
+      - JWT__Audience={{JWT_AUDIENCE}}
+      {{/AUTH_JWT}}
+      {{#AUTH_SUPABASE}}
+      - Supabase__Url={{SUPABASE_URL}}
+      - Supabase__Key={{SUPABASE_KEY}}
+      {{/AUTH_SUPABASE}}
+    ports:
+      - "8080:8080"
+    depends_on:
+      {{#DATABASE_POSTGRESQL}}
+      - postgres
+      {{/DATABASE_POSTGRESQL}}
+      {{#DATABASE_SQLSERVER}}
+      - sqlserver
+      {{/DATABASE_SQLSERVER}}
+    networks:
+      - {{PROJECT_NAME_LOWER}}-network
+    volumes:
+      - ./logs:/app/logs
+  {{/BACKEND_DOTNET}}
+
+  {{#BACKEND_NODE}}
+  api:
+    build:
+      context: ./src/{{BACKEND_FOLDER}}
+      dockerfile: Dockerfile
+    container_name: {{PROJECT_NAME_LOWER}}-api
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - PORT=8080
+      {{#DATABASE_POSTGRESQL}}
+      - DATABASE_URL=postgresql://{{DB_USER}}:{{DB_PASSWORD}}@postgres:5432/{{DB_NAME}}
+      {{/DATABASE_POSTGRESQL}}
+      {{#AUTH_JWT}}
+      - JWT_SECRET={{JWT_SECRET_KEY}}
+      {{/AUTH_JWT}}
+    ports:
+      - "8080:8080"
+    depends_on:
+      {{#DATABASE_POSTGRESQL}}
+      - postgres
+      {{/DATABASE_POSTGRESQL}}
+    networks:
+      - {{PROJECT_NAME_LOWER}}-network
+    volumes:
+      - ./logs:/app/logs
+      - ./src/{{BACKEND_FOLDER}}:/app
+      - /app/node_modules
+  {{/BACKEND_NODE}}
+
+  # Frontend Application
+  {{#FRONTEND_ANGULAR}}
+  frontend:
+    build:
+      context: ./src/{{FRONTEND_FOLDER}}
+      dockerfile: Dockerfile
+      target: development
+    container_name: {{PROJECT_NAME_LOWER}}-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - API_URL=http://localhost:8080
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./src/{{FRONTEND_FOLDER}}:/app
+      - /app/node_modules
+    networks:
+      - {{PROJECT_NAME_LOWER}}-network
+    depends_on:
+      - api
+  {{/FRONTEND_ANGULAR}}
+
+  {{#FRONTEND_REACT}}
+  frontend:
+    build:
+      context: ./src/{{FRONTEND_FOLDER}}
+      dockerfile: Dockerfile
+      target: development
+    container_name: {{PROJECT_NAME_LOWER}}-frontend
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - REACT_APP_API_URL=http://localhost:8080
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./src/{{FRONTEND_FOLDER}}:/app
+      - /app/node_modules
+    networks:
+      - {{PROJECT_NAME_LOWER}}-network
+    depends_on:
+      - api
+  {{/FRONTEND_REACT}}
+
+  # Redis Cache (Optional)
+  {{#CACHE_REDIS}}
+  redis:
+    image: redis:7-alpine
+    container_name: {{PROJECT_NAME_LOWER}}-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass {{REDIS_PASSWORD}}
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - {{PROJECT_NAME_LOWER}}-network
+  {{/CACHE_REDIS}}
+
+  # Nginx Reverse Proxy (Production)
+  {{#PROXY_NGINX}}
+  nginx:
+    image: nginx:alpine
+    container_name: {{PROJECT_NAME_LOWER}}-nginx
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+    depends_on:
+      - api
+      {{#FRONTEND_ANGULAR}}
+      - frontend
+      {{/FRONTEND_ANGULAR}}
+      {{#FRONTEND_REACT}}
+      - frontend
+      {{/FRONTEND_REACT}}
+    networks:
+      - {{PROJECT_NAME_LOWER}}-network
+  {{/PROXY_NGINX}}
+
+volumes:
+  {{#DATABASE_POSTGRESQL}}
+  postgres_data:
+    driver: local
+  {{/DATABASE_POSTGRESQL}}
+  {{#DATABASE_SQLSERVER}}
+  sqlserver_data:
+    driver: local
+  {{/DATABASE_SQLSERVER}}
+  {{#CACHE_REDIS}}
+  redis_data:
+    driver: local
+  {{/CACHE_REDIS}}
+
+networks:
+  {{PROJECT_NAME_LOWER}}-network:
+    driver: bridge
+
+# Development override for live reloading
+# Usage: docker-compose -f docker-compose.yml -f docker-compose.dev.yml up

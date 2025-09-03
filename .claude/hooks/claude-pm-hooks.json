@@ -1,0 +1,83 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/session-start.sh",
+            "description": "ClaudePM: Initialize intelligent project assistance"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Write|Edit|MultiEdit",
+        "hooks": [
+          {
+            "type": "command", 
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-code-change.sh",
+            "description": "ClaudePM: Post-code-change automation and suggestions"
+          }
+        ]
+      },
+      {
+        "matcher": "Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/post-agent-execution.sh",
+            "description": "ClaudePM: Update context after agent execution"
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "analyze.*project|improve.*project|health.*check",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$CLAUDE_PROJECT_DIR/.claude/hooks/pre-analysis.sh",
+            "description": "ClaudePM: Prepare for project analysis"
+          }
+        ]
+      }
+    ]
+  },
+  "claudePMConfig": {
+    "version": "2.0",
+    "enableAutoSuggestions": true,
+    "enableContextTracking": true,
+    "enableSecurityMonitoring": true,
+    "logLevel": "info",
+    "hooks": {
+      "sessionStart": {
+        "enabled": true,
+        "showWelcome": true,
+        "showCapabilities": true,
+        "showSuggestions": true
+      },
+      "postCodeChange": {
+        "enabled": true,
+        "trackConfigChanges": true,
+        "monitorSecurity": true,
+        "suggestActions": true
+      },
+      "agentExecution": {
+        "enabled": true,
+        "updateContext": true,
+        "logActivities": true,
+        "maintainHealthScore": true
+      }
+    }
+  },
+  "_metadata": {
+    "description": "ClaudePM Hooks Configuration for Claude Code",
+    "purpose": "Automate project management workflows and provide intelligent assistance",
+    "installation": "Copy to .claude/hooks/ directory in your project",
+    "usage": "Hooks are automatically triggered by Claude Code events"
+  }
+}
