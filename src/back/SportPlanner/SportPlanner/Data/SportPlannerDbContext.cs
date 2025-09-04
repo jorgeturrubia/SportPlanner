@@ -1,0 +1,350 @@
+using Microsoft.EntityFrameworkCore;
+using SportPlanner.Models;
+
+namespace SportPlanner.Data;
+
+public class SportPlannerDbContext : DbContext
+{
+    public SportPlannerDbContext(DbContextOptions<SportPlannerDbContext> options) : base(options)
+    {
+    }
+
+    // DbSets
+    public DbSet<User> Users { get; set; }
+    public DbSet<Subscription> Subscriptions { get; set; }
+    public DbSet<UserSubscription> UserSubscriptions { get; set; }
+    public DbSet<Organization> Organizations { get; set; }
+    public DbSet<Team> Teams { get; set; }
+    public DbSet<UserTeam> UserTeams { get; set; }
+    public DbSet<Concept> Concepts { get; set; }
+    public DbSet<Exercise> Exercises { get; set; }
+    public DbSet<ExerciseConcept> ExerciseConcepts { get; set; }
+    public DbSet<ExerciseRating> ExerciseRatings { get; set; }
+    public DbSet<Itinerary> Itineraries { get; set; }
+    public DbSet<ItineraryConcept> ItineraryConcepts { get; set; }
+    public DbSet<ItineraryRating> ItineraryRatings { get; set; }
+    public DbSet<Planning> Plannings { get; set; }
+    public DbSet<PlanningTeam> PlanningTeams { get; set; }
+    public DbSet<PlanningConcept> PlanningConcepts { get; set; }
+    public DbSet<PlanningRating> PlanningRatings { get; set; }
+    public DbSet<TrainingSession> TrainingSessions { get; set; }
+    public DbSet<SessionExercise> SessionExercises { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+
+        // Configuración de User
+        modelBuilder.Entity<User>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.SupabaseId).IsUnique();
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.SupabaseId).IsRequired().HasMaxLength(100);
+        });
+
+        // Configuración de Subscription
+        modelBuilder.Entity<Subscription>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Price).HasColumnType("decimal(10,2)");
+        });
+
+        // Configuración de UserSubscription
+        modelBuilder.Entity<UserSubscription>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.User)
+                .WithMany(e => e.Subscriptions)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Subscription)
+                .WithMany(e => e.UserSubscriptions)
+                .HasForeignKey(e => e.SubscriptionId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de Organization
+        modelBuilder.Entity<Organization>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany(e => e.CreatedOrganizations)
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de Team
+        modelBuilder.Entity<Team>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Sport).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Category).IsRequired().HasMaxLength(50);
+            entity.HasOne(e => e.Organization)
+                .WithMany(e => e.Teams)
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de UserTeam
+        modelBuilder.Entity<UserTeam>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.User)
+                .WithMany(e => e.UserTeams)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Team)
+                .WithMany(e => e.UserTeams)
+                .HasForeignKey(e => e.TeamId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.TeamId }).IsUnique();
+        });
+
+        // Configuración de Concept
+        modelBuilder.Entity<Concept>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Category).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Subcategory).IsRequired().HasMaxLength(100);
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuración de Exercise
+        modelBuilder.Entity<Exercise>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.AverageRating).HasColumnType("decimal(3,2)");
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuración de ExerciseConcept (tabla de unión)
+        modelBuilder.Entity<ExerciseConcept>(entity =>
+        {
+            entity.HasKey(e => new { e.ExerciseId, e.ConceptId });
+            entity.HasOne(e => e.Exercise)
+                .WithMany(e => e.ExerciseConcepts)
+                .HasForeignKey(e => e.ExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Concept)
+                .WithMany(e => e.ExerciseConcepts)
+                .HasForeignKey(e => e.ConceptId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuración de ExerciseRating
+        modelBuilder.Entity<ExerciseRating>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Exercise)
+                .WithMany(e => e.Ratings)
+                .HasForeignKey(e => e.ExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.ExerciseId, e.UserId }).IsUnique();
+        });
+
+        // Configuración de Itinerary
+        modelBuilder.Entity<Itinerary>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Sport).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.AverageRating).HasColumnType("decimal(3,2)");
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuración de ItineraryConcept
+        modelBuilder.Entity<ItineraryConcept>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Itinerary)
+                .WithMany(e => e.ItineraryConcepts)
+                .HasForeignKey(e => e.ItineraryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Concept)
+                .WithMany(e => e.ItineraryConcepts)
+                .HasForeignKey(e => e.ConceptId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuración de ItineraryRating
+        modelBuilder.Entity<ItineraryRating>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Itinerary)
+                .WithMany(e => e.Ratings)
+                .HasForeignKey(e => e.ItineraryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.ItineraryId, e.UserId }).IsUnique();
+        });
+
+        // Configuración de Planning
+        modelBuilder.Entity<Planning>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.AverageRating).HasColumnType("decimal(3,2)");
+            entity.HasOne(e => e.Itinerary)
+                .WithMany(e => e.Plannings)
+                .HasForeignKey(e => e.ItineraryId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de PlanningTeam (tabla de unión)
+        modelBuilder.Entity<PlanningTeam>(entity =>
+        {
+            entity.HasKey(e => new { e.PlanningId, e.TeamId });
+            entity.HasOne(e => e.Planning)
+                .WithMany(e => e.PlanningTeams)
+                .HasForeignKey(e => e.PlanningId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Team)
+                .WithMany(e => e.PlanningTeams)
+                .HasForeignKey(e => e.TeamId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuración de PlanningConcept
+        modelBuilder.Entity<PlanningConcept>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Planning)
+                .WithMany(e => e.PlanningConcepts)
+                .HasForeignKey(e => e.PlanningId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Concept)
+                .WithMany(e => e.PlanningConcepts)
+                .HasForeignKey(e => e.ConceptId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuración de PlanningRating
+        modelBuilder.Entity<PlanningRating>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Planning)
+                .WithMany(e => e.Ratings)
+                .HasForeignKey(e => e.PlanningId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.PlanningId, e.UserId }).IsUnique();
+        });
+
+        // Configuración de TrainingSession
+        modelBuilder.Entity<TrainingSession>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.HasOne(e => e.Planning)
+                .WithMany(e => e.TrainingSessions)
+                .HasForeignKey(e => e.PlanningId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de SessionExercise
+        modelBuilder.Entity<SessionExercise>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.Session)
+                .WithMany(e => e.SessionExercises)
+                .HasForeignKey(e => e.SessionId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Exercise)
+                .WithMany(e => e.SessionExercises)
+                .HasForeignKey(e => e.ExerciseId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Datos iniciales de suscripciones
+        SeedData(modelBuilder);
+    }
+
+    private static void SeedData(ModelBuilder modelBuilder)
+    {
+        // Suscripciones por defecto
+        modelBuilder.Entity<Subscription>().HasData(
+            new Subscription
+            {
+                Id = 1,
+                Name = "Gratuita",
+                Type = SubscriptionType.Free,
+                Price = 0,
+                Description = "Plan gratuito con funcionalidades básicas",
+                MaxTeams = 1,
+                MaxTrainingSessions = 15,
+                CanCreateCustomConcepts = false,
+                CanCreateItineraries = false,
+                HasDirectorMode = false,
+                IsActive = true
+            },
+            new Subscription
+            {
+                Id = 2,
+                Name = "Entrenador",
+                Type = SubscriptionType.Coach,
+                Price = 29.99m,
+                Description = "Plan para entrenadores individuales",
+                MaxTeams = 5,
+                MaxTrainingSessions = -1, // Ilimitado
+                CanCreateCustomConcepts = true,
+                CanCreateItineraries = true,
+                HasDirectorMode = false,
+                IsActive = true
+            },
+            new Subscription
+            {
+                Id = 3,
+                Name = "Club",
+                Type = SubscriptionType.Club,
+                Price = 99.99m,
+                Description = "Plan completo para clubes y organizaciones",
+                MaxTeams = -1, // Ilimitado
+                MaxTrainingSessions = -1, // Ilimitado
+                CanCreateCustomConcepts = true,
+                CanCreateItineraries = true,
+                HasDirectorMode = true,
+                IsActive = true
+            }
+        );
+    }
+}

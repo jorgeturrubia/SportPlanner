@@ -1,0 +1,24 @@
+### Test Authentication Middleware and Services
+
+### Test 1: Access protected endpoint without token (should return 401)
+GET https://localhost:7072/api/teams
+Accept: application/json
+
+### Test 2: Access protected endpoint with invalid token (should return 401)
+GET https://localhost:7072/api/teams
+Authorization: Bearer invalid-token-here
+Accept: application/json
+
+### Test 3: Test security headers on any endpoint
+GET https://localhost:7072/api/teams
+Accept: application/json
+
+### Test 4: Test global exception handling with invalid endpoint
+GET https://localhost:7072/api/nonexistent
+Accept: application/json
+
+### Test 5: Test CORS preflight request
+OPTIONS https://localhost:7072/api/teams
+Origin: http://localhost:4200
+Access-Control-Request-Method: GET
+Access-Control-Request-Headers: Authorization, Content-Type

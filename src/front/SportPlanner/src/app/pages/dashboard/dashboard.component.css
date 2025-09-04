@@ -1,0 +1,37 @@
+/* Dashboard layout styles */
+:host {
+  display: block;
+  height: 100vh;
+  overflow: hidden;
+}
+
+/* Ensure smooth transitions */
+* {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Custom scrollbar for main content */
+main::-webkit-scrollbar {
+  width: 8px;
+}
+
+main::-webkit-scrollbar-track {
+  background-color: #f5f5f5;
+}
+
+.dark main::-webkit-scrollbar-track {
+  background-color: #1f2937;
+}
+
+main::-webkit-scrollbar-thumb {
+  background-color: #9ca3af;
+  border-radius: 9999px;
+}
+
+.dark main::-webkit-scrollbar-thumb {
+  background-color: #4b5563;
+}
+
+main::-webkit-scrollbar-thumb:hover {
+  background-color: #6b7280;
+}

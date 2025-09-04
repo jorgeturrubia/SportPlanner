@@ -1,0 +1,101 @@
+/* Navbar Component Styles - Tailwind v4 Compatible */
+
+/* Enhanced backdrop filter */
+nav {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+/* Smooth transitions for theme changes */
+nav, nav * {
+  transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+
+/* Enhanced focus states */
+button:focus-visible {
+  outline: none;
+}
+
+/* Desktop Navigation Spacing - Clean approach using CSS Grid and Flexbox */
+@media (min-width: 768px) {
+  /* Desktop navigation links container */
+  .desktop-nav-links {
+    display: flex !important;
+    align-items: center !important;
+    gap: 3rem !important; /* 48px between nav links */
+  }
+  
+  /* Desktop actions container */
+  .desktop-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1.5rem !important; /* 24px between theme toggle and login */
+  }
+}
+
+/* Mobile Menu Spacing */
+@media (max-width: 767px) {
+  /* Mobile actions container */
+  .mobile-actions {
+    display: flex !important;
+    align-items: center !important;
+    gap: 0.75rem !important; /* 12px between mobile elements */
+  }
+  
+  /* Mobile menu items vertical spacing */
+  .mobile-menu-item {
+    margin-bottom: 0.75rem !important; /* 12px vertical spacing */
+  }
+  
+  .mobile-menu-item:last-child {
+    margin-bottom: 0 !important;
+  }
+}
+
+/* Fallback margin utilities for browsers that don't support gap well */
+.nav-link-48px {
+  margin-right: 3rem !important;
+}
+
+.nav-link-48px:last-child {
+  margin-right: 0 !important;
+}
+
+.action-24px {
+  margin-right: 1.5rem !important;
+}
+
+.action-24px:last-child {
+  margin-right: 0 !important;
+}
+
+.mobile-12px {
+  margin-right: 0.75rem !important;
+}
+
+.mobile-12px:last-child {
+  margin-right: 0 !important;
+}
+
+/* Mobile menu animations */
+.mobile-menu-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.mobile-menu-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-exit {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.mobile-menu-exit-active {
+  opacity: 0;
+  transform: translateY(-10px);
+  transition: all 0.2s ease;
+}
