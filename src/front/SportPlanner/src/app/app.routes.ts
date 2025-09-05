@@ -48,6 +48,11 @@ export const routes: Routes = [
         path: 'exercises',
         loadComponent: () => import('./pages/dashboard/pages/exercises/exercises.component').then(m => m.ExercisesComponent),
         title: 'SportPlanner - Ejercicios'
+      },
+      {
+        path: 'plannings',
+        loadComponent: () => import('./pages/dashboard/pages/plannings/plannings').then(m => m.Plannings),
+        title: 'SportPlanner - Planificaciones'
       }
     ]
   },

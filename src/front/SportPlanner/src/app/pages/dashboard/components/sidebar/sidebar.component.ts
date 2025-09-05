@@ -35,7 +35,8 @@ export class SidebarComponent {
     { path: '/dashboard/home', label: 'Inicio', icon: 'heroHome' },
     { path: '/dashboard/teams', label: 'Equipos', icon: 'heroUsers' },
     { path: '/dashboard/objectives', label: 'Objetivos', icon: 'heroTarget' },
-    { path: '/dashboard/exercises', label: 'Ejercicios', icon: 'heroAcademicCap' }
+    { path: '/dashboard/exercises', label: 'Ejercicios', icon: 'heroAcademicCap' },
+    { path: '/dashboard/plannings', label: 'Planificaciones', icon: 'heroCalendarDays' }
   ];
 
   readonly userInitials = computed(() => {

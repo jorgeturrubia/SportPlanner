@@ -76,7 +76,7 @@
   } @else if (filteredPlannings().length === 0) {
     <div class="bg-card rounded-xl shadow-sm p-12 text-center border border-border">
       <ng-icon name="heroCalendarDays" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
-      @if (searchQuery() || Object.keys(activeFilters()).length > 0) {
+      @if (searchQuery() || hasActiveFilters()) {
         <h3 class="text-lg font-medium text-foreground mb-2">
           No se encontraron planificaciones
         </h3>
@@ -222,51 +222,14 @@
     </div>
   }
 
-  <!-- Planning Modal (placeholder - will be implemented) -->
+  <!-- Planning Modal -->
   @if (isModalOpen()) {
-    <div class="fixed inset-0 z-50 overflow-y-auto">
-      <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <!-- Background overlay -->
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="onModalClose()"></div>
-
-        <!-- Modal panel -->
-        <div class="inline-block align-bottom bg-card rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
-          <div class="flex items-center justify-between mb-4">
-            <h3 class="text-lg font-medium text-foreground">
-              {{ modalMode() === 'create' ? 'Nueva Planificación' : 'Editar Planificación' }}
-            </h3>
-            <button
-              (click)="onModalClose()"
-              class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1 cursor-pointer"
-            >
-              <ng-icon name="heroXMark" class="w-5 h-5" />
-            </button>
-          </div>
-          
-          <!-- Modal Content Placeholder -->
-          <div class="py-8 text-center text-muted-foreground">
-            <ng-icon name="heroWrenchScrewdriver" class="w-12 h-12 mx-auto mb-4 text-gray-400" />
-            <p>Formulario de planificación en desarrollo...</p>
-            <p class="text-sm mt-2">Se implementará el componente modal completo.</p>
-          </div>
-          
-          <!-- Modal Actions -->
-          <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-border">
-            <button
-              (click)="onModalClose()"
-              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
-            >
-              Cancelar
-            </button>
-            <button
-              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
-              disabled
-            >
-              {{ modalMode() === 'create' ? 'Crear' : 'Guardar' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <app-planning-modal
+      [isOpen]="isModalOpen()"
+      [planning]="selectedPlanning()"
+      (closeModal)="onModalClose()"
+      (planningCreated)="onPlanningCreated($event)"
+      (planningUpdated)="onPlanningUpdated($event)"
+    />
   }
 </div>

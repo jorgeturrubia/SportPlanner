@@ -1,14 +1,15 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
 import { DatePipe } from '@angular/common';
-import { PlanningsService } from '../../services/plannings.service';
-import { NotificationService } from '../../services/notification.service';
-import { Planning, CreatePlanningRequest, PlanningFilters, PlanningType, PlanningStatus } from '../../models/planning.model';
+import { PlanningsService } from '../../../../services/plannings.service';
+import { NotificationService } from '../../../../services/notification.service';
+import { Planning, PlanningFilters, PlanningType, PlanningStatus } from '../../../../models/planning.model';
+import { PlanningModalComponent } from './components/planning-modal/planning-modal.component';
 
 @Component({
   selector: 'app-plannings',
   standalone: true,
-  imports: [NgIcon, DatePipe],
+  imports: [NgIcon, DatePipe, PlanningModalComponent],
   templateUrl: './plannings.html',
   styleUrl: './plannings.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -57,6 +58,8 @@ export class Plannings implements OnInit {
     this.filteredPlannings().filter(planning => planning.status === PlanningStatus.Active).length
   );
 
+  readonly hasActiveFilters = computed(() => Object.keys(this.activeFilters()).length > 0);
+
   ngOnInit(): void {
     this.loadPlannings();
   }
@@ -95,7 +98,12 @@ export class Plannings implements OnInit {
     this.selectedPlanning.set(null);
   }
 
-  onPlanningSaved(savedPlanning: Planning): void {
+  onPlanningCreated(_planning: Planning): void {
+    this.onModalClose();
+    // Plannings list is automatically updated via signals
+  }
+
+  onPlanningUpdated(_planning: Planning): void {
     this.onModalClose();
     // Plannings list is automatically updated via signals
   }

@@ -41,6 +41,9 @@ builder.Services.AddScoped<IObjectiveService, ObjectiveService>();
 // Custom Exercise services
 builder.Services.AddScoped<ICustomExerciseService, CustomExerciseService>();
 
+// Planning services
+builder.Services.AddScoped<IPlanningService, PlanningService>();
+
 // HTTP Context Accessor for UserContextService
 builder.Services.AddHttpContextAccessor();
 

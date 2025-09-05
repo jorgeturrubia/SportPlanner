@@ -50,7 +50,6 @@ public class Team
     public Organization? Organization { get; set; }
     public User CreatedBy { get; set; } = null!;
     public ICollection<UserTeam> UserTeams { get; set; } = new List<UserTeam>();
-    public ICollection<PlanningTeam> PlanningTeams { get; set; } = new List<PlanningTeam>();
 }
 
 public enum UserRole

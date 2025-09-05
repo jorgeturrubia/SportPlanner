@@ -24,7 +24,6 @@ public class SportPlannerDbContext : DbContext
     public DbSet<ItineraryConcept> ItineraryConcepts { get; set; }
     public DbSet<ItineraryRating> ItineraryRatings { get; set; }
     public DbSet<Planning> Plannings { get; set; }
-    public DbSet<PlanningTeam> PlanningTeams { get; set; }
     public DbSet<PlanningConcept> PlanningConcepts { get; set; }
     public DbSet<PlanningRating> PlanningRatings { get; set; }
     public DbSet<TrainingSession> TrainingSessions { get; set; }
@@ -213,31 +212,54 @@ public class SportPlannerDbContext : DbContext
         modelBuilder.Entity<Planning>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.AverageRating).HasColumnType("decimal(3,2)");
-            entity.HasOne(e => e.Itinerary)
-                .WithMany(e => e.Plannings)
-                .HasForeignKey(e => e.ItineraryId)
-                .OnDelete(DeleteBehavior.SetNull);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            
+            // Configure enum properties
+            entity.Property(e => e.Type)
+                .HasConversion<int>()
+                .IsRequired();
+            
+            entity.Property(e => e.Status)
+                .HasConversion<int>()
+                .IsRequired();
+            
+            // Configure TrainingDays as JSON
+            entity.Property(e => e.TrainingDays)
+                .HasConversion(
+                    v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => System.Text.Json.JsonSerializer.Deserialize<List<Models.DayOfWeek>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<Models.DayOfWeek>()
+                );
+            
+            // Configure Tags as JSON
+            entity.Property(e => e.Tags)
+                .HasConversion(
+                    v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                    v => System.Text.Json.JsonSerializer.Deserialize<List<string>>(v, (System.Text.Json.JsonSerializerOptions?)null) ?? new List<string>()
+                );
+            
+            // Foreign key relationships
             entity.HasOne(e => e.CreatedBy)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+                
+            entity.HasOne(e => e.Team)
+                .WithMany()
+                .HasForeignKey(e => e.TeamId)
+                .OnDelete(DeleteBehavior.SetNull);
+                
+            // Indexes for performance
+            entity.HasIndex(e => e.CreatedByUserId);
+            entity.HasIndex(e => e.TeamId);
+            entity.HasIndex(e => e.Type);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.IsPublic);
+            entity.HasIndex(e => e.StartDate);
+            entity.HasIndex(e => e.EndDate);
         });
 
-        // Configuración de PlanningTeam (tabla de unión)
-        modelBuilder.Entity<PlanningTeam>(entity =>
-        {
-            entity.HasKey(e => new { e.PlanningId, e.TeamId });
-            entity.HasOne(e => e.Planning)
-                .WithMany(e => e.PlanningTeams)
-                .HasForeignKey(e => e.PlanningId)
-                .OnDelete(DeleteBehavior.Cascade);
-            entity.HasOne(e => e.Team)
-                .WithMany(e => e.PlanningTeams)
-                .HasForeignKey(e => e.TeamId)
-                .OnDelete(DeleteBehavior.Cascade);
-        });
 
         // Configuración de PlanningConcept
         modelBuilder.Entity<PlanningConcept>(entity =>

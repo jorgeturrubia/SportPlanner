@@ -1,213 +1,291 @@
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using SportPlanner.Data;
 using SportPlanner.Models;
-using System.Text.Json;
+using SportPlanner.Models.DTOs;
+using SportPlanner.Services;
+using System.Security.Claims;
 
 namespace SportPlanner.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class PlanningsController : ControllerBase
 {
-    private readonly SportPlannerDbContext _context;
+    private readonly IPlanningService _planningService;
+    private readonly ILogger<PlanningsController> _logger;
 
-    public PlanningsController(SportPlannerDbContext context)
+    public PlanningsController(IPlanningService planningService, ILogger<PlanningsController> logger)
     {
-        _context = context;
+        _planningService = planningService;
+        _logger = logger;
     }
 
     // GET: api/plannings
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<Planning>>> GetPlannings()
+    public async Task<ActionResult<IEnumerable<PlanningDto>>> GetPlannings()
     {
-        return await _context.Plannings
-            .Include(p => p.Itinerary)
-            .Include(p => p.CreatedBy)
-            .Include(p => p.PlanningTeams)
-            .ThenInclude(pt => pt.Team)
-            .Where(p => p.IsActive && p.IsVisible)
-            .ToListAsync();
+        try
+        {
+            var userId = GetCurrentUserId();
+            var plannings = await _planningService.GetUserPlanningsAsync(userId);
+            return Ok(plannings);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting plannings for user");
+            return StatusCode(500, "An error occurred while retrieving plannings");
+        }
+    }
+
+    // GET: api/plannings/filtered
+    [HttpGet("filtered")]
+    public async Task<ActionResult<IEnumerable<PlanningDto>>> GetFilteredPlannings([FromQuery] PlanningFilterDto filter)
+    {
+        try
+        {
+            var userId = GetCurrentUserId();
+            var plannings = await _planningService.GetFilteredPlanningsAsync(userId, filter);
+            return Ok(plannings);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting filtered plannings for user");
+            return StatusCode(500, "An error occurred while retrieving filtered plannings");
+        }
     }
 
     // GET: api/plannings/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<Planning>> GetPlanning(Guid id)
+    public async Task<ActionResult<PlanningDto>> GetPlanning(string id)
     {
-        var planning = await _context.Plannings
-            .Include(p => p.Itinerary)
-            .Include(p => p.CreatedBy)
-            .Include(p => p.PlanningTeams)
-            .ThenInclude(pt => pt.Team)
-            .Include(p => p.PlanningConcepts)
-            .ThenInclude(pc => pc.Concept)
-            .Include(p => p.TrainingSessions)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        if (planning == null)
+        try
         {
-            return NotFound();
-        }
+            var userId = GetCurrentUserId();
+            var planning = await _planningService.GetPlanningAsync(id, userId);
 
-        return planning;
+            if (planning == null)
+            {
+                return NotFound($"Planning with ID {id} not found or access denied");
+            }
+
+            return Ok(planning);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting planning {PlanningId}", id);
+            return StatusCode(500, "An error occurred while retrieving the planning");
+        }
     }
 
     // POST: api/plannings
     [HttpPost]
-    public async Task<ActionResult<Planning>> CreatePlanning(CreatePlanningRequest request)
+    public async Task<ActionResult<PlanningDto>> CreatePlanning(CreatePlanningRequest request)
     {
-        var planning = new Planning
+        try
         {
-            Id = Guid.NewGuid(),
-            Name = request.Name,
-            Description = request.Description,
-            StartDate = request.StartDate,
-            EndDate = request.EndDate,
-            TrainingDays = JsonSerializer.Serialize(request.TrainingDays),
-            StartTime = request.StartTime,
-            EndTime = request.EndTime,
-            IsFullCourt = request.IsFullCourt,
-            ItineraryId = request.ItineraryId,
-            CreatedByUserId = request.CreatedByUserId,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow
-        };
-
-        _context.Plannings.Add(planning);
-
-        // Si se especificaron equipos, crear las relaciones
-        if (request.TeamIds?.Any() == true)
-        {
-            foreach (var teamId in request.TeamIds)
+            if (!ModelState.IsValid)
             {
-                _context.PlanningTeams.Add(new PlanningTeam
-                {
-                    PlanningId = planning.Id,
-                    TeamId = teamId,
-                    AssignedAt = DateTime.UtcNow
-                });
-            }
-        }
-
-        await _context.SaveChangesAsync();
-
-        return CreatedAtAction(nameof(GetPlanning), new { id = planning.Id }, planning);
-    }
-
-    // POST: api/plannings/5/generate-sessions
-    [HttpPost("{id}/generate-sessions")]
-    public async Task<ActionResult> GenerateTrainingSessions(Guid id)
-    {
-        var planning = await _context.Plannings
-            .Include(p => p.TrainingSessions)
-            .FirstOrDefaultAsync(p => p.Id == id);
-
-        if (planning == null)
-        {
-            return NotFound();
-        }
-
-        // Deserializar los días de entrenamiento
-        var trainingDays = JsonSerializer.Deserialize<int[]>(planning.TrainingDays) ?? Array.Empty<int>();
-
-        // Generar sesiones automáticamente
-        var sessions = new List<TrainingSession>();
-        var currentDate = planning.StartDate;
-
-        while (currentDate <= planning.EndDate)
-        {
-            // Verificar si el día actual está en los días de entrenamiento
-            var dayOfWeek = (int)currentDate.DayOfWeek;
-            if (dayOfWeek == 0) dayOfWeek = 7; // Convertir domingo de 0 a 7
-
-            if (trainingDays.Contains(dayOfWeek))
-            {
-                var session = new TrainingSession
-                {
-                    Id = Guid.NewGuid(),
-                    Name = $"Entrenamiento {currentDate:dd/MM/yyyy}",
-                    Description = $"Sesión de entrenamiento generada automáticamente",
-                    ScheduledDate = currentDate,
-                    StartTime = planning.StartTime,
-                    EndTime = planning.EndTime,
-                    Location = "",
-                    Status = SessionStatus.Planned,
-                    PlanningId = planning.Id,
-                    CreatedByUserId = planning.CreatedByUserId,
-                    CreatedAt = DateTime.UtcNow,
-                    UpdatedAt = DateTime.UtcNow
-                };
-
-                sessions.Add(session);
+                return BadRequest(ModelState);
             }
 
-            currentDate = currentDate.AddDays(1);
+            // Validate date range
+            if (request.EndDate <= request.StartDate)
+            {
+                return BadRequest("End date must be after start date");
+            }
+
+            // Validate training days
+            if (request.TrainingDays == null || !request.TrainingDays.Any())
+            {
+                return BadRequest("At least one training day must be specified");
+            }
+
+            var userId = GetCurrentUserId();
+            var planning = await _planningService.CreatePlanningAsync(request, userId);
+
+            return CreatedAtAction(nameof(GetPlanning), new { id = planning.Id }, planning);
         }
-
-        _context.TrainingSessions.AddRange(sessions);
-        await _context.SaveChangesAsync();
-
-        return Ok(new { Message = $"Se generaron {sessions.Count} sesiones de entrenamiento", SessionsCount = sessions.Count });
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error creating planning");
+            return StatusCode(500, "An error occurred while creating the planning");
+        }
     }
 
-    // GET: api/plannings/marketplace
-    [HttpGet("marketplace")]
-    public async Task<ActionResult<IEnumerable<Planning>>> GetMarketplacePlannings(
-        [FromQuery] string? sport = null,
-        [FromQuery] string? category = null,
-        [FromQuery] TeamLevel? level = null,
-        [FromQuery] int page = 1,
-        [FromQuery] int pageSize = 10)
+    // PUT: api/plannings/5
+    [HttpPut("{id}")]
+    public async Task<ActionResult<PlanningDto>> UpdatePlanning(string id, UpdatePlanningRequest request)
     {
-        var query = _context.Plannings
-            .Include(p => p.CreatedBy)
-            .Include(p => p.Itinerary)
-            .Where(p => p.IsPublic && p.IsActive);
-
-        if (!string.IsNullOrEmpty(sport))
+        try
         {
-            // Filtrar por deporte a través de los equipos asociados
-            query = query.Where(p => p.PlanningTeams.Any(pt => pt.Team.Sport == sport));
-        }
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
 
-        if (!string.IsNullOrEmpty(category))
+            // Validate date range
+            if (request.EndDate <= request.StartDate)
+            {
+                return BadRequest("End date must be after start date");
+            }
+
+            // Validate training days
+            if (request.TrainingDays == null || !request.TrainingDays.Any())
+            {
+                return BadRequest("At least one training day must be specified");
+            }
+
+            var userId = GetCurrentUserId();
+            var planning = await _planningService.UpdatePlanningAsync(id, request, userId);
+
+            return Ok(planning);
+        }
+        catch (KeyNotFoundException)
         {
-            query = query.Where(p => p.PlanningTeams.Any(pt => pt.Team.Category == category));
+            return NotFound($"Planning with ID {id} not found");
         }
-
-        if (level.HasValue)
+        catch (UnauthorizedAccessException ex)
         {
-            query = query.Where(p => p.PlanningTeams.Any(pt => pt.Team.Level == level));
+            return Forbid(ex.Message);
         }
-
-        var plannings = await query
-            .OrderByDescending(p => p.AverageRating)
-            .ThenByDescending(p => p.CreatedAt)
-            .Skip((page - 1) * pageSize)
-            .Take(pageSize)
-            .ToListAsync();
-
-        return plannings;
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating planning {PlanningId}", id);
+            return StatusCode(500, "An error occurred while updating the planning");
+        }
     }
 
-    private bool PlanningExists(Guid id)
+    // DELETE: api/plannings/5
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeletePlanning(string id)
     {
-        return _context.Plannings.Any(e => e.Id == id);
+        try
+        {
+            var userId = GetCurrentUserId();
+            await _planningService.DeletePlanningAsync(id, userId);
+
+            return NoContent();
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Planning with ID {id} not found");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error deleting planning {PlanningId}", id);
+            return StatusCode(500, "An error occurred while deleting the planning");
+        }
+    }
+
+    // PUT: api/plannings/5/status
+    [HttpPut("{id}/status")]
+    public async Task<ActionResult<PlanningDto>> UpdatePlanningStatus(string id, [FromBody] UpdatePlanningStatusRequest request)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var userId = GetCurrentUserId();
+            var planning = await _planningService.UpdatePlanningStatusAsync(id, request.Status, userId);
+
+            return Ok(planning);
+        }
+        catch (KeyNotFoundException)
+        {
+            return NotFound($"Planning with ID {id} not found");
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid(ex.Message);
+        }
+        catch (ArgumentException ex)
+        {
+            return BadRequest(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error updating planning status {PlanningId}", id);
+            return StatusCode(500, "An error occurred while updating the planning status");
+        }
+    }
+
+    // POST: api/plannings/calculate-sessions
+    [HttpPost("calculate-sessions")]
+    public async Task<ActionResult<int>> CalculateTotalSessions([FromBody] CalculateSessionsRequest request)
+    {
+        try
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            // Validate date range
+            if (request.EndDate <= request.StartDate)
+            {
+                return BadRequest("End date must be after start date");
+            }
+
+            // Validate training days
+            if (request.TrainingDays == null || !request.TrainingDays.Any())
+            {
+                return BadRequest("At least one training day must be specified");
+            }
+
+            var totalSessions = await _planningService.CalculateTotalSessionsAsync(
+                request.StartDate, request.EndDate, request.TrainingDays);
+
+            return Ok(totalSessions);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error calculating total sessions");
+            return StatusCode(500, "An error occurred while calculating total sessions");
+        }
+    }
+
+    private Guid GetCurrentUserId()
+    {
+        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        {
+            throw new UnauthorizedAccessException("User ID not found in token");
+        }
+
+        return userId;
     }
 }
 
-// DTOs para las requests
-public class CreatePlanningRequest
+// Additional DTOs for specific endpoint requests
+public class UpdatePlanningStatusRequest
 {
-    public string Name { get; set; } = string.Empty;
-    public string Description { get; set; } = string.Empty;
+    public PlanningStatus Status { get; set; }
+}
+
+public class CalculateSessionsRequest
+{
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
-    public int[] TrainingDays { get; set; } = Array.Empty<int>(); // [1,3,5] para lunes, miércoles, viernes
-    public TimeSpan StartTime { get; set; }
-    public TimeSpan EndTime { get; set; }
-    public bool IsFullCourt { get; set; } = true;
-    public Guid? ItineraryId { get; set; }
-    public Guid CreatedByUserId { get; set; }
-    public Guid[]? TeamIds { get; set; }
+    public List<Models.DayOfWeek> TrainingDays { get; set; } = new();
 }
