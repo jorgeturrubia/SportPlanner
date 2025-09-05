@@ -5,6 +5,7 @@ export interface User {
   lastName: string;
   supabaseId: string;
   role: UserRole;
+  organizationId?: string;
   createdAt: Date;
   updatedAt: Date;
 }

@@ -1,0 +1,130 @@
+<div class="max-w-7xl mx-auto">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-foreground mb-2">
+        Gestión de Objetivos
+      </h1>
+      <div class="flex items-center space-x-4 text-sm text-muted-foreground">
+        <span>{{ objectivesCount() }} objetivos</span>
+        @if (activeObjectivesCount() !== objectivesCount()) {
+          <span>•</span>
+          <span>{{ activeObjectivesCount() }} activos</span>
+        }
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-4 mt-4 sm:mt-0">
+      <!-- Refresh Button -->
+      <button
+        (click)="onRefresh()"
+        [disabled]="isLoading()"
+        class="inline-flex items-center px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground bg-card hover:bg-secondary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
+      >
+        <ng-icon 
+          name="heroArrowPath" 
+          class="w-4 h-4 mr-2" 
+          [class.animate-spin]="isLoading()"
+        />
+        Actualizar
+      </button>
+
+      <!-- Create Objective Button -->
+      <button
+        (click)="onCreateObjective()"
+        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 cursor-pointer"
+      >
+        <ng-icon name="heroTarget" class="w-4 h-4 mr-2" />
+        Nuevo Objetivo
+      </button>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="bg-card rounded-xl shadow-sm p-4 mb-6 border border-border">
+    <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+      <!-- Search Input -->
+      <div class="flex-1 relative">
+        <ng-icon name="heroMagnifyingGlass" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+        <input
+          type="text"
+          (input)="onSearch($event)"
+          placeholder="Buscar objetivos por título, descripción o equipo..."
+          class="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground leading-5"
+        >
+      </div>
+
+      <!-- Filter Toggle -->
+      <button
+        (click)="onToggleActiveFilter()"
+        class="inline-flex items-center px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground bg-card hover:bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer"
+      >
+        <ng-icon name="heroCog6Tooth" class="w-4 h-4 mr-2" />
+        {{ getFilterButtonText() }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Objectives Grid -->
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-12">
+      <div class="flex items-center space-x-2 text-muted-foreground">
+        <ng-icon name="heroArrowPath" class="w-5 h-5 animate-spin" />
+        <span>Cargando objetivos...</span>
+      </div>
+    </div>
+  } @else if (filteredObjectives().length === 0) {
+    <div class="bg-card rounded-xl shadow-sm p-12 text-center border border-border">
+      <ng-icon name="heroTarget" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+      @if (searchQuery() || activeFilters().isActive !== undefined) {
+        <h3 class="text-lg font-medium text-foreground mb-2">
+          No se encontraron objetivos
+        </h3>
+        <p class="text-muted-foreground mb-6">
+          No hay objetivos que coincidan con los filtros aplicados. Intenta ajustar tu búsqueda.
+        </p>
+        <button
+          (click)="searchQuery.set(''); activeFilters.set({})"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded-lg transition-all duration-200 cursor-pointer"
+        >
+          Limpiar filtros
+        </button>
+      } @else {
+        <h3 class="text-lg font-medium text-foreground mb-2">
+          Aún no tienes objetivos
+        </h3>
+        <p class="text-muted-foreground mb-6">
+          Crea tu primer objetivo para comenzar a definir metas y seguir el progreso de tu equipo.
+        </p>
+        <button
+          (click)="onCreateObjective()"
+          class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer"
+        >
+          <ng-icon name="heroTarget" class="w-4 h-4 mr-2" />
+          Crear Primer Objetivo
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (objective of filteredObjectives(); track objective.id) {
+        <app-objective-card
+          [objective]="objective"
+          (edit)="onEditObjective($event)"
+          (delete)="onDeleteObjective($event)"
+        />
+      }
+    </div>
+  }
+
+  <!-- Objective Modal -->
+  @if (isModalOpen()) {
+    <app-objective-modal
+      [isOpen]="isModalOpen()"
+      [mode]="modalMode()"
+      [objective]="selectedObjective()"
+      (close)="onModalClose()"
+      (objectiveSaved)="onObjectiveSaved($event)"
+    />
+  }
+</div>

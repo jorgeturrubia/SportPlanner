@@ -38,6 +38,16 @@ export const routes: Routes = [
         path: 'teams',
         loadComponent: () => import('./pages/dashboard/pages/teams/teams.component').then(m => m.TeamsComponent),
         title: 'SportPlanner - Equipos'
+      },
+      {
+        path: 'objectives',
+        loadComponent: () => import('./pages/dashboard/pages/objectives/objectives.component').then(m => m.ObjectivesComponent),
+        title: 'SportPlanner - Objetivos'
+      },
+      {
+        path: 'exercises',
+        loadComponent: () => import('./pages/dashboard/pages/exercises/exercises.component').then(m => m.ExercisesComponent),
+        title: 'SportPlanner - Ejercicios'
       }
     ]
   },

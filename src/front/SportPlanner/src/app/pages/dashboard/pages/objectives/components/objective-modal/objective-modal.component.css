@@ -1,0 +1,91 @@
+/* Objective Modal Component Styles */
+
+.modal-overlay {
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  max-height: calc(100vh - 2rem);
+}
+
+.modal-body {
+  max-height: calc(90vh - 8rem);
+}
+
+/* Form styling */
+.form-group {
+  @apply mb-4;
+}
+
+.form-label {
+  @apply block text-sm font-medium text-foreground mb-2;
+}
+
+.form-input {
+  @apply w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground;
+}
+
+.form-input:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+.form-input.error {
+  @apply border-red-500 focus:ring-red-500 focus:border-red-500;
+}
+
+.form-select {
+  @apply w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer;
+}
+
+.form-textarea {
+  @apply w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground resize-none;
+}
+
+.form-error {
+  @apply text-red-500 text-xs mt-1;
+}
+
+.form-help {
+  @apply text-xs text-muted-foreground mt-1;
+}
+
+/* Button styles */
+.btn-primary {
+  @apply inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:cursor-not-allowed cursor-pointer;
+}
+
+.btn-secondary {
+  @apply px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-transparent hover:bg-secondary/50 border border-border rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer;
+}
+
+/* Loading spinner */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Grid layouts */
+.form-grid {
+  @apply grid grid-cols-1 gap-4;
+}
+
+@media (min-width: 768px) {
+  .form-grid {
+    @apply grid-cols-2;
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .modal-content {
+    @apply mx-2;
+  }
+  
+  .form-grid {
+    @apply grid-cols-1;
+  }
+}

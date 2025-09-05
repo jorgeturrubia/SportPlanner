@@ -1,0 +1,224 @@
+<div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50" 
+     (click)="onBackdropClick($event)">
+  
+  <div class="bg-card rounded-xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-hidden border border-border">
+    <!-- Modal Header -->
+    <div class="flex items-center justify-between p-6 border-b border-border">
+      <h2 class="text-xl font-semibold text-foreground">
+        {{ modalTitle() }}
+      </h2>
+      <button
+        (click)="onClose()"
+        [disabled]="isSubmitting()"
+        class="p-2 hover:bg-secondary/50 rounded-lg transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      >
+        <ng-icon name="heroXMark" class="w-5 h-5 text-muted-foreground" />
+      </button>
+    </div>
+
+    <!-- Modal Body -->
+    <div class="p-6 overflow-y-auto max-h-[calc(90vh-8rem)]">
+      <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
+        
+        <!-- Title -->
+        <div>
+          <label for="title" class="block text-sm font-medium text-foreground mb-2">
+            Título *
+          </label>
+          <input
+            type="text"
+            id="title"
+            formControlName="title"
+            [class.border-red-500]="isFieldInvalid('title')"
+            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground"
+            placeholder="Ej: Mejorar la precisión en tiros libres"
+            [disabled]="isSubmitting()"
+          >
+          @if (isFieldInvalid('title')) {
+            <p class="text-red-500 text-xs mt-1">{{ getFieldError('title') }}</p>
+          }
+        </div>
+
+        <!-- Description -->
+        <div>
+          <label for="description" class="block text-sm font-medium text-foreground mb-2">
+            Descripción *
+          </label>
+          <textarea
+            id="description"
+            formControlName="description"
+            rows="4"
+            [class.border-red-500]="isFieldInvalid('description')"
+            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground resize-none"
+            placeholder="Describe detalladamente el objetivo y cómo planeas alcanzarlo..."
+            [disabled]="isSubmitting()"
+          ></textarea>
+          @if (isFieldInvalid('description')) {
+            <p class="text-red-500 text-xs mt-1">{{ getFieldError('description') }}</p>
+          }
+        </div>
+
+        <!-- Priority and Status Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Priority -->
+          <div>
+            <label for="priority" class="block text-sm font-medium text-foreground mb-2">
+              Prioridad *
+            </label>
+            <select
+              id="priority"
+              formControlName="priority"
+              [class.border-red-500]="isFieldInvalid('priority')"
+              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
+              [disabled]="isSubmitting()"
+            >
+              @for (priority of priorityOptions; track priority.value) {
+                <option [value]="priority.value">{{ priority.label }}</option>
+              }
+            </select>
+            @if (isFieldInvalid('priority')) {
+              <p class="text-red-500 text-xs mt-1">{{ getFieldError('priority') }}</p>
+            }
+          </div>
+
+          <!-- Status (only in edit mode) -->
+          @if (mode === 'edit') {
+            <div>
+              <label for="status" class="block text-sm font-medium text-foreground mb-2">
+                Estado *
+              </label>
+              <select
+                id="status"
+                formControlName="status"
+                [class.border-red-500]="isFieldInvalid('status')"
+                class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
+                [disabled]="isSubmitting()"
+              >
+                @for (status of statusOptions; track status.value) {
+                  <option [value]="status.value">{{ status.label }}</option>
+                }
+              </select>
+              @if (isFieldInvalid('status')) {
+                <p class="text-red-500 text-xs mt-1">{{ getFieldError('status') }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Target Date and Progress Row -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Target Date -->
+          <div>
+            <label for="targetDate" class="block text-sm font-medium text-foreground mb-2">
+              Fecha Meta
+            </label>
+            <input
+              type="date"
+              id="targetDate"
+              formControlName="targetDate"
+              [class.border-red-500]="isFieldInvalid('targetDate')"
+              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
+              [disabled]="isSubmitting()"
+            >
+            @if (isFieldInvalid('targetDate')) {
+              <p class="text-red-500 text-xs mt-1">{{ getFieldError('targetDate') }}</p>
+            }
+          </div>
+
+          <!-- Progress (only in edit mode) -->
+          @if (mode === 'edit') {
+            <div>
+              <label for="progress" class="block text-sm font-medium text-foreground mb-2">
+                Progreso (%)
+              </label>
+              <input
+                type="number"
+                id="progress"
+                formControlName="progress"
+                min="0"
+                max="100"
+                [class.border-red-500]="isFieldInvalid('progress')"
+                class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground"
+                placeholder="0"
+                [disabled]="isSubmitting()"
+              >
+              @if (isFieldInvalid('progress')) {
+                <p class="text-red-500 text-xs mt-1">{{ getFieldError('progress') }}</p>
+              }
+            </div>
+          }
+        </div>
+
+        <!-- Team -->
+        <div>
+          <label for="teamId" class="block text-sm font-medium text-foreground mb-2">
+            Equipo
+          </label>
+          <select
+            id="teamId"
+            formControlName="teamId"
+            [class.border-red-500]="isFieldInvalid('teamId')"
+            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
+            [disabled]="isSubmitting()"
+          >
+            <option value="">Sin equipo específico</option>
+            @for (team of teams(); track team.id) {
+              <option [value]="team.id">{{ team.name }}</option>
+            }
+          </select>
+          @if (isFieldInvalid('teamId')) {
+            <p class="text-red-500 text-xs mt-1">{{ getFieldError('teamId') }}</p>
+          }
+        </div>
+
+        <!-- Tags -->
+        <div>
+          <label for="tags" class="block text-sm font-medium text-foreground mb-2">
+            Etiquetas
+          </label>
+          <input
+            type="text"
+            id="tags"
+            formControlName="tags"
+            [class.border-red-500]="isFieldInvalid('tags')"
+            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground"
+            placeholder="técnica, individual, tiro libre (separadas por comas)"
+            [disabled]="isSubmitting()"
+          >
+          <p class="text-xs text-muted-foreground mt-1">
+            Separa las etiquetas con comas para facilitar la búsqueda y categorización.
+          </p>
+          @if (isFieldInvalid('tags')) {
+            <p class="text-red-500 text-xs mt-1">{{ getFieldError('tags') }}</p>
+          }
+        </div>
+        
+      </form>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="flex items-center justify-end space-x-3 p-6 border-t border-border bg-secondary/30">
+      <button
+        type="button"
+        (click)="onClose()"
+        [disabled]="isSubmitting()"
+        class="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-foreground bg-transparent hover:bg-secondary/50 border border-border rounded-lg transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+      >
+        Cancelar
+      </button>
+      
+      <button
+        (click)="onSubmit()"
+        [disabled]="isSubmitting() || form.invalid"
+        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 disabled:cursor-not-allowed cursor-pointer"
+      >
+        @if (isSubmitting()) {
+          <ng-icon name="heroArrowPath" class="w-4 h-4 mr-2 animate-spin" />
+        } @else {
+          <ng-icon name="heroTarget" class="w-4 h-4 mr-2" />
+        }
+        {{ submitButtonText() }}
+      </button>
+    </div>
+  </div>
+</div>

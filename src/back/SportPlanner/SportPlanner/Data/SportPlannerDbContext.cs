@@ -29,6 +29,8 @@ public class SportPlannerDbContext : DbContext
     public DbSet<PlanningRating> PlanningRatings { get; set; }
     public DbSet<TrainingSession> TrainingSessions { get; set; }
     public DbSet<SessionExercise> SessionExercises { get; set; }
+    public DbSet<Objective> Objectives { get; set; }
+    public DbSet<CustomExercise> CustomExercises { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -293,6 +295,46 @@ public class SportPlannerDbContext : DbContext
                 .WithMany(e => e.SessionExercises)
                 .HasForeignKey(e => e.ExerciseId)
                 .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // Configuración de Objective
+        modelBuilder.Entity<Objective>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.Tags)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                );
+            entity.HasOne(e => e.Team)
+                .WithMany()
+                .HasForeignKey(e => e.TeamId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Configuración de CustomExercise
+        modelBuilder.Entity<CustomExercise>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Description).HasMaxLength(1000);
+            entity.Property(e => e.Instructions).HasMaxLength(2000);
+            entity.Property(e => e.Equipment).HasMaxLength(500);
+            entity.Property(e => e.Tags)
+                .HasConversion(
+                    v => string.Join(',', v),
+                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
+                );
+            entity.HasOne(e => e.CreatedBy)
+                .WithMany()
+                .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Datos iniciales de suscripciones

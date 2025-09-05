@@ -35,6 +35,12 @@ builder.Services.AddScoped<IUserContextService, UserContextService>();
 // Team services
 builder.Services.AddScoped<ITeamService, TeamService>();
 
+// Objective services
+builder.Services.AddScoped<IObjectiveService, ObjectiveService>();
+
+// Custom Exercise services
+builder.Services.AddScoped<ICustomExerciseService, CustomExerciseService>();
+
 // HTTP Context Accessor for UserContextService
 builder.Services.AddHttpContextAccessor();
 

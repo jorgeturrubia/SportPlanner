@@ -1,0 +1,130 @@
+<div class="max-w-7xl mx-auto">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-foreground mb-2">
+        Gestión de Ejercicios
+      </h1>
+      <div class="flex items-center space-x-4 text-sm text-muted-foreground">
+        <span>{{ exercisesCount() }} ejercicios</span>
+        @if (activeExercisesCount() !== exercisesCount()) {
+          <span>•</span>
+          <span>{{ activeExercisesCount() }} activos</span>
+        }
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-4 mt-4 sm:mt-0">
+      <!-- Refresh Button -->
+      <button
+        (click)="onRefresh()"
+        [disabled]="isLoading()"
+        class="inline-flex items-center px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground bg-card hover:bg-secondary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
+      >
+        <ng-icon 
+          name="heroArrowPath" 
+          class="w-4 h-4 mr-2" 
+          [class.animate-spin]="isLoading()"
+        />
+        Actualizar
+      </button>
+
+      <!-- Create Exercise Button -->
+      <button
+        (click)="onCreateExercise()"
+        class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 cursor-pointer"
+      >
+        <ng-icon name="heroPlayCircle" class="w-4 h-4 mr-2" />
+        Nuevo Ejercicio
+      </button>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="bg-card rounded-xl shadow-sm p-4 mb-6 border border-border">
+    <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+      <!-- Search Input -->
+      <div class="flex-1 relative">
+        <ng-icon name="heroMagnifyingGlass" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+        <input
+          type="text"
+          (input)="onSearch($event)"
+          placeholder="Buscar ejercicios por nombre, descripción o equipo..."
+          class="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 dark:focus:ring-purple-400 dark:focus:border-purple-400 bg-background text-foreground placeholder-muted-foreground leading-5"
+        >
+      </div>
+
+      <!-- Filter Toggle -->
+      <button
+        (click)="onToggleActiveFilter()"
+        class="inline-flex items-center px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground bg-card hover:bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer"
+      >
+        <ng-icon name="heroCog6Tooth" class="w-4 h-4 mr-2" />
+        {{ getFilterButtonText() }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Exercises Grid -->
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-12">
+      <div class="flex items-center space-x-2 text-muted-foreground">
+        <ng-icon name="heroArrowPath" class="w-5 h-5 animate-spin" />
+        <span>Cargando ejercicios...</span>
+      </div>
+    </div>
+  } @else if (filteredExercises().length === 0) {
+    <div class="bg-card rounded-xl shadow-sm p-12 text-center border border-border">
+      <ng-icon name="heroPlayCircle" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+      @if (searchQuery() || activeFilters().isActive !== undefined) {
+        <h3 class="text-lg font-medium text-foreground mb-2">
+          No se encontraron ejercicios
+        </h3>
+        <p class="text-muted-foreground mb-6">
+          No hay ejercicios que coincidan con los filtros aplicados. Intenta ajustar tu búsqueda.
+        </p>
+        <button
+          (click)="searchQuery.set(''); activeFilters.set({})"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded-lg transition-all duration-200 cursor-pointer"
+        >
+          Limpiar filtros
+        </button>
+      } @else {
+        <h3 class="text-lg font-medium text-foreground mb-2">
+          Aún no tienes ejercicios
+        </h3>
+        <p class="text-muted-foreground mb-6">
+          Crea tu primer ejercicio personalizado para enriquecer tus entrenamientos.
+        </p>
+        <button
+          (click)="onCreateExercise()"
+          class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer"
+        >
+          <ng-icon name="heroPlayCircle" class="w-4 h-4 mr-2" />
+          Crear Primer Ejercicio
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (exercise of filteredExercises(); track exercise.id) {
+        <app-exercise-card
+          [exercise]="exercise"
+          (edit)="onEditExercise($event)"
+          (delete)="onDeleteExercise($event)"
+        />
+      }
+    </div>
+  }
+
+  <!-- Exercise Modal -->
+  @if (isModalOpen()) {
+    <app-exercise-modal
+      [isOpen]="isModalOpen()"
+      [mode]="modalMode()"
+      [exercise]="selectedExercise()"
+      (close)="onModalClose()"
+      (exerciseSaved)="onExerciseSaved($event)"
+    />
+  }
+</div>
