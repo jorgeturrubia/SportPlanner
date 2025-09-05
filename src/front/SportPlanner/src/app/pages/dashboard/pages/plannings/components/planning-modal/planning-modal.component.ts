@@ -1,5 +1,5 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, inject, signal, computed, OnInit, effect } from '@angular/core';
-import { FormBuilder, FormGroup, FormArray, FormControl, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormControl, Validators, ReactiveFormsModule, AbstractControl } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
 import { Planning, CreatePlanningRequest, UpdatePlanningRequest, PlanningType, PlanningStatus } from '../../../../../../models/planning.model';
 import { PlanningsService } from '../../../../../../services/plannings.service';
@@ -117,7 +117,7 @@ export class PlanningModalComponent implements OnInit {
     }
   }
 
-  private atLeastOneDayValidator(control: FormArray): { atLeastOneDay: true } | null {
+  private atLeastOneDayValidator(control: AbstractControl): { atLeastOneDay: true } | null {
     if (!control.value) return { atLeastOneDay: true };
     const hasAtLeastOneDay = control.value.some((day: boolean) => day === true);
     return hasAtLeastOneDay ? null : { atLeastOneDay: true };
@@ -146,7 +146,7 @@ export class PlanningModalComponent implements OnInit {
 
     // Reset training days checkboxes (would need additional data from backend)
     const trainingDaysArray = this.form.get('trainingDays') as FormArray;
-    trainingDaysArray.controls.forEach((control: FormControl) => {
+    trainingDaysArray.controls.forEach((control: AbstractControl) => {
       control.setValue(false); // Default to false, would need backend data
     });
   }
@@ -170,7 +170,7 @@ export class PlanningModalComponent implements OnInit {
 
     // Reset training days
     const trainingDaysArray = this.form.get('trainingDays') as FormArray;
-    trainingDaysArray.controls.forEach((control: FormControl) => {
+    trainingDaysArray.controls.forEach((control: AbstractControl) => {
       control.setValue(false);
     });
   }
@@ -228,16 +228,16 @@ export class PlanningModalComponent implements OnInit {
 
   private createPlanning(formValue: Record<string, unknown>): void {
     const createRequest: CreatePlanningRequest = {
-      name: (formValue.name as string).trim(),
-      description: (formValue.description as string)?.trim() || '',
-      type: Number(formValue.type),
-      startDate: new Date(formValue.startDate as string),
-      endDate: new Date(formValue.endDate as string),
-      teamId: (formValue.teamId as string) || '',
-      isTemplate: Boolean(formValue.isTemplate),
-      isPublic: Boolean(formValue.isPublic),
+      name: (formValue['name'] as string).trim(),
+      description: (formValue['description'] as string)?.trim() || '',
+      type: Number(formValue['type']),
+      startDate: new Date(formValue['startDate'] as string),
+      endDate: new Date(formValue['endDate'] as string),
+      teamId: (formValue['teamId'] as string) || '',
+      isTemplate: Boolean(formValue['isTemplate']),
+      isPublic: Boolean(formValue['isPublic']),
       objectives: [], // Could be added in future
-      tags: this.parseTags(formValue.tags as string)
+      tags: this.parseTags(formValue['tags'] as string)
     };
 
     this.planningsService.createPlanning(createRequest).subscribe({
@@ -258,16 +258,17 @@ export class PlanningModalComponent implements OnInit {
     if (!this.planning) return;
 
     const updateRequest: UpdatePlanningRequest = {
-      name: (formValue.name as string).trim(),
-      description: (formValue.description as string)?.trim() || '',
-      type: Number(formValue.type),
-      status: Number(formValue.status),
-      startDate: new Date(formValue.startDate as string),
-      endDate: new Date(formValue.endDate as string),
-      isTemplate: Boolean(formValue.isTemplate),
-      isPublic: Boolean(formValue.isPublic),
+      name: (formValue['name'] as string).trim(),
+      description: (formValue['description'] as string)?.trim() || '',
+      type: Number(formValue['type']),
+
+      status: Number(formValue['status']),
+      startDate: new Date(formValue['startDate'] as string),
+      endDate: new Date(formValue['endDate'] as string),
+      isTemplate: Boolean(formValue['isTemplate']),
+      isPublic: Boolean(formValue['isPublic']),
       objectives: [], // Could be added in future
-      tags: this.parseTags(formValue.tags as string)
+      tags: this.parseTags(formValue['tags'] as string)
     };
 
     this.planningsService.updatePlanning(this.planning.id, updateRequest).subscribe({
