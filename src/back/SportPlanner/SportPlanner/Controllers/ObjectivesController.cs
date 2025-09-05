@@ -56,7 +56,7 @@ public class ObjectivesController : ControllerBase
 
     // GET: api/objectives/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<ObjectiveDto>> GetObjective(int id)
+    public async Task<ActionResult<ObjectiveDto>> GetObjective(string id)
     {
         try
         {
@@ -106,7 +106,7 @@ public class ObjectivesController : ControllerBase
 
     // PUT: api/objectives/5
     [HttpPut("{id}")]
-    public async Task<ActionResult<ObjectiveDto>> UpdateObjective(int id, UpdateObjectiveRequest request)
+    public async Task<ActionResult<ObjectiveDto>> UpdateObjective(string id, UpdateObjectiveRequest request)
     {
         try
         {
@@ -137,7 +137,7 @@ public class ObjectivesController : ControllerBase
 
     // DELETE: api/objectives/5
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteObjective(int id)
+    public async Task<IActionResult> DeleteObjective(string id)
     {
         try
         {

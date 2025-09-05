@@ -1,1 +1,272 @@
-<p>plannings works!</p>
+<div class="max-w-7xl mx-auto">
+  <!-- Page Header -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-foreground mb-2">
+        Gestión de Planificaciones
+      </h1>
+      <div class="flex items-center space-x-4 text-sm text-muted-foreground">
+        <span>{{ planningsCount() }} planificaciones</span>
+        @if (activePlanningsCount() !== planningsCount()) {
+          <span>•</span>
+          <span>{{ activePlanningsCount() }} activas</span>
+        }
+      </div>
+    </div>
+    
+    <div class="flex items-center space-x-4 mt-4 sm:mt-0">
+      <!-- Refresh Button -->
+      <button
+        (click)="onRefresh()"
+        [disabled]="isLoading()"
+        class="inline-flex items-center px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground bg-card hover:bg-secondary/50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200 cursor-pointer"
+      >
+        <ng-icon 
+          name="heroArrowPath" 
+          class="w-4 h-4 mr-2" 
+          [class.animate-spin]="isLoading()"
+        />
+        Actualizar
+      </button>
+
+      <!-- Create Planning Button -->
+      <button
+        (click)="onCreatePlanning()"
+        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 cursor-pointer"
+      >
+        <ng-icon name="heroCalendarDays" class="w-4 h-4 mr-2" />
+        Nueva Planificación
+      </button>
+    </div>
+  </div>
+
+  <!-- Search and Filters -->
+  <div class="bg-card rounded-xl shadow-sm p-4 mb-6 border border-border">
+    <div class="flex flex-col sm:flex-row sm:items-center space-y-3 sm:space-y-0 sm:space-x-4">
+      <!-- Search Input -->
+      <div class="flex-1 relative">
+        <ng-icon name="heroMagnifyingGlass" class="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 z-10" />
+        <input
+          type="text"
+          (input)="onSearch($event)"
+          placeholder="Buscar planificaciones por nombre, descripción o equipo..."
+          class="w-full pl-10 pr-4 py-2.5 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground leading-5"
+        >
+      </div>
+
+      <!-- Filter Toggle -->
+      <button
+        (click)="onToggleStatusFilter()"
+        class="inline-flex items-center px-3 py-2 border border-border rounded-lg text-sm font-medium text-foreground bg-card hover:bg-secondary/50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer"
+      >
+        <ng-icon name="heroCog6Tooth" class="w-4 h-4 mr-2" />
+        {{ getFilterButtonText() }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Plannings Grid -->
+  @if (isLoading()) {
+    <div class="flex justify-center items-center py-12">
+      <div class="flex items-center space-x-2 text-muted-foreground">
+        <ng-icon name="heroArrowPath" class="w-5 h-5 animate-spin" />
+        <span>Cargando planificaciones...</span>
+      </div>
+    </div>
+  } @else if (filteredPlannings().length === 0) {
+    <div class="bg-card rounded-xl shadow-sm p-12 text-center border border-border">
+      <ng-icon name="heroCalendarDays" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+      @if (searchQuery() || Object.keys(activeFilters()).length > 0) {
+        <h3 class="text-lg font-medium text-foreground mb-2">
+          No se encontraron planificaciones
+        </h3>
+        <p class="text-muted-foreground mb-6">
+          No hay planificaciones que coincidan con los filtros aplicados. Intenta ajustar tu búsqueda.
+        </p>
+        <button
+          (click)="searchQuery.set(''); activeFilters.set({})"
+          class="inline-flex items-center px-4 py-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 rounded-lg transition-all duration-200 cursor-pointer"
+        >
+          Limpiar filtros
+        </button>
+      } @else {
+        <h3 class="text-lg font-medium text-foreground mb-2">
+          Aún no tienes planificaciones
+        </h3>
+        <p class="text-muted-foreground mb-6">
+          Crea tu primera planificación de entrenamientos para organizar tu temporada deportiva.
+        </p>
+        <button
+          (click)="onCreatePlanning()"
+          class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer"
+        >
+          <ng-icon name="heroCalendarDays" class="w-4 h-4 mr-2" />
+          Crear Primera Planificación
+        </button>
+      }
+    </div>
+  } @else {
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      @for (planning of filteredPlannings(); track planning.id) {
+        <div class="planning-card bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow duration-200 overflow-hidden">
+          <!-- Card Header -->
+          <div class="p-4 border-b border-border">
+            <div class="flex items-start justify-between">
+              <div class="flex-1 min-w-0">
+                <h3 class="text-lg font-semibold text-foreground truncate">
+                  {{ planning.name }}
+                </h3>
+                <p class="text-sm text-muted-foreground mt-1 line-clamp-2">
+                  {{ planning.description }}
+                </p>
+              </div>
+              <div class="ml-3 relative">
+                <button
+                  type="button"
+                  class="p-2 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg cursor-pointer"
+                  (click)="onEditPlanning(planning)"
+                >
+                  <ng-icon name="heroEllipsisVertical" class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Card Content -->
+          <div class="p-4 space-y-3">
+            <!-- Status Badge -->
+            <div class="flex items-center justify-between">
+              <span class="px-2.5 py-1 rounded-full text-xs font-medium" 
+                    [class]="getStatusBadgeClass(planning.status)">
+                {{ getStatusText(planning.status) }}
+              </span>
+              <span class="px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-200">
+                {{ getTypeText(planning.type) }}
+              </span>
+            </div>
+
+            <!-- Team Info -->
+            @if (planning.teamName) {
+              <div class="flex items-center text-sm text-muted-foreground">
+                <ng-icon name="heroUserGroup" class="w-4 h-4 mr-2" />
+                <span>{{ planning.teamName }}</span>
+              </div>
+            }
+
+            <!-- Date Range -->
+            <div class="flex items-center text-sm text-muted-foreground">
+              <ng-icon name="heroCalendarDays" class="w-4 h-4 mr-2" />
+              <span>{{ planning.startDate | date:'dd/MM/yyyy' }} - {{ planning.endDate | date:'dd/MM/yyyy' }}</span>
+            </div>
+
+            <!-- Progress -->
+            @if (planning.totalSessions > 0) {
+              <div class="space-y-1">
+                <div class="flex justify-between text-sm">
+                  <span class="text-muted-foreground">Progreso</span>
+                  <span class="font-medium text-foreground">
+                    {{ planning.completedSessions }}/{{ planning.totalSessions }}
+                  </span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                  <div class="bg-blue-600 h-2 rounded-full transition-all duration-300" 
+                       [style.width.%]="(planning.completedSessions / planning.totalSessions) * 100"></div>
+                </div>
+              </div>
+            }
+
+            <!-- Tags -->
+            @if (planning.tags && planning.tags.length > 0) {
+              <div class="flex flex-wrap gap-1 pt-2">
+                @for (tag of planning.tags; track tag) {
+                  <span class="px-2 py-1 bg-blue-50 text-blue-700 rounded-md text-xs font-medium dark:bg-blue-900/20 dark:text-blue-400">
+                    {{ tag }}
+                  </span>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Card Actions -->
+          <div class="px-4 py-3 bg-gray-50 dark:bg-gray-800/50 border-t border-border">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                @if (planning.isTemplate) {
+                  <ng-icon name="heroDocumentDuplicate" class="w-4 h-4 text-green-600" title="Plantilla" />
+                }
+                @if (planning.isPublic) {
+                  <ng-icon name="heroGlobeAlt" class="w-4 h-4 text-blue-600" title="Público" />
+                }
+              </div>
+              
+              <div class="flex items-center space-x-1">
+                <button
+                  (click)="onEditPlanning(planning)"
+                  class="p-1.5 text-gray-400 hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded cursor-pointer"
+                  title="Editar"
+                >
+                  <ng-icon name="heroPencil" class="w-4 h-4" />
+                </button>
+                <button
+                  (click)="onDeletePlanning(planning)"
+                  class="p-1.5 text-gray-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500 rounded cursor-pointer"
+                  title="Eliminar"
+                >
+                  <ng-icon name="heroTrash" class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      }
+    </div>
+  }
+
+  <!-- Planning Modal (placeholder - will be implemented) -->
+  @if (isModalOpen()) {
+    <div class="fixed inset-0 z-50 overflow-y-auto">
+      <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="onModalClose()"></div>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-card rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full sm:p-6">
+          <div class="flex items-center justify-between mb-4">
+            <h3 class="text-lg font-medium text-foreground">
+              {{ modalMode() === 'create' ? 'Nueva Planificación' : 'Editar Planificación' }}
+            </h3>
+            <button
+              (click)="onModalClose()"
+              class="text-gray-400 hover:text-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 rounded-lg p-1 cursor-pointer"
+            >
+              <ng-icon name="heroXMark" class="w-5 h-5" />
+            </button>
+          </div>
+          
+          <!-- Modal Content Placeholder -->
+          <div class="py-8 text-center text-muted-foreground">
+            <ng-icon name="heroWrenchScrewdriver" class="w-12 h-12 mx-auto mb-4 text-gray-400" />
+            <p>Formulario de planificación en desarrollo...</p>
+            <p class="text-sm mt-2">Se implementará el componente modal completo.</p>
+          </div>
+          
+          <!-- Modal Actions -->
+          <div class="flex justify-end space-x-3 mt-6 pt-4 border-t border-border">
+            <button
+              (click)="onModalClose()"
+              class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 cursor-pointer"
+              disabled
+            >
+              {{ modalMode() === 'create' ? 'Crear' : 'Guardar' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  }
+</div>

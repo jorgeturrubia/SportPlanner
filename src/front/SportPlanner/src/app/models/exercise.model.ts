@@ -37,29 +37,29 @@ export interface Exercise {
 export interface CreateExerciseRequest {
   name: string;
   description: string;
+  instructions: string;
   category: ExerciseCategory;
   difficulty: DifficultyLevel;
   durationMinutes: number;
   minPlayers: number;
   maxPlayers: number;
-  equipment?: string;
-  instructions?: string;
+  equipment: string;
+  tags: string[];
   isPublic: boolean;
-  tags?: string[];
 }
 
 export interface UpdateExerciseRequest {
   name: string;
   description: string;
+  instructions: string;
   category: ExerciseCategory;
   difficulty: DifficultyLevel;
   durationMinutes: number;
   minPlayers: number;
   maxPlayers: number;
-  equipment?: string;
-  instructions?: string;
+  equipment: string;
+  tags: string[];
   isPublic: boolean;
-  tags?: string[];
 }
 
 export interface ExerciseFilters {

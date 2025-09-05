@@ -56,7 +56,7 @@ public class CustomExercisesController : ControllerBase
 
     // GET: api/customexercises/5
     [HttpGet("{id}")]
-    public async Task<ActionResult<CustomExerciseDto>> GetCustomExercise(int id)
+    public async Task<ActionResult<CustomExerciseDto>> GetCustomExercise(string id)
     {
         try
         {
@@ -102,7 +102,7 @@ public class CustomExercisesController : ControllerBase
 
     // PUT: api/customexercises/5
     [HttpPut("{id}")]
-    public async Task<ActionResult<CustomExerciseDto>> UpdateCustomExercise(int id, UpdateCustomExerciseRequest request)
+    public async Task<ActionResult<CustomExerciseDto>> UpdateCustomExercise(string id, UpdateCustomExerciseRequest request)
     {
         try
         {
@@ -133,7 +133,7 @@ public class CustomExercisesController : ControllerBase
 
     // DELETE: api/customexercises/5
     [HttpDelete("{id}")]
-    public async Task<IActionResult> DeleteCustomExercise(int id)
+    public async Task<IActionResult> DeleteCustomExercise(string id)
     {
         try
         {
@@ -159,7 +159,7 @@ public class CustomExercisesController : ControllerBase
 
     // POST: api/customexercises/5/increment-usage
     [HttpPost("{id}/increment-usage")]
-    public async Task<IActionResult> IncrementUsageCount(int id)
+    public async Task<IActionResult> IncrementUsageCount(string id)
     {
         try
         {

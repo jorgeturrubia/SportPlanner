@@ -6,10 +6,10 @@ public interface ICustomExerciseService
 {
     Task<IEnumerable<CustomExerciseDto>> GetUserCustomExercisesAsync(Guid userId);
     Task<IEnumerable<CustomExerciseDto>> GetFilteredCustomExercisesAsync(Guid userId, CustomExerciseFilterDto filter);
-    Task<CustomExerciseDto?> GetCustomExerciseAsync(int exerciseId, Guid userId);
+    Task<CustomExerciseDto?> GetCustomExerciseAsync(string exerciseId, Guid userId);
     Task<CustomExerciseDto> CreateCustomExerciseAsync(CreateCustomExerciseRequest request, Guid userId);
-    Task<CustomExerciseDto> UpdateCustomExerciseAsync(int exerciseId, UpdateCustomExerciseRequest request, Guid userId);
-    Task DeleteCustomExerciseAsync(int exerciseId, Guid userId);
-    Task<bool> UserCanAccessCustomExerciseAsync(int exerciseId, Guid userId);
-    Task IncrementUsageCountAsync(int exerciseId);
+    Task<CustomExerciseDto> UpdateCustomExerciseAsync(string exerciseId, UpdateCustomExerciseRequest request, Guid userId);
+    Task DeleteCustomExerciseAsync(string exerciseId, Guid userId);
+    Task<bool> UserCanAccessCustomExerciseAsync(string exerciseId, Guid userId);
+    Task IncrementUsageCountAsync(string exerciseId);
 }

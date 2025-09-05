@@ -92,13 +92,18 @@ public class CustomExerciseService : ICustomExerciseService
         }
     }
 
-    public async Task<CustomExerciseDto?> GetCustomExerciseAsync(int exerciseId, Guid userId)
+    public async Task<CustomExerciseDto?> GetCustomExerciseAsync(string exerciseId, Guid userId)
     {
         try
         {
+            if (!int.TryParse(exerciseId, out int id))
+            {
+                return null;
+            }
+
             var exercise = await _context.CustomExercises
                 .Include(e => e.CreatedBy)
-                .FirstOrDefaultAsync(e => e.Id == exerciseId && e.IsActive && 
+                .FirstOrDefaultAsync(e => e.Id == id && e.IsActive && 
                                         (e.CreatedByUserId == userId || e.IsPublic));
 
             return exercise != null ? MapToCustomExerciseDto(exercise) : null;
@@ -153,13 +158,18 @@ public class CustomExerciseService : ICustomExerciseService
         }
     }
 
-    public async Task<CustomExerciseDto> UpdateCustomExerciseAsync(int exerciseId, UpdateCustomExerciseRequest request, Guid userId)
+    public async Task<CustomExerciseDto> UpdateCustomExerciseAsync(string exerciseId, UpdateCustomExerciseRequest request, Guid userId)
     {
         try
         {
+            if (!int.TryParse(exerciseId, out int id))
+            {
+                throw new KeyNotFoundException($"Custom exercise with ID {exerciseId} not found");
+            }
+
             var exercise = await _context.CustomExercises
                 .Include(e => e.CreatedBy)
-                .FirstOrDefaultAsync(e => e.Id == exerciseId && e.IsActive);
+                .FirstOrDefaultAsync(e => e.Id == id && e.IsActive);
 
             if (exercise == null)
             {
@@ -198,12 +208,17 @@ public class CustomExerciseService : ICustomExerciseService
         }
     }
 
-    public async Task DeleteCustomExerciseAsync(int exerciseId, Guid userId)
+    public async Task DeleteCustomExerciseAsync(string exerciseId, Guid userId)
     {
         try
         {
+            if (!int.TryParse(exerciseId, out int id))
+            {
+                throw new KeyNotFoundException($"Custom exercise with ID {exerciseId} not found");
+            }
+
             var exercise = await _context.CustomExercises
-                .FirstOrDefaultAsync(e => e.Id == exerciseId && e.IsActive);
+                .FirstOrDefaultAsync(e => e.Id == id && e.IsActive);
 
             if (exercise == null)
             {
@@ -231,12 +246,17 @@ public class CustomExerciseService : ICustomExerciseService
         }
     }
 
-    public async Task<bool> UserCanAccessCustomExerciseAsync(int exerciseId, Guid userId)
+    public async Task<bool> UserCanAccessCustomExerciseAsync(string exerciseId, Guid userId)
     {
         try
         {
+            if (!int.TryParse(exerciseId, out int id))
+            {
+                return false;
+            }
+
             return await _context.CustomExercises
-                .AnyAsync(e => e.Id == exerciseId && e.IsActive && e.CreatedByUserId == userId);
+                .AnyAsync(e => e.Id == id && e.IsActive && e.CreatedByUserId == userId);
         }
         catch (Exception ex)
         {
@@ -245,12 +265,17 @@ public class CustomExerciseService : ICustomExerciseService
         }
     }
 
-    public async Task IncrementUsageCountAsync(int exerciseId)
+    public async Task IncrementUsageCountAsync(string exerciseId)
     {
         try
         {
+            if (!int.TryParse(exerciseId, out int id))
+            {
+                return;
+            }
+
             var exercise = await _context.CustomExercises
-                .FirstOrDefaultAsync(e => e.Id == exerciseId && e.IsActive);
+                .FirstOrDefaultAsync(e => e.Id == id && e.IsActive);
 
             if (exercise != null)
             {
@@ -269,7 +294,7 @@ public class CustomExerciseService : ICustomExerciseService
     {
         return new CustomExerciseDto
         {
-            Id = exercise.Id,
+            Id = exercise.Id.ToString(),
             Name = exercise.Name,
             Description = exercise.Description,
             Instructions = exercise.Instructions,
@@ -283,7 +308,7 @@ public class CustomExerciseService : ICustomExerciseService
             IsPublic = exercise.IsPublic,
             IsCustom = exercise.IsCustom,
             UsageCount = exercise.UsageCount,
-            CreatedBy = $"{exercise.CreatedBy?.FirstName} {exercise.CreatedBy?.LastName}".Trim(),
+            CreatedBy = exercise.CreatedBy?.Id.ToString() ?? string.Empty,
             CreatedAt = exercise.CreatedAt,
             UpdatedAt = exercise.UpdatedAt,
             IsActive = exercise.IsActive

@@ -8,21 +8,23 @@ public class Objective
     
     [Required]
     [MaxLength(200)]
-    public string Name { get; set; } = string.Empty;
+    public string Title { get; set; } = string.Empty;
     
     [MaxLength(1000)]
     public string Description { get; set; } = string.Empty;
     
-    public ObjectivePriority Priority { get; set; } = ObjectivePriority.Media;
+    public ObjectivePriority Priority { get; set; } = ObjectivePriority.Medium;
     
-    public ObjectiveStatus Status { get; set; } = ObjectiveStatus.NoIniciado;
+    public ObjectiveStatus Status { get; set; } = ObjectiveStatus.NotStarted;
     
     [Range(0, 100)]
     public int Progress { get; set; } = 0;
     
-    public DateTime? DueDate { get; set; }
+    public DateTime? TargetDate { get; set; }
     
-    public int? TeamId { get; set; }
+    public DateTime? CompletedDate { get; set; }
+    
+    public Guid? TeamId { get; set; }
     
     public List<string> Tags { get; set; } = new();
     
@@ -41,16 +43,16 @@ public class Objective
 
 public enum ObjectivePriority
 {
-    Baja = 0,
-    Media = 1,
-    Alta = 2,
-    Critica = 3
+    Low = 0,
+    Medium = 1,
+    High = 2,
+    Critical = 3
 }
 
 public enum ObjectiveStatus
 {
-    NoIniciado = 0,
-    EnProgreso = 1,
-    Completado = 2,
-    EnPausa = 3
+    NotStarted = 0,
+    InProgress = 1,
+    Completed = 2,
+    OnHold = 3
 }

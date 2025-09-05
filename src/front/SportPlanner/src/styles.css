@@ -1,4 +1,6 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 :root {
   --background: oklch(0.9551 0 0);
@@ -75,7 +77,8 @@
   --secondary-900: oklch(0.90 0 0);
 }
 
-@theme inline {
+/* Tailwind color mappings */
+:root {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -106,121 +109,26 @@
   --color-primary-green-500: var(--primary-green-500);
   --color-primary-green-600: var(--primary-green-600);
   --color-primary-green-700: var(--primary-green-700);
-
-  /* Secondary color scale (grays) for light mode */
-  --color-secondary-50: oklch(0.98 0 0);
-  --color-secondary-100: oklch(0.95 0 0);
-  --color-secondary-200: oklch(0.90 0 0);
-  --color-secondary-300: oklch(0.80 0 0);
-  --color-secondary-400: oklch(0.65 0 0);
-  --color-secondary-500: oklch(0.50 0 0);
-  --color-secondary-600: oklch(0.40 0 0);
-  --color-secondary-700: oklch(0.30 0 0);
-  --color-secondary-800: oklch(0.20 0 0);
-  --color-secondary-900: oklch(0.10 0 0);
-
-  /* Ensure spacing utilities are available */
-  --spacing-3: 0.75rem;   /* 12px */
-  --spacing-6: 1.5rem;    /* 24px */
-  --spacing-12: 3rem;     /* 48px */
-  
-  /* Custom navbar spacing utilities */
-  --navbar-nav-gap: 3rem;        /* 48px between desktop nav links */
-  --navbar-action-gap: 1.5rem;   /* 24px between theme toggle and login */
-  --navbar-mobile-gap: 0.75rem;  /* 12px for mobile elements */
 }
 
-/* Dark mode secondary colors override */
-.dark {
-  --color-secondary-50: oklch(0.30 0 0);
-  --color-secondary-100: oklch(0.35 0 0);
-  --color-secondary-200: oklch(0.40 0 0);
-  --color-secondary-300: oklch(0.45 0 0);
-  --color-secondary-400: oklch(0.55 0 0);
-  --color-secondary-500: oklch(0.65 0 0);
-  --color-secondary-600: oklch(0.75 0 0);
-  --color-secondary-700: oklch(0.80 0 0);
-  --color-secondary-800: oklch(0.85 0 0);
-  --color-secondary-900: oklch(0.90 0 0);
-}
+/* Base Styles - Let Tailwind handle most of this */
+@layer base {
+  html {
+    font-family: system-ui, sans-serif;
+    scroll-behavior: smooth;
+  }
 
-/* Base Styles */
-* {
-  box-sizing: border-box;
-}
+  body {
+    color: var(--color-foreground);
+    background-color: var(--color-background);
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
 
-html {
-  line-height: 1.5;
-  -webkit-text-size-adjust: 100%;
-  font-family: var(--font-sans);
-  scroll-behavior: smooth;
-}
+  button, [type='button'], [type='reset'], [type='submit'] {
+    cursor: pointer;
+  }
 
-body {
-  margin: 0;
-  line-height: inherit;
-  font-family: var(--font-sans);
-  color: var(--color-foreground);
-  background-color: var(--color-background);
-  transition: background-color 0.2s ease, color 0.2s ease;
-}
-
-/* Responsive images */
-img, video {
-  max-width: 100%;
-  height: auto;
-}
-
-/* Form elements */
-button, input, optgroup, select, textarea {
-  font-family: inherit;
-  font-size: 100%;
-  font-weight: inherit;
-  line-height: inherit;
-  color: inherit;
-  margin: 0;
-  padding: 0;
-}
-
-button, [type='button'], [type='reset'], [type='submit'] {
-  -webkit-appearance: button;
-  background-color: transparent;
-  background-image: none;
-  cursor: pointer;
-}
-
-button:disabled, [type='button']:disabled, [type='reset']:disabled, [type='submit']:disabled {
-  cursor: not-allowed;
-}
-
-/* Focus styles */
-:focus-visible {
-  outline: 2px solid var(--color-primary-green-600);
-  outline-offset: 2px;
-}
-
-/* Custom navbar spacing utilities for Tailwind v4 */
-.navbar-nav-gap {
-  gap: var(--navbar-nav-gap);
-}
-
-.navbar-action-gap {
-  gap: var(--navbar-action-gap);
-}
-
-.navbar-mobile-gap {
-  gap: var(--navbar-mobile-gap);
-}
-
-/* Custom margin utilities for spacing */
-.mr-48px {
-  margin-right: var(--navbar-nav-gap);
-}
-
-.mr-24px {
-  margin-right: var(--navbar-action-gap);
-}
-
-.mr-12px {
-  margin-right: var(--navbar-mobile-gap);
+  button:disabled, [type='button']:disabled, [type='reset']:disabled, [type='submit']:disabled {
+    cursor: not-allowed;
+  }
 }

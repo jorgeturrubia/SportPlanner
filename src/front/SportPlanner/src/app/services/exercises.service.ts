@@ -15,7 +15,7 @@ export class ExercisesService {
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
 
-  private readonly apiUrl = `${environment.apiUrl}/api/exercises`;
+  private readonly apiUrl = `${environment.apiUrl}/api/customexercises`;
   private readonly _exercises = signal<Exercise[]>([]);
   private readonly _isLoading = signal<boolean>(false);
   
@@ -24,6 +24,10 @@ export class ExercisesService {
 
   getAllExercises(): Observable<Exercise[]> {
     this._isLoading.set(true);
+    
+    // Debug logging
+    console.log('🔥 ExercisesService.getAllExercises called');
+    console.log('📍 API URL:', this.apiUrl);
     
     return this.http.get<Exercise[]>(this.apiUrl).pipe(
       tap(exercises => {
@@ -39,7 +43,16 @@ export class ExercisesService {
       }),
       catchError(error => {
         this._isLoading.set(false);
-        this.notificationService.showError('Error al cargar los ejercicios');
+        // Debug logging for errors
+        console.error('❌ Error loading exercises:', error);
+        console.error('📄 Error status:', error.status);
+        console.error('📝 Error message:', error.message);
+        
+        if (error.status === 0) {
+          this.notificationService.showError('No se puede conectar con el servidor. Verifica que el backend esté ejecutándose.');
+        } else {
+          this.notificationService.showError('Error al cargar los ejercicios');
+        }
         throw error;
       })
     );
@@ -62,8 +75,30 @@ export class ExercisesService {
 
   createExercise(exerciseData: CreateExerciseRequest): Observable<Exercise> {
     this._isLoading.set(true);
+    
+    // Ensure all required fields are present with defaults if needed
+    const requestData: CreateExerciseRequest = {
+      name: exerciseData.name || '',
+      description: exerciseData.description || '',
+      instructions: exerciseData.instructions || '',
+      category: exerciseData.category,
+      difficulty: exerciseData.difficulty,
+      durationMinutes: exerciseData.durationMinutes || 15,
+      minPlayers: exerciseData.minPlayers || 1,
+      maxPlayers: exerciseData.maxPlayers || 10,
+      equipment: exerciseData.equipment || '',
+      tags: exerciseData.tags || [],
+      isPublic: exerciseData.isPublic || false
+    };
+    
+    // Debug logging
+    console.log('🔥 ExercisesService.createExercise called');
+    console.log('📍 API URL:', this.apiUrl);
+    console.log('📦 Original request data:', exerciseData);
+    console.log('🔧 Processed request data:', requestData);
+    console.log('🌐 Environment API URL:', environment.apiUrl);
 
-    return this.http.post<Exercise>(this.apiUrl, exerciseData).pipe(
+    return this.http.post<Exercise>(this.apiUrl, requestData).pipe(
       tap(newExercise => {
         const processedExercise = {
           ...newExercise,
@@ -79,6 +114,23 @@ export class ExercisesService {
       }),
       catchError(error => {
         this._isLoading.set(false);
+        // Debug logging for errors
+        console.error('❌ Error creating exercise:', error);
+        console.error('📄 Error status:', error.status);
+        console.error('📝 Error message:', error.message);
+        console.error('🔍 Full error object:', error);
+        
+        // Show appropriate error message
+        if (error.status === 404) {
+          this.notificationService.showError('API endpoint no encontrado. Verifica la configuración del backend.');
+        } else if (error.status === 401) {
+          this.notificationService.showError('No autorizado. Verifica tu autenticación.');
+        } else if (error.status === 0) {
+          this.notificationService.showError('No se puede conectar con el servidor. Verifica que el backend esté ejecutándose.');
+        } else {
+          this.notificationService.showError(`Error al crear el ejercicio: ${error.status} - ${error.message}`);
+        }
+        
         throw error;
       })
     );

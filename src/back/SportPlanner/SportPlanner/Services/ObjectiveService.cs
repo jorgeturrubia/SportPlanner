@@ -52,14 +52,14 @@ public class ObjectiveService : IObjectiveService
             if (filter.Status.HasValue)
                 query = query.Where(o => o.Status == filter.Status.Value);
 
-            if (filter.TeamId.HasValue)
-                query = query.Where(o => o.TeamId == filter.TeamId.Value);
+            if (!string.IsNullOrEmpty(filter.TeamId) && Guid.TryParse(filter.TeamId, out var filterTeamGuid))
+                query = query.Where(o => o.TeamId == filterTeamGuid);
 
             if (filter.DueBefore.HasValue)
-                query = query.Where(o => o.DueDate <= filter.DueBefore.Value);
+                query = query.Where(o => o.TargetDate <= filter.DueBefore.Value);
 
             if (filter.DueAfter.HasValue)
-                query = query.Where(o => o.DueDate >= filter.DueAfter.Value);
+                query = query.Where(o => o.TargetDate >= filter.DueAfter.Value);
 
             if (filter.MinProgress.HasValue)
                 query = query.Where(o => o.Progress >= filter.MinProgress.Value);
@@ -71,7 +71,7 @@ public class ObjectiveService : IObjectiveService
                 query = query.Where(o => o.Tags.Contains(filter.Tag));
 
             if (!string.IsNullOrEmpty(filter.Search))
-                query = query.Where(o => o.Name.Contains(filter.Search) || o.Description.Contains(filter.Search));
+                query = query.Where(o => o.Title.Contains(filter.Search) || o.Description.Contains(filter.Search));
 
             var objectives = await query
                 .OrderByDescending(o => o.CreatedAt)
@@ -86,14 +86,19 @@ public class ObjectiveService : IObjectiveService
         }
     }
 
-    public async Task<ObjectiveDto?> GetObjectiveAsync(int objectiveId, Guid userId)
+    public async Task<ObjectiveDto?> GetObjectiveAsync(string objectiveId, Guid userId)
     {
         try
         {
+            if (!int.TryParse(objectiveId, out int id))
+            {
+                return null;
+            }
+
             var objective = await _context.Objectives
                 .Include(o => o.Team)
                 .Include(o => o.CreatedBy)
-                .FirstOrDefaultAsync(o => o.Id == objectiveId && o.IsActive && o.CreatedByUserId == userId);
+                .FirstOrDefaultAsync(o => o.Id == id && o.IsActive && o.CreatedByUserId == userId);
 
             return objective != null ? MapToObjectiveDto(objective) : null;
         }
@@ -109,10 +114,12 @@ public class ObjectiveService : IObjectiveService
         try
         {
             // Validate team access if specified
-            if (request.TeamId.HasValue)
+            Guid? teamIdGuid = null;
+            if (!string.IsNullOrEmpty(request.TeamId) && Guid.TryParse(request.TeamId, out var parsedTeamId))
             {
+                teamIdGuid = parsedTeamId;
                 var hasTeamAccess = await _context.Teams
-                    .AnyAsync(t => t.Id == request.TeamId.Value && t.IsActive && 
+                    .AnyAsync(t => t.Id == teamIdGuid.Value && t.IsActive && 
                                   (t.CreatedByUserId == userId || 
                                    t.UserTeams.Any(ut => ut.UserId == userId && ut.IsActive)));
 
@@ -124,13 +131,13 @@ public class ObjectiveService : IObjectiveService
 
             var objective = new Objective
             {
-                Name = request.Name,
+                Title = request.Title,
                 Description = request.Description,
                 Priority = request.Priority,
-                Status = request.Status,
-                Progress = request.Progress,
-                DueDate = request.DueDate,
-                TeamId = request.TeamId,
+                Status = ObjectiveStatus.NotStarted,
+                Progress = 0,
+                TargetDate = request.TargetDate,
+                TeamId = teamIdGuid,
                 Tags = request.Tags,
                 CreatedByUserId = userId,
                 CreatedAt = DateTime.UtcNow,
@@ -147,7 +154,7 @@ public class ObjectiveService : IObjectiveService
                 .Include(o => o.CreatedBy)
                 .FirstAsync(o => o.Id == objective.Id);
 
-            _logger.LogInformation("Objective {ObjectiveName} created successfully by user {UserId}", request.Name, userId);
+            _logger.LogInformation("Objective {ObjectiveName} created successfully by user {UserId}", request.Title, userId);
             return MapToObjectiveDto(createdObjective);
         }
         catch (Exception ex)
@@ -157,14 +164,19 @@ public class ObjectiveService : IObjectiveService
         }
     }
 
-    public async Task<ObjectiveDto> UpdateObjectiveAsync(int objectiveId, UpdateObjectiveRequest request, Guid userId)
+    public async Task<ObjectiveDto> UpdateObjectiveAsync(string objectiveId, UpdateObjectiveRequest request, Guid userId)
     {
         try
         {
+            if (!int.TryParse(objectiveId, out int id))
+            {
+                throw new KeyNotFoundException($"Objective with ID {objectiveId} not found");
+            }
+
             var objective = await _context.Objectives
                 .Include(o => o.Team)
                 .Include(o => o.CreatedBy)
-                .FirstOrDefaultAsync(o => o.Id == objectiveId && o.IsActive);
+                .FirstOrDefaultAsync(o => o.Id == id && o.IsActive);
 
             if (objective == null)
             {
@@ -177,30 +189,28 @@ public class ObjectiveService : IObjectiveService
                 throw new UnauthorizedAccessException("User does not have permission to update this objective");
             }
 
-            // Validate team access if specified
-            if (request.TeamId.HasValue)
-            {
-                var hasTeamAccess = await _context.Teams
-                    .AnyAsync(t => t.Id == request.TeamId.Value && t.IsActive && 
-                                  (t.CreatedByUserId == userId || 
-                                   t.UserTeams.Any(ut => ut.UserId == userId && ut.IsActive)));
-
-                if (!hasTeamAccess)
-                {
-                    throw new UnauthorizedAccessException("User does not have access to the specified team");
-                }
-            }
-
+            // Check if status is changing to Completed and set CompletedDate
+            var oldStatus = objective.Status;
+            
             // Update objective properties
-            objective.Name = request.Name;
+            objective.Title = request.Title;
             objective.Description = request.Description;
             objective.Priority = request.Priority;
             objective.Status = request.Status;
             objective.Progress = request.Progress;
-            objective.DueDate = request.DueDate;
-            objective.TeamId = request.TeamId;
+            objective.TargetDate = request.TargetDate;
             objective.Tags = request.Tags;
             objective.UpdatedAt = DateTime.UtcNow;
+            
+            // Set CompletedDate when status changes to Completed
+            if (oldStatus != ObjectiveStatus.Completed && request.Status == ObjectiveStatus.Completed)
+            {
+                objective.CompletedDate = DateTime.UtcNow;
+            }
+            else if (request.Status != ObjectiveStatus.Completed)
+            {
+                objective.CompletedDate = null;
+            }
 
             await _context.SaveChangesAsync();
 
@@ -214,12 +224,17 @@ public class ObjectiveService : IObjectiveService
         }
     }
 
-    public async Task DeleteObjectiveAsync(int objectiveId, Guid userId)
+    public async Task DeleteObjectiveAsync(string objectiveId, Guid userId)
     {
         try
         {
+            if (!int.TryParse(objectiveId, out int id))
+            {
+                throw new KeyNotFoundException($"Objective with ID {objectiveId} not found");
+            }
+
             var objective = await _context.Objectives
-                .FirstOrDefaultAsync(o => o.Id == objectiveId && o.IsActive);
+                .FirstOrDefaultAsync(o => o.Id == id && o.IsActive);
 
             if (objective == null)
             {
@@ -247,12 +262,17 @@ public class ObjectiveService : IObjectiveService
         }
     }
 
-    public async Task<bool> UserCanAccessObjectiveAsync(int objectiveId, Guid userId)
+    public async Task<bool> UserCanAccessObjectiveAsync(string objectiveId, Guid userId)
     {
         try
         {
+            if (!int.TryParse(objectiveId, out int id))
+            {
+                return false;
+            }
+
             return await _context.Objectives
-                .AnyAsync(o => o.Id == objectiveId && o.IsActive && o.CreatedByUserId == userId);
+                .AnyAsync(o => o.Id == id && o.IsActive && o.CreatedByUserId == userId);
         }
         catch (Exception ex)
         {
@@ -265,17 +285,18 @@ public class ObjectiveService : IObjectiveService
     {
         return new ObjectiveDto
         {
-            Id = objective.Id,
-            Name = objective.Name,
+            Id = objective.Id.ToString(),
+            Title = objective.Title,
             Description = objective.Description,
             Priority = objective.Priority,
             Status = objective.Status,
             Progress = objective.Progress,
-            DueDate = objective.DueDate,
-            TeamId = objective.TeamId,
-            TeamName = objective.Team?.Name ?? string.Empty,
+            TargetDate = objective.TargetDate,
+            CompletedDate = objective.CompletedDate,
+            TeamId = objective.TeamId?.ToString(),
+            TeamName = objective.Team?.Name,
             Tags = objective.Tags,
-            CreatedBy = $"{objective.CreatedBy?.FirstName} {objective.CreatedBy?.LastName}".Trim(),
+            CreatedBy = objective.CreatedBy?.Id.ToString() ?? string.Empty,
             CreatedAt = objective.CreatedAt,
             UpdatedAt = objective.UpdatedAt,
             IsActive = objective.IsActive

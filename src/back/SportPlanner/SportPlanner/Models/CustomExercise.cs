@@ -16,9 +16,9 @@ public class CustomExercise
     [MaxLength(2000)]
     public string Instructions { get; set; } = string.Empty;
     
-    public ExerciseCategory Category { get; set; } = ExerciseCategory.Tecnico;
+    public ExerciseCategory Category { get; set; } = ExerciseCategory.Technical;
     
-    public DifficultyLevel Difficulty { get; set; } = DifficultyLevel.Principiante;
+    public DifficultyLevel Difficulty { get; set; } = DifficultyLevel.Beginner;
     
     [Range(1, 300)]
     public int DurationMinutes { get; set; } = 15;
@@ -54,17 +54,10 @@ public class CustomExercise
 
 public enum ExerciseCategory
 {
-    Tecnico = 0,
-    Tactico = 1,
-    Fisico = 2,
-    Psicologico = 3,
-    Coordinacion = 4
+    Technical = 0,
+    Tactical = 1,
+    Physical = 2,
+    Psychological = 3,
+    Coordination = 4
 }
 
-public enum DifficultyLevel
-{
-    Principiante = 0,
-    Intermedio = 1,
-    Avanzado = 2,
-    Experto = 3
-}

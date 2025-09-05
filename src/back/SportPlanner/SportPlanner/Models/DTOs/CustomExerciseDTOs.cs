@@ -1,26 +1,62 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace SportPlanner.Models.DTOs;
 
 public class CustomExerciseDto
 {
-    public int Id { get; set; }
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+    
+    [JsonPropertyName("name")]
     public string Name { get; set; } = string.Empty;
+    
+    [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
+    
+    [JsonPropertyName("instructions")]
     public string Instructions { get; set; } = string.Empty;
+    
+    [JsonPropertyName("category")]
     public ExerciseCategory Category { get; set; }
+    
+    [JsonPropertyName("difficulty")]
     public DifficultyLevel Difficulty { get; set; }
+    
+    [JsonPropertyName("durationMinutes")]
     public int DurationMinutes { get; set; }
+    
+    [JsonPropertyName("minPlayers")]
     public int MinPlayers { get; set; }
+    
+    [JsonPropertyName("maxPlayers")]
     public int MaxPlayers { get; set; }
+    
+    [JsonPropertyName("equipment")]
     public string Equipment { get; set; } = string.Empty;
+    
+    [JsonPropertyName("tags")]
     public List<string> Tags { get; set; } = new();
+    
+    [JsonPropertyName("isPublic")]
     public bool IsPublic { get; set; }
+    
+    [JsonPropertyName("isCustom")]
     public bool IsCustom { get; set; }
+    
+    [JsonPropertyName("usageCount")]
     public int UsageCount { get; set; }
+    
+    [JsonPropertyName("createdBy")]
     public string CreatedBy { get; set; } = string.Empty;
+    
+    [JsonPropertyName("createdAt")]
     public DateTime CreatedAt { get; set; }
+    
+    [JsonPropertyName("updatedAt")]
     public DateTime UpdatedAt { get; set; }
+    
+    [JsonPropertyName("isActive")]
     public bool IsActive { get; set; }
 }
 
@@ -36,9 +72,9 @@ public class CreateCustomExerciseRequest
     [MaxLength(2000)]
     public string Instructions { get; set; } = string.Empty;
     
-    public ExerciseCategory Category { get; set; } = ExerciseCategory.Tecnico;
+    public ExerciseCategory Category { get; set; } = ExerciseCategory.Technical;
     
-    public DifficultyLevel Difficulty { get; set; } = DifficultyLevel.Principiante;
+    public DifficultyLevel Difficulty { get; set; } = DifficultyLevel.Beginner;
     
     [Range(1, 300)]
     public int DurationMinutes { get; set; } = 15;

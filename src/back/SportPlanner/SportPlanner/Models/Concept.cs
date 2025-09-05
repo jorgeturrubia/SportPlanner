@@ -4,11 +4,10 @@ namespace SportPlanner.Models;
 
 public enum DifficultyLevel
 {
-    Beginner = 1,
-    Intermediate = 2,
-    Advanced = 3,
-    Expert = 4,
-    Professional = 5
+    Beginner = 0,
+    Intermediate = 1,
+    Advanced = 2,
+    Expert = 3
 }
 
 public class Concept

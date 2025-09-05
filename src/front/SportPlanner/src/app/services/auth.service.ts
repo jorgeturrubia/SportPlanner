@@ -341,7 +341,7 @@ export class AuthService {
    * Map Supabase user to our User model
    */
   private mapSupabaseUser(supabaseUser: SupabaseUser): User {
-    return {
+    const user: User = {
       id: supabaseUser.id,
       email: supabaseUser.email || '',
       firstName: supabaseUser.user_metadata?.['first_name'] || '',
@@ -352,6 +352,7 @@ export class AuthService {
       createdAt: new Date(supabaseUser.created_at),
       updatedAt: new Date()
     };
+    return user;
   }
 
   /**
