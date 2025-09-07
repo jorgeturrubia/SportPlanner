@@ -112,7 +112,7 @@ public class PlanningService : IPlanningService
     {
         try
         {
-            if (!int.TryParse(planningId, out int id))
+            if (!Guid.TryParse(planningId, out Guid id))
             {
                 _logger.LogWarning("Invalid planning ID format: {PlanningId}", planningId);
                 return null;
@@ -207,7 +207,7 @@ public class PlanningService : IPlanningService
     {
         try
         {
-            if (!int.TryParse(planningId, out int id))
+            if (!Guid.TryParse(planningId, out Guid id))
             {
                 throw new ArgumentException("Invalid planning ID format", nameof(planningId));
             }
@@ -281,7 +281,7 @@ public class PlanningService : IPlanningService
     {
         try
         {
-            if (!int.TryParse(planningId, out int id))
+            if (!Guid.TryParse(planningId, out Guid id))
             {
                 throw new ArgumentException("Invalid planning ID format", nameof(planningId));
             }
@@ -317,7 +317,7 @@ public class PlanningService : IPlanningService
     {
         try
         {
-            if (!int.TryParse(planningId, out int id))
+            if (!Guid.TryParse(planningId, out Guid id))
             {
                 return false;
             }
@@ -365,7 +365,7 @@ public class PlanningService : IPlanningService
     {
         try
         {
-            if (!int.TryParse(planningId, out int id))
+            if (!Guid.TryParse(planningId, out Guid id))
             {
                 throw new ArgumentException("Invalid planning ID format", nameof(planningId));
             }

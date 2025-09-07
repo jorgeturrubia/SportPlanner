@@ -137,21 +137,28 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
     {
         try
         {
-            var supabaseUser = await _supabaseClient.Auth.GetUser(token);
+            // Parse the JWT token to extract the user ID directly
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(token);
+            var supabaseId = jwtToken.Claims.FirstOrDefault(c => c.Type == "sub")?.Value;
 
-            if (supabaseUser is null)
+            if (string.IsNullOrEmpty(supabaseId))
             {
-                throw new UnauthorizedAccessException("Invalid token");
+                throw new UnauthorizedAccessException("Invalid token - no subject found");
             }
 
+            _logger.LogDebug("🔍 Looking for user with Supabase ID: {SupabaseId}", supabaseId);
+
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.SupabaseId == supabaseUser.Id);
+                .FirstOrDefaultAsync(u => u.SupabaseId == supabaseId);
 
             if (user == null)
             {
-                throw new UnauthorizedAccessException("User not found");
+                _logger.LogWarning("⚠️ User not found in database for Supabase ID: {SupabaseId}", supabaseId);
+                throw new UnauthorizedAccessException("User not found in database");
             }
 
+            _logger.LogDebug("✅ User found: {Email} ({Id})", user.Email, user.Id);
             return MapToUserDto(user);
         }
         catch (Exception ex)

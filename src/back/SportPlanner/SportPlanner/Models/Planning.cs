@@ -4,7 +4,7 @@ namespace SportPlanner.Models;
 
 public class Planning
 {
-    public int Id { get; set; }
+    public Guid Id { get; set; }
     
     [Required]
     [MaxLength(200)]
@@ -52,8 +52,8 @@ public class Planning
 public class PlanningConcept
 {
     public int Id { get; set; }
-    public int PlanningId { get; set; }
-    public int ConceptId { get; set; }
+    public Guid PlanningId { get; set; }
+    public Guid ConceptId { get; set; }
     
     public int Order { get; set; } // Orden del concepto en la planificación
     public int PlannedSessions { get; set; } // Sesiones planificadas para este concepto
@@ -67,7 +67,7 @@ public class PlanningConcept
 public class PlanningRating
 {
     public int Id { get; set; }
-    public int PlanningId { get; set; }
+    public Guid PlanningId { get; set; }
     public Guid UserId { get; set; }
     
     public int Rating { get; set; } // 1-5 stars

@@ -20,16 +20,16 @@ public class TeamService : ITeamService
     {
         try
         {
+            _logger.LogInformation("Getting teams for user {UserId}", userId);
+
+            // Simplified query without includes to avoid relationship issues
             var teams = await _context.Teams
-                .Include(t => t.Organization)
-                .Include(t => t.CreatedBy)
-                .Include(t => t.UserTeams)
-                .Where(t => t.IsActive && t.IsVisible && 
-                           (t.CreatedByUserId == userId || 
-                            t.UserTeams.Any(ut => ut.UserId == userId && ut.IsActive)))
+                .Where(t => t.IsActive && t.IsVisible && t.CreatedByUserId == userId)
                 .ToListAsync();
 
-            return teams.Select(MapToTeamDto);
+            _logger.LogInformation("Found {TeamCount} teams for user {UserId}", teams.Count, userId);
+
+            return teams.Select(MapToSimpleTeamDto);
         }
         catch (Exception ex)
         {
@@ -207,6 +207,27 @@ public class TeamService : ITeamService
             CreatedAt = team.CreatedAt,
             UpdatedAt = team.UpdatedAt,
             MemberCount = team.UserTeams?.Count(ut => ut.IsActive) ?? 0,
+            IsActive = team.IsActive,
+            IsVisible = team.IsVisible
+        };
+    }
+
+    private static TeamDto MapToSimpleTeamDto(Team team)
+    {
+        return new TeamDto
+        {
+            Id = team.Id,
+            Name = team.Name,
+            Sport = team.Sport,
+            Category = team.Category,
+            Gender = team.Gender,
+            Level = team.Level,
+            Description = team.Description,
+            OrganizationId = team.OrganizationId,
+            CreatedBy = "Unknown", // Sin include no podemos acceder a CreatedBy
+            CreatedAt = team.CreatedAt,
+            UpdatedAt = team.UpdatedAt,
+            MemberCount = 0, // Sin include no podemos contar UserTeams
             IsActive = team.IsActive,
             IsVisible = team.IsVisible
         };
