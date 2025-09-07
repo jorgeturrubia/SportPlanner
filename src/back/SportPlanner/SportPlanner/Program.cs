@@ -47,33 +47,8 @@ builder.Services.AddScoped<IPlanningService, PlanningService>();
 // HTTP Context Accessor for UserContextService
 builder.Services.AddHttpContextAccessor();
 
-// JWT Authentication configuration for Supabase
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
-    {
-        options.Authority = supabaseUrl;
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = false, // Supabase handles this
-            ValidIssuer = supabaseUrl,
-            ValidAudience = "authenticated",
-            ClockSkew = TimeSpan.FromMinutes(5) // Allow some clock skew
-        };
-
-        // Let the JWT middleware handle token validation
-        options.Events = new JwtBearerEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                logger.LogWarning("JWT Authentication failed: {Error}", context.Exception?.Message);
-                return Task.CompletedTask;
-            }
-        };
-    });
+// Since we're using custom JWT middleware, we'll disable the default JWT authentication
+// and rely on our custom JwtMiddleware that already validates tokens correctly
 
 builder.Services.AddAuthorization();
 
@@ -115,10 +90,10 @@ app.UseMiddleware<GlobalExceptionMiddleware>();
 
 app.UseCors("AllowAngularApp");
 
-// Add JWT middleware
+// Add JWT middleware (this handles authentication)
 app.UseMiddleware<JwtMiddleware>();
 
-app.UseAuthentication();
+// Only use authorization since authentication is handled by custom middleware
 app.UseAuthorization();
 
 app.MapControllers();
