@@ -4,6 +4,7 @@ import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { authInterceptor, authErrorInterceptor } from './interceptors/auth.interceptor';
+import { debugInterceptor } from './interceptors/debug.interceptor';
 import { provideIcons } from '@ng-icons/core';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
@@ -53,7 +54,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([authInterceptor, authErrorInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([debugInterceptor, authInterceptor, authErrorInterceptor])),
     provideClientHydration(withEventReplay()),
     // Locale configuration
     { provide: LOCALE_ID, useValue: 'es-ES' },

@@ -59,11 +59,22 @@ export class TeamsComponent implements OnInit {
   );
 
   ngOnInit(): void {
+    console.log('🏃 TEAMS COMPONENT INIT');
+    console.log('  🔒 Is authenticated:', this.teamsService['authService'].isAuthenticated());
+    console.log('  👤 Current user:', this.teamsService['authService'].currentUser()?.email);
     this.loadTeams();
   }
 
   private loadTeams(): void {
-    this.teamsService.getAllTeams().subscribe();
+    console.log('📋 LOADING TEAMS...');
+    this.teamsService.getAllTeams().subscribe({
+      next: (teams) => {
+        console.log('✅ Teams loaded successfully:', teams.length, 'teams');
+      },
+      error: (error) => {
+        console.error('❌ Error loading teams:', error);
+      }
+    });
   }
 
   onCreateTeam(): void {

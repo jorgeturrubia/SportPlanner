@@ -134,8 +134,16 @@ export class AuthComponent implements OnInit, OnDestroy {
 
         const response = await this.authService.login(loginRequest);
         
+        console.log('🔍 LOGIN DEBUG:');
+        console.log('  ✅ Login response:', response);
+        console.log('  🔒 Is authenticated after login:', this.authService.isAuthenticated());
+        console.log('  👤 Current user after login:', this.authService.currentUser()?.email);
+        console.log('  🎯 Redirect URL:', this.redirectUrl);
+        
         // Navigate to redirect URL or dashboard
+        console.log('  🚀 Attempting navigation to:', this.redirectUrl);
         await this.router.navigate([this.redirectUrl]);
+        console.log('  ✅ Navigation completed');
         
       } catch (error) {
         console.error('Login error:', error);

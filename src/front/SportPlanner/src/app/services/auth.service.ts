@@ -37,9 +37,6 @@ export class AuthService {
   private readonly REMEMBER_ME_KEY = 'sportplanner-remember-me';
   private session = new BehaviorSubject<Session | null>(null);
   
-  // Prevent concurrent operations
-  private authOperationInProgress = false;
-  private refreshPromise: Promise<void> | null = null;
 
   // Public computed signals
   public readonly isAuthenticated = computed(() => this._isAuthenticated());
@@ -87,54 +84,90 @@ export class AuthService {
       }
     });
 
-    // Initialize immediately without waiting
+    // SIMPLIFIED: Check auth immediately and synchronously if possible
     this._isLoading.set(false);
-    this._isAuthenticated.set(false);
-    this._currentUser.set(null);
     this._isInitialized.set(true);
-
-    // Set up auth state listener (only in browser) - delayed to avoid SSR blocking
+    
+    // Try to restore from storage immediately (synchronous)
     if (this.isBrowser) {
-      // Use setTimeout to avoid blocking SSR hydration
-      setTimeout(() => {
+      const storedAuth = this.getStoredAuthData();
+      if (storedAuth && storedAuth.expiresAt > Date.now()) {
+        // We have valid stored auth - assume authenticated for now
+        this._isAuthenticated.set(true);
+        this._currentUser.set(storedAuth.user);
+        
+        // CRITICAL FIX: Create temporary session immediately to avoid race condition
+        const tempSession: Session = {
+          access_token: storedAuth.accessToken,
+          refresh_token: storedAuth.refreshToken,
+          expires_at: Math.floor(storedAuth.expiresAt / 1000),
+          expires_in: Math.max(0, Math.floor((storedAuth.expiresAt - Date.now()) / 1000)),
+          token_type: 'bearer',
+          user: {
+            id: storedAuth.user.id,
+            email: storedAuth.user.email,
+            user_metadata: {},
+            app_metadata: {},
+            aud: 'authenticated',
+            created_at: new Date().toISOString(),
+            email_confirmed_at: new Date().toISOString(),
+            phone: '',
+            confirmed_at: new Date().toISOString(),
+            last_sign_in_at: new Date().toISOString(),
+            role: 'authenticated'
+          }
+        };
+        this.session.next(tempSession);
+        
+        // Set up auth state listener
         this.setupAuthStateListener();
-        this.initializeAuthStateAsync().catch(() => {
-          // Ignore errors, already initialized
-        });
-      }, 0);
+        
+        // Try to restore session in background
+        setTimeout(() => {
+          this.restoreSessionInBackground(storedAuth);
+        }, 100);
+      } else {
+        // No valid stored auth
+        this._isAuthenticated.set(false);
+        this._currentUser.set(null);
+        this.session.next(null);
+        if (storedAuth) {
+          this.clearStoredAuthData();
+        }
+      }
+    } else {
+      // SSR - assume not authenticated
+      this._isAuthenticated.set(false);
+      this._currentUser.set(null);
+      this.session.next(null);
     }
   }
 
 
   /**
-   * Initialize authentication state from stored data (browser only)
+   * Restore session in background (non-blocking)
    */
-  private async initializeAuthStateAsync(): Promise<void> {
-    if (!this.isBrowser) return;
-
+  private async restoreSessionInBackground(storedAuth: StoredAuthData): Promise<void> {
     try {
-      // Check for stored auth data
-      const storedAuth = this.getStoredAuthData();
-      
-      if (storedAuth && storedAuth.expiresAt > Date.now()) {
-        // Try to restore session in background
-        const { data: { session }, error } = await this.supabase.auth.setSession({
-          access_token: storedAuth.accessToken,
-          refresh_token: storedAuth.refreshToken
-        });
+      console.log('🔄 Restoring session in background...');
+      const { data: { session }, error } = await this.supabase.auth.setSession({
+        access_token: storedAuth.accessToken,
+        refresh_token: storedAuth.refreshToken
+      });
 
-        if (!error && session) {
-          const user = this.mapSupabaseUser(session.user);
-          this.updateAuthState(session, user);
-        } else {
-          this.clearStoredAuthData();
-        }
-      } else if (storedAuth) {
+      if (!error && session) {
+        const user = this.mapSupabaseUser(session.user);
+        this.updateAuthState(session, user);
+        console.log('✅ Session restored successfully');
+      } else {
+        console.warn('⚠️ Session restore failed, clearing stored data');
         this.clearStoredAuthData();
+        this.updateAuthState(null, null);
       }
     } catch (error) {
-      console.warn('Background auth restore failed:', error);
+      console.warn('⚠️ Background session restore failed:', error);
       this.clearStoredAuthData();
+      this.updateAuthState(null, null);
     }
   }
 
@@ -203,6 +236,9 @@ export class AuthService {
       // Map user data and store auth info
       const user = this.mapSupabaseUser(data.user);
       this.storeAuthData(data.session, user, credentials.rememberMe || false);
+      
+      // CRITICAL: Update auth state signals immediately
+      this.updateAuthState(data.session, user);
 
       console.log('✅ Login successful:', user.email);
       this.notificationService.showSuccess(`¡Bienvenido, ${user.firstName || user.email}!`);
@@ -270,6 +306,8 @@ export class AuthService {
       // If session exists (email confirmation not required), store auth data
       if (data.session) {
         this.storeAuthData(data.session, user, false);
+        // CRITICAL: Update auth state signals immediately
+        this.updateAuthState(data.session, user);
         console.log('✅ Registration successful with immediate login:', user.email);
         this.notificationService.showSuccess(`¡Bienvenido, ${user.firstName}! Tu cuenta ha sido creada.`);
       } else {
@@ -313,14 +351,6 @@ export class AuthService {
    * Logout user
    */
   async logout(): Promise<void> {
-    // Prevent concurrent logout operations
-    if (this.authOperationInProgress) {
-      console.log('🚪 Logout already in progress, ignoring duplicate request');
-      return;
-    }
-    
-    this.authOperationInProgress = true;
-    
     try {
       console.log('🚪 Logout initiated');
       this._isLoading.set(true);
@@ -330,22 +360,12 @@ export class AuthService {
       this.clearTokenRefresh();
       this.updateAuthState(null, null);
       
-      // Try Supabase logout, but don't block on it and handle lock errors
+      // Try Supabase logout, but don't block on it
       try {
-        // Add timeout to prevent hanging
-        const logoutPromise = this.supabase.auth.signOut();
-        const timeoutPromise = new Promise<never>((_, reject) => {
-          setTimeout(() => reject(new Error('Logout timeout after 5 seconds')), 5000);
-        });
-        
-        await Promise.race([logoutPromise, timeoutPromise]);
+        await this.supabase.auth.signOut();
         console.log('✅ Supabase logout successful');
       } catch (supabaseError) {
-        if (supabaseError instanceof Error && supabaseError.name === 'NavigatorLockAcquireTimeoutError') {
-          console.warn('⚠️ Navigator lock timeout during logout, but local state is cleared');
-        } else {
-          console.warn('⚠️ Supabase logout failed, but local state cleared:', supabaseError);
-        }
+        console.warn('⚠️ Supabase logout failed, but local state cleared:', supabaseError);
       }
       
       this.notificationService.showInfo('Sesión cerrada correctamente');
@@ -370,7 +390,6 @@ export class AuthService {
       }
     } finally {
       this._isLoading.set(false);
-      this.authOperationInProgress = false;
     }
   }
 
@@ -528,7 +547,7 @@ export class AuthService {
    * Check authentication state
    */
   async checkAuthState(): Promise<boolean> {
-    // Wait for initialization if still loading, with timeout
+    // Wait for initialization if still loading, with shorter timeout
     if (!this.isInitialized()) {
       await new Promise<void>((resolve) => {
         const startTime = Date.now();
@@ -536,7 +555,7 @@ export class AuthService {
           if (this.isInitialized()) {
             clearInterval(checkInterval);
             resolve();
-          } else if (Date.now() - startTime > 10000) { // 10 second timeout
+          } else if (Date.now() - startTime > 2000) { // 2 second timeout
             clearInterval(checkInterval);
             console.warn('⚠️ Auth initialization timeout, proceeding anyway');
             this._isInitialized.set(true);
@@ -572,13 +591,6 @@ export class AuthService {
         return refreshedSession?.access_token || null;
       } catch (error) {
         console.error('❌ Token refresh failed:', error);
-        
-        // Handle NavigatorLockAcquireTimeoutError specifically
-        if (error instanceof Error && error.name === 'NavigatorLockAcquireTimeoutError') {
-          console.warn('⚠️ Navigator lock timeout, using existing token');
-          return sessionValue.access_token; // Use existing token
-        }
-        
         this.handleAuthError(error);
         return null;
       }
@@ -660,32 +672,10 @@ export class AuthService {
    * Refresh current session
    */
   async refreshSession(): Promise<void> {
-    // Prevent concurrent refresh operations
-    if (this.refreshPromise) {
-      console.log('🔄 Refresh already in progress, waiting for completion...');
-      return this.refreshPromise;
-    }
-    
-    this.refreshPromise = this.doRefreshSession();
-    
-    try {
-      await this.refreshPromise;
-    } finally {
-      this.refreshPromise = null;
-    }
-  }
-  
-  private async doRefreshSession(): Promise<void> {
     try {
       console.log('🔄 Attempting to refresh session...');
       
-      // Add timeout wrapper for Supabase operations that can get stuck
-      const refreshPromise = this.supabase.auth.refreshSession();
-      const timeoutPromise = new Promise<never>((_, reject) => {
-        setTimeout(() => reject(new Error('Refresh timeout after 10 seconds')), 10000);
-      });
-      
-      const { data, error } = await Promise.race([refreshPromise, timeoutPromise]);
+      const { data, error } = await this.supabase.auth.refreshSession();
       
       if (error) {
         console.error('❌ Session refresh error:', error);
@@ -709,21 +699,8 @@ export class AuthService {
       }
     } catch (error) {
       console.error('❌ Session refresh failed:', error);
-      
-      // Handle NavigatorLockAcquireTimeoutError specifically - don't logout for this
-      if (error instanceof Error && error.name === 'NavigatorLockAcquireTimeoutError') {
-        console.warn('⚠️ Navigator lock timeout during refresh - will retry later');
-        throw error; // Let caller decide what to do
-      }
-      
-      // Handle other timeout errors
-      if (error instanceof Error && error.message.includes('timeout')) {
-        console.warn('⚠️ Refresh timeout - will retry later');
-        throw error; // Let caller decide what to do
-      }
-      
       this.handleAuthError(error);
-      throw error; // Re-throw to let caller handle
+      throw error;
     }
   }
 
