@@ -47,47 +47,58 @@ export class AuthService {
   constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
     
-    // Initialize Supabase client with lock-safe configuration
+    // Initialize Supabase client with SSR-safe configuration
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
       auth: {
-        autoRefreshToken: false, // Disable auto refresh to prevent lock conflicts
-        persistSession: false, // We handle persistence manually
-        detectSessionInUrl: true,
-        flowType: 'pkce'
+        autoRefreshToken: this.isBrowser,
+        persistSession: this.isBrowser,
+        detectSessionInUrl: this.isBrowser,
+        flowType: 'pkce',
+        storage: this.isBrowser ? {
+          getItem: (key: string) => {
+            try {
+              return localStorage.getItem(key) || sessionStorage.getItem(key);
+            } catch {
+              return null;
+            }
+          },
+          setItem: (key: string, value: string) => {
+            try {
+              localStorage.setItem(key, value);
+            } catch (error) {
+              console.warn('Failed to store session data:', error);
+            }
+          },
+          removeItem: (key: string) => {
+            try {
+              localStorage.removeItem(key);
+              sessionStorage.removeItem(key);
+            } catch (error) {
+              console.warn('Failed to remove session data:', error);
+            }
+          }
+        } : undefined
       }
     });
 
-    // Initialize auth state synchronously first (SSR safe)
-    this.initializeAuthStateSync();
-
-    // Set up auth state listener (only in browser)
-    if (this.isBrowser) {
-      this.setupAuthStateListener();
-      // Initialize async operations in browser only
-      this.initializeAuthStateAsync();
-    }
-
-    // Token refresh is handled by the auth state listener
-  }
-
-  /**
-   * Initialize authentication state synchronously (for SSR compatibility)
-   */
-  private initializeAuthStateSync(): void {
-    // Set default unauthenticated state immediately
+    // Initialize immediately without waiting
+    this._isLoading.set(false);
     this._isAuthenticated.set(false);
     this._currentUser.set(null);
-    this._isLoading.set(true);
-    
-    // Mark as initialized once basic setup is done
-    // Actual auth state will be resolved in initializeAuthStateAsync
-    setTimeout(() => {
-      if (!this.isBrowser) {
-        this._isInitialized.set(true);
-        this._isLoading.set(false);
-      }
-    }, 0);
+    this._isInitialized.set(true);
+
+    // Set up auth state listener (only in browser) - delayed to avoid SSR blocking
+    if (this.isBrowser) {
+      // Use setTimeout to avoid blocking SSR hydration
+      setTimeout(() => {
+        this.setupAuthStateListener();
+        this.initializeAuthStateAsync().catch(() => {
+          // Ignore errors, already initialized
+        });
+      }, 0);
+    }
   }
+
 
   /**
    * Initialize authentication state from stored data (browser only)
@@ -100,36 +111,24 @@ export class AuthService {
       const storedAuth = this.getStoredAuthData();
       
       if (storedAuth && storedAuth.expiresAt > Date.now()) {
-        // Validate stored session with Supabase
+        // Try to restore session in background
         const { data: { session }, error } = await this.supabase.auth.setSession({
           access_token: storedAuth.accessToken,
           refresh_token: storedAuth.refreshToken
         });
 
         if (!error && session) {
-          console.log('✅ Restored auth session from storage');
           const user = this.mapSupabaseUser(session.user);
           this.updateAuthState(session, user);
         } else {
-          console.log('❌ Stored session invalid, clearing auth data');
-          this.clearStoredAuthData();
-          this.updateAuthState(null, null);
-        }
-      } else {
-        // No valid stored session
-        console.log('ℹ️ No valid stored auth session found');
-        if (storedAuth) {
           this.clearStoredAuthData();
         }
-        this.updateAuthState(null, null);
+      } else if (storedAuth) {
+        this.clearStoredAuthData();
       }
     } catch (error) {
-      console.error('❌ Error initializing auth state:', error);
+      console.warn('Background auth restore failed:', error);
       this.clearStoredAuthData();
-      this.updateAuthState(null, null);
-    } finally {
-      this._isLoading.set(false);
-      this._isInitialized.set(true);
     }
   }
 
@@ -491,12 +490,19 @@ export class AuthService {
    * Check authentication state
    */
   async checkAuthState(): Promise<boolean> {
-    // Wait for initialization if still loading
+    // Wait for initialization if still loading, with timeout
     if (!this.isInitialized()) {
       await new Promise<void>((resolve) => {
+        const startTime = Date.now();
         const checkInterval = setInterval(() => {
           if (this.isInitialized()) {
             clearInterval(checkInterval);
+            resolve();
+          } else if (Date.now() - startTime > 10000) { // 10 second timeout
+            clearInterval(checkInterval);
+            console.warn('⚠️ Auth initialization timeout, proceeding anyway');
+            this._isInitialized.set(true);
+            this._isLoading.set(false);
             resolve();
           }
         }, 50);
@@ -507,7 +513,37 @@ export class AuthService {
   }
 
   /**
-   * Get current access token
+   * Get current access token, refreshing if necessary
+   */
+  async getAccessTokenAsync(): Promise<string | null> {
+    const sessionValue = this.session.getValue();
+    
+    if (!sessionValue) {
+      return null;
+    }
+
+    // Check if token is close to expiration (within 5 minutes)
+    const expiresAt = sessionValue.expires_at;
+    const currentTime = Math.floor(Date.now() / 1000);
+    const fiveMinutesFromNow = currentTime + (5 * 60);
+
+    if (expiresAt && expiresAt <= fiveMinutesFromNow) {
+      try {
+        await this.refreshSession();
+        const refreshedSession = this.session.getValue();
+        return refreshedSession?.access_token || null;
+      } catch (error) {
+        console.error('❌ Token refresh failed:', error);
+        this.handleAuthError(error);
+        return null;
+      }
+    }
+
+    return sessionValue.access_token;
+  }
+
+  /**
+   * Get current access token (synchronous - for compatibility)
    */
   getAccessToken(): string | null {
     const sessionValue = this.session.getValue();
@@ -519,8 +555,12 @@ export class AuthService {
    */
   private handleAuthError(error: unknown): void {
     console.error('Authentication error:', error);
-    this.notificationService.showError('Error de autenticación. Por favor, inicia sesión nuevamente.');
-    this.logout();
+    
+    // Only show error if user is currently authenticated (avoid spam during logout)
+    if (this._isAuthenticated()) {
+      this.notificationService.showError('Sesión expirada. Por favor, inicia sesión nuevamente.');
+      this.logout();
+    }
   }
 
   /**
@@ -528,9 +568,9 @@ export class AuthService {
    */
   async resetPassword(email: string): Promise<void> {
     try {
-      const redirectTo = this.isBrowser 
+      const redirectTo = this.isBrowser && typeof window !== 'undefined'
         ? `${window.location.origin}/auth/reset-password`
-        : 'https://localhost:4200/auth/reset-password'; // Fallback for SSR
+        : 'http://localhost:4200/auth/reset-password'; // Fallback for SSR
         
       const { error } = await this.supabase.auth.resetPasswordForEmail(email, {
         redirectTo
@@ -576,21 +616,33 @@ export class AuthService {
    */
   async refreshSession(): Promise<void> {
     try {
+      console.log('🔄 Attempting to refresh session...');
       const { data, error } = await this.supabase.auth.refreshSession();
       
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Session refresh error:', error);
+        throw error;
+      }
       
       if (data.session && data.user) {
+        console.log('✅ Session refreshed successfully');
         const user = this.mapSupabaseUser(data.user);
         this.updateAuthState(data.session, user);
         
         // Update stored auth data
-        const rememberMe = localStorage?.getItem(this.REMEMBER_ME_KEY) === 'true';
+        const rememberMe = this.isBrowser && typeof localStorage !== 'undefined' && localStorage.getItem(this.REMEMBER_ME_KEY) === 'true';
         this.storeAuthData(data.session, user, rememberMe);
+        
+        // Schedule next refresh
+        this.scheduleTokenRefresh();
+      } else {
+        console.warn('⚠️ Session refresh returned no session or user');
+        throw new Error('No session returned from refresh');
       }
     } catch (error) {
-      console.error('Session refresh failed:', error);
+      console.error('❌ Session refresh failed:', error);
       this.handleAuthError(error);
+      throw error; // Re-throw to let caller handle
     }
   }
 

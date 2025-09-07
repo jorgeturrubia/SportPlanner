@@ -25,51 +25,31 @@ SportPlanner is a **collaborative sports planning platform** that revolutionizes
 ## Agent Architecture System
 @.claude/docs/AGENTS.md
 
-### **Director Agent Orchestration**
-**Primary Pattern**: `User Request → Director Agent → Selects Specialist → Provides Context → Executes Task`
-
-**NEW: director-agent** - Master coordinator that:
-- Analyzes incoming requests and determines optimal specialized agent
-- Reminds selected agent about available documentation context (@.claude/docs/)
-- Orchestrates complex tasks requiring multiple agents
-- Ensures consistent patterns across all agent interactions
-
 ### **Available Specialized Agents**
 
-**Core Agents** (Orchestrated by Director):
+**Core Agents**:
 - **claude-memory-manager**: Memory & documentation management
 - **agent-generator**: Create domain-specific agents  
 - **dotnet-expert**: .NET 8 backend specialist (APIs, EF Core, Security)
 - **angular-best-practices**: Angular 20+ frontend specialist (Signals, SSR, Performance)
+- **general-purpose**: Research, analysis, and multi-step task execution
 
-### **Agent Delegation Flow**
-```
-1. User: "Create subscription management feature"
-2. Director: Analyzes → Identifies need for backend + frontend + memory update
-3. Director: Selects dotnet-expert → Reminds about @ARCHITECTURE.md context
-4. Director: Selects angular-best-practices → Reminds about @PRODUCT.md patterns
-5. Director: Selects claude-memory-manager → Updates system context
-```
-
-### **When Director Auto-Selects Agents**:
-- **Backend-heavy tasks** → Delegates to `dotnet-expert` with architecture context
-- **Frontend components** → Delegates to `angular-best-practices` with UX guidelines
-- **New requirements** → Uses `agent-generator` to create specialized agent first
-- **Documentation changes** → Ensures `claude-memory-manager` updates this file
-- **Complex features** → Coordinates multiple agents in sequence
-
-### **Usage Patterns**
+### **Agent Usage Patterns**
 ```bash
-# Simple delegation
-/Task "[any request]"  # Director automatically selects appropriate agent
+# Backend development
+/Task dotnet-expert "[backend task with context]"
 
-# Direct agent access (when you know exactly what you need)
-/Task dotnet-expert "[backend task]"
-/Task angular-best-practices "[frontend task]"
+# Frontend development  
+/Task angular-best-practices "[frontend task with context]"
 
-# Complex orchestration
-/Task "Build complete marketplace feature with search, filters, and ratings"
-# → Director coordinates: dotnet-expert + angular-best-practices + claude-memory-manager
+# Research and analysis
+/Task general-purpose "[research/analysis task]"
+
+# Memory and documentation updates
+/Task claude-memory-manager "[documentation task]"
+
+# Create new specialized agents
+/Task agent-generator "[agent creation request]"
 ```
 
 ## Development Workflows
@@ -87,8 +67,8 @@ npm install && npm start        # App at http://localhost:4200
 
 ### SportPlanner-Specific Patterns
 1. **New Feature Development**:
-   - Director analyzes requirements and selects appropriate agents
-   - Agents receive context from @.claude/docs/ automatically
+   - Use appropriate specialized agents for backend/frontend work
+   - Provide context from @.claude/docs/ when needed
    - Follow multi-tenant security (user/org isolation)
    - Respect subscription limits in business logic
 
@@ -145,41 +125,42 @@ npm run lint                    # ESLint for Angular
 ```bash
 /initsystem                     # System health check
 /generate-product-docs update   # Refresh documentation
-/Task "[any request]"           # Director selects and orchestrates agents
+/Task [agent-name] "[request]"    # Execute specific agent for task
 ```
 
-## Agent-Orchestrated Development Scenarios
+## Development Scenarios with Specialized Agents
 
 ### 1. Creating New Team Management Feature
 ```bash
-# Director automatically coordinates:
-/Task "Implement complete team CRUD with subscription limits and reactive UI"
+# Backend API development:
+/Task dotnet-expert "Create complete TeamService with subscription validation and CRUD operations (context: @ARCHITECTURE.md)"
 
-# Director flow:
-# → dotnet-expert: "Create TeamService with subscription validation (context: @ARCHITECTURE.md)"
-# → angular-best-practices: "Build team management component (context: @PRODUCT.md UX patterns)"
-# → claude-memory-manager: "Document new team management architecture"
+# Frontend component development:
+/Task angular-best-practices "Build team management component with reactive UI (context: @PRODUCT.md UX patterns)"
+
+# Documentation update:
+/Task claude-memory-manager "Document new team management architecture"
 ```
 
 ### 2. Building Marketplace Search
 ```bash
-# Director orchestrates backend + frontend:
-/Task "Build marketplace search with filters, pagination and ratings"
+# Backend search API:
+/Task dotnet-expert "Implement marketplace search API with filtering, pagination and ratings"
 
-# Director coordinates:
-# → dotnet-expert: Backend API with filtering logic
-# → angular-best-practices: Search interface with reactive forms
+# Frontend search interface:
+/Task angular-best-practices "Create search interface with reactive forms and filter components"
 ```
 
 ### 3. Complex Training Execution System
 ```bash
-# Director first creates specialized agent, then uses it:
-/Task "Create complete training execution system with chronometer and real-time updates"
+# Create specialized agent:
+/Task agent-generator "Create sportplanner-training-agent for training execution features"
 
-# Director flow:
-# → agent-generator: "Create sportplanner-training-agent for execution features"
-# → sportplanner-training-agent: "Implement full execution system"
-# → claude-memory-manager: "Update documentation with new agent and features"
+# Use specialized agent:
+/Task sportplanner-training-agent "Implement complete training execution system with chronometer"
+
+# Update documentation:
+/Task claude-memory-manager "Update documentation with new training execution features"
 ```
 
 ## Project-Specific Notes
@@ -217,4 +198,4 @@ npm run lint                    # ESLint for Angular
 
 ---
 
-**🚀 Quick Reference**: Simply describe what you need with `/Task "[request]"` - the Director Agent will automatically select the right specialists, provide them with relevant context from @.claude/docs/, and orchestrate the complete solution. For direct access when you know exactly what you need, use `/Task [specific-agent] "[task]"`.
+**🚀 Quick Reference**: Use specialized agents for focused development: `/Task dotnet-expert "[backend task]"`, `/Task angular-best-practices "[frontend task]"`, `/Task general-purpose "[research/analysis]"`. Always provide relevant context from @.claude/docs/ when needed.

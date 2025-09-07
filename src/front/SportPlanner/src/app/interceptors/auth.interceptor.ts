@@ -1,6 +1,7 @@
 import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
-import { catchError } from 'rxjs/operators';
+import { catchError, switchMap, retry, delay } from 'rxjs/operators';
+import { from, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
 
@@ -15,14 +16,13 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   const isApiRequest = req.url.startsWith(environment.apiUrl);
   
   if (isApiRequest && authService.isAuthenticated()) {
+    // Get token synchronously to avoid async issues that cause loops
     const token = authService.getAccessToken();
-    
     if (token) {
       // Clone the request and add the authorization header
       const authReq = req.clone({
         headers: req.headers.set('Authorization', `Bearer ${token}`)
       });
-      
       return next(authReq);
     }
   }
@@ -41,9 +41,11 @@ export const authErrorInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown
   return next(req).pipe(
     // Handle authentication errors
     catchError((error) => {
-      if (error.status === 401 && authService.isAuthenticated()) {
-        // Token is invalid or expired, log out the user
-        console.warn('Authentication token is invalid, logging out user');
+      // Only handle auth errors for API requests
+      const isApiRequest = req.url.startsWith(environment.apiUrl);
+      
+      if (error.status === 401 && isApiRequest && authService.isAuthenticated()) {
+        console.warn('❌ Authentication token is invalid, logging out user');
         authService.logout();
       }
       

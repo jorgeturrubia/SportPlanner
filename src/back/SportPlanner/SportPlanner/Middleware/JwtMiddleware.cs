@@ -20,12 +20,16 @@ public class JwtMiddleware
 
         if (!string.IsNullOrEmpty(token))
         {
+            _logger.LogDebug("🔑 JWT Token found in request to {Path}", context.Request.Path);
+            
             try
             {
+                _logger.LogDebug("🔍 Validating JWT token...");
                 var isValid = await supabaseService.ValidateTokenAsync(token);
                 
                 if (isValid)
                 {
+                    _logger.LogDebug("✅ JWT token is valid, getting user info...");
                     var userDto = await supabaseService.GetUserFromTokenAsync(token);
                     
                     // Add user information to the context
@@ -40,14 +44,25 @@ public class JwtMiddleware
 
                     var identity = new ClaimsIdentity(claims, "jwt");
                     context.User = new ClaimsPrincipal(identity);
+                    
+                    _logger.LogDebug("✅ User authenticated: {Email} ({Id})", userDto.Email, userDto.Id);
+                }
+                else
+                {
+                    _logger.LogWarning("❌ JWT token validation failed for {Path}", context.Request.Path);
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "Failed to validate JWT token");
+                _logger.LogWarning(ex, "❌ Exception during JWT token validation for {Path}: {Message}", 
+                    context.Request.Path, ex.Message);
                 // Don't throw here - let the request continue without authentication
                 // Authorization will be handled by [Authorize] attributes
             }
+        }
+        else
+        {
+            _logger.LogDebug("ℹ️ No JWT token found in request to {Path}", context.Request.Path);
         }
 
         await _next(context);

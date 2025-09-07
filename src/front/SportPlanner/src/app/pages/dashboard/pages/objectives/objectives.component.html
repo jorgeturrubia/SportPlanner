@@ -34,7 +34,7 @@
         (click)="onCreateObjective()"
         class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 cursor-pointer"
       >
-        <ng-icon name="heroTarget" class="w-4 h-4 mr-2" />
+        <ng-icon name="heroArrowTrendingUp" class="w-4 h-4 mr-2" />
         Nuevo Objetivo
       </button>
     </div>
@@ -75,7 +75,7 @@
     </div>
   } @else if (filteredObjectives().length === 0) {
     <div class="bg-card rounded-xl shadow-sm p-12 text-center border border-border">
-      <ng-icon name="heroTarget" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
+      <ng-icon name="heroArrowTrendingUp" class="w-12 h-12 text-gray-400 mx-auto mb-4" />
       @if (searchQuery() || activeFilters().isActive !== undefined) {
         <h3 class="text-lg font-medium text-foreground mb-2">
           No se encontraron objetivos
@@ -100,7 +100,7 @@
           (click)="onCreateObjective()"
           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800 transition-all duration-200 cursor-pointer"
         >
-          <ng-icon name="heroTarget" class="w-4 h-4 mr-2" />
+          <ng-icon name="heroArrowTrendingUp" class="w-4 h-4 mr-2" />
           Crear Primer Objetivo
         </button>
       }
