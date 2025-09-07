@@ -36,6 +36,10 @@ export class AuthService {
   private readonly STORAGE_KEY = 'sportplanner-auth';
   private readonly REMEMBER_ME_KEY = 'sportplanner-remember-me';
   private session = new BehaviorSubject<Session | null>(null);
+  
+  // Prevent concurrent operations
+  private authOperationInProgress = false;
+  private refreshPromise: Promise<void> | null = null;
 
   // Public computed signals
   public readonly isAuthenticated = computed(() => this._isAuthenticated());
@@ -54,6 +58,8 @@ export class AuthService {
         persistSession: this.isBrowser,
         detectSessionInUrl: this.isBrowser,
         flowType: 'pkce',
+        // Remove custom lock configuration as it's not supported in current Supabase version
+        // The NavigatorLockAcquireTimeoutError will be handled in our error handling logic
         storage: this.isBrowser ? {
           getItem: (key: string) => {
             try {
@@ -307,6 +313,14 @@ export class AuthService {
    * Logout user
    */
   async logout(): Promise<void> {
+    // Prevent concurrent logout operations
+    if (this.authOperationInProgress) {
+      console.log('🚪 Logout already in progress, ignoring duplicate request');
+      return;
+    }
+    
+    this.authOperationInProgress = true;
+    
     try {
       console.log('🚪 Logout initiated');
       this._isLoading.set(true);
@@ -316,12 +330,22 @@ export class AuthService {
       this.clearTokenRefresh();
       this.updateAuthState(null, null);
       
-      // Try Supabase logout, but don't block on it
+      // Try Supabase logout, but don't block on it and handle lock errors
       try {
-        await this.supabase.auth.signOut();
+        // Add timeout to prevent hanging
+        const logoutPromise = this.supabase.auth.signOut();
+        const timeoutPromise = new Promise<never>((_, reject) => {
+          setTimeout(() => reject(new Error('Logout timeout after 5 seconds')), 5000);
+        });
+        
+        await Promise.race([logoutPromise, timeoutPromise]);
         console.log('✅ Supabase logout successful');
       } catch (supabaseError) {
-        console.warn('⚠️ Supabase logout failed, but local state cleared:', supabaseError);
+        if (supabaseError instanceof Error && supabaseError.name === 'NavigatorLockAcquireTimeoutError') {
+          console.warn('⚠️ Navigator lock timeout during logout, but local state is cleared');
+        } else {
+          console.warn('⚠️ Supabase logout failed, but local state cleared:', supabaseError);
+        }
       }
       
       this.notificationService.showInfo('Sesión cerrada correctamente');
@@ -346,6 +370,7 @@ export class AuthService {
       }
     } finally {
       this._isLoading.set(false);
+      this.authOperationInProgress = false;
     }
   }
 
@@ -635,6 +660,22 @@ export class AuthService {
    * Refresh current session
    */
   async refreshSession(): Promise<void> {
+    // Prevent concurrent refresh operations
+    if (this.refreshPromise) {
+      console.log('🔄 Refresh already in progress, waiting for completion...');
+      return this.refreshPromise;
+    }
+    
+    this.refreshPromise = this.doRefreshSession();
+    
+    try {
+      await this.refreshPromise;
+    } finally {
+      this.refreshPromise = null;
+    }
+  }
+  
+  private async doRefreshSession(): Promise<void> {
     try {
       console.log('🔄 Attempting to refresh session...');
       
