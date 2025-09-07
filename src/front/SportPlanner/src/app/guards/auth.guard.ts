@@ -7,17 +7,29 @@ import { NotificationService } from '../services/notification.service';
  * Functional guard to protect routes that require authentication
  * Redirects unauthenticated users to the auth page
  */
-export const authGuard: CanActivateFn = (route, state) => {
+export const authGuard: CanActivateFn = async (route, state) => {
   const authService = inject(AuthService);
   const router = inject(Router);
   
-  // Simple synchronous check - no async to avoid deadlocks
-  if (authService.isAuthenticated()) {
-    return true;
-  } else {
-    const redirectUrl = state.url !== '/auth' ? state.url : '/dashboard';
+  try {
+    // Wait for auth initialization if needed, with timeout
+    if (!authService.isInitialized()) {
+      await authService.checkAuthState();
+    }
+    
+    if (authService.isAuthenticated()) {
+      return true;
+    } else {
+      console.log('🔒 Auth guard: User not authenticated, redirecting to auth page');
+      const redirectUrl = state.url !== '/auth' ? state.url : '/dashboard';
+      return router.createUrlTree(['/auth'], { 
+        queryParams: { redirectUrl } 
+      });
+    }
+  } catch (error) {
+    console.error('🔒 Auth guard error:', error);
     return router.createUrlTree(['/auth'], { 
-      queryParams: { redirectUrl } 
+      queryParams: { redirectUrl: state.url } 
     });
   }
 };

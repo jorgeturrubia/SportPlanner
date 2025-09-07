@@ -39,7 +39,16 @@ export class TeamsService {
       }),
       catchError(error => {
         this._isLoading.set(false);
-        this.notificationService.showError('Error al cargar los equipos');
+        
+        // Handle specific auth errors
+        if (error.status === 401) {
+          console.error('❌ Teams service: Authentication error, user will be logged out by interceptor');
+          // Don't show notification for auth errors - interceptor will handle logout
+          return of([]); // Return empty array to prevent component errors
+        } else {
+          this.notificationService.showError('Error al cargar los equipos');
+        }
+        
         throw error;
       })
     );

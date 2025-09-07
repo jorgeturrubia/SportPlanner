@@ -308,19 +308,22 @@ export class AuthService {
    */
   async logout(): Promise<void> {
     try {
+      console.log('🚪 Logout initiated');
       this._isLoading.set(true);
       
-      // Clear local state first
+      // Clear local state first to prevent race conditions
       this.clearStoredAuthData();
       this.clearTokenRefresh();
-      
-      // Supabase logout
-      await this.supabase.auth.signOut();
-      
-      // Update local state
       this.updateAuthState(null, null);
       
-      console.log('✅ Logout successful');
+      // Try Supabase logout, but don't block on it
+      try {
+        await this.supabase.auth.signOut();
+        console.log('✅ Supabase logout successful');
+      } catch (supabaseError) {
+        console.warn('⚠️ Supabase logout failed, but local state cleared:', supabaseError);
+      }
+      
       this.notificationService.showInfo('Sesión cerrada correctamente');
       
       // Navigate to auth page
@@ -328,9 +331,19 @@ export class AuthService {
       
     } catch (error) {
       console.error('Logout error:', error);
-      // Even if Supabase logout fails, clear local state
+      // Ensure local state is always cleared
       this.updateAuthState(null, null);
-      await this.router.navigate(['/auth']);
+      
+      // Navigate regardless of errors
+      try {
+        await this.router.navigate(['/auth']);
+      } catch (navError) {
+        console.error('Navigation error:', navError);
+        // Force page reload as last resort
+        if (this.isBrowser && typeof window !== 'undefined') {
+          window.location.href = '/auth';
+        }
+      }
     } finally {
       this._isLoading.set(false);
     }
@@ -534,6 +547,13 @@ export class AuthService {
         return refreshedSession?.access_token || null;
       } catch (error) {
         console.error('❌ Token refresh failed:', error);
+        
+        // Handle NavigatorLockAcquireTimeoutError specifically
+        if (error instanceof Error && error.name === 'NavigatorLockAcquireTimeoutError') {
+          console.warn('⚠️ Navigator lock timeout, using existing token');
+          return sessionValue.access_token; // Use existing token
+        }
+        
         this.handleAuthError(error);
         return null;
       }
@@ -617,7 +637,14 @@ export class AuthService {
   async refreshSession(): Promise<void> {
     try {
       console.log('🔄 Attempting to refresh session...');
-      const { data, error } = await this.supabase.auth.refreshSession();
+      
+      // Add timeout wrapper for Supabase operations that can get stuck
+      const refreshPromise = this.supabase.auth.refreshSession();
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => reject(new Error('Refresh timeout after 10 seconds')), 10000);
+      });
+      
+      const { data, error } = await Promise.race([refreshPromise, timeoutPromise]);
       
       if (error) {
         console.error('❌ Session refresh error:', error);
@@ -641,6 +668,19 @@ export class AuthService {
       }
     } catch (error) {
       console.error('❌ Session refresh failed:', error);
+      
+      // Handle NavigatorLockAcquireTimeoutError specifically - don't logout for this
+      if (error instanceof Error && error.name === 'NavigatorLockAcquireTimeoutError') {
+        console.warn('⚠️ Navigator lock timeout during refresh - will retry later');
+        throw error; // Let caller decide what to do
+      }
+      
+      // Handle other timeout errors
+      if (error instanceof Error && error.message.includes('timeout')) {
+        console.warn('⚠️ Refresh timeout - will retry later');
+        throw error; // Let caller decide what to do
+      }
+      
       this.handleAuthError(error);
       throw error; // Re-throw to let caller handle
     }
