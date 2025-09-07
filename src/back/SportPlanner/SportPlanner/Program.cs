@@ -1,10 +1,11 @@
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
 using SportPlanner.Data;
 using SportPlanner.Middleware;
 using SportPlanner.Services;
+using System.Text.Encodings.Web;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,8 +49,12 @@ builder.Services.AddScoped<IPlanningService, PlanningService>();
 // HTTP Context Accessor for UserContextService
 builder.Services.AddHttpContextAccessor();
 
-// Using custom JWT middleware only - no ASP.NET Core authentication
-// The middleware handles all JWT validation and sets HttpContext.User
+// Configure authentication scheme for [Authorize] attributes to work
+// The actual JWT validation is done by our custom middleware
+builder.Services.AddAuthentication("Bearer")
+    .AddScheme<AuthenticationSchemeOptions, CustomAuthenticationHandler>("Bearer", null);
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddControllers();
 
@@ -91,6 +96,10 @@ app.UseCors("AllowAngularApp");
 
 // Add JWT middleware (this handles all authentication)
 app.UseMiddleware<JwtMiddleware>();
+
+// Add standard authentication/authorization pipeline
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
