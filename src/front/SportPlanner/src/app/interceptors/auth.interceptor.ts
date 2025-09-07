@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
-import { catchError, switchMap, retry, delay } from 'rxjs/operators';
+import { catchError, switchMap } from 'rxjs/operators';
 import { from, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
@@ -16,26 +16,40 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   const isApiRequest = req.url.startsWith(environment.apiUrl);
   
   if (isApiRequest && authService.isAuthenticated()) {
-    // Use async token retrieval to handle refresh if needed
-    return from(authService.getAccessTokenAsync()).pipe(
-      switchMap(token => {
-        if (token) {
-          // Clone the request and add the authorization header
-          const authReq = req.clone({
-            headers: req.headers.set('Authorization', `Bearer ${token}`)
-          });
-          return next(authReq);
-        } else {
-          // No valid token available, proceed without auth (will likely get 401)
+    // Try to get token synchronously first for performance
+    const syncToken = authService.getAccessToken();
+    
+    if (syncToken) {
+      // We have a token immediately, use it
+      const authReq = req.clone({
+        headers: req.headers.set('Authorization', `Bearer ${syncToken}`)
+      });
+      return next(authReq);
+    } else {
+      // No sync token, try async token retrieval
+      return from(authService.getAccessTokenAsync()).pipe(
+        switchMap(token => {
+          if (token) {
+            // Clone the request and add the authorization header
+            const authReq = req.clone({
+              headers: req.headers.set('Authorization', `Bearer ${token}`)
+            });
+            return next(authReq);
+          } else {
+            // No valid token available - this indicates auth state inconsistency
+            console.warn('⚠️ Auth service says authenticated but no token available');
+            // Proceed without auth header - the 401 response will trigger proper logout
+            return next(req);
+          }
+        }),
+        catchError(error => {
+          console.warn('❌ Token refresh failed in interceptor:', error);
+          // If token refresh fails, proceed without token
+          // The 401 response will be handled by the error interceptor
           return next(req);
-        }
-      }),
-      catchError(error => {
-        console.warn('❌ Token refresh failed in interceptor:', error);
-        // Proceed with request (will likely get 401 and be handled by error interceptor)
-        return next(req);
-      })
-    );
+        })
+      );
+    }
   }
   
   // Pass the request unchanged if no auth is needed
@@ -56,12 +70,22 @@ export const authErrorInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown
       const isApiRequest = req.url.startsWith(environment.apiUrl);
       
       if (error.status === 401 && isApiRequest && authService.isAuthenticated()) {
-        console.warn('❌ Authentication token is invalid, logging out user');
+        // Check if we actually sent an Authorization header
+        const hasAuthHeader = req.headers.has('Authorization');
         
-        // Use setTimeout to prevent potential HTTP loops
-        setTimeout(() => {
-          authService.logout();
-        }, 100);
+        if (hasAuthHeader) {
+          // We sent an auth token but got 401 - token is invalid
+          console.warn('❌ Authentication token was rejected by server, logging out user');
+          
+          // Use setTimeout to prevent potential HTTP loops and allow current request to complete
+          setTimeout(() => {
+            authService.logout();
+          }, 100);
+        } else {
+          // We didn't send a token but are authenticated - likely a temporary issue
+          console.warn('⚠️ Got 401 but no auth header was sent - possible race condition');
+          // Don't log out - this might be due to race condition during initialization
+        }
       }
       
       // Re-throw the error for components to handle
