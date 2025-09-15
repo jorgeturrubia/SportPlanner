@@ -1,6 +1,6 @@
 import { inject } from '@angular/core';
 import { HttpInterceptorFn, HttpRequest, HttpHandlerFn } from '@angular/common/http';
-import { catchError, switchMap } from 'rxjs/operators';
+import { catchError, switchMap, tap } from 'rxjs/operators';
 import { from, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { environment } from '../../environments/environment';
@@ -15,27 +15,35 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
   // Only add auth header for requests to our API backend
   const isApiRequest = req.url.startsWith(environment.apiUrl);
   
+  console.log('📡 Auth Interceptor called for URL:', req.url);
+  console.log('  🔍 Is API request:', isApiRequest);
+  console.log('  🔒 Is authenticated:', authService.isAuthenticated());
+  
   if (isApiRequest && authService.isAuthenticated()) {
     // Try to get token synchronously first for performance
     const syncToken = authService.getAccessToken();
+    console.log('  🔑 Sync token:', syncToken ? 'Available (length: ' + syncToken.length + ')' : 'Missing');
     
     if (syncToken) {
-      // We have a token immediately, use it
+      console.log('  ✅ Adding auth header with sync token');
       const authReq = req.clone({
         headers: req.headers.set('Authorization', `Bearer ${syncToken}`)
       });
       return next(authReq);
     } else {
+      console.log('  ⏳ No sync token, trying async');
       // No sync token, try async token retrieval
       return from(authService.getAccessTokenAsync()).pipe(
+        tap(asyncToken => console.log('  🔑 Async token:', asyncToken ? 'Retrieved (length: ' + asyncToken.length + ')' : 'Failed')),
         switchMap(token => {
           if (token) {
-            // Clone the request and add the authorization header
+            console.log('  ✅ Adding auth header with async token');
             const authReq = req.clone({
               headers: req.headers.set('Authorization', `Bearer ${token}`)
             });
             return next(authReq);
           } else {
+            console.log('  ⚠️ No token available after async attempt');
             // No valid token available - this indicates auth state inconsistency
             console.warn('⚠️ Auth service says authenticated but no token available');
             // Proceed without auth header - the 401 response will trigger proper logout
@@ -52,6 +60,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
     }
   }
   
+  console.log('  ℹ️ No auth needed - passing request unchanged');
   // Pass the request unchanged if no auth is needed
   return next(req);
 };

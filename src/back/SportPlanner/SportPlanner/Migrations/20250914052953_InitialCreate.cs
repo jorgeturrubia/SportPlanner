@@ -44,6 +44,8 @@ namespace SportPlanner.Migrations
                     Email = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     FirstName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
                     LastName = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    SupabaseId = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     IsActive = table.Column<bool>(type: "boolean", nullable: false)
@@ -79,6 +81,41 @@ namespace SportPlanner.Migrations
                         principalTable: "Users",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.SetNull);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "CustomExercises",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    Instructions = table.Column<string>(type: "character varying(2000)", maxLength: 2000, nullable: false),
+                    Category = table.Column<int>(type: "integer", nullable: false),
+                    Difficulty = table.Column<int>(type: "integer", nullable: false),
+                    DurationMinutes = table.Column<int>(type: "integer", nullable: false),
+                    MinPlayers = table.Column<int>(type: "integer", nullable: false),
+                    MaxPlayers = table.Column<int>(type: "integer", nullable: false),
+                    Equipment = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
+                    Tags = table.Column<string>(type: "text", nullable: false),
+                    IsPublic = table.Column<bool>(type: "boolean", nullable: false),
+                    IsCustom = table.Column<bool>(type: "boolean", nullable: false),
+                    UsageCount = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_CustomExercises", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_CustomExercises_Users_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -179,7 +216,8 @@ namespace SportPlanner.Migrations
                     SubscriptionId = table.Column<int>(type: "integer", nullable: false),
                     StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
                     EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    Sport = table.Column<int>(type: "integer", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -306,46 +344,6 @@ namespace SportPlanner.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Plannings",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    Name = table.Column<string>(type: "character varying(100)", maxLength: 100, nullable: false),
-                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: false),
-                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    TrainingDays = table.Column<string>(type: "text", nullable: false),
-                    StartTime = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    EndTime = table.Column<TimeSpan>(type: "interval", nullable: false),
-                    IsFullCourt = table.Column<bool>(type: "boolean", nullable: false),
-                    ItineraryId = table.Column<Guid>(type: "uuid", nullable: true),
-                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    IsPublic = table.Column<bool>(type: "boolean", nullable: false),
-                    AverageRating = table.Column<decimal>(type: "numeric(3,2)", nullable: false),
-                    RatingCount = table.Column<int>(type: "integer", nullable: false),
-                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
-                    IsVisible = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_Plannings", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_Plannings_Itineraries_ItineraryId",
-                        column: x => x.ItineraryId,
-                        principalTable: "Itineraries",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.SetNull);
-                    table.ForeignKey(
-                        name: "FK_Plannings_Users_CreatedByUserId",
-                        column: x => x.CreatedByUserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "Teams",
                 columns: table => new
                 {
@@ -381,10 +379,124 @@ namespace SportPlanner.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PlanningConcepts",
+                name: "Objectives",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Title = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    Priority = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    Progress = table.Column<int>(type: "integer", nullable: false),
+                    TargetDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    CompletedDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: true),
+                    TeamId = table.Column<Guid>(type: "uuid", nullable: true),
+                    Tags = table.Column<string>(type: "text", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Objectives", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Objectives_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Objectives_Users_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Plannings",
                 columns: table => new
                 {
                     Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Name = table.Column<string>(type: "character varying(200)", maxLength: 200, nullable: false),
+                    Description = table.Column<string>(type: "character varying(1000)", maxLength: 1000, nullable: false),
+                    Type = table.Column<int>(type: "integer", nullable: false),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    TeamId = table.Column<Guid>(type: "uuid", nullable: true),
+                    StartDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    EndDate = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    TrainingDays = table.Column<string>(type: "text", nullable: false),
+                    StartTime = table.Column<TimeSpan>(type: "interval", nullable: false),
+                    DurationMinutes = table.Column<int>(type: "integer", nullable: false),
+                    SessionsPerWeek = table.Column<int>(type: "integer", nullable: false),
+                    TotalSessions = table.Column<int>(type: "integer", nullable: false),
+                    CompletedSessions = table.Column<int>(type: "integer", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    IsPublic = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedByUserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    Tags = table.Column<string>(type: "text", nullable: false),
+                    ItineraryId = table.Column<Guid>(type: "uuid", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Plannings", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Plannings_Itineraries_ItineraryId",
+                        column: x => x.ItineraryId,
+                        principalTable: "Itineraries",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_Plannings_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.SetNull);
+                    table.ForeignKey(
+                        name: "FK_Plannings_Users_CreatedByUserId",
+                        column: x => x.CreatedByUserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "UserTeams",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
+                    TeamId = table.Column<Guid>(type: "uuid", nullable: false),
+                    Role = table.Column<int>(type: "integer", nullable: false),
+                    AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserTeams", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_UserTeams_Teams_TeamId",
+                        column: x => x.TeamId,
+                        principalTable: "Teams",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_UserTeams_Users_UserId",
+                        column: x => x.UserId,
+                        principalTable: "Users",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "PlanningConcepts",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PlanningId = table.Column<Guid>(type: "uuid", nullable: false),
                     ConceptId = table.Column<Guid>(type: "uuid", nullable: false),
                     Order = table.Column<int>(type: "integer", nullable: false),
@@ -412,7 +524,8 @@ namespace SportPlanner.Migrations
                 name: "PlanningRatings",
                 columns: table => new
                 {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
                     PlanningId = table.Column<Guid>(type: "uuid", nullable: false),
                     UserId = table.Column<Guid>(type: "uuid", nullable: false),
                     Rating = table.Column<int>(type: "integer", nullable: false),
@@ -475,59 +588,6 @@ namespace SportPlanner.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PlanningTeams",
-                columns: table => new
-                {
-                    PlanningId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TeamId = table.Column<Guid>(type: "uuid", nullable: false),
-                    AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_PlanningTeams", x => new { x.PlanningId, x.TeamId });
-                    table.ForeignKey(
-                        name: "FK_PlanningTeams_Plannings_PlanningId",
-                        column: x => x.PlanningId,
-                        principalTable: "Plannings",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_PlanningTeams_Teams_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "Teams",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "UserTeams",
-                columns: table => new
-                {
-                    Id = table.Column<Guid>(type: "uuid", nullable: false),
-                    UserId = table.Column<Guid>(type: "uuid", nullable: false),
-                    TeamId = table.Column<Guid>(type: "uuid", nullable: false),
-                    Role = table.Column<int>(type: "integer", nullable: false),
-                    AssignedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
-                    IsActive = table.Column<bool>(type: "boolean", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserTeams", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_UserTeams_Teams_TeamId",
-                        column: x => x.TeamId,
-                        principalTable: "Teams",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_UserTeams_Users_UserId",
-                        column: x => x.UserId,
-                        principalTable: "Users",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
                 name: "SessionExercises",
                 columns: table => new
                 {
@@ -570,6 +630,11 @@ namespace SportPlanner.Migrations
             migrationBuilder.CreateIndex(
                 name: "IX_Concepts_CreatedByUserId",
                 table: "Concepts",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_CustomExercises_CreatedByUserId",
+                table: "CustomExercises",
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
@@ -620,6 +685,16 @@ namespace SportPlanner.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Objectives_CreatedByUserId",
+                table: "Objectives",
+                column: "CreatedByUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Objectives_TeamId",
+                table: "Objectives",
+                column: "TeamId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Organizations_CreatedByUserId",
                 table: "Organizations",
                 column: "CreatedByUserId");
@@ -651,14 +726,44 @@ namespace SportPlanner.Migrations
                 column: "CreatedByUserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Plannings_EndDate",
+                table: "Plannings",
+                column: "EndDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Plannings_IsActive",
+                table: "Plannings",
+                column: "IsActive");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Plannings_IsPublic",
+                table: "Plannings",
+                column: "IsPublic");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Plannings_ItineraryId",
                 table: "Plannings",
                 column: "ItineraryId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PlanningTeams_TeamId",
-                table: "PlanningTeams",
+                name: "IX_Plannings_StartDate",
+                table: "Plannings",
+                column: "StartDate");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Plannings_Status",
+                table: "Plannings",
+                column: "Status");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Plannings_TeamId",
+                table: "Plannings",
                 column: "TeamId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Plannings_Type",
+                table: "Plannings",
+                column: "Type");
 
             migrationBuilder.CreateIndex(
                 name: "IX_SessionExercises_ExerciseId",
@@ -697,6 +802,12 @@ namespace SportPlanner.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_Users_SupabaseId",
+                table: "Users",
+                column: "SupabaseId",
+                unique: true);
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserSubscriptions_SubscriptionId",
                 table: "UserSubscriptions",
                 column: "SubscriptionId");
@@ -722,6 +833,9 @@ namespace SportPlanner.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(
+                name: "CustomExercises");
+
+            migrationBuilder.DropTable(
                 name: "ExerciseConcepts");
 
             migrationBuilder.DropTable(
@@ -734,13 +848,13 @@ namespace SportPlanner.Migrations
                 name: "ItineraryRatings");
 
             migrationBuilder.DropTable(
+                name: "Objectives");
+
+            migrationBuilder.DropTable(
                 name: "PlanningConcepts");
 
             migrationBuilder.DropTable(
                 name: "PlanningRatings");
-
-            migrationBuilder.DropTable(
-                name: "PlanningTeams");
 
             migrationBuilder.DropTable(
                 name: "SessionExercises");
@@ -764,16 +878,16 @@ namespace SportPlanner.Migrations
                 name: "Subscriptions");
 
             migrationBuilder.DropTable(
-                name: "Teams");
-
-            migrationBuilder.DropTable(
                 name: "Plannings");
 
             migrationBuilder.DropTable(
-                name: "Organizations");
+                name: "Itineraries");
 
             migrationBuilder.DropTable(
-                name: "Itineraries");
+                name: "Teams");
+
+            migrationBuilder.DropTable(
+                name: "Organizations");
 
             migrationBuilder.DropTable(
                 name: "Users");

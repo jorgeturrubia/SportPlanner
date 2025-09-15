@@ -46,6 +46,9 @@ builder.Services.AddScoped<ICustomExerciseService, CustomExerciseService>();
 // Planning services
 builder.Services.AddScoped<IPlanningService, PlanningService>();
 
+// Subscription services
+builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
+
 // HTTP Context Accessor for UserContextService
 builder.Services.AddHttpContextAccessor();
 
@@ -63,7 +66,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngularApp", policy =>
     {
-        policy.WithOrigins("http://localhost:4200", "https://localhost:4200")
+        policy.WithOrigins("http://localhost:4200", "https://localhost:4200", "http://localhost:56726", "https://localhost:56726")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials()
@@ -84,6 +87,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// CORS must be configured before HTTPS redirection to handle preflight requests
+app.UseCors("AllowAngularApp");
+
 app.UseHttpsRedirection();
 
 // Add security headers middleware
@@ -91,8 +97,6 @@ app.UseMiddleware<SecurityHeadersMiddleware>();
 
 // Add global exception handling middleware
 app.UseMiddleware<GlobalExceptionMiddleware>();
-
-app.UseCors("AllowAngularApp");
 
 // Add JWT middleware (this handles all authentication)
 app.UseMiddleware<JwtMiddleware>();

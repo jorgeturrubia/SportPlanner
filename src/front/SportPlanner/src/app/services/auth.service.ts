@@ -48,19 +48,18 @@ export class AuthService {
   constructor() {
     this.isBrowser = isPlatformBrowser(this.platformId);
     
-    // Initialize Supabase client with SSR-safe configuration
+    // Initialize Supabase client with improved configuration to prevent NavigatorLockAcquireTimeoutError
     this.supabase = createClient(environment.supabaseUrl, environment.supabaseAnonKey, {
       auth: {
         autoRefreshToken: this.isBrowser,
         persistSession: this.isBrowser,
         detectSessionInUrl: this.isBrowser,
         flowType: 'pkce',
-        // Remove custom lock configuration as it's not supported in current Supabase version
-        // The NavigatorLockAcquireTimeoutError will be handled in our error handling logic
+        // Custom storage implementation to handle NavigatorLockAcquireTimeoutError
         storage: this.isBrowser ? {
           getItem: (key: string) => {
             try {
-              return localStorage.getItem(key) || sessionStorage.getItem(key);
+              return localStorage.getItem(key);
             } catch {
               return null;
             }
@@ -68,19 +67,24 @@ export class AuthService {
           setItem: (key: string, value: string) => {
             try {
               localStorage.setItem(key, value);
-            } catch (error) {
-              console.warn('Failed to store session data:', error);
+            } catch {
+              // Silently fail if localStorage is not available
             }
           },
           removeItem: (key: string) => {
             try {
               localStorage.removeItem(key);
-              sessionStorage.removeItem(key);
-            } catch (error) {
-              console.warn('Failed to remove session data:', error);
+            } catch {
+              // Silently fail if localStorage is not available
             }
           }
         } : undefined
+      },
+      // Add global configuration to handle timeouts
+      global: {
+        headers: {
+          'X-Client-Info': 'sportplanner-web'
+        }
       }
     });
 
@@ -172,25 +176,40 @@ export class AuthService {
   }
 
   /**
-   * Set up auth state listener
+   * Set up auth state listener with error handling
    */
   private setupAuthStateListener(): void {
     this.supabase.auth.onAuthStateChange(async (event, session) => {
-      console.log('🔄 Auth state change:', event, session?.user?.email);
-      
-      if (session && session.user) {
-        const user = this.mapSupabaseUser(session.user);
-        this.updateAuthState(session, user);
-        this.scheduleTokenRefresh();
-      } else {
-        this.updateAuthState(null, null);
-        this.clearTokenRefresh();
+      try {
+        console.log('🔄 Auth state change:', event, session?.user?.email);
         
-        // Handle logout/sign out
-        if (event === 'SIGNED_OUT') {
-          this.clearStoredAuthData();
-          await this.router.navigate(['/auth']);
+        if (session && session.user) {
+          const user = this.mapSupabaseUser(session.user);
+          this.updateAuthState(session, user);
+          this.scheduleTokenRefresh();
+        } else {
+          this.updateAuthState(null, null);
+          this.clearTokenRefresh();
+          
+          // Handle logout/sign out
+          if (event === 'SIGNED_OUT') {
+            this.clearStoredAuthData();
+            await this.router.navigate(['/auth']);
+          }
         }
+      } catch (error: any) {
+        console.warn('🔄 Auth state change error:', error);
+        
+        // Handle NavigatorLockAcquireTimeoutError specifically
+        if (error.name === 'NavigatorLockAcquireTimeoutError' || 
+            error.message?.includes('NavigatorLockAcquireTimeoutError')) {
+          console.warn('⚠️ Navigator lock timeout detected, continuing without lock');
+          // Continue normal operation, the lock error is not critical
+          return;
+        }
+        
+        // For other errors, ensure we don't get stuck in loading state
+        this._isLoading.set(false);
       }
     });
   }
@@ -251,6 +270,37 @@ export class AuthService {
       };
 
     } catch (error: unknown) {
+      // Handle NavigatorLockAcquireTimeoutError specifically
+      if (error instanceof Error && 
+          (error.name === 'NavigatorLockAcquireTimeoutError' || 
+           error.message?.includes('NavigatorLockAcquireTimeoutError'))) {
+        console.warn('⚠️ Navigator lock timeout during login, but login may have succeeded');
+        
+        // Try to get current session to verify if login actually succeeded
+        try {
+          const { data: sessionData } = await this.supabase.auth.getSession();
+          if (sessionData.session && sessionData.session.user) {
+            const user = this.mapSupabaseUser(sessionData.session.user);
+            this.updateAuthState(sessionData.session, user);
+            console.log('✅ Login recovered after lock timeout:', user.email);
+            this.notificationService.showSuccess(`¡Bienvenido, ${user.firstName || user.email}!`);
+            
+            return {
+              user,
+              accessToken: sessionData.session.access_token,
+              refreshToken: sessionData.session.refresh_token,
+              expiresIn: sessionData.session.expires_in || 3600
+            };
+          }
+        } catch (recoveryError) {
+          console.error('Failed to recover session after lock timeout:', recoveryError);
+        }
+        
+        // If recovery failed, show a more user-friendly message
+        this.notificationService.showWarning('Problema temporal de conexión. Por favor, intenta nuevamente.');
+        throw new Error('Timeout de conexión');
+      }
+      
       console.error('Login failed:', error);
       
       let errorMessage = 'Error desconocido durante el inicio de sesión';

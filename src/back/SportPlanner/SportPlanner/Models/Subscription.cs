@@ -9,6 +9,21 @@ public enum SubscriptionType
     Club = 2
 }
 
+public enum SportType
+{
+    Football = 0,
+    Basketball = 1,
+    Tennis = 2,
+    Volleyball = 3,
+    Rugby = 4,
+    Handball = 5,
+    Hockey = 6,
+    Baseball = 7,
+    Swimming = 8,
+    Athletics = 9,
+    Other = 10
+}
+
 public class Subscription
 {
     public int Id { get; set; }
@@ -44,6 +59,9 @@ public class UserSubscription
     public DateTime StartDate { get; set; }
     public DateTime? EndDate { get; set; }
     public bool IsActive { get; set; } = true;
+    
+    [Required]
+    public SportType Sport { get; set; }
     
     // Relaciones
     public User User { get; set; } = null!;

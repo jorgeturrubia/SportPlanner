@@ -178,9 +178,9 @@ public class AuthController : ControllerBase
             }
 
             await _supabaseService.ResetPasswordForEmailAsync(request.Email);
-            
+
             _logger.LogInformation("Password reset email sent to {Email}", request.Email);
-            
+
             return Ok(new { message = "Password reset email sent" });
         }
         catch (Exception ex)
@@ -189,6 +189,7 @@ public class AuthController : ControllerBase
             return StatusCode(500, new { message = "An error occurred during password reset" });
         }
     }
+
 
     private string? ExtractTokenFromHeader()
     {

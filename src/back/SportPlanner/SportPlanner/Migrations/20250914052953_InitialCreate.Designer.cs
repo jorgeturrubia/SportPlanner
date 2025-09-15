@@ -12,8 +12,8 @@ using SportPlanner.Data;
 namespace SportPlanner.Migrations
 {
     [DbContext(typeof(SportPlannerDbContext))]
-    [Migration("20250905085558_AlignModelsWithFrontend")]
-    partial class AlignModelsWithFrontend
+    [Migration("20250914052953_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -508,8 +508,8 @@ namespace SportPlanner.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<decimal>("AverageRating")
-                        .HasColumnType("decimal(3,2)");
+                    b.Property<int>("CompletedSessions")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -519,25 +519,19 @@ namespace SportPlanner.Migrations
 
                     b.Property<string>("Description")
                         .IsRequired()
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)");
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<int>("DurationMinutes")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("EndDate")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<TimeSpan>("EndTime")
-                        .HasColumnType("interval");
-
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
-                    b.Property<bool>("IsFullCourt")
-                        .HasColumnType("boolean");
-
                     b.Property<bool>("IsPublic")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("IsVisible")
                         .HasColumnType("boolean");
 
                     b.Property<Guid?>("ItineraryId")
@@ -545,10 +539,10 @@ namespace SportPlanner.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("character varying(100)");
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)");
 
-                    b.Property<int>("RatingCount")
+                    b.Property<int>("SessionsPerWeek")
                         .HasColumnType("integer");
 
                     b.Property<DateTime>("StartDate")
@@ -557,9 +551,25 @@ namespace SportPlanner.Migrations
                     b.Property<TimeSpan>("StartTime")
                         .HasColumnType("interval");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Tags")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Guid?>("TeamId")
+                        .HasColumnType("uuid");
+
+                    b.Property<int>("TotalSessions")
+                        .HasColumnType("integer");
+
                     b.Property<string>("TrainingDays")
                         .IsRequired()
                         .HasColumnType("text");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -568,16 +578,32 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
+                    b.HasIndex("EndDate");
+
+                    b.HasIndex("IsActive");
+
+                    b.HasIndex("IsPublic");
+
                     b.HasIndex("ItineraryId");
+
+                    b.HasIndex("StartDate");
+
+                    b.HasIndex("Status");
+
+                    b.HasIndex("TeamId");
+
+                    b.HasIndex("Type");
 
                     b.ToTable("Plannings");
                 });
 
             modelBuilder.Entity("SportPlanner.Models.PlanningConcept", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<int>("CompletedSessions")
                         .HasColumnType("integer");
@@ -605,9 +631,11 @@ namespace SportPlanner.Migrations
 
             modelBuilder.Entity("SportPlanner.Models.PlanningRating", b =>
                 {
-                    b.Property<Guid>("Id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("uuid");
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Comment")
                         .IsRequired()
@@ -634,24 +662,6 @@ namespace SportPlanner.Migrations
                         .IsUnique();
 
                     b.ToTable("PlanningRatings");
-                });
-
-            modelBuilder.Entity("SportPlanner.Models.PlanningTeam", b =>
-                {
-                    b.Property<Guid>("PlanningId")
-                        .HasColumnType("uuid");
-
-                    b.Property<Guid>("TeamId")
-                        .HasColumnType("uuid");
-
-                    b.Property<DateTime>("AssignedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("PlanningId", "TeamId");
-
-                    b.HasIndex("TeamId");
-
-                    b.ToTable("PlanningTeams");
                 });
 
             modelBuilder.Entity("SportPlanner.Models.SessionExercise", b =>
@@ -971,6 +981,9 @@ namespace SportPlanner.Migrations
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
+                    b.Property<int>("Sport")
+                        .HasColumnType("integer");
+
                     b.Property<DateTime>("StartDate")
                         .HasColumnType("timestamp with time zone");
 
@@ -1174,14 +1187,18 @@ namespace SportPlanner.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.HasOne("SportPlanner.Models.Itinerary", "Itinerary")
+                    b.HasOne("SportPlanner.Models.Itinerary", null)
                         .WithMany("Plannings")
-                        .HasForeignKey("ItineraryId")
+                        .HasForeignKey("ItineraryId");
+
+                    b.HasOne("SportPlanner.Models.Team", "Team")
+                        .WithMany()
+                        .HasForeignKey("TeamId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("CreatedBy");
 
-                    b.Navigation("Itinerary");
+                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("SportPlanner.Models.PlanningConcept", b =>
@@ -1220,25 +1237,6 @@ namespace SportPlanner.Migrations
                     b.Navigation("Planning");
 
                     b.Navigation("User");
-                });
-
-            modelBuilder.Entity("SportPlanner.Models.PlanningTeam", b =>
-                {
-                    b.HasOne("SportPlanner.Models.Planning", "Planning")
-                        .WithMany("PlanningTeams")
-                        .HasForeignKey("PlanningId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SportPlanner.Models.Team", "Team")
-                        .WithMany("PlanningTeams")
-                        .HasForeignKey("TeamId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Planning");
-
-                    b.Navigation("Team");
                 });
 
             modelBuilder.Entity("SportPlanner.Models.SessionExercise", b =>
@@ -1371,8 +1369,6 @@ namespace SportPlanner.Migrations
                 {
                     b.Navigation("PlanningConcepts");
 
-                    b.Navigation("PlanningTeams");
-
                     b.Navigation("Ratings");
 
                     b.Navigation("TrainingSessions");
@@ -1385,8 +1381,6 @@ namespace SportPlanner.Migrations
 
             modelBuilder.Entity("SportPlanner.Models.Team", b =>
                 {
-                    b.Navigation("PlanningTeams");
-
                     b.Navigation("UserTeams");
                 });
 

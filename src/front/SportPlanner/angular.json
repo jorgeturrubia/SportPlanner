@@ -15,7 +15,7 @@
           "options": {
             "browser": "src/main.ts",
             "polyfills": [
-              "zone.js"
+              "src/polyfills.ts"
             ],
             "tsConfig": "tsconfig.app.json",
             "assets": [
@@ -27,7 +27,6 @@
             "styles": [
               "src/styles.css"
             ],
-            "server": "src/main.server.ts",
             "outputMode": "static"
           },
           "configurations": {
@@ -81,7 +80,7 @@
           "builder": "@angular/build:karma",
           "options": {
             "polyfills": [
-              "zone.js",
+              "src/polyfills.ts",
               "zone.js/testing"
             ],
             "tsConfig": "tsconfig.spec.json",

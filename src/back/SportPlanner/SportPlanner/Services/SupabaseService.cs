@@ -95,29 +95,29 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
     {
         try
         {
-            _logger.LogDebug("🔍 Starting token validation...");
-            
+            _logger.LogInformation("🔍 Starting token validation...");
+
             var handler = new JwtSecurityTokenHandler();
             var jsonToken = handler.ReadJwtToken(token);
 
-            _logger.LogDebug("🔍 Token parsed - Issuer: {Issuer}, ValidTo: {ValidTo}, Current: {Current}", 
+            _logger.LogInformation("🔍 Token parsed - Issuer: {Issuer}, ValidTo: {ValidTo}, Current: {Current}",
                 jsonToken.Issuer, jsonToken.ValidTo, DateTime.UtcNow);
 
             // Check if token is expired
             if (jsonToken.ValidTo < DateTime.UtcNow)
             {
-                _logger.LogWarning("❌ Token is expired - ValidTo: {ValidTo}, Current: {Current}", 
+                _logger.LogWarning("❌ Token is expired - ValidTo: {ValidTo}, Current: {Current}",
                     jsonToken.ValidTo, DateTime.UtcNow);
                 return false;
             }
 
             // Validate with Supabase
-            _logger.LogDebug("🔍 Validating token with Supabase...");
+            _logger.LogInformation("🔍 Validating token with Supabase...");
             var user = await _supabaseClient.Auth.GetUser(token);
-            
+
             if (user != null)
             {
-                _logger.LogDebug("✅ Token validation successful - User ID: {UserId}", user.Id);
+                _logger.LogInformation("✅ Token validation successful - User ID: {UserId}", user.Id);
                 return true;
             }
             else

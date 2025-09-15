@@ -20,18 +20,18 @@ public class JwtMiddleware
 
         if (!string.IsNullOrEmpty(token))
         {
-            _logger.LogDebug("🔑 JWT Token found in request to {Path}", context.Request.Path);
-            
+            _logger.LogInformation("🔑 JWT Token found in request to {Path}", context.Request.Path);
+
             try
             {
-                _logger.LogDebug("🔍 Validating JWT token...");
+                _logger.LogInformation("🔍 Validating JWT token...");
                 var isValid = await supabaseService.ValidateTokenAsync(token);
-                
+
                 if (isValid)
                 {
-                    _logger.LogDebug("✅ JWT token is valid, getting user info...");
+                    _logger.LogInformation("✅ JWT token is valid, getting user info...");
                     var userDto = await supabaseService.GetUserFromTokenAsync(token);
-                    
+
                     // Add user information to the context
                     var claims = new List<Claim>
                     {
@@ -44,8 +44,8 @@ public class JwtMiddleware
 
                     var identity = new ClaimsIdentity(claims, "jwt");
                     context.User = new ClaimsPrincipal(identity);
-                    
-                    _logger.LogDebug("✅ User authenticated: {Email} ({Id})", userDto.Email, userDto.Id);
+
+                    _logger.LogInformation("✅ User authenticated: {Email} ({Id})", userDto.Email, userDto.Id);
                 }
                 else
                 {
@@ -54,7 +54,7 @@ public class JwtMiddleware
             }
             catch (Exception ex)
             {
-                _logger.LogWarning(ex, "❌ Exception during JWT token validation for {Path}: {Message}", 
+                _logger.LogError(ex, "❌ Exception during JWT token validation for {Path}: {Message}",
                     context.Request.Path, ex.Message);
                 // Don't throw here - let the request continue without authentication
                 // Authorization will be handled by [Authorize] attributes
@@ -62,7 +62,7 @@ public class JwtMiddleware
         }
         else
         {
-            _logger.LogDebug("ℹ️ No JWT token found in request to {Path}", context.Request.Path);
+            _logger.LogInformation("ℹ️ No JWT token found in request to {Path}", context.Request.Path);
         }
 
         await _next(context);

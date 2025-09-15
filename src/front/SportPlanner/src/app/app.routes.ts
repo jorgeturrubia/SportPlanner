@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard, guestGuard } from './guards/auth.guard';
+import { subscriptionGuard, noSubscriptionGuard } from './guards/subscription.guard';
 
 export const routes: Routes = [
   {
@@ -19,9 +20,15 @@ export const routes: Routes = [
     title: 'SportPlanner - Iniciar Sesión'
   },
   {
+    path: 'subscription',
+    loadComponent: () => import('./pages/subscription/subscription.component').then(m => m.SubscriptionComponent),
+    canActivate: [authGuard, noSubscriptionGuard],
+    title: 'SportPlanner - Suscripción'
+  },
+  {
     path: 'dashboard',
     loadComponent: () => import('./pages/dashboard/dashboard.component').then(m => m.DashboardComponent),
-    canActivate: [authGuard],
+    canActivate: [authGuard, subscriptionGuard],
     title: 'SportPlanner - Dashboard',
     children: [
       {

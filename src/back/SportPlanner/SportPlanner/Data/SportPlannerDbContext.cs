@@ -59,6 +59,9 @@ public class SportPlannerDbContext : DbContext
         modelBuilder.Entity<UserSubscription>(entity =>
         {
             entity.HasKey(e => e.Id);
+            entity.Property(e => e.Sport)
+                .HasConversion<int>()
+                .IsRequired();
             entity.HasOne(e => e.User)
                 .WithMany(e => e.Subscriptions)
                 .HasForeignKey(e => e.UserId)

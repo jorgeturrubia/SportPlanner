@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { NgIconComponent } from '@ng-icons/core';
-import { Subject } from 'rxjs';
+import { Subject, firstValueFrom, filter, timeout, throwError, take } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 import { AuthService } from '../../services/auth.service';
 import { NotificationService } from '../../services/notification.service';
 import { ThemeService } from '../../services/theme.service';
+import { SubscriptionService } from '../../services/subscription.service';
 import { LoginRequest, RegisterRequest } from '../../models/user.model';
 
 @Component({
@@ -23,6 +24,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   private readonly authService = inject(AuthService);
   private readonly notificationService = inject(NotificationService);
   private readonly themeService = inject(ThemeService);
+  private readonly subscriptionService = inject(SubscriptionService);
   private readonly router = inject(Router);
   private readonly activatedRoute = inject(ActivatedRoute);
   private readonly fb = inject(FormBuilder);
@@ -123,7 +125,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   async onLogin(): Promise<void> {
     if (this.loginForm.valid) {
       this.isLoading.set(true);
-      
+
       try {
         const formValue = this.loginForm.value;
         const loginRequest: LoginRequest = {
@@ -133,18 +135,19 @@ export class AuthComponent implements OnInit, OnDestroy {
         };
 
         const response = await this.authService.login(loginRequest);
-        
+
         console.log('🔍 LOGIN DEBUG:');
         console.log('  ✅ Login response:', response);
         console.log('  🔒 Is authenticated after login:', this.authService.isAuthenticated());
         console.log('  👤 Current user after login:', this.authService.currentUser()?.email);
         console.log('  🎯 Redirect URL:', this.redirectUrl);
-        
-        // Navigate to redirect URL or dashboard
-        console.log('  🚀 Attempting navigation to:', this.redirectUrl);
-        await this.router.navigate([this.redirectUrl]);
-        console.log('  ✅ Navigation completed');
-        
+
+        // Wait for session to be available with timeout
+        await this.waitForSession();
+
+        // Handle post-login redirection based on subscription status
+        await this.handlePostAuthRedirection();
+
       } catch (error) {
         console.error('Login error:', error);
         // Error notification is handled by AuthService
@@ -160,7 +163,7 @@ export class AuthComponent implements OnInit, OnDestroy {
   async onRegister(): Promise<void> {
     if (this.registerForm.valid) {
       this.isLoading.set(true);
-      
+
       try {
         const formValue = this.registerForm.value;
         const registerRequest: RegisterRequest = {
@@ -171,16 +174,21 @@ export class AuthComponent implements OnInit, OnDestroy {
         };
 
         const response = await this.authService.register(registerRequest);
-        
-        // Navigate to redirect URL or dashboard after successful registration
-        await this.router.navigate([this.redirectUrl]);
-        
+
+        // Wait for session to be available with timeout (only if registration provided immediate session)
+        if (response) {
+          await this.waitForSession();
+        }
+
+        // Handle post-registration redirection based on subscription status
+        await this.handlePostAuthRedirection();
+
       } catch (error) {
         console.error('Registration error:', error);
-        
+
         // Handle specific registration errors
         const errorMessage = error instanceof Error ? error.message : 'Error al crear la cuenta';
-        
+
         if (errorMessage.includes('Email confirmation required')) {
           // User needs to confirm email, switch to login tab
           this.switchTab('login');
@@ -223,7 +231,7 @@ export class AuthComponent implements OnInit, OnDestroy {
 
   async onForgotPassword(): Promise<void> {
     const emailControl = this.loginForm.get('email');
-    
+
     if (!emailControl?.value) {
       this.notificationService.showWarning('Por favor, ingresa tu correo electrónico.');
       emailControl?.markAsTouched();
@@ -240,6 +248,78 @@ export class AuthComponent implements OnInit, OnDestroy {
     } catch (error) {
       console.error('Password reset error:', error);
       // Error notification is handled by AuthService
+    }
+  }
+
+  /**
+   * Wait for authentication session to be available
+   */
+  private async waitForSession(): Promise<void> {
+    console.log('  ⏳ Waiting for session to be available...');
+
+    try {
+      await firstValueFrom(
+        this.authService.getSession().pipe(
+          filter(session => !!session && !!session.access_token),
+          take(1),
+          timeout({
+            each: 5000,
+            with: () => throwError(() => new Error('Timeout waiting for session'))
+          })
+        )
+      );
+      console.log('  ✅ Session confirmed available');
+    } catch (error) {
+      console.warn('  ⚠️ Session wait timeout or error:', error);
+      // Continue anyway - session might still be valid
+    }
+  }
+
+  /**
+   * Handle redirection after successful authentication based on subscription status
+   */
+  private async handlePostAuthRedirection(): Promise<void> {
+    try {
+      console.log('  🔍 Checking subscription status...');
+
+      // Get subscription status with timeout
+      const subscriptionStatus = await firstValueFrom(
+        this.subscriptionService.getSubscriptionStatus().pipe(
+          timeout({
+            each: 10000,
+            with: () => throwError(() => new Error('Timeout checking subscription status'))
+          })
+        )
+      );
+
+      console.log('  📋 Subscription status:', subscriptionStatus);
+
+      // Determine redirect URL based on subscription status
+      let finalRedirectUrl = this.redirectUrl;
+      if (!subscriptionStatus.hasActiveSubscription) {
+        finalRedirectUrl = '/subscription';
+        console.log('  🔄 No active subscription, redirecting to subscription page...');
+      } else {
+        console.log('  ✅ Active subscription found, redirecting to dashboard...');
+      }
+
+      // Navigate to final redirect URL
+      console.log('  🚀 Attempting navigation to:', finalRedirectUrl);
+      await this.router.navigate([finalRedirectUrl]);
+      console.log('  ✅ Navigation completed');
+
+    } catch (error) {
+      console.error('  ❌ Error checking subscription status:', error);
+
+      // In case of error, redirect to subscription page for safety
+      console.log('  🔄 Error occurred, redirecting to subscription page for safety...');
+      try {
+        await this.router.navigate(['/subscription']);
+      } catch (navError) {
+        console.error('  ❌ Navigation error:', navError);
+        // Fallback: redirect to dashboard
+        this.router.navigate(['/dashboard']);
+      }
     }
   }
 }

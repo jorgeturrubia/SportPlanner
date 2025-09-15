@@ -1,10 +1,12 @@
-import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, LOCALE_ID } from '@angular/core';
+import { ApplicationConfig, provideBrowserGlobalErrorListeners, provideZoneChangeDetection, LOCALE_ID, ErrorHandler } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import { provideHttpClient, withFetch, withInterceptors } from '@angular/common/http';
 import { registerLocaleData } from '@angular/common';
 import localeEs from '@angular/common/locales/es';
 import { authInterceptor, authErrorInterceptor } from './interceptors/auth.interceptor';
 import { debugInterceptor } from './interceptors/debug.interceptor';
+import { supabaseErrorInterceptor } from './interceptors/supabase-error.interceptor';
+import { GlobalErrorHandler } from './services/error-handler.service';
 import { provideIcons } from '@ng-icons/core';
 import { routes } from './app.routes';
 import { provideClientHydration, withEventReplay } from '@angular/platform-browser';
@@ -54,10 +56,11 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([debugInterceptor, authInterceptor, authErrorInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([debugInterceptor, authInterceptor, authErrorInterceptor, supabaseErrorInterceptor])),
     provideClientHydration(withEventReplay()),
     // Locale configuration
     { provide: LOCALE_ID, useValue: 'es-ES' },
+    { provide: ErrorHandler, useClass: GlobalErrorHandler },
     // Icons needed for navbar and notifications
     provideIcons({
       heroHome,

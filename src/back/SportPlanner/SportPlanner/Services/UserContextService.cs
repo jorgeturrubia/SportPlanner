@@ -55,16 +55,27 @@ public class UserContextService : IUserContextService
         var context = _httpContextAccessor.HttpContext;
         if (context?.User?.Identity?.IsAuthenticated != true)
         {
+            _logger.LogWarning("GetCurrentUserId: User is not authenticated");
             return null;
         }
 
         var userIdClaim = context.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
         if (string.IsNullOrEmpty(userIdClaim))
         {
+            _logger.LogWarning("GetCurrentUserId: No NameIdentifier claim found");
             return null;
         }
 
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : null;
+        if (Guid.TryParse(userIdClaim, out var userId))
+        {
+            _logger.LogInformation("GetCurrentUserId: Found user ID {UserId}", userId);
+            return userId;
+        }
+        else
+        {
+            _logger.LogWarning("GetCurrentUserId: Invalid GUID format for user ID claim: {ClaimValue}", userIdClaim);
+            return null;
+        }
     }
 
     public string? GetCurrentUserSupabaseId()
