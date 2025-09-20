@@ -1,23 +1,76 @@
+/* Planning Card Component Styles - Theme Compatible */
+
 .planning-card {
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  border: 1px solid transparent;
+  transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 .planning-card:hover {
   transform: translateY(-2px);
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border-color: #e5e7eb;
 }
 
 .planning-card.hovered {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
 }
 
-/* Image overlay animation */
-.planning-card .absolute.inset-0.bg-black {
-  animation: fadeIn 0.2s ease-in-out;
+/* Line clamp utilities for text truncation */
+.line-clamp-2 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
 }
 
+.line-clamp-3 {
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+}
+
+/* Ensure cursor pointer on interactive elements */
+button {
+  cursor: pointer !important;
+}
+
+/* Fix button hover states */
+button:hover {
+  transition: all 0.2s ease-in-out;
+  transform: translateY(-1px);
+}
+
+button:disabled {
+  cursor: not-allowed !important;
+  opacity: 0.6;
+}
+
+/* Card content flex layout */
+.planning-card > div:last-child {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .planning-card {
+    margin-bottom: 0.5rem;
+  }
+
+  .text-lg {
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .p-4 {
+    padding: 0.75rem;
+  }
+}
+
+/* Animation for hover overlay */
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -27,154 +80,17 @@
   }
 }
 
-/* Text truncation utilities */
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.planning-card .absolute.inset-0.bg-black {
+  animation: fadeIn 0.2s ease-in-out;
 }
 
-.line-clamp-3 {
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-}
-
-/* Badge styling */
-.inline-flex {
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* Sport icon styling */
-.text-4xl {
-  font-size: 2.5rem;
-  line-height: 1;
-}
-
-/* Button styling improvements */
-button {
-  cursor: pointer;
-  user-select: none;
-}
-
-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.6;
+/* Focus states for accessibility */
+.planning-card:focus {
+  outline: 2px solid rgb(34 197 94);
+  outline-offset: 2px;
 }
 
 button:focus {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid rgb(34 197 94);
   outline-offset: 2px;
-}
-
-/* Hover effects for buttons */
-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  transition: transform 0.15s ease-in-out;
-}
-
-/* Improve spacing and alignment */
-.flex.items-center.gap-1,
-.flex.items-center.gap-2,
-.flex.items-center.gap-3 {
-  align-items: center;
-}
-
-/* Ensure consistent card height */
-.planning-card {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-}
-
-.planning-card > div:last-child {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-}
-
-/* Tag and badge container improvements */
-.flex.flex-wrap.gap-1 {
-  margin: -0.125rem;
-}
-
-.flex.flex-wrap.gap-1 > * {
-  margin: 0.125rem;
-}
-
-/* Responsive design */
-@media (max-width: 640px) {
-  .planning-card {
-    margin-bottom: 1rem;
-  }
-  
-  .text-lg {
-    font-size: 1rem;
-    line-height: 1.4;
-  }
-  
-  .p-4 {
-    padding: 0.75rem;
-  }
-}
-
-/* Loading states */
-.animate-spin {
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Accessibility improvements */
-.planning-card:focus {
-  outline: 2px solid #3b82f6;
-  outline-offset: 2px;
-}
-
-/* Card content spacing */
-.planning-card .p-4 > * + * {
-  margin-top: 0.75rem;
-}
-
-.planning-card .mb-3:last-child {
-  margin-bottom: 0;
-}
-
-/* Smooth transitions for all interactive elements */
-.planning-card * {
-  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Image placeholder styling */
-.h-32.bg-gray-100 {
-  background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-}
-
-/* Border and divider styling */
-.border-t.border-gray-100 {
-  border-top: 1px solid #f3f4f6;
-}
-
-/* Improve text contrast */
-.text-gray-600 {
-  color: #4b5563;
-}
-
-.text-gray-500 {
-  color: #6b7280;
 }

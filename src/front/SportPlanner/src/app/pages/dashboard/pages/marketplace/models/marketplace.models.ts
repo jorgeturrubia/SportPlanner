@@ -1,18 +1,23 @@
 export interface MarketplacePlanningDto {
-  id: number;
+  id: string;
   name: string;
   description: string;
   sport: string;
-  rating: number;
-  ratingCount: number;
-  creatorName: string;
+  averageRating: number;
+  totalRatings: number;
+  createdByName: string;
+  createdByEmail: string;
   tags: string[];
   importCount: number;
   createdAt: Date;
-  concepts: ConceptSummaryDto[];
+  updatedAt: Date;
+  sessionsPerWeek: number;
+  totalSessions: number;
   durationMinutes: number;
   trainingDays: string[];
-  isActive: boolean;
+  startTime: string;
+  conceptNames: string[];
+  totalConcepts: number;
 }
 
 export interface ConceptSummaryDto {
@@ -28,24 +33,28 @@ export interface MarketplaceSearchDto {
   sport?: string;
   minRating?: number;
   tags?: string[];
+  category?: string;
+  page: number;
+  pageSize: number;
   sortBy?: SortOption;
   sortDirection?: SortDirection;
-  pageNumber: number;
-  pageSize: number;
 }
 
 export interface MarketplaceSearchResultDto {
   plannings: MarketplacePlanningDto[];
   totalCount: number;
-  pageNumber: number;
+  page: number;
   pageSize: number;
   totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
 }
 
 export interface PlanningDetailDto extends MarketplacePlanningDto {
-  fullDescription: string;
-  reviews: PlanningReviewDto[];
+  concepts: ConceptSummaryDto[];
+  recentRatings: PlanningReviewDto[];
   canRate: boolean;
+  hasUserRated: boolean;
   userRating?: number;
 }
 
@@ -58,7 +67,7 @@ export interface PlanningReviewDto {
 }
 
 export interface ImportPlanningDto {
-  planningId: number;
+  planningId: string;
   teamId: number;
   customName?: string;
   startDate: Date;
@@ -68,7 +77,7 @@ export interface ImportPlanningDto {
 }
 
 export interface RatePlanningDto {
-  planningId: number;
+  planningId: string;
   rating: number;
   comment?: string;
 }
@@ -93,21 +102,23 @@ export enum DifficultyLevel {
 }
 
 export enum SortOption {
-  Rating = 'rating',
-  Name = 'name',
-  CreatedAt = 'createdAt',
-  ImportCount = 'importCount'
+  Rating = 'Rating',
+  Name = 'Name',
+  CreatedAt = 'CreatedAt',
+  ImportCount = 'ImportCount',
+  TotalRatings = 'TotalRatings'
 }
 
 export enum SortDirection {
-  Asc = 'asc',
-  Desc = 'desc'
+  Ascending = 'Ascending',
+  Descending = 'Descending'
 }
 
 export interface MarketplaceFilters {
   searchTerm: string;
   sport: string;
   minRating: number;
+  createdByName: string;
   tags: string[];
   sortBy: SortOption;
   sortDirection: SortDirection;
@@ -141,9 +152,10 @@ export const DEFAULT_FILTERS: MarketplaceFilters = {
   searchTerm: '',
   sport: '',
   minRating: 0,
+  createdByName: '',
   tags: [],
   sortBy: SortOption.Rating,
-  sortDirection: SortDirection.Desc
+  sortDirection: SortDirection.Descending
 };
 
 export const DEFAULT_PAGE_SIZE = 12;

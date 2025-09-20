@@ -1,14 +1,14 @@
-<div 
-  class="planning-card bg-white rounded-lg shadow-md hover:shadow-lg transition-all duration-300 cursor-pointer overflow-hidden"
+<div
+  class="planning-card bg-card rounded-lg border border-border shadow-sm hover:shadow-md transition-all duration-300 cursor-pointer overflow-hidden"
   [class.hovered]="isHovered()"
   (mouseenter)="onMouseEnter()"
   (mouseleave)="onMouseLeave()"
   (click)="onCardClick()"
 >
   <!-- Image Section -->
-  <div class="relative h-32 bg-gray-100 overflow-hidden">
+  <div class="relative h-32 bg-secondary/20 overflow-hidden">
     <!-- Sport Icon/Placeholder -->
-    <div class="absolute inset-0 flex items-center justify-center text-4xl text-gray-400">
+    <div class="absolute inset-0 flex items-center justify-center text-4xl text-muted-foreground">
       {{ sportIcon() }}
     </div>
     
@@ -21,7 +21,7 @@
     
     <!-- Import Count Badge -->
     <div class="absolute top-2 right-2">
-      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+      <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-card text-foreground border border-border">
         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
         </svg>
@@ -32,8 +32,8 @@
     <!-- Hover Overlay -->
     @if (isHovered()) {
       <div class="absolute inset-0 bg-black bg-opacity-20 flex items-center justify-center">
-        <button 
-          class="bg-white text-gray-900 px-4 py-2 rounded-md font-medium hover:bg-gray-50 transition-colors"
+        <button
+          class="bg-card text-foreground px-4 py-2 rounded-md font-medium hover:bg-secondary/50 transition-colors border border-border cursor-pointer"
           (click)="onViewDetails($event)"
         >
           Ver detalles
@@ -46,15 +46,15 @@
   <div class="p-4">
     <!-- Header -->
     <div class="mb-3">
-      <h3 class="text-lg font-semibold text-gray-900 mb-1 line-clamp-2">
+      <h3 class="text-lg font-semibold text-foreground mb-1 line-clamp-2">
         {{ planning.name }}
       </h3>
       
       <!-- Rating -->
       <div class="flex items-center justify-between">
         <app-rating-stars
-          [rating]="planning.rating"
-          [ratingCount]="planning.ratingCount"
+          [rating]="planning.averageRating"
+          [ratingCount]="planning.totalRatings"
           [interactive]="false"
           [showCount]="true"
           size="sm"
@@ -74,7 +74,7 @@
 
     <!-- Description -->
     @if (truncatedDescription()) {
-      <p class="text-sm text-gray-600 mb-3 line-clamp-3">
+      <p class="text-sm text-muted-foreground mb-3 line-clamp-3">
         {{ truncatedDescription() }}
       </p>
     }
@@ -84,14 +84,14 @@
       <div class="mb-3">
         <div class="flex flex-wrap gap-1">
           @for (concept of conceptsPreview(); track concept) {
-            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-700">
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary text-foreground">
               {{ concept }}
             </span>
           }
           
-          @if (planning.concepts.length > 3) {
-            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-500">
-              +{{ planning.concepts.length - 3 }} más
+          @if (planning.totalConcepts > 3) {
+            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs bg-secondary text-muted-foreground">
+              +{{ planning.totalConcepts - 3 }} más
             </span>
           }
         </div>
@@ -118,7 +118,7 @@
     }
 
     <!-- Training Details -->
-    <div class="flex items-center justify-between text-xs text-gray-500 mb-3">
+    <div class="flex items-center justify-between text-xs text-muted-foreground mb-3">
       <div class="flex items-center gap-3">
         <!-- Duration -->
         <div class="flex items-center gap-1">
@@ -142,15 +142,15 @@
     </div>
 
     <!-- Footer -->
-    <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+    <div class="flex items-center justify-between pt-3 border-t border-border">
       <!-- Creator -->
       <div class="flex items-center gap-2">
-        <div class="w-6 h-6 bg-gray-300 rounded-full flex items-center justify-center">
-          <svg class="w-3 h-3 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+        <div class="w-6 h-6 bg-secondary rounded-full flex items-center justify-center">
+          <svg class="w-3 h-3 text-muted-foreground" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd" />
           </svg>
         </div>
-        <span class="text-xs text-gray-600 font-medium">{{ planning.creatorName }}</span>
+        <span class="text-xs text-muted-foreground font-medium">{{ planning.createdByName }}</span>
       </div>
 
       <!-- Action Button -->
@@ -175,7 +175,7 @@
       } @else {
         <button
           (click)="onViewDetails($event)"
-          class="flex items-center gap-1 px-3 py-1 text-xs font-medium text-gray-600 bg-gray-50 rounded-md hover:bg-gray-100 transition-colors"
+          class="flex items-center gap-1 px-3 py-1 text-xs font-medium text-muted-foreground bg-secondary rounded-md hover:bg-secondary/50 transition-colors cursor-pointer"
         >
           <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />

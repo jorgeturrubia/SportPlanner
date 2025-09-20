@@ -1,414 +1,247 @@
-import { Component, signal, computed, inject, OnInit, OnDestroy } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { ReactiveFormsModule, FormBuilder, FormControl } from '@angular/forms';
-import { Router, ActivatedRoute } from '@angular/router';
-import { Subject, takeUntil, debounceTime, distinctUntilChanged } from 'rxjs';
-import { Title, Meta } from '@angular/platform-browser';
-
-import { FiltersSidebarComponent } from './components/filters-sidebar/filters-sidebar.component';
-import { PlanningCardComponent } from './components/planning-card/planning-card.component';
-import { PlanningModalComponent } from './components/planning-modal/planning-modal.component';
+import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
+import { NgIcon } from '@ng-icons/core';
 import { MarketplaceService } from './services/marketplace.service';
-import { AuthService } from '../../../../services/auth.service';
 import { NotificationService } from '../../../../services/notification.service';
-
 import {
   MarketplacePlanningDto,
   PlanningDetailDto,
   MarketplaceFilters,
-  ImportPlanningDto,
-  RatePlanningDto,
   DEFAULT_FILTERS,
-  DEFAULT_PAGE_SIZE
+  SortOption,
+  SortDirection
 } from './models/marketplace.models';
-
-interface Team {
-  id: number;
-  name: string;
-}
+import { PlanningCardComponent } from './components/planning-card/planning-card.component';
+import { PlanningDetailsModalComponent } from './components/planning-details-modal/planning-details-modal.component';
 
 @Component({
   selector: 'app-marketplace',
   standalone: true,
-  imports: [
-    CommonModule,
-    ReactiveFormsModule,
-    FiltersSidebarComponent,
-    PlanningCardComponent,
-    PlanningModalComponent
-  ],
+  imports: [NgIcon, PlanningCardComponent, PlanningDetailsModalComponent],
   templateUrl: './marketplace.component.html',
-  styleUrl: './marketplace.component.scss'
+  styleUrl: './marketplace.component.css',
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  host: {
+    class: 'block w-full'
+  }
 })
-export class MarketplaceComponent implements OnInit, OnDestroy {
-  private readonly marketplaceService = inject(MarketplaceService);
-  private readonly authService = inject(AuthService);
-  private readonly notificationService = inject(NotificationService);
-  private readonly router = inject(Router);
-  private readonly route = inject(ActivatedRoute);
-  private readonly title = inject(Title);
-  private readonly meta = inject(Meta);
-  private readonly fb = inject(FormBuilder);
-  private readonly destroy$ = new Subject<void>();
+export class MarketplaceComponent implements OnInit {
+  private marketplaceService = inject(MarketplaceService);
+  private notificationService = inject(NotificationService);
 
-  // Search control
-  readonly searchControl = new FormControl('');
+  // Expose DEFAULT_FILTERS for template
+  readonly DEFAULT_FILTERS = DEFAULT_FILTERS;
 
-  // Component signals
-  private readonly _isFiltersOpen = signal<boolean>(true);
-  private readonly _selectedPlanningId = signal<number | null>(null);
-  private readonly _userTeams = signal<Team[]>([]);
-  private readonly _currentPage = signal<number>(1);
+  readonly plannings = this.marketplaceService.plannings;
+  readonly isLoading = this.marketplaceService.isLoading;
+  readonly totalCount = this.marketplaceService.totalCount;
+  readonly currentPage = this.marketplaceService.currentPage;
+  readonly totalPages = this.marketplaceService.totalPages;
 
-  // Computed properties from service
-  readonly plannings = computed(() => this.marketplaceService.plannings());
-  readonly pagination = computed(() => this.marketplaceService.pagination());
-  readonly filters = computed(() => this.marketplaceService.filters());
-  readonly selectedPlanning = computed(() => this.marketplaceService.selectedPlanning());
-  readonly isLoading = computed(() => this.marketplaceService.isLoading());
-  readonly isImporting = computed(() => this.marketplaceService.isImporting());
-  readonly hasResults = computed(() => this.marketplaceService.hasResults());
-  readonly showEmptyState = computed(() => this.marketplaceService.showEmptyState());
+  readonly isModalOpen = signal<boolean>(false);
+  readonly selectedPlanning = signal<PlanningDetailDto | null>(null);
+  readonly searchQuery = signal<string>('');
+  readonly activeFilters = signal<MarketplaceFilters>(DEFAULT_FILTERS);
 
-  // Local computed properties
-  readonly isFiltersOpen = computed(() => this._isFiltersOpen());
-  readonly selectedPlanningId = computed(() => this._selectedPlanningId());
-  readonly userTeams = computed(() => this._userTeams());
-  readonly currentPage = computed(() => this._currentPage());
-  readonly isAuthenticated = computed(() => this.authService.isAuthenticated());
-  readonly currentUser = computed(() => this.authService.currentUser());
+  readonly filteredPlannings = computed(() => {
+    let filtered = this.plannings();
 
-  readonly availableTags = computed(() => this.marketplaceService.getAvailableTags());
-  readonly totalPages = computed(() => this.pagination().totalPages);
-  readonly hasNextPage = computed(() => this.currentPage() < this.totalPages());
-  readonly hasPreviousPage = computed(() => this.currentPage() > 1);
-
-  readonly pageNumbers = computed(() => {
-    const total = this.totalPages();
-    const current = this.currentPage();
-    const delta = 2;
-    const range = [];
-    const rangeWithDots = [];
-
-    for (let i = Math.max(2, current - delta); i <= Math.min(total - 1, current + delta); i++) {
-      range.push(i);
+    // Apply search query
+    const query = this.searchQuery().toLowerCase().trim();
+    if (query) {
+      filtered = filtered.filter(planning =>
+        planning.name.toLowerCase().includes(query) ||
+        planning.description.toLowerCase().includes(query) ||
+        planning.sport.toLowerCase().includes(query) ||
+        planning.createdByName.toLowerCase().includes(query) ||
+        planning.tags.some(tag => tag.toLowerCase().includes(query))
+      );
     }
 
-    if (current - delta > 2) {
-      rangeWithDots.push(1, '...');
-    } else {
-      rangeWithDots.push(1);
+    // Apply filters
+    const filters = this.activeFilters();
+    if (filters.sport) {
+      filtered = filtered.filter(planning => planning.sport === filters.sport);
+    }
+    if (filters.minRating && filters.minRating > 0) {
+      filtered = filtered.filter(planning => planning.averageRating >= filters.minRating!);
+    }
+    if (filters.createdByName) {
+      filtered = filtered.filter(planning =>
+        planning.createdByName.toLowerCase().includes(filters.createdByName.toLowerCase())
+      );
+    }
+    if (filters.tags && filters.tags.length > 0) {
+      filtered = filtered.filter(planning =>
+        filters.tags!.some(tag => planning.tags.includes(tag))
+      );
     }
 
-    rangeWithDots.push(...range);
-
-    if (current + delta < total - 1) {
-      rangeWithDots.push('...', total);
-    } else if (total > 1) {
-      rangeWithDots.push(total);
-    }
-
-    return rangeWithDots;
+    return filtered;
   });
 
-  readonly gridColumns = computed(() => {
-    if (this.isFiltersOpen()) {
-      return 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3';
-    } else {
-      return 'grid-cols-1 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5';
-    }
+  readonly planningsCount = computed(() => this.filteredPlannings().length);
+  readonly availableSports = computed(() => {
+    const sports = [...new Set(this.plannings().map(p => p.sport))];
+    return sports.sort();
+  });
+  readonly availableTags = computed(() => {
+    const tags = [...new Set(this.plannings().flatMap(p => p.tags))];
+    return tags.sort();
+  });
+  readonly availableCreators = computed(() => {
+    const creators = [...new Set(this.plannings().map(p => p.createdByName))];
+    return creators.sort();
   });
 
   ngOnInit(): void {
-    this.setupSEO();
-    this.setupSearchControl();
-    this.setupUrlParams();
-    this.loadInitialData();
-    this.loadUserTeams();
+    console.log('🛒 MARKETPLACE COMPONENT INIT');
+    this.loadPlannings();
   }
 
-  ngOnDestroy(): void {
-    this.destroy$.next();
-    this.destroy$.complete();
-    this.marketplaceService.clearSelectedPlanning();
+  private loadPlannings(): void {
+    console.log('📋 LOADING MARKETPLACE PLANNINGS...');
+    this.marketplaceService.refreshPlannings();
+    console.log('✅ Marketplace plannings loaded successfully:', this.plannings().length, 'plannings');
   }
 
-  /**
-   * Setup SEO metadata
-   */
-  private setupSEO(): void {
-    this.title.setTitle('Marketplace - SportPlanner | Descubre y Comparte Planificaciones');
-    this.meta.updateTag({
-      name: 'description',
-      content: 'Explora el marketplace de SportPlanner. Descubre planificaciones deportivas valoradas por la comunidad, importa las que más te gusten y comparte las tuyas.'
-    });
-    this.meta.updateTag({ property: 'og:title', content: 'Marketplace - SportPlanner' });
-    this.meta.updateTag({
-      property: 'og:description',
-      content: 'Descubre y comparte planificaciones deportivas en el marketplace de SportPlanner.'
-    });
-  }
-
-  /**
-   * Setup search control with debouncing
-   */
-  private setupSearchControl(): void {
-    this.searchControl.valueChanges
-      .pipe(
-        debounceTime(300),
-        distinctUntilChanged(),
-        takeUntil(this.destroy$)
-      )
-      .subscribe(searchTerm => {
-        this.marketplaceService.updateSearchTerm(searchTerm || '');
-        this._currentPage.set(1);
-        this.updateUrlParams();
-      });
-  }
-
-  /**
-   * Setup URL parameters handling
-   */
-  private setupUrlParams(): void {
-    this.route.queryParams
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(params => {
-        // Apply filters from URL
-        const filters: Partial<MarketplaceFilters> = {
-          searchTerm: params['search'] || '',
-          sport: params['sport'] || '',
-          minRating: params['minRating'] ? parseInt(params['minRating']) : 0,
-          tags: params['tags'] ? params['tags'].split(',') : [],
-          sortBy: params['sortBy'] || DEFAULT_FILTERS.sortBy,
-          sortDirection: params['sortDirection'] || DEFAULT_FILTERS.sortDirection
-        };
-
-        // Update search control
-        this.searchControl.setValue(filters.searchTerm || '', { emitEvent: false });
-
-        // Apply filters
-        this.marketplaceService.updateFilters(filters);
-
-        // Set page
-        const page = params['page'] ? parseInt(params['page']) : 1;
-        this._currentPage.set(page);
-      });
-  }
-
-  /**
-   * Update URL parameters
-   */
-  private updateUrlParams(): void {
-    const currentFilters = this.filters();
-    const queryParams: any = {};
-
-    if (currentFilters.searchTerm) queryParams.search = currentFilters.searchTerm;
-    if (currentFilters.sport) queryParams.sport = currentFilters.sport;
-    if (currentFilters.minRating > 0) queryParams.minRating = currentFilters.minRating;
-    if (currentFilters.tags && currentFilters.tags.length > 0) {
-      queryParams.tags = currentFilters.tags.join(',');
-    }
-    if (currentFilters.sortBy !== DEFAULT_FILTERS.sortBy) {
-      queryParams.sortBy = currentFilters.sortBy;
-    }
-    if (currentFilters.sortDirection !== DEFAULT_FILTERS.sortDirection) {
-      queryParams.sortDirection = currentFilters.sortDirection;
-    }
-    if (this.currentPage() > 1) queryParams.page = this.currentPage();
-
-    this.router.navigate([], {
-      relativeTo: this.route,
-      queryParams,
-      queryParamsHandling: 'replace'
-    });
-  }
-
-  /**
-   * Load initial marketplace data
-   */
-  private async loadInitialData(): Promise<void> {
+  async onViewDetails(planning: MarketplacePlanningDto): Promise<void> {
     try {
-      await this.marketplaceService.searchPlannings({}, 1, DEFAULT_PAGE_SIZE);
-    } catch (error) {
-      console.error('Error loading initial marketplace data:', error);
-      this.notificationService.showError('Error al cargar el marketplace');
-    }
-  }
-
-  /**
-   * Load user teams if authenticated
-   */
-  private async loadUserTeams(): Promise<void> {
-    if (this.isAuthenticated()) {
-      try {
-        // Mock teams for now - replace with actual API call
-        this._userTeams.set([
-          { id: 1, name: 'Equipo Senior A' },
-          { id: 2, name: 'Equipo Junior B' },
-          { id: 3, name: 'Equipo Infantil' }
-        ]);
-      } catch (error) {
-        console.error('Error loading user teams:', error);
+      const details = await this.marketplaceService.getPlanningDetails(planning.id).toPromise();
+      if (details) {
+        this.selectedPlanning.set(details);
+        this.isModalOpen.set(true);
       }
-    }
-  }
-
-  /**
-   * Handle filters change
-   */
-  onFiltersChange(filters: Partial<MarketplaceFilters>): void {
-    this.marketplaceService.updateFilters(filters);
-    this._currentPage.set(1);
-    this.updateUrlParams();
-  }
-
-  /**
-   * Handle filters reset
-   */
-  onResetFilters(): void {
-    this.marketplaceService.resetFilters();
-    this.searchControl.setValue('', { emitEvent: false });
-    this._currentPage.set(1);
-    this.updateUrlParams();
-  }
-
-  /**
-   * Toggle filters sidebar
-   */
-  toggleFilters(): void {
-    this._isFiltersOpen.set(!this._isFiltersOpen());
-  }
-
-  /**
-   * Handle planning card click
-   */
-  async onViewPlanningDetails(planningId: number): Promise<void> {
-    try {
-      await this.marketplaceService.getPlanningDetails(planningId);
-      this._selectedPlanningId.set(planningId);
     } catch (error) {
       console.error('Error loading planning details:', error);
-      this.notificationService.showError('Error al cargar detalles de la planificación');
+      this.notificationService.showError('Error al cargar los detalles de la planificación');
     }
   }
 
-  /**
-   * Handle planning import
-   */
-  async onImportPlanning(planningId: number): Promise<void> {
-    if (!this.marketplaceService.requireAuthentication()) {
-      return;
-    }
-
+  async onViewDetailsById(planningId: string): Promise<void> {
     try {
-      await this.marketplaceService.getPlanningDetails(planningId);
-      this._selectedPlanningId.set(planningId);
-    } catch (error) {
-      console.error('Error loading planning for import:', error);
-      this.notificationService.showError('Error al cargar detalles de la planificación');
-    }
-  }
-
-  /**
-   * Handle modal import submission
-   */
-  async onModalImport(importData: ImportPlanningDto): Promise<void> {
-    try {
-      const result = await this.marketplaceService.importPlanning(importData);
-      if (result?.success) {
-        this.closeModal();
+      const details = await this.marketplaceService.getPlanningDetails(planningId).toPromise();
+      if (details) {
+        this.selectedPlanning.set(details);
+        this.isModalOpen.set(true);
       }
     } catch (error) {
-      console.error('Error importing planning:', error);
+      console.error('Error loading planning details:', error);
+      this.notificationService.showError('Error al cargar los detalles de la planificación');
     }
   }
 
-  /**
-   * Handle planning rating
-   */
-  async onRatePlanning(ratingData: RatePlanningDto): Promise<void> {
-    try {
-      await this.marketplaceService.ratePlanning(ratingData);
-    } catch (error) {
-      console.error('Error rating planning:', error);
+  onImportPlanning(planning: MarketplacePlanningDto): void {
+    // TODO: Implement import functionality
+    this.notificationService.showInfo('Funcionalidad de importación próximamente disponible');
+  }
+
+  onImportPlanningById(planningId: string): void {
+    // TODO: Implement import functionality
+    this.notificationService.showInfo('Funcionalidad de importación próximamente disponible');
+  }
+
+  onModalClose(): void {
+    this.isModalOpen.set(false);
+    this.selectedPlanning.set(null);
+  }
+
+  onSearch(event: Event): void {
+    const target = event.target as HTMLInputElement;
+    this.searchQuery.set(target.value);
+  }
+
+  onRefresh(): void {
+    this.loadPlannings();
+  }
+
+  onToggleSportFilter(): void {
+    const currentFilters = this.activeFilters();
+    const availableSports = this.availableSports();
+
+    if (!currentFilters.sport) {
+      // Show first sport
+      if (availableSports.length > 0) {
+        this.activeFilters.set({ ...currentFilters, sport: availableSports[0] });
+      }
+    } else {
+      const currentIndex = availableSports.indexOf(currentFilters.sport);
+      const nextIndex = (currentIndex + 1) % (availableSports.length + 1);
+
+      if (nextIndex === availableSports.length) {
+        // Reset to all sports
+        this.activeFilters.set({ ...currentFilters, sport: '' });
+      } else {
+        // Next sport
+        this.activeFilters.set({ ...currentFilters, sport: availableSports[nextIndex] });
+      }
     }
   }
 
-  /**
-   * Close planning modal
-   */
-  closeModal(): void {
-    this._selectedPlanningId.set(null);
-    this.marketplaceService.clearSelectedPlanning();
+  onToggleRatingFilter(): void {
+    const currentFilters = this.activeFilters();
+    const ratings = [0, 1, 2, 3, 4, 5];
+
+    const currentIndex = ratings.indexOf(currentFilters.minRating || 0);
+    const nextIndex = (currentIndex + 1) % ratings.length;
+
+    this.activeFilters.set({
+      ...currentFilters,
+      minRating: ratings[nextIndex]
+    });
   }
 
-  /**
-   * Navigate to specific page
-   */
-  async goToPage(page: number): Promise<void> {
-    if (page >= 1 && page <= this.totalPages() && page !== this.currentPage()) {
-      this._currentPage.set(page);
-      this.updateUrlParams();
-      await this.marketplaceService.loadPage(page);
-      
-      // Scroll to top
-      window.scrollTo({ top: 0, behavior: 'smooth' });
+  onToggleCreatorFilter(): void {
+    const currentFilters = this.activeFilters();
+    const availableCreators = this.availableCreators();
+
+    if (!currentFilters.createdByName) {
+      // Show first creator
+      if (availableCreators.length > 0) {
+        this.activeFilters.set({ ...currentFilters, createdByName: availableCreators[0] });
+      }
+    } else {
+      const currentIndex = availableCreators.indexOf(currentFilters.createdByName);
+      const nextIndex = (currentIndex + 1) % (availableCreators.length + 1);
+
+      if (nextIndex === availableCreators.length) {
+        // Reset to all creators
+        this.activeFilters.set({ ...currentFilters, createdByName: '' });
+      } else {
+        // Next creator
+        this.activeFilters.set({ ...currentFilters, createdByName: availableCreators[nextIndex] });
+      }
     }
   }
 
-  /**
-   * Go to previous page
-   */
-  async goToPreviousPage(): Promise<void> {
-    if (this.hasPreviousPage()) {
-      await this.goToPage(this.currentPage() - 1);
+  getSportFilterText(): string {
+    const filters = this.activeFilters();
+    return filters.sport || 'Todos los deportes';
+  }
+
+  getRatingFilterText(): string {
+    const filters = this.activeFilters();
+    if (!filters.minRating || filters.minRating === 0) {
+      return 'Todas las valoraciones';
     }
+    return `${filters.minRating}+ ⭐`;
   }
 
-  /**
-   * Go to next page
-   */
-  async goToNextPage(): Promise<void> {
-    if (this.hasNextPage()) {
-      await this.goToPage(this.currentPage() + 1);
+  getCreatorFilterText(): string {
+    const filters = this.activeFilters();
+    return filters.createdByName || 'Todos los entrenadores';
+  }
+
+  getStarsArray(rating: number): number[] {
+    return Array.from({ length: 5 }, (_, i) => i + 1);
+  }
+
+  getStarClass(star: number, rating: number): string {
+    if (star <= Math.floor(rating)) {
+      return 'text-yellow-400';
+    } else if (star - 0.5 <= rating) {
+      return 'text-yellow-300';
+    } else {
+      return 'text-gray-300';
     }
-  }
-
-  /**
-   * Handle search form submission
-   */
-  onSearchSubmit(): void {
-    // Search is handled by the reactive control, this prevents form submission
-  }
-
-  /**
-   * Clear search
-   */
-  clearSearch(): void {
-    this.searchControl.setValue('');
-  }
-
-  /**
-   * Get results summary text
-   */
-  getResultsSummary(): string {
-    const pagination = this.pagination();
-    const total = pagination.totalItems;
-    
-    if (total === 0) {
-      return 'No se encontraron planificaciones';
-    }
-    
-    const start = (pagination.currentPage - 1) * pagination.pageSize + 1;
-    const end = Math.min(pagination.currentPage * pagination.pageSize, total);
-    
-    return `Mostrando ${start}-${end} de ${total} planificaciones`;
-  }
-
-  /**
-   * Navigate to login
-   */
-  navigateToLogin(): void {
-    this.router.navigate(['/auth']);
   }
 }

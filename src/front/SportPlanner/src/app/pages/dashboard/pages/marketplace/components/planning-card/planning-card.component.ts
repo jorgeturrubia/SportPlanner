@@ -14,8 +14,8 @@ import { AuthService } from '../../../../../../services/auth.service';
 export class PlanningCardComponent {
   @Input({ required: true }) planning!: MarketplacePlanningDto;
   @Input() isImporting: boolean = false;
-  @Output() viewDetails = new EventEmitter<number>();
-  @Output() importPlanning = new EventEmitter<number>();
+  @Output() viewDetails = new EventEmitter<string>();
+  @Output() importPlanning = new EventEmitter<string>();
 
   private readonly authService = inject(AuthService);
 
@@ -106,11 +106,11 @@ export class PlanningCardComponent {
    * Get concepts preview (max 3)
    */
   private getConceptsPreview(): string[] {
-    if (!this.planning.concepts || this.planning.concepts.length === 0) {
+    if (!this.planning.conceptNames || this.planning.conceptNames.length === 0) {
       return [];
     }
-    
-    return this.planning.concepts.slice(0, 3).map(concept => concept.name);
+
+    return this.planning.conceptNames.slice(0, 3);
   }
 
   /**
@@ -217,15 +217,20 @@ export class PlanningCardComponent {
   }
 
   /**
-   * Get average difficulty of concepts
+   * Get average difficulty of concepts (simplified since we don't have detailed concept data)
    */
   getAverageDifficulty(): number {
-    if (!this.planning.concepts || this.planning.concepts.length === 0) {
+    // Since we don't have detailed concept data in the marketplace DTO,
+    // we can estimate difficulty based on total concepts or return a default
+    if (!this.planning.totalConcepts || this.planning.totalConcepts === 0) {
       return 0;
     }
-    
-    const totalDifficulty = this.planning.concepts.reduce((sum, concept) => sum + concept.difficulty, 0);
-    return Math.round(totalDifficulty / this.planning.concepts.length);
+
+    // Simple heuristic: more concepts might indicate higher complexity
+    if (this.planning.totalConcepts <= 3) return 1; // Principiante
+    if (this.planning.totalConcepts <= 6) return 2; // Intermedio
+    if (this.planning.totalConcepts <= 10) return 3; // Avanzado
+    return 4; // Experto
   }
 
   /**

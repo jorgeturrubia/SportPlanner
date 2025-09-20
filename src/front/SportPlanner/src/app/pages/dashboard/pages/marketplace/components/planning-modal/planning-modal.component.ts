@@ -70,14 +70,14 @@ export class PlanningModalComponent implements OnInit, OnDestroy {
 
   readonly conceptsByCategory = computed(() => {
     if (!this.planning?.concepts) return {};
-    
-    return this.planning.concepts.reduce((acc, concept) => {
+
+    return this.planning.concepts.reduce((acc: any, concept: any) => {
       if (!acc[concept.category]) {
         acc[concept.category] = [];
       }
       acc[concept.category].push(concept);
       return acc;
-    }, {} as Record<string, typeof this.planning.concepts>);
+    }, {});
   });
 
   readonly conceptCategoryKeys = computed(() => {
@@ -85,26 +85,26 @@ export class PlanningModalComponent implements OnInit, OnDestroy {
   });
 
   readonly averageRating = computed(() => {
-    if (!this.planning?.reviews || this.planning.reviews.length === 0) {
+    if (!this.planning?.recentRatings || this.planning.recentRatings.length === 0) {
       return 0;
     }
     
-    const total = this.planning.reviews.reduce((sum, review) => sum + review.rating, 0);
-    return total / this.planning.reviews.length;
+    const total = this.planning.recentRatings.reduce((sum, review) => sum + review.rating, 0);
+    return total / this.planning.recentRatings.length;
   });
 
   readonly ratingDistribution = computed(() => {
-    if (!this.planning?.reviews) return [];
+    if (!this.planning?.recentRatings) return [];
     
     const distribution = [0, 0, 0, 0, 0]; // For 1-5 stars
     
-    this.planning.reviews.forEach(review => {
+    this.planning.recentRatings.forEach(review => {
       if (review.rating >= 1 && review.rating <= 5) {
         distribution[review.rating - 1]++;
       }
     });
     
-    const total = this.planning.reviews.length;
+    const total = this.planning.recentRatings.length;
     
     return distribution.map((count, index) => ({
       stars: index + 1,

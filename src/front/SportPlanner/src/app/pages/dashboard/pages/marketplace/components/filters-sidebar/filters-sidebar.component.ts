@@ -61,8 +61,8 @@ export class FiltersSidebarComponent implements OnInit, OnDestroy {
   ];
 
   readonly sortDirections = [
-    { value: SortDirection.Desc, label: 'Descendente' },
-    { value: SortDirection.Asc, label: 'Ascendente' }
+    { value: SortDirection.Descending, label: 'Descendente' },
+    { value: SortDirection.Ascending, label: 'Ascendente' }
   ];
 
   ngOnInit(): void {
@@ -90,7 +90,7 @@ export class FiltersSidebarComponent implements OnInit, OnDestroy {
       minRating: [this.filters.minRating || 0],
       tags: this.fb.array(this.createTagsArray()),
       sortBy: [this.filters.sortBy || SortOption.Rating],
-      sortDirection: [this.filters.sortDirection || SortDirection.Desc]
+      sortDirection: [this.filters.sortDirection || SortDirection.Descending]
     });
   }
 
@@ -146,7 +146,7 @@ export class FiltersSidebarComponent implements OnInit, OnDestroy {
       sport: this.filters.sport || '',
       minRating: this.filters.minRating || 0,
       sortBy: this.filters.sortBy || SortOption.Rating,
-      sortDirection: this.filters.sortDirection || SortDirection.Desc
+      sortDirection: this.filters.sortDirection || SortDirection.Descending
     }, { emitEvent: false });
 
     // Update tags array
@@ -209,7 +209,7 @@ export class FiltersSidebarComponent implements OnInit, OnDestroy {
       minRating: 0,
       tags: this.availableTags.map(() => false),
       sortBy: SortOption.Rating,
-      sortDirection: SortDirection.Desc
+      sortDirection: SortDirection.Descending
     });
     this.resetFilters.emit();
   }
