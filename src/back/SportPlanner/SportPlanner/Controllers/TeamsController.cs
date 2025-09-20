@@ -68,17 +68,22 @@ public class TeamsController : ControllerBase
         {
             if (!ModelState.IsValid)
             {
+                _logger.LogWarning("CreateTeam: Invalid model state: {ModelState}", ModelState);
                 return BadRequest(ModelState);
             }
 
             var userId = GetCurrentUserId();
+            _logger.LogInformation("CreateTeam: Attempting to create team '{TeamName}' for user {UserId}", request.Name, userId);
+            
             var team = await _teamService.CreateTeamAsync(request, userId);
-
+            
+            _logger.LogInformation("CreateTeam: Successfully created team {TeamId} with name '{TeamName}'", team.Id, team.Name);
             return CreatedAtAction(nameof(GetTeam), new { id = team.Id }, team);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating team");
+            _logger.LogError(ex, "CreateTeam: Error creating team '{TeamName}' for user {UserId}. Error: {ErrorMessage}", 
+                request?.Name ?? "Unknown", GetCurrentUserId(), ex.Message);
             return StatusCode(500, "An error occurred while creating the team");
         }
     }

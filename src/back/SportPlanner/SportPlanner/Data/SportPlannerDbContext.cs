@@ -45,6 +45,10 @@ public class SportPlannerDbContext : DbContext
             entity.Property(e => e.FirstName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.LastName).IsRequired().HasMaxLength(100);
             entity.Property(e => e.SupabaseId).IsRequired().HasMaxLength(100);
+            entity.HasOne(e => e.Organization)
+                .WithMany()
+                .HasForeignKey(e => e.OrganizationId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         // Configuración de Subscription

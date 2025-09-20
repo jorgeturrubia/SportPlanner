@@ -63,6 +63,27 @@ public class TeamService : ITeamService
     {
         try
         {
+            _logger.LogInformation("CreateTeamAsync: Starting team creation for user {UserId}. Request OrganizationId: {OrganizationId}, TeamName: {TeamName}", 
+                userId, request.OrganizationId, request.Name);
+
+            // Verificar si el usuario existe y tiene OrganizationId
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            if (user == null)
+            {
+                _logger.LogError("CreateTeamAsync: User {UserId} not found in database", userId);
+                throw new InvalidOperationException("No se pudo determinar la organización del usuario");
+            }
+
+            _logger.LogInformation("CreateTeamAsync: User found - UserId: {UserId}, UserOrganizationId: {UserOrganizationId}, Email: {Email}", 
+                user.Id, user.OrganizationId, user.Email);
+
+            if (!user.OrganizationId.HasValue)
+            {
+                _logger.LogError("CreateTeamAsync: User {UserId} does not have an OrganizationId assigned", userId);
+                throw new InvalidOperationException("No se pudo determinar la organización del usuario");
+            }
+
+            // Usar el OrganizationId del usuario en lugar del request
             var team = new Team
             {
                 Id = Guid.NewGuid(),
@@ -72,7 +93,7 @@ public class TeamService : ITeamService
                 Gender = request.Gender,
                 Level = request.Level,
                 Description = request.Description,
-                OrganizationId = request.OrganizationId,
+                OrganizationId = user.OrganizationId.Value, // Usar el OrganizationId del usuario
                 CreatedByUserId = userId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -80,8 +101,12 @@ public class TeamService : ITeamService
                 IsVisible = true
             };
 
+            _logger.LogInformation("CreateTeamAsync: Creating team with OrganizationId: {OrganizationId}", team.OrganizationId);
+
             _context.Teams.Add(team);
             await _context.SaveChangesAsync();
+
+            _logger.LogInformation("CreateTeamAsync: Team saved to database with ID: {TeamId}", team.Id);
 
             // Reload the team with includes for proper DTO mapping
             var createdTeam = await _context.Teams
@@ -90,12 +115,14 @@ public class TeamService : ITeamService
                 .Include(t => t.UserTeams)
                 .FirstAsync(t => t.Id == team.Id);
 
-            _logger.LogInformation("Team {TeamName} created successfully by user {UserId}", request.Name, userId);
+            _logger.LogInformation("CreateTeamAsync: Team {TeamName} created successfully by user {UserId} with OrganizationId {OrganizationId}", 
+                request.Name, userId, createdTeam.OrganizationId);
             return MapToTeamDto(createdTeam);
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error creating team for user {UserId}", userId);
+            _logger.LogError(ex, "CreateTeamAsync: Error creating team '{TeamName}' for user {UserId}. Error: {ErrorMessage}", 
+                request?.Name ?? "Unknown", userId, ex.Message);
             throw;
         }
     }

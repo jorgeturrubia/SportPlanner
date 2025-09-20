@@ -24,11 +24,14 @@ public class User
     
     public UserRole Role { get; set; } = UserRole.Coach;
     
+    public Guid? OrganizationId { get; set; }
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
     
     // Relaciones
+    public Organization? Organization { get; set; }
     public ICollection<UserSubscription> Subscriptions { get; set; } = new List<UserSubscription>();
     public ICollection<UserTeam> UserTeams { get; set; } = new List<UserTeam>();
     public ICollection<Organization> CreatedOrganizations { get; set; } = new List<Organization>();

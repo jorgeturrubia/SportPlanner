@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using SportPlanner.Models;
 using SportPlanner.Services;
+using SportPlanner.Data;
 using System.Security.Claims;
 using Xunit;
 
@@ -12,13 +13,15 @@ public class UserContextServiceTests
 {
     private readonly Mock<IHttpContextAccessor> _mockHttpContextAccessor;
     private readonly Mock<ILogger<UserContextService>> _mockLogger;
+    private readonly Mock<SportPlannerDbContext> _mockDbContext;
     private readonly UserContextService _userContextService;
 
     public UserContextServiceTests()
     {
         _mockHttpContextAccessor = new Mock<IHttpContextAccessor>();
         _mockLogger = new Mock<ILogger<UserContextService>>();
-        _userContextService = new UserContextService(_mockHttpContextAccessor.Object, _mockLogger.Object);
+        _mockDbContext = new Mock<SportPlannerDbContext>();
+        _userContextService = new UserContextService(_mockHttpContextAccessor.Object, _mockLogger.Object, _mockDbContext.Object);
     }
 
     [Fact]

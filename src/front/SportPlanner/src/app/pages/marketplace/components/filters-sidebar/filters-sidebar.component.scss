@@ -1,0 +1,151 @@
+.filters-sidebar {
+  width: 320px;
+  max-width: 320px;
+  min-width: 280px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+.filters-content {
+  max-height: calc(100vh - 120px);
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e0 #f7fafc;
+}
+
+.filters-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.filters-content::-webkit-scrollbar-track {
+  background: #f7fafc;
+}
+
+.filters-content::-webkit-scrollbar-thumb {
+  background: #cbd5e0;
+  border-radius: 3px;
+}
+
+.filters-content::-webkit-scrollbar-thumb:hover {
+  background: #a0aec0;
+}
+
+.filter-section {
+  border-bottom: 1px solid #f3f4f6;
+  padding-bottom: 1.5rem;
+}
+
+.filter-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+/* Form elements styling */
+select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+}
+
+select:disabled {
+  background-color: #f9fafb;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+input[type="checkbox"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+  .filters-sidebar {
+    width: 280px;
+    max-width: 280px;
+    min-width: 250px;
+  }
+}
+
+@media (max-width: 768px) {
+  .filters-sidebar {
+    width: 100%;
+    max-width: 100%;
+    min-width: 100%;
+    border-right: none;
+    border-bottom: 1px solid #e5e7eb;
+  }
+  
+  .filters-content {
+    max-height: 300px;
+  }
+}
+
+/* Animation for collapse/expand */
+.filters-sidebar {
+  transition: width 0.3s ease-in-out;
+}
+
+/* Loading overlay */
+.filters-sidebar > .absolute {
+  backdrop-filter: blur(1px);
+}
+
+/* Focus states for accessibility */
+select:focus,
+input[type="checkbox"]:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Hover states */
+button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  transition: transform 0.15s ease-in-out;
+}
+
+/* Tag chips styling */
+.inline-flex {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Custom scrollbar for better UX */
+.space-y-2 {
+  max-height: 200px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.space-y-2::-webkit-scrollbar {
+  width: 4px;
+}
+
+.space-y-2::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.space-y-2::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 2px;
+}
+
+/* Loading spinner animation */
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
+}

@@ -34,7 +34,9 @@
       "Read(/C:\\Proyectos\\SportPlanner\\src\\front\\SportPlanner\\src/**)",
       "Read(/C:\\Proyectos\\SportPlanner\\src\\front\\SportPlanner\\src/**)",
       "Read(/C:\\Proyectos\\SportPlanner\\src\\front\\SportPlanner\\src/**)",
-      "Read(/C:\\Proyectos\\SportPlanner\\src\\back\\SportPlanner\\SportPlanner/**)"
+      "Read(/C:\\Proyectos\\SportPlanner\\src\\back\\SportPlanner\\SportPlanner/**)",
+      "Bash(mv:*)",
+      "Bash(cp:*)"
     ],
     "deny": [
       "Bash(rm:*)",

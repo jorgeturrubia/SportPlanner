@@ -49,6 +49,9 @@ builder.Services.AddScoped<IPlanningService, PlanningService>();
 // Subscription services
 builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 
+// Marketplace services
+builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();
+
 // HTTP Context Accessor for UserContextService
 builder.Services.AddHttpContextAccessor();
 

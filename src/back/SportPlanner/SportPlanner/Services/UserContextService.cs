@@ -1,5 +1,7 @@
 using SportPlanner.Models;
 using SportPlanner.Models.DTOs;
+using SportPlanner.Data;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
 
 namespace SportPlanner.Services;
@@ -8,11 +10,13 @@ public class UserContextService : IUserContextService
 {
     private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly ILogger<UserContextService> _logger;
+    private readonly SportPlannerDbContext _context;
 
-    public UserContextService(IHttpContextAccessor httpContextAccessor, ILogger<UserContextService> logger)
+    public UserContextService(IHttpContextAccessor httpContextAccessor, ILogger<UserContextService> logger, SportPlannerDbContext context)
     {
         _httpContextAccessor = httpContextAccessor;
         _logger = logger;
+        _context = context;
     }
 
     public UserDto? GetCurrentUser()
@@ -31,6 +35,25 @@ public class UserContextService : IUserContextService
                 return null;
             }
 
+            // Consultar la base de datos para obtener información completa del usuario
+            var user = _context.Users.FirstOrDefault(u => u.Id == userId.Value);
+            if (user != null)
+            {
+                return new UserDto
+                {
+                    Id = user.Id,
+                    Email = user.Email,
+                    FirstName = user.FirstName,
+                    LastName = user.LastName,
+                    SupabaseId = user.SupabaseId,
+                    Role = user.Role,
+                    OrganizationId = user.OrganizationId,
+                    CreatedAt = user.CreatedAt,
+                    UpdatedAt = user.UpdatedAt
+                };
+            }
+
+            // Fallback a claims si no se encuentra en la base de datos
             return new UserDto
             {
                 Id = userId.Value,
@@ -39,7 +62,8 @@ public class UserContextService : IUserContextService
                 LastName = GetLastName(),
                 SupabaseId = GetCurrentUserSupabaseId() ?? string.Empty,
                 Role = GetCurrentUserRole() ?? UserRole.Coach,
-                CreatedAt = DateTime.UtcNow, // This would ideally come from the database
+                OrganizationId = null,
+                CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
             };
         }

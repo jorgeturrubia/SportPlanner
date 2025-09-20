@@ -253,23 +253,56 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
 
     private async Task<User> CreateUserAsync(Supabase.Gotrue.User supabaseUser, string firstName, string lastName)
     {
-        var user = new User
+        using var transaction = await _context.Database.BeginTransactionAsync();
+        try
         {
-            Id = Guid.NewGuid(),
-            Email = supabaseUser.Email ?? string.Empty,
-            FirstName = firstName,
-            LastName = lastName,
-            SupabaseId = supabaseUser.Id ?? string.Empty,
-            Role = UserRole.Coach,
-            CreatedAt = DateTime.UtcNow,
-            UpdatedAt = DateTime.UtcNow,
-            IsActive = true
-        };
+            // Create the user first
+            var user = new User
+            {
+                Id = Guid.NewGuid(),
+                Email = supabaseUser.Email ?? string.Empty,
+                FirstName = firstName,
+                LastName = lastName,
+                SupabaseId = supabaseUser.Id ?? string.Empty,
+                Role = UserRole.Coach,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow,
+                IsActive = true
+            };
 
-        _context.Users.Add(user);
-        await _context.SaveChangesAsync();
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
 
-        return user;
+            // Create a personal organization for the user
+            var organization = new Organization
+            {
+                Id = Guid.NewGuid(),
+                Name = $"{firstName} {lastName} - Organización Personal",
+                CreatedByUserId = user.Id,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            _context.Organizations.Add(organization);
+            await _context.SaveChangesAsync();
+
+            // Assign the organization to the user
+            user.OrganizationId = organization.Id;
+            _context.Users.Update(user);
+            await _context.SaveChangesAsync();
+
+            // Note: Supabase user metadata update would require admin privileges
+            // For now, we'll store the organization relationship in our database
+            _logger.LogInformation("User {UserId} assigned to organization {OrganizationId}", user.Id, organization.Id);
+
+            await transaction.CommitAsync();
+            return user;
+        }
+        catch
+        {
+            await transaction.RollbackAsync();
+            throw;
+        }
     }
 
     private static UserDto MapToUserDto(User user)
@@ -282,6 +315,7 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
             LastName = user.LastName,
             SupabaseId = user.SupabaseId,
             Role = user.Role,
+            OrganizationId = user.OrganizationId,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt
         };

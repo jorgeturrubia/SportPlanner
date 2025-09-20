@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SportPlanner.Data;
@@ -11,9 +12,11 @@ using SportPlanner.Data;
 namespace SportPlanner.Migrations
 {
     [DbContext(typeof(SportPlannerDbContext))]
-    partial class SportPlannerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250919153329_AssignOrganizationsToExistingUsers")]
+    partial class AssignOrganizationsToExistingUsers
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

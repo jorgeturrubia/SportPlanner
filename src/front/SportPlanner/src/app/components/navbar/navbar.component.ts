@@ -45,6 +45,11 @@ export class NavbarComponent implements OnInit {
     this.router.navigate(['/']);
   }
 
+  navigateToMarketplace(): void {
+    this.isMenuOpen.set(false);
+    this.router.navigate(['/marketplace']);
+  }
+
   toggleTheme(): void {
     this.themeService.toggleTheme();
   }

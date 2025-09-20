@@ -1,5 +1,6 @@
 import { Injectable, inject, signal, computed, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { createClient, SupabaseClient, User as SupabaseUser, Session } from '@supabase/supabase-js';
 import { BehaviorSubject, Observable } from 'rxjs';
@@ -22,6 +23,7 @@ export class AuthService {
   private readonly supabase: SupabaseClient;
   private readonly router = inject(Router);
   private readonly notificationService = inject(NotificationService);
+  private readonly http = inject(HttpClient);
   private readonly platformId = inject(PLATFORM_ID);
   private readonly isBrowser: boolean;
 
@@ -252,12 +254,26 @@ export class AuthService {
         throw new Error(errorMsg);
       }
 
-      // Map user data and store auth info
-      const user = this.mapSupabaseUser(data.user);
-      this.storeAuthData(data.session, user, credentials.rememberMe || false);
+      // Map user data initially from Supabase
+      let user = this.mapSupabaseUser(data.user);
       
-      // CRITICAL: Update auth state signals immediately
+      // Update auth state with session first
       this.updateAuthState(data.session, user);
+      
+      // Fetch complete user info from backend API
+      try {
+        const apiUser = await this.fetchUserFromApi();
+        if (apiUser) {
+          user = apiUser;
+          // Update with complete user info including organizationId from database
+          this._currentUser.set(user);
+        }
+      } catch (apiError) {
+        console.warn('Failed to fetch user from API, using Supabase data:', apiError);
+      }
+      
+      // Store auth data with final user info
+      this.storeAuthData(data.session, user, credentials.rememberMe || false);
 
       console.log('✅ Login successful:', user.email);
       this.notificationService.showSuccess(`¡Bienvenido, ${user.firstName || user.email}!`);
@@ -459,6 +475,29 @@ export class AuthService {
       updatedAt: new Date()
     };
     return user;
+  }
+
+  /**
+   * Fetch complete user information from backend API
+   */
+  private async fetchUserFromApi(): Promise<User | null> {
+    try {
+      const session = this.session.getValue();
+      if (!session?.access_token) {
+        return null;
+      }
+
+      const response = await this.http.get<User>(`${environment.apiUrl}/api/user/me`, {
+        headers: {
+          'Authorization': `Bearer ${session.access_token}`
+        }
+      }).toPromise();
+
+      return response || null;
+    } catch (error) {
+      console.error('Error fetching user from API:', error);
+      return null;
+    }
   }
 
   /**

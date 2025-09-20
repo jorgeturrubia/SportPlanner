@@ -60,6 +60,11 @@ export const routes: Routes = [
         path: 'plannings',
         loadComponent: () => import('./pages/dashboard/pages/plannings/plannings').then(m => m.Plannings),
         title: 'SportPlanner - Planificaciones'
+      },
+      {
+        path: 'marketplace',
+        loadComponent: () => import('./pages/dashboard/pages/marketplace/marketplace.component').then(m => m.MarketplaceComponent),
+        title: 'SportPlanner - Marketplace'
       }
     ]
   },
