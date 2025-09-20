@@ -10,7 +10,7 @@
     [attr.aria-labelledby]="'modal-title'"
   >
     <!-- Modal Container -->
-    <div class="bg-card rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-hidden ring-1 ring-border">
+    <div class="bg-card rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] flex flex-col ring-1 ring-border">
       <!-- Modal Header -->
       <div class="flex items-center justify-between p-6 border-b border-border">
         <h2 id="modal-title" class="text-xl font-semibold text-foreground">
@@ -27,7 +27,7 @@
       </div>
 
       <!-- Modal Body -->
-      <div class="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+      <div class="flex-1 p-6 overflow-y-auto">
         <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-4">
           <!-- Team Name -->
           <div>
@@ -162,7 +162,7 @@
       </div>
 
       <!-- Modal Footer -->
-      <div class="flex items-center justify-end space-x-3 p-6 border-t border-border">
+      <div class="flex items-center justify-end space-x-3 p-6 border-t border-border bg-secondary/30">
         <button
           type="button"
           (click)="onClose()"
