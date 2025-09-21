@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SportPlanner.Models.Masters;
 
 namespace SportPlanner.Models;
 
@@ -22,9 +23,13 @@ public class Exercise
     
     [MaxLength(500)]
     public string MaterialNeeded { get; set; } = string.Empty;
-    
-    public DifficultyLevel DifficultyLevel { get; set; }
-    
+
+    // Foreign Key to ExerciseCategory
+    public int? ExerciseCategoryId { get; set; }
+
+    // Foreign Key to Difficulty
+    public int? DifficultyId { get; set; }
+
     public bool IsSystemExercise { get; set; } = false; // true = ejercicio del sistema, false = personalizado
     public Guid? CreatedByUserId { get; set; } // null si es ejercicio del sistema
     
@@ -39,6 +44,8 @@ public class Exercise
     
     // Relaciones
     public User? CreatedBy { get; set; }
+    public Masters.ExerciseCategory? ExerciseCategory { get; set; }
+    public Masters.Difficulty? Difficulty { get; set; }
     public ICollection<ExerciseConcept> ExerciseConcepts { get; set; } = new List<ExerciseConcept>();
     public ICollection<SessionExercise> SessionExercises { get; set; } = new List<SessionExercise>();
     public ICollection<ExerciseRating> Ratings { get; set; } = new List<ExerciseRating>();

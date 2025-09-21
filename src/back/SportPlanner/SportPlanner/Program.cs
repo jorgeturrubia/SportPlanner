@@ -52,6 +52,14 @@ builder.Services.AddScoped<ISubscriptionService, SubscriptionService>();
 // Marketplace services
 builder.Services.AddScoped<IMarketplaceService, MarketplaceService>();
 
+// Master services
+builder.Services.AddScoped<ISportService, SportService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<ISportGenderService, SportGenderService>();
+builder.Services.AddScoped<ILevelService, LevelService>();
+builder.Services.AddScoped<IExerciseCategoryService, ExerciseCategoryService>();
+builder.Services.AddScoped<IDifficultyService, DifficultyService>();
+
 // HTTP Context Accessor for UserContextService
 builder.Services.AddHttpContextAccessor();
 

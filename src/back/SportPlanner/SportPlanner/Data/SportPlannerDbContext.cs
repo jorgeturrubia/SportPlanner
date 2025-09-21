@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using SportPlanner.Models;
+using SportPlanner.Models.Masters;
 
 namespace SportPlanner.Data;
 
@@ -16,6 +17,14 @@ public class SportPlannerDbContext : DbContext
     public DbSet<Organization> Organizations { get; set; }
     public DbSet<Team> Teams { get; set; }
     public DbSet<UserTeam> UserTeams { get; set; }
+
+    // Master entities
+    public DbSet<Sport> Sports { get; set; }
+    public DbSet<Category> Categories { get; set; }
+    public DbSet<SportGender> SportGenders { get; set; }
+    public DbSet<Level> Levels { get; set; }
+    public DbSet<Models.Masters.ExerciseCategory> ExerciseCategories { get; set; }
+    public DbSet<Models.Masters.Difficulty> Difficulties { get; set; }
     public DbSet<Concept> Concepts { get; set; }
     public DbSet<Exercise> Exercises { get; set; }
     public DbSet<ExerciseConcept> ExerciseConcepts { get; set; }
@@ -74,6 +83,77 @@ public class SportPlannerDbContext : DbContext
                 .WithMany(e => e.UserSubscriptions)
                 .HasForeignKey(e => e.SubscriptionId)
                 .OnDelete(DeleteBehavior.Restrict);
+            // Optional relationship to Sport master entity
+            entity.HasOne(e => e.SportMaster)
+                .WithMany(e => e.UserSubscriptions)
+                .HasForeignKey(e => e.SportId)
+                .OnDelete(DeleteBehavior.SetNull);
+        });
+
+        // Configuración de Sport
+        modelBuilder.Entity<Sport>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        // Configuración de Category
+        modelBuilder.Entity<Category>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasOne(e => e.Sport)
+                .WithMany(e => e.Categories)
+                .HasForeignKey(e => e.SportId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.SportId, e.Name }).IsUnique();
+        });
+
+        // Configuración de SportGender
+        modelBuilder.Entity<SportGender>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasOne(e => e.Sport)
+                .WithMany(e => e.SportGenders)
+                .HasForeignKey(e => e.SportId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.SportId, e.Name }).IsUnique();
+        });
+
+        // Configuración de Level
+        modelBuilder.Entity<Level>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasOne(e => e.Sport)
+                .WithMany(e => e.Levels)
+                .HasForeignKey(e => e.SportId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.SportId, e.Name }).IsUnique();
+        });
+
+        // Configuración de ExerciseCategory
+        modelBuilder.Entity<Models.Masters.ExerciseCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        // Configuración de Difficulty
+        modelBuilder.Entity<Models.Masters.Difficulty>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasIndex(e => e.Name).IsUnique();
         });
 
         // Configuración de Organization
@@ -92,8 +172,28 @@ public class SportPlannerDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
-            entity.Property(e => e.Sport).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.Category).IsRequired().HasMaxLength(50);
+
+            // Foreign key relationships to master entities
+            entity.HasOne(e => e.Sport)
+                .WithMany()
+                .HasForeignKey(e => e.SportId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Category)
+                .WithMany()
+                .HasForeignKey(e => e.CategoryId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.SportGender)
+                .WithMany()
+                .HasForeignKey(e => e.SportGenderId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne(e => e.Level)
+                .WithMany()
+                .HasForeignKey(e => e.LevelId)
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(e => e.Organization)
                 .WithMany(e => e.Teams)
                 .HasForeignKey(e => e.OrganizationId)
@@ -102,6 +202,12 @@ public class SportPlannerDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes for performance
+            entity.HasIndex(e => e.SportId);
+            entity.HasIndex(e => e.CategoryId);
+            entity.HasIndex(e => e.SportGenderId);
+            entity.HasIndex(e => e.LevelId);
         });
 
         // Configuración de UserTeam
@@ -141,6 +247,14 @@ public class SportPlannerDbContext : DbContext
             entity.HasOne(e => e.CreatedBy)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedByUserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.ExerciseCategory)
+                .WithMany(e => e.Exercises)
+                .HasForeignKey(e => e.ExerciseCategoryId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.Difficulty)
+                .WithMany(e => e.Exercises)
+                .HasForeignKey(e => e.DifficultyId)
                 .OnDelete(DeleteBehavior.SetNull);
         });
 

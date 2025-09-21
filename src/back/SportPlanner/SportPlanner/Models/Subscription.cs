@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SportPlanner.Models.Masters;
 
 namespace SportPlanner.Models;
 
@@ -62,8 +63,12 @@ public class UserSubscription
     
     [Required]
     public SportType Sport { get; set; }
-    
+
+    // Future foreign key for masters relationship
+    public int? SportId { get; set; }
+
     // Relaciones
     public User User { get; set; } = null!;
     public Subscription Subscription { get; set; } = null!;
+    public Masters.Sport? SportMaster { get; set; }
 }

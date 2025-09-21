@@ -48,7 +48,7 @@ public class MarketplaceService : IMarketplaceService
             if (!string.IsNullOrWhiteSpace(criteria.Sport))
             {
                 // Assumiendo que Sport se almacena como string en Team
-                query = query.Where(p => p.Team != null && p.Team.Sport.ToLower() == criteria.Sport.ToLower());
+                query = query.Where(p => p.Team != null && p.Team.Sport.Name.ToLower() == criteria.Sport.ToLower());
             }
 
             if (criteria.MinRating.HasValue)
@@ -68,8 +68,8 @@ public class MarketplaceService : IMarketplaceService
 
             if (!string.IsNullOrWhiteSpace(criteria.Category))
             {
-                query = query.Where(p => p.Team != null && 
-                    p.Team.Category.ToLower() == criteria.Category.ToLower());
+                query = query.Where(p => p.Team != null &&
+                    p.Team.Category.Name.ToLower() == criteria.Category.ToLower());
             }
 
             // Contar total antes de aplicar paginación
@@ -600,7 +600,7 @@ public class MarketplaceService : IMarketplaceService
             Id = planning.Id,
             Name = planning.Name,
             Description = planning.Description,
-            Sport = planning.Team?.Sport ?? string.Empty,
+            Sport = planning.Team?.Sport?.Name ?? string.Empty,
             Tags = planning.Tags,
             CreatedByName = $"{planning.CreatedBy?.FirstName} {planning.CreatedBy?.LastName}".Trim(),
             CreatedByEmail = planning.CreatedBy?.Email ?? string.Empty,

@@ -6,10 +6,19 @@ public class TeamDto
 {
     public Guid Id { get; set; }
     public string Name { get; set; } = string.Empty;
-    public string Sport { get; set; } = string.Empty;
-    public string Category { get; set; } = string.Empty;
-    public Gender Gender { get; set; }
-    public TeamLevel Level { get; set; }
+
+    // Master entity IDs
+    public int SportId { get; set; }
+    public int CategoryId { get; set; }
+    public int SportGenderId { get; set; }
+    public int LevelId { get; set; }
+
+    // Master entity names for display
+    public string SportName { get; set; } = string.Empty;
+    public string CategoryName { get; set; } = string.Empty;
+    public string SportGenderName { get; set; } = string.Empty;
+    public string LevelName { get; set; } = string.Empty;
+
     public string Description { get; set; } = string.Empty;
     public Guid? OrganizationId { get; set; }
     public string CreatedBy { get; set; } = string.Empty;
@@ -25,21 +34,22 @@ public class CreateTeamRequest
     [Required]
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
-    
+
     [Required]
-    [MaxLength(50)]
-    public string Sport { get; set; } = string.Empty;
-    
+    public int SportId { get; set; }
+
     [Required]
-    [MaxLength(50)]
-    public string Category { get; set; } = string.Empty;
-    
-    public Gender Gender { get; set; }
-    public TeamLevel Level { get; set; }
-    
+    public int CategoryId { get; set; }
+
+    [Required]
+    public int SportGenderId { get; set; }
+
+    [Required]
+    public int LevelId { get; set; }
+
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
-    
+
     public Guid? OrganizationId { get; set; }
 }
 
@@ -48,18 +58,19 @@ public class UpdateTeamRequest
     [Required]
     [MaxLength(100)]
     public string Name { get; set; } = string.Empty;
-    
+
     [Required]
-    [MaxLength(50)]
-    public string Sport { get; set; } = string.Empty;
-    
+    public int SportId { get; set; }
+
     [Required]
-    [MaxLength(50)]
-    public string Category { get; set; } = string.Empty;
-    
-    public Gender Gender { get; set; }
-    public TeamLevel Level { get; set; }
-    
+    public int CategoryId { get; set; }
+
+    [Required]
+    public int SportGenderId { get; set; }
+
+    [Required]
+    public int LevelId { get; set; }
+
     [MaxLength(500)]
     public string Description { get; set; } = string.Empty;
 }

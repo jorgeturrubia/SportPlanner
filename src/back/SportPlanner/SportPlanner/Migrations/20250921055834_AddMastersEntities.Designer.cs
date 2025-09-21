@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SportPlanner.Data;
@@ -11,9 +12,11 @@ using SportPlanner.Data;
 namespace SportPlanner.Migrations
 {
     [DbContext(typeof(SportPlannerDbContext))]
-    partial class SportPlannerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250921055834_AddMastersEntities")]
+    partial class AddMastersEntities
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1028,8 +1031,10 @@ namespace SportPlanner.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
-                    b.Property<int>("CategoryId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
@@ -1042,13 +1047,16 @@ namespace SportPlanner.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)");
 
+                    b.Property<int>("Gender")
+                        .HasColumnType("integer");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsVisible")
                         .HasColumnType("boolean");
 
-                    b.Property<int>("LevelId")
+                    b.Property<int>("Level")
                         .HasColumnType("integer");
 
                     b.Property<string>("Name")
@@ -1059,28 +1067,19 @@ namespace SportPlanner.Migrations
                     b.Property<Guid?>("OrganizationId")
                         .HasColumnType("uuid");
 
-                    b.Property<int>("SportGenderId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("SportId")
-                        .HasColumnType("integer");
+                    b.Property<string>("Sport")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)");
 
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("timestamp with time zone");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CategoryId");
-
                     b.HasIndex("CreatedByUserId");
 
-                    b.HasIndex("LevelId");
-
                     b.HasIndex("OrganizationId");
-
-                    b.HasIndex("SportGenderId");
-
-                    b.HasIndex("SportId");
 
                     b.ToTable("Teams");
                 });
@@ -1550,21 +1549,9 @@ namespace SportPlanner.Migrations
 
             modelBuilder.Entity("SportPlanner.Models.Team", b =>
                 {
-                    b.HasOne("SportPlanner.Models.Masters.Category", "Category")
-                        .WithMany()
-                        .HasForeignKey("CategoryId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
                     b.HasOne("SportPlanner.Models.User", "CreatedBy")
                         .WithMany()
                         .HasForeignKey("CreatedByUserId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SportPlanner.Models.Masters.Level", "Level")
-                        .WithMany()
-                        .HasForeignKey("LevelId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
@@ -1573,29 +1560,9 @@ namespace SportPlanner.Migrations
                         .HasForeignKey("OrganizationId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("SportPlanner.Models.Masters.SportGender", "SportGender")
-                        .WithMany()
-                        .HasForeignKey("SportGenderId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("SportPlanner.Models.Masters.Sport", "Sport")
-                        .WithMany()
-                        .HasForeignKey("SportId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.Navigation("Category");
-
                     b.Navigation("CreatedBy");
 
-                    b.Navigation("Level");
-
                     b.Navigation("Organization");
-
-                    b.Navigation("Sport");
-
-                    b.Navigation("SportGender");
                 });
 
             modelBuilder.Entity("SportPlanner.Models.TrainingSession", b =>

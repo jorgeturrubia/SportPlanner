@@ -22,14 +22,19 @@ public class TeamService : ITeamService
         {
             _logger.LogInformation("Getting teams for user {UserId}", userId);
 
-            // Simplified query without includes to avoid relationship issues
             var teams = await _context.Teams
+                .Include(t => t.Sport)
+                .Include(t => t.Category)
+                .Include(t => t.SportGender)
+                .Include(t => t.Level)
+                .Include(t => t.CreatedBy)
+                .Include(t => t.UserTeams)
                 .Where(t => t.IsActive && t.IsVisible && t.CreatedByUserId == userId)
                 .ToListAsync();
 
             _logger.LogInformation("Found {TeamCount} teams for user {UserId}", teams.Count, userId);
 
-            return teams.Select(MapToSimpleTeamDto);
+            return teams.Select(MapToTeamDto);
         }
         catch (Exception ex)
         {
@@ -43,11 +48,15 @@ public class TeamService : ITeamService
         try
         {
             var team = await _context.Teams
+                .Include(t => t.Sport)
+                .Include(t => t.Category)
+                .Include(t => t.SportGender)
+                .Include(t => t.Level)
                 .Include(t => t.Organization)
                 .Include(t => t.CreatedBy)
                 .Include(t => t.UserTeams)
                 .FirstOrDefaultAsync(t => t.Id == teamId && t.IsActive &&
-                                        (t.CreatedByUserId == userId || 
+                                        (t.CreatedByUserId == userId ||
                                          t.UserTeams.Any(ut => ut.UserId == userId && ut.IsActive)));
 
             return team != null ? MapToTeamDto(team) : null;
@@ -74,7 +83,7 @@ public class TeamService : ITeamService
                 throw new InvalidOperationException("No se pudo determinar la organización del usuario");
             }
 
-            _logger.LogInformation("CreateTeamAsync: User found - UserId: {UserId}, UserOrganizationId: {UserOrganizationId}, Email: {Email}", 
+            _logger.LogInformation("CreateTeamAsync: User found - UserId: {UserId}, UserOrganizationId: {UserOrganizationId}, Email: {Email}",
                 user.Id, user.OrganizationId, user.Email);
 
             if (!user.OrganizationId.HasValue)
@@ -83,15 +92,18 @@ public class TeamService : ITeamService
                 throw new InvalidOperationException("No se pudo determinar la organización del usuario");
             }
 
+            // Validate master entity IDs exist
+            await ValidateMasterEntitiesAsync(request.SportId, request.CategoryId, request.SportGenderId, request.LevelId);
+
             // Usar el OrganizationId del usuario en lugar del request
             var team = new Team
             {
                 Id = Guid.NewGuid(),
                 Name = request.Name,
-                Sport = request.Sport,
-                Category = request.Category,
-                Gender = request.Gender,
-                Level = request.Level,
+                SportId = request.SportId,
+                CategoryId = request.CategoryId,
+                SportGenderId = request.SportGenderId,
+                LevelId = request.LevelId,
                 Description = request.Description,
                 OrganizationId = user.OrganizationId.Value, // Usar el OrganizationId del usuario
                 CreatedByUserId = userId,
@@ -110,6 +122,10 @@ public class TeamService : ITeamService
 
             // Reload the team with includes for proper DTO mapping
             var createdTeam = await _context.Teams
+                .Include(t => t.Sport)
+                .Include(t => t.Category)
+                .Include(t => t.SportGender)
+                .Include(t => t.Level)
                 .Include(t => t.Organization)
                 .Include(t => t.CreatedBy)
                 .Include(t => t.UserTeams)
@@ -132,6 +148,10 @@ public class TeamService : ITeamService
         try
         {
             var team = await _context.Teams
+                .Include(t => t.Sport)
+                .Include(t => t.Category)
+                .Include(t => t.SportGender)
+                .Include(t => t.Level)
                 .Include(t => t.Organization)
                 .Include(t => t.CreatedBy)
                 .Include(t => t.UserTeams)
@@ -148,12 +168,15 @@ public class TeamService : ITeamService
                 throw new UnauthorizedAccessException("User does not have permission to update this team");
             }
 
+            // Validate master entity IDs exist
+            await ValidateMasterEntitiesAsync(request.SportId, request.CategoryId, request.SportGenderId, request.LevelId);
+
             // Update team properties
             team.Name = request.Name;
-            team.Sport = request.Sport;
-            team.Category = request.Category;
-            team.Gender = request.Gender;
-            team.Level = request.Level;
+            team.SportId = request.SportId;
+            team.CategoryId = request.CategoryId;
+            team.SportGenderId = request.SportGenderId;
+            team.LevelId = request.LevelId;
             team.Description = request.Description;
             team.UpdatedAt = DateTime.UtcNow;
 
@@ -224,10 +247,14 @@ public class TeamService : ITeamService
         {
             Id = team.Id,
             Name = team.Name,
-            Sport = team.Sport,
-            Category = team.Category,
-            Gender = team.Gender,
-            Level = team.Level,
+            SportId = team.SportId,
+            CategoryId = team.CategoryId,
+            SportGenderId = team.SportGenderId,
+            LevelId = team.LevelId,
+            SportName = team.Sport?.Name ?? string.Empty,
+            CategoryName = team.Category?.Name ?? string.Empty,
+            SportGenderName = team.SportGender?.Name ?? string.Empty,
+            LevelName = team.Level?.Name ?? string.Empty,
             Description = team.Description,
             OrganizationId = team.OrganizationId,
             CreatedBy = $"{team.CreatedBy?.FirstName} {team.CreatedBy?.LastName}".Trim(),
@@ -239,24 +266,29 @@ public class TeamService : ITeamService
         };
     }
 
-    private static TeamDto MapToSimpleTeamDto(Team team)
+    private async Task ValidateMasterEntitiesAsync(int sportId, int categoryId, int sportGenderId, int levelId)
     {
-        return new TeamDto
+        var validationTasks = new[]
         {
-            Id = team.Id,
-            Name = team.Name,
-            Sport = team.Sport,
-            Category = team.Category,
-            Gender = team.Gender,
-            Level = team.Level,
-            Description = team.Description,
-            OrganizationId = team.OrganizationId,
-            CreatedBy = "Unknown", // Sin include no podemos acceder a CreatedBy
-            CreatedAt = team.CreatedAt,
-            UpdatedAt = team.UpdatedAt,
-            MemberCount = 0, // Sin include no podemos contar UserTeams
-            IsActive = team.IsActive,
-            IsVisible = team.IsVisible
+            _context.Sports.AnyAsync(s => s.Id == sportId),
+            _context.Categories.AnyAsync(c => c.Id == categoryId),
+            _context.SportGenders.AnyAsync(sg => sg.Id == sportGenderId),
+            _context.Levels.AnyAsync(l => l.Id == levelId)
         };
+
+        var results = await Task.WhenAll(validationTasks);
+
+        var errors = new List<string>();
+        if (!results[0]) errors.Add($"Sport with ID {sportId} not found");
+        if (!results[1]) errors.Add($"Category with ID {categoryId} not found");
+        if (!results[2]) errors.Add($"SportGender with ID {sportGenderId} not found");
+        if (!results[3]) errors.Add($"Level with ID {levelId} not found");
+
+        if (errors.Any())
+        {
+            var errorMessage = string.Join("; ", errors);
+            _logger.LogError("Master entity validation failed: {Errors}", errorMessage);
+            throw new ArgumentException(errorMessage);
+        }
     }
 }

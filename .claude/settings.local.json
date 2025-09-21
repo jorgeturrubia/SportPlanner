@@ -36,7 +36,10 @@
       "Read(/C:\\Proyectos\\SportPlanner\\src\\front\\SportPlanner\\src/**)",
       "Read(/C:\\Proyectos\\SportPlanner\\src\\back\\SportPlanner\\SportPlanner/**)",
       "Bash(mv:*)",
-      "Bash(cp:*)"
+      "Bash(cp:*)",
+      "Bash(taskkill:*)",
+      "Bash(Get-Process \"SportPlanner\")",
+      "Bash(Stop-Process -Force)"
     ],
     "deny": [
       "Bash(rm:*)",
