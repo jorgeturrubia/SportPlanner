@@ -1,22 +1,15 @@
-export enum Gender {
-  Male = 0,
-  Female = 1,
-  Mixed = 2
-}
-
-export enum TeamLevel {
-  A = 0,
-  B = 1,
-  C = 2
-}
-
 export interface Team {
   id: string;
   name: string;
+  sportId: number;
+  categoryId: number;
+  sportGenderId: number;
+  levelId: number;
+  // Display names from masters
   sport: string;
   category: string;
-  gender: Gender;
-  level: TeamLevel;
+  gender: string;
+  level: string;
   description: string;
   organizationId?: string;
   createdBy: string;
@@ -29,20 +22,20 @@ export interface Team {
 
 export interface CreateTeamRequest {
   name: string;
-  sport: string;
-  category: string;
-  gender: Gender;
-  level: TeamLevel;
+  sportId: number;
+  categoryId: number;
+  sportGenderId: number;
+  levelId: number;
   description: string;
   organizationId?: string;
 }
 
 export interface UpdateTeamRequest {
   name: string;
-  sport: string;
-  category: string;
-  gender: Gender;
-  level: TeamLevel;
+  sportId: number;
+  categoryId: number;
+  sportGenderId: number;
+  levelId: number;
   description: string;
 }
 

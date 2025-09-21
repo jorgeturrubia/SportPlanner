@@ -1,7 +1,8 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, inject, signal, computed, OnInit, effect } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
-import { Team, CreateTeamRequest, UpdateTeamRequest, Gender, TeamLevel } from '../../../../../../models/team.model';
+import { Team, CreateTeamRequest, UpdateTeamRequest } from '../../../../../../models/team.model';
+import { MastersService, Sport, Category, SportGender, Level } from '../../../../../../services/masters.service';
 import { TeamsService } from '../../../../../../services/teams.service';
 import { NotificationService } from '../../../../../../services/notification.service';
 import { AuthService } from '../../../../../../services/auth.service';
@@ -20,6 +21,7 @@ import { AuthService } from '../../../../../../services/auth.service';
 export class TeamModalComponent implements OnInit {
   private formBuilder = inject(FormBuilder);
   private teamsService = inject(TeamsService);
+  private mastersService = inject(MastersService);
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
 
@@ -44,35 +46,20 @@ export class TeamModalComponent implements OnInit {
     return this.mode === 'create' ? 'Crear Equipo' : 'Guardar Cambios';
   });
 
-  // Predefined options
-  readonly sportOptions = [
-    'Fútbol', 'Básquet', 'Vóleibol', 'Handball', 'Tenis', 'Natación', 'Atletismo', 'Hockey', 'Rugby'
-  ];
-
-  readonly categoryOptions = [
-    'Infantil', 'Cadete', 'Juvenil', 'Senior', 'Veteranos'
-  ];
-
-  readonly genderOptions = [
-    { value: Gender.Male, label: 'Masculino' },
-    { value: Gender.Female, label: 'Femenino' },
-    { value: Gender.Mixed, label: 'Mixto' }
-  ];
-
-  readonly levelOptions = [
-    { value: TeamLevel.A, label: 'Nivel A' },
-    { value: TeamLevel.B, label: 'Nivel B' },
-    { value: TeamLevel.C, label: 'Nivel C' }
-  ];
+  // Options from masters service
+  readonly sportOptions = this.mastersService.sports;
+  readonly categoryOptions = this.mastersService.categories;
+  readonly sportGenderOptions = this.mastersService.sportGenders;
+  readonly levelOptions = this.mastersService.levels;
 
   constructor() {
     this.form = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
-      sport: ['', [Validators.required]],
-      category: ['', [Validators.required]],
-      gender: [Gender.Mixed, [Validators.required]],
-      level: [TeamLevel.B, [Validators.required]]
+      sportId: [null, [Validators.required]],
+      categoryId: [null, [Validators.required]],
+      sportGenderId: [null, [Validators.required]],
+      levelId: [null, [Validators.required]]
     });
 
     // Effect to populate form when team changes
@@ -86,6 +73,11 @@ export class TeamModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    // Ensure masters data is loaded
+    if (this.mastersService.sports().length === 0) {
+      this.mastersService.loadAllMasters().subscribe();
+    }
+
     if (this.team && this.mode === 'edit') {
       this.populateForm(this.team);
     }
@@ -95,10 +87,10 @@ export class TeamModalComponent implements OnInit {
     this.form.patchValue({
       name: team.name,
       description: team.description || '',
-      sport: team.sport,
-      category: team.category || '',
-      gender: team.gender,
-      level: team.level
+      sportId: team.sportId,
+      categoryId: team.categoryId,
+      sportGenderId: team.sportGenderId,
+      levelId: team.levelId
     });
   }
 
@@ -106,10 +98,10 @@ export class TeamModalComponent implements OnInit {
     this.form.reset({
       name: '',
       description: '',
-      sport: '',
-      category: '',
-      gender: Gender.Mixed,
-      level: TeamLevel.B
+      sportId: null,
+      categoryId: null,
+      sportGenderId: null,
+      levelId: null
     });
   }
 
@@ -148,10 +140,10 @@ export class TeamModalComponent implements OnInit {
     const createRequest: CreateTeamRequest = {
       name: formValue.name.trim(),
       description: formValue.description?.trim() || '',
-      sport: formValue.sport,
-      category: formValue.category,
-      gender: Number(formValue.gender),
-      level: Number(formValue.level),
+      sportId: formValue.sportId,
+      categoryId: formValue.categoryId,
+      sportGenderId: formValue.sportGenderId,
+      levelId: formValue.levelId,
       organizationId: organizationId
     };
 
@@ -174,10 +166,10 @@ export class TeamModalComponent implements OnInit {
     const updateRequest: UpdateTeamRequest = {
       name: formValue.name.trim(),
       description: formValue.description?.trim() || '',
-      sport: formValue.sport,
-      category: formValue.category,
-      gender: formValue.gender,
-      level: formValue.level
+      sportId: formValue.sportId,
+      categoryId: formValue.categoryId,
+      sportGenderId: formValue.sportGenderId,
+      levelId: formValue.levelId
     };
 
     this.teamsService.updateTeam(this.team.id, updateRequest).subscribe({

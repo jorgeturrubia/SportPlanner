@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
 import { TeamsService } from '../../../../services/teams.service';
+import { MastersService } from '../../../../services/masters.service';
 import { NotificationService } from '../../../../services/notification.service';
 import { Team, CreateTeamRequest, TeamFilters } from '../../../../models/team.model';
 import { TeamCardComponent } from './components/team-card/team-card.component';
@@ -19,6 +20,7 @@ import { TeamModalComponent } from './components/team-modal/team-modal.component
 })
 export class TeamsComponent implements OnInit {
   private teamsService = inject(TeamsService);
+  private mastersService = inject(MastersService);
   private notificationService = inject(NotificationService);
 
   readonly teams = this.teamsService.teams;

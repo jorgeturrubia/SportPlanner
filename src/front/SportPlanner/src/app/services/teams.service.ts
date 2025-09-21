@@ -1,8 +1,9 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, of } from 'rxjs';
-import { catchError, tap, map } from 'rxjs/operators';
+import { Observable, BehaviorSubject, of, forkJoin } from 'rxjs';
+import { catchError, tap, map, switchMap } from 'rxjs/operators';
 import { Team, CreateTeamRequest, UpdateTeamRequest, TeamFilters } from '../models/team.model';
+import { MastersService } from './masters.service';
 import { NotificationService } from './notification.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
@@ -12,6 +13,7 @@ import { environment } from '../../environments/environment';
 })
 export class TeamsService {
   private http = inject(HttpClient);
+  private mastersService = inject(MastersService);
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
 
@@ -24,8 +26,10 @@ export class TeamsService {
 
   getAllTeams(): Observable<Team[]> {
     this._isLoading.set(true);
-    
-    return this.http.get<Team[]>(this.apiUrl).pipe(
+
+    // First load masters data, then teams
+    return this.mastersService.loadAllMasters().pipe(
+      switchMap(() => this.http.get<Team[]>(this.apiUrl)),
       tap(teams => {
         // Convert backend date strings to Date objects
         const processedTeams = teams.map(team => ({
@@ -39,7 +43,7 @@ export class TeamsService {
       }),
       catchError(error => {
         this._isLoading.set(false);
-        
+
         // Handle specific auth errors
         if (error.status === 401) {
           console.error('❌ Teams service: Authentication error, user will be logged out by interceptor');
@@ -48,7 +52,7 @@ export class TeamsService {
         } else {
           this.notificationService.showError('Error al cargar los equipos');
         }
-        
+
         throw error;
       })
     );

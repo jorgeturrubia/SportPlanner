@@ -1,6 +1,6 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, computed, signal } from '@angular/core';
 import { NgIcon } from '@ng-icons/core';
-import { Team, Gender, TeamLevel } from '../../../../../../models/team.model';
+import { Team } from '../../../../../../models/team.model';
 
 @Component({
   selector: 'app-team-card',
@@ -57,32 +57,12 @@ export class TeamCardComponent {
 
   readonly genderText = computed(() => {
     if (!this.team) return '';
-    
-    switch (this.team.gender) {
-      case Gender.Male:
-        return 'Masculino';
-      case Gender.Female:
-        return 'Femenino';
-      case Gender.Mixed:
-        return 'Mixto';
-      default:
-        return 'No especificado';
-    }
+    return this.team.gender || 'No especificado';
   });
 
   readonly levelText = computed(() => {
     if (!this.team) return '';
-    
-    switch (this.team.level) {
-      case TeamLevel.A:
-        return 'A';
-      case TeamLevel.B:
-        return 'B';
-      case TeamLevel.C:
-        return 'C';
-      default:
-        return 'No especificado';
-    }
+    return this.team.level || 'No especificado';
   });
 
   onEdit(): void {
