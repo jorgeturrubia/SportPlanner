@@ -1,7 +1,7 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, computed, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { NgIcon } from '@ng-icons/core';
-import { Objective, ObjectivePriority, ObjectiveStatus } from '../../../../../../models/objective.model';
+import { Objective } from '../../../../../../models/objective.model';
 
 @Component({
   selector: 'app-objective-card',
@@ -33,77 +33,29 @@ export class ObjectiveCardComponent {
   });
 
   readonly priorityColor = computed(() => {
-    if (!this.objective) return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
-    
-    switch (this.objective.priority) {
-      case ObjectivePriority.Critical:
-        return 'bg-red-100 text-red-800 dark:bg-red-900/20 dark:text-red-400';
-      case ObjectivePriority.High:
-        return 'bg-orange-100 text-orange-800 dark:bg-orange-900/20 dark:text-orange-400';
-      case ObjectivePriority.Medium:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case ObjectivePriority.Low:
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
-      default:
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
-    }
+    return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
   });
 
   readonly priorityText = computed(() => {
-    if (!this.objective) return 'Sin prioridad';
-    
-    switch (this.objective.priority) {
-      case ObjectivePriority.Critical:
-        return 'Crítica';
-      case ObjectivePriority.High:
-        return 'Alta';
-      case ObjectivePriority.Medium:
-        return 'Media';
-      case ObjectivePriority.Low:
-        return 'Baja';
-      default:
-        return 'Sin prioridad';
-    }
+    return 'Normal';
   });
 
   readonly statusColor = computed(() => {
     if (!this.objective) return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
-    
-    switch (this.objective.status) {
-      case ObjectiveStatus.Completed:
-        return 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400';
-      case ObjectiveStatus.InProgress:
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/20 dark:text-blue-400';
-      case ObjectiveStatus.OnHold:
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-400';
-      case ObjectiveStatus.NotStarted:
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
-      default:
-        return 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
-    }
+    return this.objective.isActive
+      ? 'bg-green-100 text-green-800 dark:bg-green-900/20 dark:text-green-400'
+      : 'bg-gray-100 text-gray-600 dark:bg-gray-700 dark:text-gray-300';
   });
 
   readonly statusText = computed(() => {
     if (!this.objective) return 'Sin estado';
-    
-    switch (this.objective.status) {
-      case ObjectiveStatus.Completed:
-        return 'Completado';
-      case ObjectiveStatus.InProgress:
-        return 'En progreso';
-      case ObjectiveStatus.OnHold:
-        return 'En pausa';
-      case ObjectiveStatus.NotStarted:
-        return 'No iniciado';
-      default:
-        return 'Sin estado';
-    }
+    return this.objective.isActive ? 'Activo' : 'Inactivo';
   });
 
-  readonly formattedTargetDate = computed(() => {
-    if (!this.objective || !this.objective.targetDate) return '';
-    
-    const date = new Date(this.objective.targetDate);
+  readonly formattedCreatedDate = computed(() => {
+    if (!this.objective) return '';
+
+    const date = new Date(this.objective.createdAt);
     return date.toLocaleDateString('es-ES', {
       day: '2-digit',
       month: '2-digit',
@@ -111,17 +63,9 @@ export class ObjectiveCardComponent {
     });
   });
 
-  readonly progressWidth = computed(() => {
+  readonly exerciseCount = computed(() => {
     if (!this.objective) return 0;
-    return Math.min(100, Math.max(0, this.objective.progress));
-  });
-
-  readonly progressColor = computed(() => {
-    const progress = this.progressWidth();
-    if (progress >= 80) return 'bg-green-500';
-    if (progress >= 50) return 'bg-blue-500';
-    if (progress >= 25) return 'bg-yellow-500';
-    return 'bg-gray-500';
+    return this.objective.exercises?.length || 0;
   });
 
   onEdit(): void {

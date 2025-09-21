@@ -45,30 +45,16 @@ public class ObjectiveService : IObjectiveService
                 .Include(o => o.CreatedBy)
                 .Where(o => o.IsActive && o.CreatedByUserId == userId);
 
-            // Apply filters
-            if (filter.Priority.HasValue)
-                query = query.Where(o => o.Priority == filter.Priority.Value);
-
-            if (filter.Status.HasValue)
-                query = query.Where(o => o.Status == filter.Status.Value);
+         
 
             if (!string.IsNullOrEmpty(filter.TeamId) && Guid.TryParse(filter.TeamId, out var filterTeamGuid))
                 query = query.Where(o => o.TeamId == filterTeamGuid);
 
-            if (filter.DueBefore.HasValue)
-                query = query.Where(o => o.TargetDate <= filter.DueBefore.Value);
+          
 
-            if (filter.DueAfter.HasValue)
-                query = query.Where(o => o.TargetDate >= filter.DueAfter.Value);
-
-            if (filter.MinProgress.HasValue)
-                query = query.Where(o => o.Progress >= filter.MinProgress.Value);
-
-            if (filter.MaxProgress.HasValue)
-                query = query.Where(o => o.Progress <= filter.MaxProgress.Value);
 
             if (!string.IsNullOrEmpty(filter.Tag))
-                query = query.Where(o => o.Tags.Contains(filter.Tag));
+            query = query.Where(o => o.Tags.Contains(filter.Tag));
 
             if (!string.IsNullOrEmpty(filter.Search))
                 query = query.Where(o => o.Title.Contains(filter.Search) || o.Description.Contains(filter.Search));
@@ -133,12 +119,9 @@ public class ObjectiveService : IObjectiveService
             {
                 Title = request.Title,
                 Description = request.Description,
-                Priority = request.Priority,
-                Status = ObjectiveStatus.NotStarted,
-                Progress = 0,
-                TargetDate = request.TargetDate,
+              
                 TeamId = teamIdGuid,
-                Tags = request.Tags,
+                Tags = string.Join(",", request.Keywords ?? new List<string>()),
                 CreatedByUserId = userId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -189,28 +172,17 @@ public class ObjectiveService : IObjectiveService
                 throw new UnauthorizedAccessException("User does not have permission to update this objective");
             }
 
-            // Check if status is changing to Completed and set CompletedDate
-            var oldStatus = objective.Status;
-            
+         
+
             // Update objective properties
             objective.Title = request.Title;
             objective.Description = request.Description;
-            objective.Priority = request.Priority;
-            objective.Status = request.Status;
-            objective.Progress = request.Progress;
-            objective.TargetDate = request.TargetDate;
-            objective.Tags = request.Tags;
-            objective.UpdatedAt = DateTime.UtcNow;
             
+            objective.Tags = string.Join(",", request.Keywords ?? new List<string>());
+            objective.UpdatedAt = DateTime.UtcNow;
+
             // Set CompletedDate when status changes to Completed
-            if (oldStatus != ObjectiveStatus.Completed && request.Status == ObjectiveStatus.Completed)
-            {
-                objective.CompletedDate = DateTime.UtcNow;
-            }
-            else if (request.Status != ObjectiveStatus.Completed)
-            {
-                objective.CompletedDate = null;
-            }
+          
 
             await _context.SaveChangesAsync();
 
@@ -287,15 +259,10 @@ public class ObjectiveService : IObjectiveService
         {
             Id = objective.Id.ToString(),
             Title = objective.Title,
-            Description = objective.Description,
-            Priority = objective.Priority,
-            Status = objective.Status,
-            Progress = objective.Progress,
-            TargetDate = objective.TargetDate,
-            CompletedDate = objective.CompletedDate,
+            Description = objective.Description,           
             TeamId = objective.TeamId?.ToString(),
             TeamName = objective.Team?.Name,
-            Tags = objective.Tags,
+            Keywords = objective.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
             CreatedBy = objective.CreatedBy?.Id.ToString() ?? string.Empty,
             CreatedAt = objective.CreatedAt,
             UpdatedAt = objective.UpdatedAt,

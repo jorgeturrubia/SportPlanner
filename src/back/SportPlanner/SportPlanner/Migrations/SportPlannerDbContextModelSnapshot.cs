@@ -73,7 +73,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.ToTable("Concepts");
+                    b.ToTable("Concepts", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.CustomExercise", b =>
@@ -148,7 +148,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.ToTable("CustomExercises");
+                    b.ToTable("CustomExercises", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Exercise", b =>
@@ -224,7 +224,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("ExerciseCategoryId");
 
-                    b.ToTable("Exercises");
+                    b.ToTable("Exercises", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.ExerciseConcept", b =>
@@ -239,7 +239,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("ConceptId");
 
-                    b.ToTable("ExerciseConcepts");
+                    b.ToTable("ExerciseConcepts", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.ExerciseRating", b =>
@@ -272,7 +272,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("ExerciseId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("ExerciseRatings");
+                    b.ToTable("ExerciseRatings", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Itinerary", b =>
@@ -332,7 +332,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.ToTable("Itineraries");
+                    b.ToTable("Itineraries", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.ItineraryConcept", b =>
@@ -359,7 +359,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("ItineraryId");
 
-                    b.ToTable("ItineraryConcepts");
+                    b.ToTable("ItineraryConcepts", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.ItineraryRating", b =>
@@ -392,7 +392,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("ItineraryId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("ItineraryRatings");
+                    b.ToTable("ItineraryRatings", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Masters.Category", b =>
@@ -435,7 +435,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("SportId", "Name")
                         .IsUnique();
 
-                    b.ToTable("Categories");
+                    b.ToTable("Categories", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Masters.Difficulty", b =>
@@ -472,7 +472,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Difficulties");
+                    b.ToTable("Difficulties", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Masters.ExerciseCategory", b =>
@@ -506,7 +506,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("ExerciseCategories");
+                    b.ToTable("ExerciseCategories", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Masters.Level", b =>
@@ -546,7 +546,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("SportId", "Name")
                         .IsUnique();
 
-                    b.ToTable("Levels");
+                    b.ToTable("Levels", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Masters.Sport", b =>
@@ -580,7 +580,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("Name")
                         .IsUnique();
 
-                    b.ToTable("Sports");
+                    b.ToTable("Sports", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Masters.SportGender", b =>
@@ -617,7 +617,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("SportId", "Name")
                         .IsUnique();
 
-                    b.ToTable("SportGenders");
+                    b.ToTable("SportGenders", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Objective", b =>
@@ -678,7 +678,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("TeamId");
 
-                    b.ToTable("Objectives");
+                    b.ToTable("Objectives", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Organization", b =>
@@ -728,7 +728,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("CreatedByUserId");
 
-                    b.ToTable("Organizations");
+                    b.ToTable("Organizations", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Planning", b =>
@@ -823,7 +823,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("Type");
 
-                    b.ToTable("Plannings");
+                    b.ToTable("Plannings", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.PlanningConcept", b =>
@@ -855,7 +855,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("PlanningId");
 
-                    b.ToTable("PlanningConcepts");
+                    b.ToTable("PlanningConcepts", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.PlanningRating", b =>
@@ -890,7 +890,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("PlanningId", "UserId")
                         .IsUnique();
 
-                    b.ToTable("PlanningRatings");
+                    b.ToTable("PlanningRatings", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.SessionExercise", b =>
@@ -928,7 +928,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("SessionId");
 
-                    b.ToTable("SessionExercises");
+                    b.ToTable("SessionExercises", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Subscription", b =>
@@ -975,7 +975,7 @@ namespace SportPlanner.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Subscriptions");
+                    b.ToTable("Subscriptions", (string)null);
 
                     b.HasData(
                         new
@@ -1082,7 +1082,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("SportId");
 
-                    b.ToTable("Teams");
+                    b.ToTable("Teams", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.TrainingSession", b =>
@@ -1150,7 +1150,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("PlanningId");
 
-                    b.ToTable("TrainingSessions");
+                    b.ToTable("TrainingSessions", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.User", b =>
@@ -1204,7 +1204,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("SupabaseId")
                         .IsUnique();
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.UserSubscription", b =>
@@ -1242,7 +1242,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("UserSubscriptions");
+                    b.ToTable("UserSubscriptions", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.UserTeam", b =>
@@ -1273,7 +1273,7 @@ namespace SportPlanner.Migrations
                     b.HasIndex("UserId", "TeamId")
                         .IsUnique();
 
-                    b.ToTable("UserTeams");
+                    b.ToTable("UserTeams", (string)null);
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Concept", b =>

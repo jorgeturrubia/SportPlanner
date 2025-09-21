@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SportPlanner.Models.Masters;
 
 namespace SportPlanner.Models;
 
@@ -22,7 +23,8 @@ public class User
     [MaxLength(100)]
     public string SupabaseId { get; set; } = string.Empty;
     
-    public UserRole Role { get; set; } = UserRole.Coach;
+    public int Role { get; set; } = 3; // Coach by default
+    public int UserRoleId { get; set; } = 3; // Coach by default
     
     public Guid? OrganizationId { get; set; }
     
@@ -31,6 +33,7 @@ public class User
     public bool IsActive { get; set; } = true;
     
     // Relaciones
+    public UserRole UserRole { get; set; } = null!;
     public Organization? Organization { get; set; }
     public ICollection<UserSubscription> Subscriptions { get; set; } = new List<UserSubscription>();
     public ICollection<UserTeam> UserTeams { get; set; } = new List<UserTeam>();

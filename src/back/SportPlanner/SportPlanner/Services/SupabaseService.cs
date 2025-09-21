@@ -150,6 +150,7 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
             _logger.LogDebug("🔍 Looking for user with Supabase ID: {SupabaseId}", supabaseId);
 
             var user = await _context.Users
+                .Include(u => u.UserRole)
                 .FirstOrDefaultAsync(u => u.SupabaseId == supabaseId);
 
             if (user == null)
@@ -237,6 +238,7 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
     {
 
         var user = await _context.Users
+            .Include(u => u.UserRole)
             .FirstOrDefaultAsync(u => u.SupabaseId == supabaseUser.Id);
 
         if (user == null)
@@ -264,7 +266,8 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
                 FirstName = firstName,
                 LastName = lastName,
                 SupabaseId = supabaseUser.Id ?? string.Empty,
-                Role = UserRole.Coach,
+                Role = 3, // Coach by default
+                UserRoleId = 3, // Coach by default
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
                 IsActive = true
@@ -315,6 +318,7 @@ public class SupabaseService(Supabase.Client supabaseClient, SportPlannerDbConte
             LastName = user.LastName,
             SupabaseId = user.SupabaseId,
             Role = user.Role,
+            UserRoleName = user.UserRole?.Name ?? string.Empty,
             OrganizationId = user.OrganizationId,
             CreatedAt = user.CreatedAt,
             UpdatedAt = user.UpdatedAt

@@ -36,11 +36,12 @@ export class ObjectivesComponent implements OnInit {
     // Apply search query
     const query = this.searchQuery().toLowerCase().trim();
     if (query) {
-      filtered = filtered.filter(objective => 
+      filtered = filtered.filter(objective =>
         objective.title.toLowerCase().includes(query) ||
         objective.description.toLowerCase().includes(query) ||
-        objective.teamName?.toLowerCase().includes(query) ||
-        objective.tags?.some(tag => tag.toLowerCase().includes(query))
+        objective.tags.toLowerCase().includes(query) ||
+        objective.objectiveCategoryName.toLowerCase().includes(query) ||
+        objective.objectiveSubcategoryName.toLowerCase().includes(query)
       );
     }
 
@@ -50,12 +51,14 @@ export class ObjectivesComponent implements OnInit {
       filtered = filtered.filter(objective => objective.isActive === filters.isActive);
     }
 
-    if (filters.priority !== undefined) {
-      filtered = filtered.filter(objective => objective.priority === filters.priority);
+    if (filters.teamId) {
+      filtered = filtered.filter(objective => objective.teamId === filters.teamId);
     }
 
-    if (filters.status !== undefined) {
-      filtered = filtered.filter(objective => objective.status === filters.status);
+    if (filters.tags) {
+      filtered = filtered.filter(objective =>
+        objective.tags.toLowerCase().includes(filters.tags!.toLowerCase())
+      );
     }
 
     return filtered;

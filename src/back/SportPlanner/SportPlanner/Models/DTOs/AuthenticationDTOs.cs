@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.Text.Json.Serialization;
 
 namespace SportPlanner.Models.DTOs;
 
@@ -53,7 +54,10 @@ public class UserDto
     public string FirstName { get; set; } = string.Empty;
     public string LastName { get; set; } = string.Empty;
     public string SupabaseId { get; set; } = string.Empty;
-    public UserRole Role { get; set; }
+    [JsonPropertyName("role")]
+    public int Role { get; set; }
+    [JsonPropertyName("userRoleName")]
+    public string UserRoleName { get; set; } = string.Empty;
     public Guid? OrganizationId { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime UpdatedAt { get; set; }

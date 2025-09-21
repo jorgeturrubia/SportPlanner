@@ -19,180 +19,148 @@
     <!-- Modal Body -->
     <div class="flex-1 p-6 overflow-y-auto">
       <form [formGroup]="form" (ngSubmit)="onSubmit()" class="space-y-6">
-        
-        <!-- Title -->
-        <div>
-          <label for="title" class="block text-sm font-medium text-foreground mb-2">
-            Título *
-          </label>
-          <input
-            type="text"
-            id="title"
-            formControlName="title"
-            [class.border-red-500]="isFieldInvalid('title')"
-            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground"
-            placeholder="Ej: Mejorar la precisión en tiros libres"
-            [disabled]="isSubmitting()"
-          >
-          @if (isFieldInvalid('title')) {
-            <p class="text-red-500 text-xs mt-1">{{ getFieldError('title') }}</p>
-          }
-        </div>
 
-        <!-- Description -->
-        <div>
-          <label for="description" class="block text-sm font-medium text-foreground mb-2">
-            Descripción *
-          </label>
-          <textarea
-            id="description"
-            formControlName="description"
-            rows="4"
-            [class.border-red-500]="isFieldInvalid('description')"
-            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground resize-none"
-            placeholder="Describe detalladamente el objetivo y cómo planeas alcanzarlo..."
-            [disabled]="isSubmitting()"
-          ></textarea>
-          @if (isFieldInvalid('description')) {
-            <p class="text-red-500 text-xs mt-1">{{ getFieldError('description') }}</p>
-          }
-        </div>
+        <!-- Category Section -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-medium text-foreground">Categoría del Objetivo</h3>
 
-        <!-- Priority and Status Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Priority -->
-          <div>
-            <label for="priority" class="block text-sm font-medium text-foreground mb-2">
-              Prioridad *
-            </label>
-            <select
-              id="priority"
-              formControlName="priority"
-              [class.border-red-500]="isFieldInvalid('priority')"
-              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
-              [disabled]="isSubmitting()"
-            >
-              @for (priority of priorityOptions; track priority.value) {
-                <option [value]="priority.value">{{ priority.label }}</option>
-              }
-            </select>
-            @if (isFieldInvalid('priority')) {
-              <p class="text-red-500 text-xs mt-1">{{ getFieldError('priority') }}</p>
-            }
-          </div>
-
-          <!-- Status (only in edit mode) -->
-          @if (mode === 'edit') {
+          <!-- Category and Subcategory Row -->
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Objective Category -->
             <div>
-              <label for="status" class="block text-sm font-medium text-foreground mb-2">
-                Estado *
+              <label for="objectiveCategoryId" class="block text-sm font-medium text-foreground mb-2">
+                Categoría Principal *
               </label>
               <select
-                id="status"
-                formControlName="status"
-                [class.border-red-500]="isFieldInvalid('status')"
+                id="objectiveCategoryId"
+                formControlName="objectiveCategoryId"
+                [class.border-red-500]="isFieldInvalid('objectiveCategoryId')"
                 class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
                 [disabled]="isSubmitting()"
               >
-                @for (status of statusOptions; track status.value) {
-                  <option [value]="status.value">{{ status.label }}</option>
+                <option value="">Seleccionar categoría</option>
+                @for (category of objectiveCategories(); track category.id) {
+                  <option [value]="category.id">{{ category.name }}</option>
                 }
               </select>
-              @if (isFieldInvalid('status')) {
-                <p class="text-red-500 text-xs mt-1">{{ getFieldError('status') }}</p>
+              @if (isFieldInvalid('objectiveCategoryId')) {
+                <p class="text-red-500 text-xs mt-1">{{ getFieldError('objectiveCategoryId') }}</p>
               }
             </div>
-          }
+
+            <!-- Objective Subcategory -->
+            <div>
+              <label for="objectiveSubcategoryId" class="block text-sm font-medium text-foreground mb-2">
+                Subcategoría *
+              </label>
+              <select
+                id="objectiveSubcategoryId"
+                formControlName="objectiveSubcategoryId"
+                [class.border-red-500]="isFieldInvalid('objectiveSubcategoryId')"
+                class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
+                [disabled]="isSubmitting()"
+              >
+                <option value="">Seleccionar subcategoría</option>
+                @for (subcategory of availableSubcategories(); track subcategory.id) {
+                  <option [value]="subcategory.id">{{ subcategory.name }}</option>
+                }
+              </select>
+              @if (isFieldInvalid('objectiveSubcategoryId')) {
+                <p class="text-red-500 text-xs mt-1">{{ getFieldError('objectiveSubcategoryId') }}</p>
+              }
+            </div>
+          </div>
         </div>
 
-        <!-- Target Date and Progress Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <!-- Target Date -->
+        <!-- Basic Information Section -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-medium text-foreground">Información Básica</h3>
+
+          <!-- Title -->
           <div>
-            <label for="targetDate" class="block text-sm font-medium text-foreground mb-2">
-              Fecha Meta
+            <label for="title" class="block text-sm font-medium text-foreground mb-2">
+              Título *
             </label>
             <input
-              type="date"
-              id="targetDate"
-              formControlName="targetDate"
-              [class.border-red-500]="isFieldInvalid('targetDate')"
-              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
+              type="text"
+              id="title"
+              formControlName="title"
+              [class.border-red-500]="isFieldInvalid('title')"
+              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground"
+              placeholder="Ej: Mejorar la precisión en tiros libres"
               [disabled]="isSubmitting()"
             >
-            @if (isFieldInvalid('targetDate')) {
-              <p class="text-red-500 text-xs mt-1">{{ getFieldError('targetDate') }}</p>
+            @if (isFieldInvalid('title')) {
+              <p class="text-red-500 text-xs mt-1">{{ getFieldError('title') }}</p>
             }
           </div>
 
-          <!-- Progress (only in edit mode) -->
-          @if (mode === 'edit') {
-            <div>
-              <label for="progress" class="block text-sm font-medium text-foreground mb-2">
-                Progreso (%)
-              </label>
-              <input
-                type="number"
-                id="progress"
-                formControlName="progress"
-                min="0"
-                max="100"
-                [class.border-red-500]="isFieldInvalid('progress')"
-                class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground"
-                placeholder="0"
-                [disabled]="isSubmitting()"
-              >
-              @if (isFieldInvalid('progress')) {
-                <p class="text-red-500 text-xs mt-1">{{ getFieldError('progress') }}</p>
-              }
-            </div>
-          }
-        </div>
-
-        <!-- Team -->
-        <div>
-          <label for="teamId" class="block text-sm font-medium text-foreground mb-2">
-            Equipo
-          </label>
-          <select
-            id="teamId"
-            formControlName="teamId"
-            [class.border-red-500]="isFieldInvalid('teamId')"
-            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
-            [disabled]="isSubmitting()"
-          >
-            <option value="">Sin equipo específico</option>
-            @for (team of teams(); track team.id) {
-              <option [value]="team.id">{{ team.name }}</option>
+          <!-- Description -->
+          <div>
+            <label for="description" class="block text-sm font-medium text-foreground mb-2">
+              Descripción *
+            </label>
+            <textarea
+              id="description"
+              formControlName="description"
+              rows="4"
+              [class.border-red-500]="isFieldInvalid('description')"
+              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground resize-none"
+              placeholder="Describe detalladamente el objetivo y cómo planeas alcanzarlo..."
+              [disabled]="isSubmitting()"
+            ></textarea>
+            @if (isFieldInvalid('description')) {
+              <p class="text-red-500 text-xs mt-1">{{ getFieldError('description') }}</p>
             }
-          </select>
-          @if (isFieldInvalid('teamId')) {
-            <p class="text-red-500 text-xs mt-1">{{ getFieldError('teamId') }}</p>
-          }
+          </div>
+
+          <!-- Tags -->
+          <div>
+            <label for="tags" class="block text-sm font-medium text-foreground mb-2">
+              Etiquetas
+            </label>
+            <input
+              type="text"
+              id="tags"
+              formControlName="tags"
+              [class.border-red-500]="isFieldInvalid('tags')"
+              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground"
+              placeholder="técnica, individual, tiro libre"
+              [disabled]="isSubmitting()"
+            >
+            <p class="text-xs text-muted-foreground mt-1">
+              Etiquetas para facilitar la búsqueda y categorización.
+            </p>
+            @if (isFieldInvalid('tags')) {
+              <p class="text-red-500 text-xs mt-1">{{ getFieldError('tags') }}</p>
+            }
+          </div>
         </div>
 
-        <!-- Tags -->
-        <div>
-          <label for="tags" class="block text-sm font-medium text-foreground mb-2">
-            Etiquetas
-          </label>
-          <input
-            type="text"
-            id="tags"
-            formControlName="tags"
-            [class.border-red-500]="isFieldInvalid('tags')"
-            class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground placeholder-muted-foreground"
-            placeholder="técnica, individual, tiro libre (separadas por comas)"
-            [disabled]="isSubmitting()"
-          >
-          <p class="text-xs text-muted-foreground mt-1">
-            Separa las etiquetas con comas para facilitar la búsqueda y categorización.
-          </p>
-          @if (isFieldInvalid('tags')) {
-            <p class="text-red-500 text-xs mt-1">{{ getFieldError('tags') }}</p>
-          }
+        <!-- Relations Section -->
+        <div class="space-y-4">
+          <h3 class="text-lg font-medium text-foreground">Relaciones</h3>
+
+          <!-- Team -->
+          <div>
+            <label for="teamId" class="block text-sm font-medium text-foreground mb-2">
+              Equipo
+            </label>
+            <select
+              id="teamId"
+              formControlName="teamId"
+              [class.border-red-500]="isFieldInvalid('teamId')"
+              class="w-full px-3 py-2 border border-border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:focus:ring-blue-400 dark:focus:border-blue-400 bg-background text-foreground cursor-pointer"
+              [disabled]="isSubmitting()"
+            >
+              <option value="">Sin equipo específico</option>
+            </select>
+            @if (isFieldInvalid('teamId')) {
+              <p class="text-red-500 text-xs mt-1">{{ getFieldError('teamId') }}</p>
+            }
+          </div>
         </div>
-        
+
       </form>
     </div>
 

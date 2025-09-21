@@ -103,7 +103,7 @@ public class CustomExerciseService : ICustomExerciseService
 
             var exercise = await _context.CustomExercises
                 .Include(e => e.CreatedBy)
-                .FirstOrDefaultAsync(e => e.Id == id && e.IsActive && 
+                .FirstOrDefaultAsync(e => e.Id == id && e.IsActive &&
                                         (e.CreatedByUserId == userId || e.IsPublic));
 
             return exercise != null ? MapToCustomExerciseDto(exercise) : null;
@@ -260,7 +260,26 @@ public class CustomExerciseService : ICustomExerciseService
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error checking custom exercise access for exercise {ExerciseId} and user {UserId}", exerciseId, userId);
+            _logger.LogError(ex, "Error checking user access to custom exercise {ExerciseId} for user {UserId}", exerciseId, userId);
+            return false;
+        }
+    }
+
+    public async Task<bool> AnyAsync(string exerciseId)
+    {
+        try
+        {
+            if (!int.TryParse(exerciseId, out int id))
+            {
+                return false;
+            }
+
+            return await _context.CustomExercises
+                .AnyAsync(e => e.Id == id && e.IsActive);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error checking custom exercise access for exercise {ExerciseId}", exerciseId);
             return false;
         }
     }

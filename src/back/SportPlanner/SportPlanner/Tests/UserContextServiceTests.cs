@@ -91,7 +91,7 @@ public class UserContextServiceTests
         var claims = new List<Claim>
         {
             new(ClaimTypes.NameIdentifier, Guid.NewGuid().ToString()),
-            new(ClaimTypes.Role, UserRole.Coach.ToString())
+            new(ClaimTypes.Role, "Coach")
         };
         var identity = new ClaimsIdentity(claims, "test");
         var principal = new ClaimsPrincipal(identity);
@@ -101,7 +101,7 @@ public class UserContextServiceTests
         _mockHttpContextAccessor.Setup(x => x.HttpContext).Returns(mockHttpContext.Object);
 
         // Act
-        var result = _userContextService.HasRole(UserRole.Coach);
+        var result = _userContextService.HasRole(3); // Coach role ID
 
         // Assert
         Assert.True(result);

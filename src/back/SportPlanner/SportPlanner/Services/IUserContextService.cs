@@ -22,19 +22,19 @@ public interface IUserContextService
     string? GetCurrentUserSupabaseId();
     
     /// <summary>
-    /// Gets the current user's role from the HTTP context
+    /// Gets the current user's role ID from the HTTP context
     /// </summary>
-    UserRole? GetCurrentUserRole();
-    
+    int? GetCurrentUserRoleId();
+
     /// <summary>
     /// Checks if the current user is authenticated
     /// </summary>
     bool IsAuthenticated();
-    
+
     /// <summary>
-    /// Checks if the current user has the specified role
+    /// Checks if the current user has the specified role ID
     /// </summary>
-    bool HasRole(UserRole role);
+    bool HasRole(int roleId);
     
     /// <summary>
     /// Gets all claims for the current user

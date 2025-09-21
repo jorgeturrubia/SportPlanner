@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using SportPlanner.Models.Masters;
 
 namespace SportPlanner.Models;
 
@@ -20,7 +21,7 @@ public class Itinerary
     [MaxLength(50)]
     public string Category { get; set; } = string.Empty; // Categoría por edad
     
-    public TeamLevel RecommendedLevel { get; set; }
+    public int? LevelId { get; set; }
     
     public bool IsSystemItinerary { get; set; } = false; // true = itinerario del sistema, false = personalizado
     public Guid? CreatedByUserId { get; set; } // null si es itinerario del sistema
@@ -35,6 +36,7 @@ public class Itinerary
     public bool IsActive { get; set; } = true;
     
     // Relaciones
+    public Level? Level { get; set; }
     public User? CreatedBy { get; set; }
     public ICollection<ItineraryConcept> ItineraryConcepts { get; set; } = new List<ItineraryConcept>();
     public ICollection<Planning> Plannings { get; set; } = new List<Planning>();

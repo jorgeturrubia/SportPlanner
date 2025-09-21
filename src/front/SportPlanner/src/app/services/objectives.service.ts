@@ -1,8 +1,8 @@
 import { Injectable, inject, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { catchError, tap, map } from 'rxjs/operators';
-import { Objective, CreateObjectiveRequest, UpdateObjectiveRequest, ObjectiveFilters } from '../models/objective.model';
+import { Observable, forkJoin } from 'rxjs';
+import { catchError, tap, map, switchMap } from 'rxjs/operators';
+import { Objective, CreateObjectiveRequest, UpdateObjectiveRequest, ObjectiveFilters, ObjectiveCategory, ObjectiveSubcategory } from '../models/objective.model';
 import { NotificationService } from './notification.service';
 import { AuthService } from './auth.service';
 import { environment } from '../../environments/environment';
@@ -18,23 +18,52 @@ export class ObjectivesService {
   private readonly apiUrl = `${environment.apiUrl}/api/objectives`;
   private readonly _objectives = signal<Objective[]>([]);
   private readonly _isLoading = signal<boolean>(false);
-  
+
+  // Objective categories and subcategories
+  readonly objectiveCategories = signal<ObjectiveCategory[]>([]);
+  readonly objectiveSubcategories = signal<ObjectiveSubcategory[]>([]);
+
   readonly objectives = computed(() => this._objectives());
   readonly isLoading = computed(() => this._isLoading());
 
+  // Load objective categories and subcategories
+  loadObjectiveMasters(): Observable<void> {
+    return forkJoin({
+      categories: this.getObjectiveCategories(),
+      subcategories: this.getObjectiveSubcategories()
+    }).pipe(
+      map(() => void 0)
+    );
+  }
+
+  getObjectiveCategories(): Observable<ObjectiveCategory[]> {
+    return this.http.get<ObjectiveCategory[]>(`${environment.apiUrl}/api/objectivecategories`).pipe(
+      tap(categories => this.objectiveCategories.set(categories))
+    );
+  }
+
+  getObjectiveSubcategories(): Observable<ObjectiveSubcategory[]> {
+    return this.http.get<ObjectiveSubcategory[]>(`${environment.apiUrl}/api/objectivesubcategories`).pipe(
+      tap(subcategories => this.objectiveSubcategories.set(subcategories))
+    );
+  }
+
+  getSubcategoriesByCategory(categoryId: number): ObjectiveSubcategory[] {
+    return this.objectiveSubcategories().filter(sub => sub.objectiveCategoryId === categoryId);
+  }
+
   getAllObjectives(): Observable<Objective[]> {
     this._isLoading.set(true);
-    
-    return this.http.get<Objective[]>(this.apiUrl).pipe(
+
+    // First load masters data, then objectives
+    return this.loadObjectiveMasters().pipe(
+      switchMap(() => this.http.get<Objective[]>(this.apiUrl)),
       tap(objectives => {
         // Convert backend date strings to Date objects
         const processedObjectives = objectives.map(objective => ({
           ...objective,
-          id: objective.id.toString(),
           createdAt: new Date(objective.createdAt),
-          updatedAt: new Date(objective.updatedAt),
-          targetDate: objective.targetDate ? new Date(objective.targetDate) : undefined,
-          completedDate: objective.completedDate ? new Date(objective.completedDate) : undefined
+          updatedAt: new Date(objective.updatedAt)
         }));
         this._objectives.set(processedObjectives);
         this._isLoading.set(false);
@@ -47,15 +76,12 @@ export class ObjectivesService {
     );
   }
 
-  getObjectiveById(id: string): Observable<Objective> {
+  getObjectiveById(id: number): Observable<Objective> {
     return this.http.get<Objective>(`${this.apiUrl}/${id}`).pipe(
       map(objective => ({
         ...objective,
-        id: objective.id.toString(),
         createdAt: new Date(objective.createdAt),
-        updatedAt: new Date(objective.updatedAt),
-        targetDate: objective.targetDate ? new Date(objective.targetDate) : undefined,
-        completedDate: objective.completedDate ? new Date(objective.completedDate) : undefined
+        updatedAt: new Date(objective.updatedAt)
       })),
       catchError(error => {
         this.notificationService.showError('Error al cargar el objetivo');
@@ -71,11 +97,8 @@ export class ObjectivesService {
       tap(newObjective => {
         const processedObjective = {
           ...newObjective,
-          id: newObjective.id.toString(),
           createdAt: new Date(newObjective.createdAt),
-          updatedAt: new Date(newObjective.updatedAt),
-          targetDate: newObjective.targetDate ? new Date(newObjective.targetDate) : undefined,
-          completedDate: newObjective.completedDate ? new Date(newObjective.completedDate) : undefined
+          updatedAt: new Date(newObjective.updatedAt)
         };
         
         const currentObjectives = this._objectives();
@@ -90,18 +113,15 @@ export class ObjectivesService {
     );
   }
 
-  updateObjective(id: string, objectiveData: UpdateObjectiveRequest): Observable<Objective> {
+  updateObjective(id: number, objectiveData: UpdateObjectiveRequest): Observable<Objective> {
     this._isLoading.set(true);
 
     return this.http.put<Objective>(`${this.apiUrl}/${id}`, objectiveData).pipe(
       tap(updatedObjective => {
         const processedObjective = {
           ...updatedObjective,
-          id: updatedObjective.id.toString(),
           createdAt: new Date(updatedObjective.createdAt),
-          updatedAt: new Date(updatedObjective.updatedAt),
-          targetDate: updatedObjective.targetDate ? new Date(updatedObjective.targetDate) : undefined,
-          completedDate: updatedObjective.completedDate ? new Date(updatedObjective.completedDate) : undefined
+          updatedAt: new Date(updatedObjective.updatedAt)
         };
 
         const currentObjectives = this._objectives();
@@ -124,7 +144,7 @@ export class ObjectivesService {
     );
   }
 
-  deleteObjective(id: string): Observable<void> {
+  deleteObjective(id: number): Observable<void> {
     this._isLoading.set(true);
 
     return this.http.delete<void>(`${this.apiUrl}/${id}`).pipe(
@@ -151,27 +171,33 @@ export class ObjectivesService {
   filterObjectives(filters: ObjectiveFilters): Objective[] {
     let filteredObjectives = this._objectives();
 
-    if (filters.priority !== undefined) {
-      filteredObjectives = filteredObjectives.filter(objective => 
-        objective.priority === filters.priority
-      );
-    }
-
-    if (filters.status !== undefined) {
-      filteredObjectives = filteredObjectives.filter(objective => 
-        objective.status === filters.status
-      );
-    }
-
     if (filters.teamId) {
-      filteredObjectives = filteredObjectives.filter(objective => 
+      filteredObjectives = filteredObjectives.filter(objective =>
         objective.teamId === filters.teamId
       );
     }
 
     if (filters.isActive !== undefined) {
-      filteredObjectives = filteredObjectives.filter(objective => 
+      filteredObjectives = filteredObjectives.filter(objective =>
         objective.isActive === filters.isActive
+      );
+    }
+
+    if (filters.tags) {
+      filteredObjectives = filteredObjectives.filter(objective =>
+        objective.tags.toLowerCase().includes(filters.tags!.toLowerCase())
+      );
+    }
+
+    if (filters.objectiveCategoryId !== undefined) {
+      filteredObjectives = filteredObjectives.filter(objective =>
+        objective.objectiveCategoryId === filters.objectiveCategoryId
+      );
+    }
+
+    if (filters.objectiveSubcategoryId !== undefined) {
+      filteredObjectives = filteredObjectives.filter(objective =>
+        objective.objectiveSubcategoryId === filters.objectiveSubcategoryId
       );
     }
 

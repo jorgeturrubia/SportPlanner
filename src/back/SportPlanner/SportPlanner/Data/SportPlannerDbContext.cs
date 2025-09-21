@@ -25,6 +25,13 @@ public class SportPlannerDbContext : DbContext
     public DbSet<Level> Levels { get; set; }
     public DbSet<Models.Masters.ExerciseCategory> ExerciseCategories { get; set; }
     public DbSet<Models.Masters.Difficulty> Difficulties { get; set; }
+    public DbSet<Gender> Genders { get; set; }
+    public DbSet<UserRole> UserRoles { get; set; }
+    public DbSet<ObjectiveCategory> ObjectiveCategories { get; set; }
+    public DbSet<ObjectiveSubcategory> ObjectiveSubcategories { get; set; }
+    public DbSet<ObjectivePriority> ObjectivePriorities { get; set; }
+    public DbSet<ObjectiveStatus> ObjectiveStatuses { get; set; }
+    public DbSet<ObjectiveScope> ObjectiveScopes { get; set; }
     public DbSet<Concept> Concepts { get; set; }
     public DbSet<Exercise> Exercises { get; set; }
     public DbSet<ExerciseConcept> ExerciseConcepts { get; set; }
@@ -58,6 +65,10 @@ public class SportPlannerDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.OrganizationId)
                 .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.UserRole)
+                .WithMany()
+                .HasForeignKey(e => e.UserRoleId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
 
         // Configuración de Subscription
@@ -364,6 +375,12 @@ public class SportPlannerDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(e => e.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            entity.HasOne<Level>()
+                .WithMany()
+                .HasForeignKey(e => e.LevelId)
+                .OnDelete(DeleteBehavior.SetNull)
+                .IsRequired(false);
                 
             entity.HasOne(e => e.Team)
                 .WithMany()
@@ -440,25 +457,71 @@ public class SportPlannerDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+        // Configuración de ObjectiveCategory
+        modelBuilder.Entity<ObjectiveCategory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasIndex(e => e.Name).IsUnique();
+        });
+
+        // Configuración de ObjectiveSubcategory
+        modelBuilder.Entity<ObjectiveSubcategory>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.HasOne(e => e.ObjectiveCategory)
+                .WithMany(e => e.Subcategories)
+                .HasForeignKey(e => e.ObjectiveCategoryId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.ObjectiveCategoryId, e.Name }).IsUnique();
+        });
+
         // Configuración de Objective
         modelBuilder.Entity<Objective>(entity =>
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
             entity.Property(e => e.Description).HasMaxLength(1000);
-            entity.Property(e => e.Tags)
-                .HasConversion(
-                    v => string.Join(',', v),
-                    v => v.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList()
-                );
+            entity.Property(e => e.Tags).HasMaxLength(1000);
+
+            // Configure enum properties as simple integers
+           
+            entity.Property(e => e.IsActive).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
+
+            // Foreign key relationships
             entity.HasOne(e => e.Team)
                 .WithMany()
                 .HasForeignKey(e => e.TeamId)
-                .OnDelete(DeleteBehavior.SetNull);
+                .OnDelete(DeleteBehavior.Restrict);
+
             entity.HasOne(e => e.CreatedBy)
                 .WithMany()
                 .HasForeignKey(e => e.CreatedByUserId)
                 .OnDelete(DeleteBehavior.Restrict);
+
+            // Indexes for performance
+            entity.HasIndex(e => e.CreatedByUserId);
+            entity.HasIndex(e => e.TeamId);
+            entity.HasIndex(e => e.IsActive);
+          
+        });
+
+        // Configuración de UserRole
+        modelBuilder.Entity<UserRole>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Name).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Description).HasMaxLength(500);
+            entity.Property(e => e.IsActive).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.Property(e => e.UpdatedAt).IsRequired();
+            entity.HasIndex(e => e.Name).IsUnique();
+            entity.HasIndex(e => e.IsActive);
         });
 
         // Configuración de CustomExercise

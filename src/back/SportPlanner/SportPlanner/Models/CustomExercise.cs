@@ -60,4 +60,3 @@ public enum ExerciseCategory
     Psychological = 3,
     Coordination = 4
 }
-

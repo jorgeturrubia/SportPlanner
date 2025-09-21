@@ -38,7 +38,7 @@ public class JwtMiddleware
                         new(ClaimTypes.NameIdentifier, userDto.Id.ToString()),
                         new(ClaimTypes.Email, userDto.Email),
                         new(ClaimTypes.Name, $"{userDto.FirstName} {userDto.LastName}"),
-                        new(ClaimTypes.Role, userDto.Role.ToString()),
+                        new(ClaimTypes.Role, userDto.UserRoleName),
                         new("supabase_id", userDto.SupabaseId)
                     };
 

@@ -3,110 +3,168 @@ using System.Text.Json.Serialization;
 
 namespace SportPlanner.Models.DTOs;
 
-public class ObjectiveDto
+// Objective Category DTOs
+public class ObjectiveCategoryDto
 {
     [JsonPropertyName("id")]
-    public string Id { get; set; } = string.Empty;
-    
-    [JsonPropertyName("title")]
-    public string Title { get; set; } = string.Empty;
-    
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
     [JsonPropertyName("description")]
-    public string Description { get; set; } = string.Empty;
-    
-    [JsonPropertyName("priority")]
-    public ObjectivePriority Priority { get; set; }
-    
-    [JsonPropertyName("status")]
-    public ObjectiveStatus Status { get; set; }
-    
-    [JsonPropertyName("progress")]
-    public int Progress { get; set; }
-    
-    [JsonPropertyName("targetDate")]
-    public DateTime? TargetDate { get; set; }
-    
-    [JsonPropertyName("completedDate")]
-    public DateTime? CompletedDate { get; set; }
-    
-    [JsonPropertyName("teamId")]
-    public string? TeamId { get; set; }
-    
-    [JsonPropertyName("teamName")]
-    public string? TeamName { get; set; }
-    
-    [JsonPropertyName("tags")]
-    public List<string> Tags { get; set; } = new();
-    
-    [JsonPropertyName("createdBy")]
-    public string CreatedBy { get; set; } = string.Empty;
-    
-    [JsonPropertyName("createdAt")]
-    public DateTime CreatedAt { get; set; }
-    
-    [JsonPropertyName("updatedAt")]
-    public DateTime UpdatedAt { get; set; }
-    
+    public string? Description { get; set; }
+
     [JsonPropertyName("isActive")]
     public bool IsActive { get; set; }
 }
 
+public class ObjectiveSubcategoryDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("name")]
+    public string Name { get; set; } = string.Empty;
+
+    [JsonPropertyName("description")]
+    public string? Description { get; set; }
+
+    [JsonPropertyName("objectiveCategoryId")]
+    public int ObjectiveCategoryId { get; set; }
+
+    [JsonPropertyName("isActive")]
+    public bool IsActive { get; set; }
+}
+
+public class ObjectiveDto
+{
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    // Objective type
+    [JsonPropertyName("objectiveCategoryId")]
+    public int ObjectiveCategoryId { get; set; }
+
+    [JsonPropertyName("objectiveSubcategoryId")]
+    public int ObjectiveSubcategoryId { get; set; }
+
+    [JsonPropertyName("objectiveCategoryName")]
+    public string ObjectiveCategoryName { get; set; } = string.Empty;
+
+    [JsonPropertyName("objectiveSubcategoryName")]
+    public string ObjectiveSubcategoryName { get; set; } = string.Empty;
+
+    // Identification
+    [JsonPropertyName("title")]
+    public string Title { get; set; } = string.Empty;
+
+    [JsonPropertyName("description")]
+    public string Description { get; set; } = string.Empty;
+
+    [JsonPropertyName("tags")]
+    public string Tags { get; set; } = string.Empty;
+
+    // Exercises
+    [JsonPropertyName("exercises")]
+    public List<ObjectiveExerciseDto> Exercises { get; set; } = new();
+
+    // Relations
+    [JsonPropertyName("teamId")]
+    public string? TeamId { get; set; }
+
+    // System fields
+    [JsonPropertyName("createdBy")]
+    public string CreatedBy { get; set; } = string.Empty;
+
+    [JsonPropertyName("createdAt")]
+    public DateTime CreatedAt { get; set; }
+
+    [JsonPropertyName("updatedAt")]
+    public DateTime UpdatedAt { get; set; }
+
+    [JsonPropertyName("isActive")]
+    public bool IsActive { get; set; }
+}
+
+public class ObjectiveExerciseDto
+{
+    [JsonPropertyName("id")]
+    public string Id { get; set; } = string.Empty;
+
+    [JsonPropertyName("exerciseId")]
+    public string ExerciseId { get; set; } = string.Empty;
+
+    [JsonPropertyName("exerciseName")]
+    public string ExerciseName { get; set; } = string.Empty;
+
+    [JsonPropertyName("order")]
+    public int Order { get; set; }
+
+    [JsonPropertyName("notes")]
+    public string? Notes { get; set; }
+}
+
 public class CreateObjectiveRequest
 {
+    // Objective type
+    [Required]
+    [JsonPropertyName("objectiveCategoryId")]
+    public int ObjectiveCategoryId { get; set; }
+
+    [Required]
+    [JsonPropertyName("objectiveSubcategoryId")]
+    public int ObjectiveSubcategoryId { get; set; }
+
+    // Identification
     [Required]
     [MaxLength(200)]
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
-    
+
     [MaxLength(1000)]
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
-    
-    [JsonPropertyName("priority")]
-    public ObjectivePriority Priority { get; set; } = ObjectivePriority.Medium;
-    
-    [JsonPropertyName("targetDate")]
-    public DateTime? TargetDate { get; set; }
-    
+
+    [JsonPropertyName("tags")]
+    public string Tags { get; set; } = string.Empty;
+
     [JsonPropertyName("teamId")]
     public string? TeamId { get; set; }
-    
-    [JsonPropertyName("tags")]
-    public List<string> Tags { get; set; } = new();
 }
 
 public class UpdateObjectiveRequest
 {
+    // Objective type
+    [Required]
+    [JsonPropertyName("objectiveCategoryId")]
+    public int ObjectiveCategoryId { get; set; }
+
+    [Required]
+    [JsonPropertyName("objectiveSubcategoryId")]
+    public int ObjectiveSubcategoryId { get; set; }
+
+    // Identification
     [Required]
     [MaxLength(200)]
     [JsonPropertyName("title")]
     public string Title { get; set; } = string.Empty;
-    
+
     [MaxLength(1000)]
     [JsonPropertyName("description")]
     public string Description { get; set; } = string.Empty;
-    
-    [JsonPropertyName("priority")]
-    public ObjectivePriority Priority { get; set; }
-    
-    [JsonPropertyName("status")]
-    public ObjectiveStatus Status { get; set; }
-    
-    [Range(0, 100)]
-    [JsonPropertyName("progress")]
-    public int Progress { get; set; }
-    
-    [JsonPropertyName("targetDate")]
-    public DateTime? TargetDate { get; set; }
-    
+
     [JsonPropertyName("tags")]
-    public List<string> Tags { get; set; } = new();
+    public string Tags { get; set; } = string.Empty;
+
+    [JsonPropertyName("teamId")]
+    public string? TeamId { get; set; }
 }
 
 public class ObjectiveFilterDto
 {
-    public ObjectivePriority? Priority { get; set; }
-    public ObjectiveStatus? Status { get; set; }
+    public int? Priority { get; set; }
+    public int? Status { get; set; }
     public string? TeamId { get; set; }
     public DateTime? DueBefore { get; set; }
     public DateTime? DueAfter { get; set; }

@@ -45,7 +45,7 @@ public class UserTeam
     public Guid Id { get; set; }
     public Guid UserId { get; set; }
     public Guid TeamId { get; set; }
-    public UserRole Role { get; set; }
+    public int Role { get; set; } = 3; // Coach by default
 
     public DateTime AssignedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;

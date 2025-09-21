@@ -1,11 +1,10 @@
 import { Component, ChangeDetectionStrategy, Input, Output, EventEmitter, inject, signal, computed, OnInit, effect } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { NgIcon } from '@ng-icons/core';
-import { Objective, CreateObjectiveRequest, UpdateObjectiveRequest, ObjectivePriority, ObjectiveStatus } from '../../../../../../models/objective.model';
+import { Objective, CreateObjectiveRequest, UpdateObjectiveRequest, ObjectiveCategory, ObjectiveSubcategory } from '../../../../../../models/objective.model';
 import { ObjectivesService } from '../../../../../../services/objectives.service';
 import { NotificationService } from '../../../../../../services/notification.service';
 import { AuthService } from '../../../../../../services/auth.service';
-import { TeamsService } from '../../../../../../services/teams.service';
 
 @Component({
   selector: 'app-objective-modal',
@@ -23,21 +22,28 @@ export class ObjectiveModalComponent implements OnInit {
   private objectivesService = inject(ObjectivesService);
   private notificationService = inject(NotificationService);
   private authService = inject(AuthService);
-  private teamsService = inject(TeamsService);
 
   @Input({ required: true }) isOpen!: boolean;
   @Input({ required: true }) mode!: 'create' | 'edit';
   @Input() objective: Objective | null = null;
-  
+
   @Output() close = new EventEmitter<void>();
   @Output() objectiveSaved = new EventEmitter<Objective>();
 
   readonly isSubmitting = signal<boolean>(false);
   readonly form: FormGroup;
-  readonly teams = this.teamsService.teams;
+
+  // Master data
+  readonly objectiveCategories = this.objectivesService.objectiveCategories;
 
   readonly modalTitle = computed(() => {
     return this.mode === 'create' ? 'Crear Nuevo Objetivo' : 'Editar Objetivo';
+  });
+
+  // Computed subcategories based on selected category
+  readonly availableSubcategories = computed(() => {
+    const categoryId = this.form.get('objectiveCategoryId')?.value;
+    return categoryId ? this.objectivesService.getSubcategoriesByCategory(categoryId) : [];
   });
 
   readonly submitButtonText = computed(() => {
@@ -47,31 +53,20 @@ export class ObjectiveModalComponent implements OnInit {
     return this.mode === 'create' ? 'Crear Objetivo' : 'Guardar Cambios';
   });
 
-  // Predefined options
-  readonly priorityOptions = [
-    { value: ObjectivePriority.Low, label: 'Baja' },
-    { value: ObjectivePriority.Medium, label: 'Media' },
-    { value: ObjectivePriority.High, label: 'Alta' },
-    { value: ObjectivePriority.Critical, label: 'Crítica' }
-  ];
-
-  readonly statusOptions = [
-    { value: ObjectiveStatus.NotStarted, label: 'No iniciado' },
-    { value: ObjectiveStatus.InProgress, label: 'En progreso' },
-    { value: ObjectiveStatus.OnHold, label: 'En pausa' },
-    { value: ObjectiveStatus.Completed, label: 'Completado' }
-  ];
 
   constructor() {
     this.form = this.formBuilder.group({
+      // Category information
+      objectiveCategoryId: [null, [Validators.required]],
+      objectiveSubcategoryId: [null, [Validators.required]],
+
+      // Basic information
       title: ['', [Validators.required, Validators.minLength(3), Validators.maxLength(200)]],
       description: ['', [Validators.required, Validators.minLength(10), Validators.maxLength(1000)]],
-      priority: [ObjectivePriority.Medium, [Validators.required]],
-      status: [ObjectiveStatus.NotStarted, [Validators.required]],
-      targetDate: [''],
-      progress: [0, [Validators.min(0), Validators.max(100)]],
-      teamId: [''],
-      tags: ['']
+      tags: [''],
+
+      // Relations
+      teamId: ['']
     });
 
     // Effect to populate form when objective changes
@@ -85,11 +80,6 @@ export class ObjectiveModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    // Load teams if not already loaded
-    if (this.teams().length === 0) {
-      this.teamsService.getAllTeams().subscribe();
-    }
-
     if (this.objective && this.mode === 'edit') {
       this.populateForm(this.objective);
     }
@@ -97,27 +87,33 @@ export class ObjectiveModalComponent implements OnInit {
 
   private populateForm(objective: Objective): void {
     this.form.patchValue({
+      // Category information
+      objectiveCategoryId: objective.objectiveCategoryId,
+      objectiveSubcategoryId: objective.objectiveSubcategoryId,
+
+      // Basic information
       title: objective.title,
       description: objective.description || '',
-      priority: objective.priority,
-      status: objective.status,
-      targetDate: objective.targetDate ? objective.targetDate.toISOString().split('T')[0] : '',
-      progress: objective.progress,
-      teamId: objective.teamId || '',
-      tags: objective.tags?.join(', ') || ''
+      tags: objective.tags || '',
+
+      // Relations
+      teamId: objective.teamId || ''
     });
   }
 
   private resetForm(): void {
     this.form.reset({
+      // Category information
+      objectiveCategoryId: null,
+      objectiveSubcategoryId: null,
+
+      // Basic information
       title: '',
       description: '',
-      priority: ObjectivePriority.Medium,
-      status: ObjectiveStatus.NotStarted,
-      targetDate: '',
-      progress: 0,
-      teamId: '',
-      tags: ''
+      tags: '',
+
+      // Relations
+      teamId: ''
     });
   }
 
@@ -146,12 +142,17 @@ export class ObjectiveModalComponent implements OnInit {
 
   private createObjective(formValue: any): void {
     const createRequest: CreateObjectiveRequest = {
+      // Category information
+      objectiveCategoryId: formValue.objectiveCategoryId,
+      objectiveSubcategoryId: formValue.objectiveSubcategoryId,
+
+      // Basic information
       title: formValue.title.trim(),
       description: formValue.description.trim(),
-      priority: Number(formValue.priority),
-      targetDate: formValue.targetDate ? new Date(formValue.targetDate) : undefined,
-      teamId: formValue.teamId || undefined,
-      tags: this.parseTags(formValue.tags)
+      tags: formValue.tags.trim(),
+
+      // Relations
+      teamId: formValue.teamId || undefined
     };
 
     this.objectivesService.createObjective(createRequest).subscribe({
@@ -171,13 +172,17 @@ export class ObjectiveModalComponent implements OnInit {
     if (!this.objective) return;
 
     const updateRequest: UpdateObjectiveRequest = {
+      // Category information
+      objectiveCategoryId: formValue.objectiveCategoryId,
+      objectiveSubcategoryId: formValue.objectiveSubcategoryId,
+
+      // Basic information
       title: formValue.title.trim(),
       description: formValue.description.trim(),
-      priority: Number(formValue.priority),
-      status: Number(formValue.status),
-      targetDate: formValue.targetDate ? new Date(formValue.targetDate) : undefined,
-      progress: Number(formValue.progress),
-      tags: this.parseTags(formValue.tags)
+      tags: formValue.tags.trim(),
+
+      // Relations
+      teamId: formValue.teamId || undefined
     };
 
     this.objectivesService.updateObjective(this.objective.id, updateRequest).subscribe({
@@ -193,12 +198,6 @@ export class ObjectiveModalComponent implements OnInit {
     });
   }
 
-  private parseTags(tagsString: string): string[] {
-    if (!tagsString?.trim()) return [];
-    return tagsString.split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0);
-  }
 
   private markFormGroupTouched(): void {
     Object.keys(this.form.controls).forEach(key => {

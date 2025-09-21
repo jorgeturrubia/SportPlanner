@@ -56,7 +56,7 @@ export const appConfig: ApplicationConfig = {
     provideBrowserGlobalErrorListeners(),
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideHttpClient(withFetch(), withInterceptors([debugInterceptor, authInterceptor, authErrorInterceptor, supabaseErrorInterceptor])),
+    provideHttpClient(withFetch(), withInterceptors([authInterceptor, debugInterceptor, authErrorInterceptor, supabaseErrorInterceptor])),
     provideClientHydration(withEventReplay()),
     // Locale configuration
     { provide: LOCALE_ID, useValue: 'es-ES' },

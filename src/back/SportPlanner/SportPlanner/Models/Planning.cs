@@ -17,7 +17,8 @@ public class Planning
     public PlanningStatus Status { get; set; } = PlanningStatus.Draft;
     
     public Guid? TeamId { get; set; }
-    
+    public int? LevelId { get; set; }
+
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     

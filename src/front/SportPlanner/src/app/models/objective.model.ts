@@ -1,57 +1,107 @@
-export enum ObjectivePriority {
-  Low = 0,
-  Medium = 1,
-  High = 2,
-  Critical = 3
+export interface ObjectivePriority {
+  id: number;
+  name: string;
+  description?: string;
+  level: number;
+  isActive: boolean;
 }
 
-export enum ObjectiveStatus {
-  NotStarted = 0,
-  InProgress = 1,
-  Completed = 2,
-  OnHold = 3
+export interface ObjectiveStatus {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface ObjectiveScope {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface ObjectiveCategory {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+}
+
+export interface ObjectiveSubcategory {
+  id: number;
+  name: string;
+  description?: string;
+  isActive: boolean;
+  objectiveCategoryId: number;
+}
+
+export interface ObjectiveExercise {
+  id: string;
+  objectiveId: number;
+  exerciseId: number;
+  order: number;
+  notes?: string;
 }
 
 export interface Objective {
-  id: string;
+  id: number;
+
+  // Category information
+  objectiveCategoryId: number;
+  objectiveSubcategoryId: number;
+  objectiveCategoryName: string;
+  objectiveSubcategoryName: string;
+
+  // Basic information
   title: string;
   description: string;
-  priority: ObjectivePriority;
-  status: ObjectiveStatus;
-  targetDate?: Date;
-  completedDate?: Date;
+  tags: string;
+
+  // Relations
   teamId?: string;
-  teamName?: string;
-  createdBy: string;
+
+  // System fields
+  isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
-  isActive: boolean;
-  progress: number; // 0-100
-  tags?: string[];
+  createdByUserId: string;
+
+  // Navigation properties
+  exercises: ObjectiveExercise[];
 }
 
 export interface CreateObjectiveRequest {
+  // Category information
+  objectiveCategoryId: number;
+  objectiveSubcategoryId: number;
+
+  // Basic information
   title: string;
   description: string;
-  priority: ObjectivePriority;
-  targetDate?: Date;
+  tags: string;
+
+  // Relations
   teamId?: string;
-  tags?: string[];
 }
 
 export interface UpdateObjectiveRequest {
+  // Category information
+  objectiveCategoryId: number;
+  objectiveSubcategoryId: number;
+
+  // Basic information
   title: string;
   description: string;
-  priority: ObjectivePriority;
-  status: ObjectiveStatus;
-  targetDate?: Date;
-  progress: number;
-  tags?: string[];
+  tags: string;
+
+  // Relations
+  teamId?: string;
 }
 
 export interface ObjectiveFilters {
-  priority?: ObjectivePriority;
-  status?: ObjectiveStatus;
   teamId?: string;
   isActive?: boolean;
+  tags?: string;
+  objectiveCategoryId?: number;
+  objectiveSubcategoryId?: number;
 }

@@ -36,7 +36,7 @@ public class UserContextService : IUserContextService
             }
 
             // Consultar la base de datos para obtener información completa del usuario
-            var user = _context.Users.FirstOrDefault(u => u.Id == userId.Value);
+            var user = _context.Users.Include(u => u.UserRole).FirstOrDefault(u => u.Id == userId.Value);
             if (user != null)
             {
                 return new UserDto
@@ -47,6 +47,7 @@ public class UserContextService : IUserContextService
                     LastName = user.LastName,
                     SupabaseId = user.SupabaseId,
                     Role = user.Role,
+                    UserRoleName = user.UserRole?.Name ?? string.Empty,
                     OrganizationId = user.OrganizationId,
                     CreatedAt = user.CreatedAt,
                     UpdatedAt = user.UpdatedAt
@@ -61,7 +62,8 @@ public class UserContextService : IUserContextService
                 FirstName = GetFirstName(),
                 LastName = GetLastName(),
                 SupabaseId = GetCurrentUserSupabaseId() ?? string.Empty,
-                Role = GetCurrentUserRole() ?? UserRole.Coach,
+                Role = GetCurrentUserRoleId() ?? 3, // Coach by default
+                UserRoleName = "Entrenador", // Coach by default
                 OrganizationId = null,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -113,7 +115,7 @@ public class UserContextService : IUserContextService
         return context.User.FindFirst("supabase_id")?.Value;
     }
 
-    public UserRole? GetCurrentUserRole()
+    public int? GetCurrentUserRoleId()
     {
         var context = _httpContextAccessor.HttpContext;
         if (context?.User?.Identity?.IsAuthenticated != true)
@@ -127,7 +129,7 @@ public class UserContextService : IUserContextService
             return null;
         }
 
-        return Enum.TryParse<UserRole>(roleClaim, out var role) ? role : null;
+        return int.TryParse(roleClaim, out var roleId) ? roleId : null;
     }
 
     public bool IsAuthenticated()
@@ -136,10 +138,10 @@ public class UserContextService : IUserContextService
         return context?.User?.Identity?.IsAuthenticated == true;
     }
 
-    public bool HasRole(UserRole role)
+    public bool HasRole(int roleId)
     {
-        var currentRole = GetCurrentUserRole();
-        return currentRole == role;
+        var currentRoleId = GetCurrentUserRoleId();
+        return currentRoleId == roleId;
     }
 
     public IEnumerable<Claim> GetUserClaims()
