@@ -183,7 +183,7 @@ export class TeamModalComponent implements OnInit {
     const updateRequest: UpdateTeamRequest = {
       name: formValue.name.trim(),
       description: formValue.description?.trim() || '',
-      sportId: formValue.sportId,
+      sportId: this.subscriptionSportId || this.team.sportId, // Use subscription sport or current team sport
       categoryId: formValue.categoryId,
       sportGenderId: formValue.sportGenderId,
       levelId: formValue.levelId

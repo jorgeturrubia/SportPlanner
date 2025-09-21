@@ -73,8 +73,8 @@ public class TeamService : ITeamService
     {
         try
         {
-            _logger.LogInformation("CreateTeamAsync: Starting team creation for user {UserId}. Request OrganizationId: {OrganizationId}, TeamName: {TeamName}", 
-                userId, request.OrganizationId, request.Name);
+            _logger.LogInformation("CreateTeamAsync: Starting team creation for user {UserId}. Request: SportId={SportId}, CategoryId={CategoryId}, SportGenderId={SportGenderId}, LevelId={LevelId}, TeamName={TeamName}",
+                userId, request.SportId, request.CategoryId, request.SportGenderId, request.LevelId, request.Name);
 
             // Verificar si el usuario existe y tiene OrganizationId
             var user = await _context.Users.FirstOrDefaultAsync(u => u.Id == userId);
@@ -89,12 +89,35 @@ public class TeamService : ITeamService
 
             if (!user.OrganizationId.HasValue)
             {
-                _logger.LogError("CreateTeamAsync: User {UserId} does not have an OrganizationId assigned", userId);
-                throw new InvalidOperationException("No se pudo determinar la organización del usuario");
+                _logger.LogInformation("CreateTeamAsync: User {UserId} does not have an OrganizationId, creating personal organization", userId);
+
+                // Create a personal organization for the user
+                var organization = new Organization
+                {
+                    Id = Guid.NewGuid(),
+                    Name = $"{user.FirstName} {user.LastName} - Organización Personal".Trim(),
+                    CreatedByUserId = userId,
+                    CreatedAt = DateTime.UtcNow,
+                    UpdatedAt = DateTime.UtcNow
+                };
+
+                _context.Organizations.Add(organization);
+                await _context.SaveChangesAsync();
+
+                // Assign the organization to the user
+                user.OrganizationId = organization.Id;
+                _context.Users.Update(user);
+                await _context.SaveChangesAsync();
+
+                _logger.LogInformation("CreateTeamAsync: Created and assigned organization {OrganizationId} to user {UserId}",
+                    organization.Id, userId);
             }
 
             // Validate master entity IDs exist
+            _logger.LogInformation("CreateTeamAsync: About to validate master entities - SportId={SportId}, CategoryId={CategoryId}, SportGenderId={SportGenderId}, LevelId={LevelId}",
+                request.SportId, request.CategoryId, request.SportGenderId, request.LevelId);
             await ValidateMasterEntitiesAsync(request.SportId, request.CategoryId, request.SportGenderId, request.LevelId);
+            _logger.LogInformation("CreateTeamAsync: Master entities validation completed successfully");
 
             // Usar el OrganizationId del usuario en lugar del request
             var team = new Team
@@ -330,27 +353,31 @@ public class TeamService : ITeamService
 
     private async Task ValidateMasterEntitiesAsync(int sportId, int categoryId, int sportGenderId, int levelId)
     {
-        var validationTasks = new[]
-        {
-            _context.Sports.AnyAsync(s => s.Id == sportId),
-            _context.Categories.AnyAsync(c => c.Id == categoryId),
-            _context.SportGenders.AnyAsync(sg => sg.Id == sportGenderId),
-            _context.Levels.AnyAsync(l => l.Id == levelId)
-        };
+        _logger.LogInformation("ValidateMasterEntitiesAsync: Starting validation for SportId={SportId}, CategoryId={CategoryId}, SportGenderId={SportGenderId}, LevelId={LevelId}",
+            sportId, categoryId, sportGenderId, levelId);
 
-        var results = await Task.WhenAll(validationTasks);
+        // Execute validations sequentially to avoid DbContext concurrency issues
+        var sportExists = await _context.Sports.AnyAsync(s => s.Id == sportId);
+        var categoryExists = await _context.Categories.AnyAsync(c => c.Id == categoryId);
+        var sportGenderExists = await _context.SportGenders.AnyAsync(sg => sg.Id == sportGenderId);
+        var levelExists = await _context.Levels.AnyAsync(l => l.Id == levelId);
+
+        _logger.LogInformation("ValidateMasterEntitiesAsync: Validation results - Sport: {SportExists}, Category: {CategoryExists}, SportGender: {SportGenderExists}, Level: {LevelExists}",
+            sportExists, categoryExists, sportGenderExists, levelExists);
 
         var errors = new List<string>();
-        if (!results[0]) errors.Add($"Sport with ID {sportId} not found");
-        if (!results[1]) errors.Add($"Category with ID {categoryId} not found");
-        if (!results[2]) errors.Add($"SportGender with ID {sportGenderId} not found");
-        if (!results[3]) errors.Add($"Level with ID {levelId} not found");
+        if (!sportExists) errors.Add($"Sport with ID {sportId} not found");
+        if (!categoryExists) errors.Add($"Category with ID {categoryId} not found");
+        if (!sportGenderExists) errors.Add($"SportGender with ID {sportGenderId} not found");
+        if (!levelExists) errors.Add($"Level with ID {levelId} not found");
 
         if (errors.Any())
         {
             var errorMessage = string.Join("; ", errors);
-            _logger.LogError("Master entity validation failed: {Errors}", errorMessage);
+            _logger.LogError("ValidateMasterEntitiesAsync: Master entity validation failed: {Errors}", errorMessage);
             throw new ArgumentException(errorMessage);
         }
+
+        _logger.LogInformation("ValidateMasterEntitiesAsync: All master entities validation passed");
     }
 }
