@@ -159,14 +159,14 @@ export class TeamsService {
     let filteredTeams = this._teams();
 
     if (filters.sport) {
-      filteredTeams = filteredTeams.filter(team => 
-        team.sport.toLowerCase().includes(filters.sport!.toLowerCase())
+      filteredTeams = filteredTeams.filter(team =>
+        team.sportName.toLowerCase().includes(filters.sport!.toLowerCase())
       );
     }
 
     if (filters.category) {
-      filteredTeams = filteredTeams.filter(team => 
-        team.category?.toLowerCase().includes(filters.category!.toLowerCase())
+      filteredTeams = filteredTeams.filter(team =>
+        team.categoryName?.toLowerCase().includes(filters.category!.toLowerCase())
       );
     }
 

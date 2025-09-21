@@ -21,9 +21,9 @@
           {{ team.name }}
         </h3>
         <p class="text-sm text-muted-foreground">
-          {{ team.sport }}
-          @if (team.category) {
-            • {{ team.category }}
+          {{ team.sportName }}
+          @if (team.categoryName) {
+            • {{ team.categoryName }}
           }
         </p>
       </div>
@@ -81,39 +81,48 @@
       </p>
     }
 
-    <!-- Stats -->
-    <div class="flex items-center justify-between">
-      <div class="flex items-center space-x-4">
-        <!-- Players Count -->
-        <div class="flex items-center text-sm text-muted-foreground">
-          <ng-icon name="heroUser" class="w-4 h-4 mr-1" />
-          <span>{{ team.memberCount }} miembros</span>
-        </div>
+    <!-- Stats Grid -->
+    <div class="grid grid-cols-2 gap-3 mb-4">
+      <!-- Players Count -->
+      <div class="flex items-center text-sm text-muted-foreground">
+        <ng-icon name="heroUser" class="w-4 h-4 mr-2 text-blue-500" />
+        <span>{{ team.memberCount }} miembros</span>
+      </div>
 
-        <div class="flex items-center text-sm text-muted-foreground">
-          <ng-icon name="heroTag" class="w-4 h-4 mr-1" />
-          <span>{{ genderText() }} • Nivel {{ levelText() }}</span>
-        </div>
+      <!-- Gender -->
+      <div class="flex items-center text-sm text-muted-foreground">
+        <ng-icon name="heroTag" class="w-4 h-4 mr-2 text-purple-500" />
+        <span>{{ genderText() }}</span>
+      </div>
+
+      <!-- Level -->
+      <div class="flex items-center text-sm text-muted-foreground">
+        <ng-icon name="heroTrophy" class="w-4 h-4 mr-2 text-yellow-500" />
+        <span>{{ levelText() }}</span>
       </div>
 
       <!-- Status Badge -->
-      <span [class]="statusColor() + ' px-2 py-1 text-xs font-medium rounded-full'">
-        {{ statusText() }}
-      </span>
+      <div class="flex justify-end">
+        <span [class]="statusColor() + ' px-2 py-1 text-xs font-medium rounded-full'">
+          {{ statusText() }}
+        </span>
+      </div>
     </div>
   </div>
 
   <!-- Card Footer -->
   <div class="px-6 py-3 border-t border-border bg-secondary/30 rounded-b-xl">
     <div class="flex items-center justify-between">
-      <span class="text-xs text-muted-foreground">
-        Actualizado: {{ formattedDate() }}
-      </span>
-      
       <div class="flex items-center text-xs text-muted-foreground">
-        <span class="group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200">
-          Ver detalles →
+        <ng-icon name="heroClock" class="w-3 h-3 mr-1" />
+        <span>{{ formattedDate() }}</span>
+      </div>
+
+      <div class="flex items-center text-xs">
+        <span class="text-muted-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200 font-medium">
+          Gestionar equipo
         </span>
+        <ng-icon name="heroArrowRight" class="w-3 h-3 ml-1 text-muted-foreground group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-200" />
       </div>
     </div>
   </div>

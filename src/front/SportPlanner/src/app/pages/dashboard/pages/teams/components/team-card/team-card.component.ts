@@ -57,12 +57,12 @@ export class TeamCardComponent {
 
   readonly genderText = computed(() => {
     if (!this.team) return '';
-    return this.team.gender || 'No especificado';
+    return this.team.sportGenderName || 'No especificado';
   });
 
   readonly levelText = computed(() => {
     if (!this.team) return '';
-    return this.team.level || 'No especificado';
+    return this.team.levelName || 'No especificado';
   });
 
   onEdit(): void {

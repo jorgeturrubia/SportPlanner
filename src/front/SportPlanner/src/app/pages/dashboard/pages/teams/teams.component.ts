@@ -66,10 +66,10 @@ export class TeamsComponent implements OnInit {
     // Apply search query
     const query = this.searchQuery().toLowerCase().trim();
     if (query) {
-      filtered = filtered.filter(team => 
+      filtered = filtered.filter(team =>
         team.name.toLowerCase().includes(query) ||
-        team.sport.toLowerCase().includes(query) ||
-        team.category?.toLowerCase().includes(query) ||
+        team.sportName.toLowerCase().includes(query) ||
+        team.categoryName?.toLowerCase().includes(query) ||
         team.description?.toLowerCase().includes(query)
       );
     }

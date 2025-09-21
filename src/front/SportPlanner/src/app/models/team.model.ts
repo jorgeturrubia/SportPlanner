@@ -5,11 +5,11 @@ export interface Team {
   categoryId: number;
   sportGenderId: number;
   levelId: number;
-  // Display names from masters
-  sport: string;
-  category: string;
-  gender: string;
-  level: string;
+  // Display names from masters (matching backend DTOs)
+  sportName: string;
+  categoryName: string;
+  sportGenderName: string;
+  levelName: string;
   description: string;
   organizationId?: string;
   createdBy: string;
