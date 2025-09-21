@@ -10,6 +10,9 @@ namespace SportPlanner.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            // Delete existing teams to avoid foreign key constraint violations
+            migrationBuilder.Sql("DELETE FROM \"Teams\"");
+
             migrationBuilder.DropColumn(
                 name: "Category",
                 table: "Teams");

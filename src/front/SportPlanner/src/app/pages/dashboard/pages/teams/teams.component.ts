@@ -2,8 +2,10 @@ import { Component, ChangeDetectionStrategy, inject, signal, computed, OnInit } 
 import { NgIcon } from '@ng-icons/core';
 import { TeamsService } from '../../../../services/teams.service';
 import { MastersService } from '../../../../services/masters.service';
+import { SubscriptionService } from '../../../../services/subscription.service';
 import { NotificationService } from '../../../../services/notification.service';
 import { Team, CreateTeamRequest, TeamFilters } from '../../../../models/team.model';
+import { SportType } from '../../../../models/subscription.model';
 import { TeamCardComponent } from './components/team-card/team-card.component';
 import { TeamModalComponent } from './components/team-modal/team-modal.component';
 
@@ -21,6 +23,7 @@ import { TeamModalComponent } from './components/team-modal/team-modal.component
 export class TeamsComponent implements OnInit {
   private teamsService = inject(TeamsService);
   private mastersService = inject(MastersService);
+  private subscriptionService = inject(SubscriptionService);
   private notificationService = inject(NotificationService);
 
   readonly teams = this.teamsService.teams;
@@ -31,6 +34,31 @@ export class TeamsComponent implements OnInit {
   readonly selectedTeam = signal<Team | null>(null);
   readonly searchQuery = signal<string>('');
   readonly activeFilters = signal<TeamFilters>({});
+
+  // Subscription data
+  readonly subscriptionSport = signal<SportType | null>(null);
+  readonly subscriptionSportId = computed(() => {
+    const sport = this.subscriptionSport();
+    if (sport === null) return null;
+
+    // Map SportType enum to master sport ID
+    // This mapping should match the seeded data
+    const sportMapping: { [key in SportType]: number } = {
+      [SportType.Football]: 1,    // Fútbol
+      [SportType.Basketball]: 2,  // Baloncesto
+      [SportType.Tennis]: 10,     // Pádel (closest match)
+      [SportType.Volleyball]: 3,  // Voleibol
+      [SportType.Rugby]: 9,       // Rugby
+      [SportType.Handball]: 4,    // Balonmano
+      [SportType.Hockey]: 8,      // Hockey
+      [SportType.Baseball]: 1,    // Fútbol (fallback)
+      [SportType.Swimming]: 6,    // Natación
+      [SportType.Athletics]: 7,   // Atletismo
+      [SportType.Other]: 1        // Fútbol (fallback)
+    };
+
+    return sportMapping[sport] || 1;
+  });
 
   readonly filteredTeams = computed(() => {
     let filtered = this.teams();
@@ -64,7 +92,27 @@ export class TeamsComponent implements OnInit {
     console.log('🏃 TEAMS COMPONENT INIT');
     console.log('  🔒 Is authenticated:', this.teamsService['authService'].isAuthenticated());
     console.log('  👤 Current user:', this.teamsService['authService'].currentUser()?.email);
+    this.loadSubscriptionData();
     this.loadTeams();
+  }
+
+  private loadSubscriptionData(): void {
+    console.log('📋 LOADING SUBSCRIPTION DATA...');
+    this.subscriptionService.getSubscriptionStatus().subscribe({
+      next: (status) => {
+        if (status.hasActiveSubscription && status.activeSubscription) {
+          console.log('✅ Active subscription found:', status.activeSubscription.sport);
+          this.subscriptionSport.set(status.activeSubscription.sport);
+        } else {
+          console.log('⚠️ No active subscription found');
+          this.subscriptionSport.set(null);
+        }
+      },
+      error: (error) => {
+        console.error('❌ Error loading subscription data:', error);
+        this.subscriptionSport.set(null);
+      }
+    });
   }
 
   private loadTeams(): void {

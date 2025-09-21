@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using SportPlanner.Data;
 using SportPlanner.Models;
 using SportPlanner.Models.DTOs;
+using static SportPlanner.Models.Subscription;
 
 namespace SportPlanner.Services;
 
@@ -168,6 +169,9 @@ public class TeamService : ITeamService
                 throw new UnauthorizedAccessException("User does not have permission to update this team");
             }
 
+            // Validate that the sport matches the user's active subscription
+            await ValidateUserSubscriptionSportAsync(userId, request.SportId);
+
             // Validate master entity IDs exist
             await ValidateMasterEntitiesAsync(request.SportId, request.CategoryId, request.SportGenderId, request.LevelId);
 
@@ -264,6 +268,64 @@ public class TeamService : ITeamService
             IsActive = team.IsActive,
             IsVisible = team.IsVisible
         };
+    }
+
+    private async Task ValidateUserSubscriptionSportAsync(Guid userId, int sportId)
+    {
+        try
+        {
+            // Get user's active subscription
+            var activeSubscription = await _context.UserSubscriptions
+                .FirstOrDefaultAsync(us => us.UserId == userId && us.IsActive &&
+                                          us.EndDate == null || us.EndDate > DateTime.UtcNow);
+
+            if (activeSubscription == null)
+            {
+                _logger.LogError("ValidateUserSubscriptionSportAsync: User {UserId} has no active subscription", userId);
+                throw new InvalidOperationException("El usuario no tiene una suscripción activa");
+            }
+
+            // Map SportType enum to master sport ID
+            // This mapping should match the frontend mapping
+            var sportMapping = new Dictionary<SportType, int>
+            {
+                [SportType.Football] = 1,    // Fútbol
+                [SportType.Basketball] = 2,  // Baloncesto
+                [SportType.Tennis] = 10,     // Pádel (closest match)
+                [SportType.Volleyball] = 3,  // Voleibol
+                [SportType.Rugby] = 9,       // Rugby
+                [SportType.Handball] = 4,    // Balonmano
+                [SportType.Hockey] = 8,      // Hockey
+                [SportType.Baseball] = 1,    // Fútbol (fallback)
+                [SportType.Swimming] = 6,    // Natación
+                [SportType.Athletics] = 7,   // Atletismo
+                [SportType.Other] = 1        // Fútbol (fallback)
+            };
+
+            if (!sportMapping.TryGetValue(activeSubscription.Sport, out var expectedSportId))
+            {
+                _logger.LogError("ValidateUserSubscriptionSportAsync: Unknown sport type {SportType} for user {UserId}",
+                    activeSubscription.Sport, userId);
+                throw new InvalidOperationException("Tipo de deporte de suscripción no válido");
+            }
+
+            if (expectedSportId != sportId)
+            {
+                _logger.LogWarning("ValidateUserSubscriptionSportAsync: Sport mismatch for user {UserId}. " +
+                    "Subscription sport: {SubscriptionSport} (ID: {ExpectedSportId}), " +
+                    "Requested sport ID: {RequestedSportId}",
+                    userId, activeSubscription.Sport, expectedSportId, sportId);
+                throw new InvalidOperationException("El deporte seleccionado no coincide con tu suscripción activa");
+            }
+
+            _logger.LogInformation("ValidateUserSubscriptionSportAsync: Sport validation passed for user {UserId}, sport ID {SportId}",
+                userId, sportId);
+        }
+        catch (Exception ex) when (ex is not InvalidOperationException)
+        {
+            _logger.LogError(ex, "ValidateUserSubscriptionSportAsync: Error validating subscription sport for user {UserId}", userId);
+            throw new InvalidOperationException("Error al validar la suscripción del usuario");
+        }
     }
 
     private async Task ValidateMasterEntitiesAsync(int sportId, int categoryId, int sportGenderId, int levelId)

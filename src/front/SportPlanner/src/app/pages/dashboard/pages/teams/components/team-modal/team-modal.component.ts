@@ -28,6 +28,7 @@ export class TeamModalComponent implements OnInit {
   @Input({ required: true }) isOpen!: boolean;
   @Input({ required: true }) mode!: 'create' | 'edit';
   @Input() team: Team | null = null;
+  @Input() subscriptionSportId: number | null = null;
   
   @Output() close = new EventEmitter<void>();
   @Output() teamSaved = new EventEmitter<Team>();
@@ -46,17 +47,29 @@ export class TeamModalComponent implements OnInit {
     return this.mode === 'create' ? 'Crear Equipo' : 'Guardar Cambios';
   });
 
-  // Options from masters service
-  readonly sportOptions = this.mastersService.sports;
-  readonly categoryOptions = this.mastersService.categories;
-  readonly sportGenderOptions = this.mastersService.sportGenders;
-  readonly levelOptions = this.mastersService.levels;
+  // Options from masters service (filtered by subscription sport)
+  readonly categoryOptions = computed(() => {
+    const sportId = this.subscriptionSportId;
+    if (!sportId) return [];
+    return this.mastersService.categories().filter(cat => cat.sportId === sportId);
+  });
+
+  readonly sportGenderOptions = computed(() => {
+    const sportId = this.subscriptionSportId;
+    if (!sportId) return [];
+    return this.mastersService.sportGenders().filter(gender => gender.sportId === sportId);
+  });
+
+  readonly levelOptions = computed(() => {
+    const sportId = this.subscriptionSportId;
+    if (!sportId) return [];
+    return this.mastersService.levels().filter(level => level.sportId === sportId);
+  });
 
   constructor() {
     this.form = this.formBuilder.group({
       name: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(100)]],
       description: ['', [Validators.maxLength(500)]],
-      sportId: [null, [Validators.required]],
       categoryId: [null, [Validators.required]],
       sportGenderId: [null, [Validators.required]],
       levelId: [null, [Validators.required]]
@@ -87,7 +100,6 @@ export class TeamModalComponent implements OnInit {
     this.form.patchValue({
       name: team.name,
       description: team.description || '',
-      sportId: team.sportId,
       categoryId: team.categoryId,
       sportGenderId: team.sportGenderId,
       levelId: team.levelId
@@ -98,7 +110,6 @@ export class TeamModalComponent implements OnInit {
     this.form.reset({
       name: '',
       description: '',
-      sportId: null,
       categoryId: null,
       sportGenderId: null,
       levelId: null
@@ -137,10 +148,16 @@ export class TeamModalComponent implements OnInit {
       return;
     }
 
+    if (!this.subscriptionSportId) {
+      this.notificationService.showError('No se pudo determinar el deporte de la suscripción.');
+      this.isSubmitting.set(false);
+      return;
+    }
+
     const createRequest: CreateTeamRequest = {
       name: formValue.name.trim(),
       description: formValue.description?.trim() || '',
-      sportId: formValue.sportId,
+      sportId: this.subscriptionSportId,
       categoryId: formValue.categoryId,
       sportGenderId: formValue.sportGenderId,
       levelId: formValue.levelId,
