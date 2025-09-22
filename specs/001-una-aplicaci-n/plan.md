@@ -189,17 +189,22 @@ ios/ or android/
 **Task Generation Strategy**:
 - Load `.specify/templates/tasks-template.md` as base
 - Generate tasks from Phase 1 design docs (contracts, data model, quickstart)
-- Each contract → contract test task [P]
-- Each entity → model creation task [P] 
-- Each user story → integration test task
-- Implementation tasks to make tests pass
+- Each API contract (auth, teams, plannings, trainings) → contract test task [P]
+- Each entity (User, Team, Planning, Training, etc.) → model creation task [P]
+- Each user story from spec → integration test task
+- Backend services (AuthService, TeamService, PlanningService, TrainingService) → implementation tasks
+- Frontend components (Dashboard, TeamManager, PlanningCreator, TrainingExecutor) → implementation tasks
+- Database migrations and seeding → setup tasks
+- Dark/light mode theming → UI tasks
 
 **Ordering Strategy**:
-- TDD order: Tests before implementation 
-- Dependency order: Models before services before UI
-- Mark [P] for parallel execution (independent files)
+- TDD order: Contract tests → Integration tests → Unit tests → Implementation
+- Dependency order: Database setup → Models → Services → Controllers → Components
+- Backend before frontend for API-dependent components
+- Mark [P] for parallel execution (independent files/modules)
+- Group related tasks for efficient parallel execution
 
-**Estimated Output**: 25-30 numbered, ordered tasks in tasks.md
+**Estimated Output**: 45-55 numbered, ordered tasks in tasks.md (due to full-stack complexity)
 
 **IMPORTANT**: This phase is executed by the /tasks command, NOT by /plan
 
@@ -223,18 +228,18 @@ ios/ or android/
 *This checklist is updated during execution flow*
 
 **Phase Status**:
-- [ ] Phase 0: Research complete (/plan command)
-- [ ] Phase 1: Design complete (/plan command)
-- [ ] Phase 2: Task planning complete (/plan command - describe approach only)
+- [x] Phase 0: Research complete (/plan command)
+- [x] Phase 1: Design complete (/plan command)
+- [x] Phase 2: Task planning complete (/plan command - describe approach only)
 - [ ] Phase 3: Tasks generated (/tasks command)
 - [ ] Phase 4: Implementation complete
 - [ ] Phase 5: Validation passed
 
 **Gate Status**:
-- [ ] Initial Constitution Check: PASS
-- [ ] Post-Design Constitution Check: PASS
-- [ ] All NEEDS CLARIFICATION resolved
-- [ ] Complexity deviations documented
+- [x] Initial Constitution Check: PASS
+- [x] Post-Design Constitution Check: PASS (all design artifacts meet constitutional requirements)
+- [x] All NEEDS CLARIFICATION resolved
+- [x] Complexity deviations documented (none - all constitutional requirements met)
 
 ---
 *Based on Constitution v1.0.0 - See `.specify/memory/constitution.md`*
