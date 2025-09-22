@@ -1,0 +1,719 @@
+openapi: 3.0.3
+info:
+  title: SportPlanner Trainings API
+  description: Training execution and progress tracking endpoints
+  version: 1.0.0
+servers:
+  - url: https://api.sportplanner.com/v1
+    description: Production server
+  - url: https://localhost:7201/v1
+    description: Development server
+
+paths:
+  /trainings:
+    get:
+      summary: Get trainings calendar
+      operationId: getTrainings
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: teamId
+          in: query
+          description: Filter by team
+          schema:
+            type: integer
+        - name: startDate
+          in: query
+          description: Calendar start date
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: Calendar end date
+          schema:
+            type: string
+            format: date
+        - name: status
+          in: query
+          description: Filter by status
+          schema:
+            type: string
+            enum: [Planned, InProgress, Completed, Cancelled]
+      responses:
+        '200':
+          description: List of trainings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Training'
+
+  /trainings/{trainingId}:
+    get:
+      summary: Get training details
+      operationId: getTraining
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Training details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingDetails'
+        '404':
+          description: Training not found
+        '403':
+          description: Access denied
+
+    put:
+      summary: Update training
+      operationId: updateTraining
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTrainingRequest'
+      responses:
+        '200':
+          description: Training updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingDetails'
+
+  /trainings/{trainingId}/start:
+    post:
+      summary: Start training execution
+      operationId: startTraining
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                location:
+                  type: string
+      responses:
+        '200':
+          description: Training started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingExecution'
+
+  /trainings/{trainingId}/complete:
+    post:
+      summary: Complete training execution
+      operationId: completeTraining
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                notes:
+                  type: string
+                  maxLength: 1000
+      responses:
+        '200':
+          description: Training completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingDetails'
+
+  /trainings/{trainingId}/exercises:
+    get:
+      summary: Get training exercises for execution
+      operationId: getTrainingExercises
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Training exercises
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TrainingExercise'
+
+    post:
+      summary: Add exercise to training
+      operationId: addTrainingExercise
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AddTrainingExerciseRequest'
+      responses:
+        '201':
+          description: Exercise added to training
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingExercise'
+
+  /trainings/{trainingId}/exercises/{exerciseId}:
+    put:
+      summary: Update training exercise
+      operationId: updateTrainingExercise
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: exerciseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateTrainingExerciseRequest'
+      responses:
+        '200':
+          description: Exercise updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingExercise'
+
+  /trainings/{trainingId}/exercises/{exerciseId}/start:
+    post:
+      summary: Start exercise execution
+      operationId: startExercise
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: exerciseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Exercise started
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingExercise'
+
+  /trainings/{trainingId}/exercises/{exerciseId}/complete:
+    post:
+      summary: Complete exercise execution
+      operationId: completeExercise
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: exerciseId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                actualDurationMinutes:
+                  type: integer
+                notes:
+                  type: string
+                  maxLength: 500
+      responses:
+        '200':
+          description: Exercise completed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingExercise'
+
+  /trainings/{trainingId}/progress:
+    get:
+      summary: Get training progress and concept tracking
+      operationId: getTrainingProgress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Training progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingProgress'
+
+    put:
+      summary: Update concept progress
+      operationId: updateConceptProgress
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: trainingId
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/UpdateConceptProgressRequest'
+      responses:
+        '200':
+          description: Progress updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainingProgress'
+
+  /teams/{teamId}/analytics:
+    get:
+      summary: Get team training analytics
+      operationId: getTeamAnalytics
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: teamId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Team analytics
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TeamAnalytics'
+
+components:
+  schemas:
+    Training:
+      type: object
+      required:
+        - id
+        - planningId
+        - teamId
+        - scheduledDate
+        - status
+      properties:
+        id:
+          type: integer
+        planningId:
+          type: integer
+        teamId:
+          type: integer
+        scheduledDate:
+          type: string
+          format: date-time
+        location:
+          type: string
+        status:
+          type: string
+          enum: [Planned, InProgress, Completed, Cancelled]
+        startTime:
+          type: string
+          format: date-time
+        endTime:
+          type: string
+          format: date-time
+        notes:
+          type: string
+        planningName:
+          type: string
+        teamName:
+          type: string
+
+    TrainingDetails:
+      allOf:
+        - $ref: '#/components/schemas/Training'
+        - type: object
+          properties:
+            exercises:
+              type: array
+              items:
+                $ref: '#/components/schemas/TrainingExercise'
+            conceptProgress:
+              type: array
+              items:
+                $ref: '#/components/schemas/ConceptProgress'
+            totalExercises:
+              type: integer
+            completedExercises:
+              type: integer
+            totalDurationMinutes:
+              type: integer
+
+    TrainingExecution:
+      type: object
+      required:
+        - trainingId
+        - currentExercise
+        - totalExercises
+        - elapsedTimeMinutes
+      properties:
+        trainingId:
+          type: integer
+        currentExercise:
+          $ref: '#/components/schemas/TrainingExercise'
+        previousExercise:
+          $ref: '#/components/schemas/TrainingExercise'
+        nextExercise:
+          $ref: '#/components/schemas/TrainingExercise'
+        totalExercises:
+          type: integer
+        completedExercises:
+          type: integer
+        elapsedTimeMinutes:
+          type: integer
+        remainingTimeMinutes:
+          type: integer
+
+    TrainingExercise:
+      type: object
+      required:
+        - id
+        - exercise
+        - order
+        - plannedDurationMinutes
+        - status
+      properties:
+        id:
+          type: integer
+        exercise:
+          $ref: '#/components/schemas/ExerciseBasic'
+        order:
+          type: integer
+        plannedDurationMinutes:
+          type: integer
+        actualDurationMinutes:
+          type: integer
+        status:
+          type: string
+          enum: [Planned, InProgress, Completed, Skipped]
+        notes:
+          type: string
+
+    AddTrainingExerciseRequest:
+      type: object
+      required:
+        - exerciseId
+        - order
+        - plannedDurationMinutes
+      properties:
+        exerciseId:
+          type: integer
+        order:
+          type: integer
+        plannedDurationMinutes:
+          type: integer
+          minimum: 1
+
+    UpdateTrainingExerciseRequest:
+      type: object
+      properties:
+        order:
+          type: integer
+        plannedDurationMinutes:
+          type: integer
+        status:
+          type: string
+          enum: [Planned, InProgress, Completed, Skipped]
+        notes:
+          type: string
+
+    UpdateTrainingRequest:
+      type: object
+      properties:
+        scheduledDate:
+          type: string
+          format: date-time
+        location:
+          type: string
+        notes:
+          type: string
+
+    ConceptProgress:
+      type: object
+      required:
+        - concept
+        - status
+      properties:
+        concept:
+          $ref: '#/components/schemas/ConceptBasic'
+        status:
+          type: string
+          enum: [NotWorked, Introduced, Practiced, Mastered]
+        qualityRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        notes:
+          type: string
+
+    UpdateConceptProgressRequest:
+      type: object
+      required:
+        - conceptId
+        - status
+      properties:
+        conceptId:
+          type: integer
+        status:
+          type: string
+          enum: [NotWorked, Introduced, Practiced, Mastered]
+        qualityRating:
+          type: integer
+          minimum: 1
+          maximum: 5
+        notes:
+          type: string
+
+    TrainingProgress:
+      type: object
+      required:
+        - trainingId
+        - conceptProgress
+        - completionPercentage
+      properties:
+        trainingId:
+          type: integer
+        conceptProgress:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConceptProgress'
+        completionPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        exercisesCompleted:
+          type: integer
+        totalExercises:
+          type: integer
+        timeElapsedMinutes:
+          type: integer
+        estimatedRemainingMinutes:
+          type: integer
+
+    TeamAnalytics:
+      type: object
+      required:
+        - teamId
+        - periodStart
+        - periodEnd
+        - conceptDistribution
+        - trainingStats
+      properties:
+        teamId:
+          type: integer
+        periodStart:
+          type: string
+          format: date
+        periodEnd:
+          type: string
+          format: date
+        conceptDistribution:
+          type: array
+          items:
+            $ref: '#/components/schemas/ConceptAnalytics'
+        trainingStats:
+          $ref: '#/components/schemas/TrainingStats'
+        progressSummary:
+          $ref: '#/components/schemas/ProgressSummary'
+
+    ConceptAnalytics:
+      type: object
+      required:
+        - concept
+        - plannedPercentage
+        - trainedPercentage
+        - masteryLevel
+      properties:
+        concept:
+          $ref: '#/components/schemas/ConceptBasic'
+        plannedPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        trainedPercentage:
+          type: number
+          minimum: 0
+          maximum: 100
+        masteryLevel:
+          type: string
+          enum: [NotWorked, Introduced, Practiced, Mastered]
+        averageQuality:
+          type: number
+          minimum: 1
+          maximum: 5
+
+    TrainingStats:
+      type: object
+      required:
+        - totalPlanned
+        - totalCompleted
+        - totalCancelled
+        - averageDurationMinutes
+      properties:
+        totalPlanned:
+          type: integer
+        totalCompleted:
+          type: integer
+        totalCancelled:
+          type: integer
+        averageDurationMinutes:
+          type: number
+        completionRate:
+          type: number
+          minimum: 0
+          maximum: 100
+
+    ProgressSummary:
+      type: object
+      required:
+        - conceptsMastered
+        - conceptsInProgress
+        - conceptsPending
+      properties:
+        conceptsMastered:
+          type: integer
+        conceptsInProgress:
+          type: integer
+        conceptsPending:
+          type: integer
+        overallProgress:
+          type: number
+          minimum: 0
+          maximum: 100
+
+    ExerciseBasic:
+      type: object
+      required:
+        - id
+        - name
+        - durationMinutes
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        description:
+          type: string
+        durationMinutes:
+          type: integer
+        minPlayers:
+          type: integer
+        maxPlayers:
+          type: integer
+        equipment:
+          type: string
+
+    ConceptBasic:
+      type: object
+      required:
+        - id
+        - name
+        - category
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        category:
+          type: string
+        subcategory:
+          type: string
+        difficulty:
+          type: string
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
