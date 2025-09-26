@@ -10,28 +10,29 @@ namespace SportPlanner.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            // Seed Gender data
-            migrationBuilder.InsertData(
-                table: "Genders",
-                columns: new[] { "Id", "Name", "Description", "IsActive", "CreatedAt", "UpdatedAt" },
-                values: new object[,]
+            // Create Gender table
+            migrationBuilder.CreateTable(
+                name: "Genders",
+                columns: table => new
                 {
-                    { 1, "Masculino", "Género masculino", true, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 2, "Femenino", "Género femenino", true, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 3, "Mixto", "Género mixto", true, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) }
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", Npgsql.EntityFrameworkCore.PostgreSQL.Metadata.NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Name = table.Column<string>(type: "character varying(50)", maxLength: 50, nullable: false),
+                    Description = table.Column<string>(type: "character varying(500)", maxLength: 500, nullable: true),
+                    IsActive = table.Column<bool>(type: "boolean", nullable: false),
+                    CreatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false),
+                    UpdatedAt = table.Column<DateTime>(type: "timestamp with time zone", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Genders", x => x.Id);
                 });
 
-            // Seed UserRole data
-            migrationBuilder.InsertData(
-                table: "UserRoles",
-                columns: new[] { "Id", "Name", "Description", "IsActive", "CreatedAt", "UpdatedAt" },
-                values: new object[,]
-                {
-                    { 1, "Administrador", "Usuario con permisos administrativos completos", true, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 2, "Director", "Usuario con permisos de dirección", true, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 3, "Entrenador", "Usuario con permisos de entrenador", true, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) },
-                    { 4, "Asistente", "Usuario con permisos de asistente", true, new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc), new DateTime(2025, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc) }
-                });
+            migrationBuilder.CreateIndex(
+                name: "IX_Genders_Name",
+                table: "Genders",
+                column: "Name",
+                unique: true);
 
             // Seed ObjectivePriority data
             migrationBuilder.InsertData(
@@ -87,15 +88,9 @@ namespace SportPlanner.Migrations
                 keyColumn: "Id",
                 keyValues: new object[] { 1, 2, 3, 4 });
 
-            migrationBuilder.DeleteData(
-                table: "UserRoles",
-                keyColumn: "Id",
-                keyValues: new object[] { 1, 2, 3, 4 });
-
-            migrationBuilder.DeleteData(
-                table: "Genders",
-                keyColumn: "Id",
-                keyValues: new object[] { 1, 2, 3 });
+            // Drop Gender table
+            migrationBuilder.DropTable(
+                name: "Genders");
         }
     }
 }

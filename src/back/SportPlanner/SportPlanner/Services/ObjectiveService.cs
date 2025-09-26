@@ -121,7 +121,7 @@ public class ObjectiveService : IObjectiveService
                 Description = request.Description,
               
                 TeamId = teamIdGuid,
-                Tags = string.Join(",", request.Keywords ?? new List<string>()),
+                Tags = request.Tags ?? string.Empty,
                 CreatedByUserId = userId,
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow,
@@ -178,7 +178,7 @@ public class ObjectiveService : IObjectiveService
             objective.Title = request.Title;
             objective.Description = request.Description;
             
-            objective.Tags = string.Join(",", request.Keywords ?? new List<string>());
+            objective.Tags = request.Tags ?? string.Empty;
             objective.UpdatedAt = DateTime.UtcNow;
 
             // Set CompletedDate when status changes to Completed
@@ -257,12 +257,11 @@ public class ObjectiveService : IObjectiveService
     {
         return new ObjectiveDto
         {
-            Id = objective.Id.ToString(),
+            Id = objective.Id,
             Title = objective.Title,
-            Description = objective.Description,           
+            Description = objective.Description,
             TeamId = objective.TeamId?.ToString(),
-            TeamName = objective.Team?.Name,
-            Keywords = objective.Tags.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList(),
+            Tags = objective.Tags,
             CreatedBy = objective.CreatedBy?.Id.ToString() ?? string.Empty,
             CreatedAt = objective.CreatedAt,
             UpdatedAt = objective.UpdatedAt,
