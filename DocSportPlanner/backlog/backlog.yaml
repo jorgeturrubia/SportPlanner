@@ -1,0 +1,126 @@
+```yaml
+# backlog/backlog.yaml - Export inicial de User Stories
+
+version: 1
+project: SportPlanner
+epics:
+  - id: EP-001
+    name: Autenticacion y Perfil
+  - id: EP-002
+    name: Objetivos
+  - id: EP-003
+    name: Editor Visual
+  - id: EP-004
+    name: Planificador
+  - id: EP-005
+    name: Sesiones y Visualizador
+  - id: EP-006
+    name: Calendario y Marketplace
+
+stories:
+  - id: US-001
+    epic: EP-001
+    title: Registrar cuenta de entrenador
+    priority: Must-Have
+    points: 3
+  - id: US-002
+    epic: EP-001
+    title: Login de usuario
+    priority: Must-Have
+    points: 2
+  - id: US-004
+    epic: EP-002
+    title: Crear objetivo de entrenamiento
+    priority: Must-Have
+    points: 5
+  - id: US-005
+    epic: EP-002
+    title: Ver lista de mis objetivos
+    priority: Must-Have
+    points: 3
+  - id: US-006
+    epic: EP-002
+    title: Editar objetivo existente
+    priority: Must-Have
+    points: 3
+  - id: US-007
+    epic: EP-002
+    title: Eliminar objetivo
+    priority: Must-Have
+    points: 2
+  - id: US-008
+    epic: EP-003
+    title: Crear ejercicio con canvas visual
+    priority: Must-Have
+    points: 13
+  - id: US-009
+    epic: EP-003
+    title: Añadir animaciones basicas a ejercicio
+    priority: Must-Have
+    points: 8
+  - id: US-010
+    epic: EP-003
+    title: Asociar objetivos a ejercicio
+    priority: Must-Have
+    points: 3
+  - id: US-012
+    epic: EP-004
+    title: Crear planificación de temporada
+    priority: Must-Have
+    points: 5
+  - id: US-013
+    epic: EP-004
+    title: Añadir objetivos a planificación (selección manual)
+    priority: Must-Have
+    points: 5
+  - id: US-014
+    epic: EP-004
+    title: Asignar objetivos a semanas (distribución manual)
+    priority: Must-Have
+    points: 8
+  - id: US-015
+    epic: EP-004
+    title: Distribución automática de objetivos
+    priority: Must-Have
+    points: 13
+  - id: US-016
+    epic: EP-004
+    title: Ver progreso de planificación
+    priority: Must-Have
+    points: 5
+  - id: US-017
+    epic: EP-005
+    title: Crear sesión de entrenamiento estructurada
+    priority: Must-Have
+    points: 5
+  - id: US-018
+    epic: EP-005
+    title: Añadir ejercicios a sesión
+    priority: Must-Have
+    points: 8
+  - id: US-019
+    epic: EP-005
+    title: Ver resumen de sesión completa
+    priority: Must-Have
+    points: 3
+  - id: US-020
+    epic: EP-006
+    title: Iniciar modo visualizador
+    priority: Must-Have
+    points: 8
+  - id: US-023
+    epic: EP-006
+    title: Ver calendario mensual de entrenamientos
+    priority: Must-Have
+    points: 8
+  - id: US-025
+    epic: EP-006
+    title: Explorar marketplace de ejercicios
+    priority: Should-Have
+    points: 5
+
+metadata:
+  created_by: [Tu Nombre]
+  created_at: 2025-11-14
+
+```

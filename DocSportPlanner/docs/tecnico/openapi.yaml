@@ -1,0 +1,226 @@
+openapi: 3.0.3
+info:
+  title: SportPlanner API
+  version: '1.0.0'
+  description: |-
+    OpenAPI specification for SportPlanner - minimal set of endpoints for core flows.
+servers:
+  - url: /api/v1
+    description: Local / base path
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        email:
+          type: string
+        role:
+          type: string
+    Planificacion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        nombre:
+          type: string
+        fecha_inicio:
+          type: string
+          format: date
+        fecha_fin:
+          type: string
+          format: date
+        entrenamientos_por_semana:
+          type: integer
+    PreviewDistribution:
+      type: object
+      properties:
+        objetivo_id:
+          type: string
+        semana_inicio:
+          type: integer
+        semana_fin:
+          type: integer
+paths:
+  /auth/register:
+    post:
+      tags: [Auth]
+      summary: Register user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+                nombre:
+                  type: string
+                deporte:
+                  type: string
+      responses:
+        '201':
+          description: User created
+        '400':
+          description: Bad request
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                email:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Login successful
+  /planificaciones:
+    get:
+      tags: [Planificacion]
+      summary: List user planificaciones
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userId
+          in: query
+          schema:
+            type: string
+        - name: month
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+    post:
+      tags: [Planificacion]
+      summary: Create planificacion
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Planificacion'
+      responses:
+        '201':
+          description: Created
+  /planificaciones/{planificacionId}/preview-distribute:
+    post:
+      tags: [Algorithm]
+      summary: Preview automatic distribution of objectives for a planificacion
+      description: |-
+        Accepts a set of objectives, constraints and returns a preview of weeks assigned to each objective.
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: planificacionId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                objetivos:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      id:
+                        type: string
+                      dificultad:
+                        type: integer
+                      objetivo_padre_id:
+                        type: string
+                totalWeeks:
+                  type: integer
+      responses:
+        '200':
+          description: Preview distribution created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assignment:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PreviewDistribution'
+  /marketplace/ejercicios:
+    get:
+      tags: [Marketplace]
+      summary: List marketplace ejercicios
+      parameters:
+        - name: deporte
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+  /marketplace/ejercicio/{ejercicioId}/import:
+    post:
+      tags: [Marketplace]
+      summary: Import marketplace exercise to user library
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ejercicioId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '201':
+          description: Imported successfully
+        '403':
+          description: Forbidden (insufficient plan)
+        '401':
+          description: Unauthorized
+    /weatherforecast:
+      get:
+        tags: [General]
+        summary: List weather forecast
+        responses:
+          '200':
+            description: OK
+            content:
+              application/json:
+                schema:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      date:
+                        type: string
+                        format: date
+                      temperatureC:
+                        type: integer
+                      summary:
+                        type: string
+security:
+  - bearerAuth: []
