@@ -1,0 +1,1 @@
+bin/\nobj/\n.vs/\n*.user\n*.suo\n*.userosscache\n*.sln.docstates\n*.db\n.idea/\n.vscode/\n*.pdb\n*.log\nappsettings*.json
