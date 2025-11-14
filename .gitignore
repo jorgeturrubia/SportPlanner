@@ -1,0 +1,15 @@
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.db
+.idea/
+.vscode/
+*.pdb
+*.log
+appsettings*.json
+node_modules/
+.env
