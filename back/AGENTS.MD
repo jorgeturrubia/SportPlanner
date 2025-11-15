@@ -7,6 +7,15 @@
 
 **Ubicación**: `C:\Proyectos\SportPlanner\back`
 
+> 📁 **Nota - Documentación del proyecto**
+>
+> Este repositorio incluye una carpeta central de documentación con especificaciones y artefactos técnicos en: `C:\Proyectos\SportPlanner\DocSportPlanner`.
+>
+> - Contiene documentos técnicos, modelo de datos, OpenAPI (`DocSportPlanner/docs/openapi.yaml`) y decisiones arquitectónicas (ADR).
+> - Antes de implementar features, revisar `DocSportPlanner/` para alinear requisitos, contratos de API y convenciones.
+>
+> Las instrucciones (instructions) y agentes (agents) deben asumir que toda la información del proyecto está en esa carpeta y consultar sus archivos al planificar o estandarizar cambios.
+
 ```markdown
 ---
 name: dotnet-backend-expert

@@ -26,3 +26,5 @@ Describe the task in a sentence.
 
 ## Additional notes
 Add any context or screenshots
+ 
+> 📁 Nota: Antes de empezar, revisa la carpeta de documentación del proyecto ubicada en `C:\Proyectos\SportPlanner\DocSportPlanner` para requisitos, API contracts y decisiones técnicas relevantes.

@@ -10,6 +10,14 @@ Esta guía está orientada a agentes automáticos y desarrolladores avanzados, c
 
 ---
 
+> 📁 **Nota - Documentación del proyecto**
+>
+> El repositorio incluye una carpeta central con las especificaciones del proyecto, modelos y decisiones de diseño: `C:\Proyectos\SportPlanner\DocSportPlanner`.
+>
+> - Revisa `DocSportPlanner/` (por ejemplo `DocSportPlanner/docs/`, `DocSportPlanner/docs/tecnico/`, `DocSportPlanner/docs/tecnico/openapi.yaml`) antes de iniciar tareas de diseño o de backend/frontend.
+> - Las `instructions` y `agents` para `front` y `back` deben consultar estos documentos para alinear requisitos, contratos de API y convenciones.
+
+
 ## 1. CRÍTICO: Control Flow Blocks - Cambio Fundamental en Angular 20
 
 ### Directivas Deprecadas en Angular 20
