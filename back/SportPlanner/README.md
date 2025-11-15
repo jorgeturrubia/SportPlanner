@@ -54,6 +54,14 @@ dotnet tool run dotnet-ef database update
 
 4. Registro de DbContext en `Program.cs` ya se configura para usar `ConnectionStrings:DefaultConnection`.
 
+Importante:
+- No se utiliza una cadena de conexión 'hard-coded' en el código. Si `ConnectionStrings:DefaultConnection` no está presente, el arranque de la aplicación lanzará una excepción para evitar usar credenciales en código fuente.
+- Usa `appsettings.Development.json` o variables de entorno para sobrescribir la cadena de conexión en local (ejemplo Windows PowerShell):
+
+```powershell
+$env:ConnectionStrings__DefaultConnection = "Host=localhost;Database=sportplanner;Username=postgres;Password=postgres"
+```
+
 Notas:
 - Protege tus credenciales: preferimos usar `appsettings.Development.json` o variables de entorno para las credenciales de DB.
 - Si tienes problemas con versiones, asegúrate de usar la versión 8.x de los paquetes EF Core y del `dotnet-ef` para que sea compatible con `net8.0`.

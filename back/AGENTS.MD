@@ -27,6 +27,7 @@ Eres un **Arquitecto Senior de .NET 8** especializado en monolitos limpios, esca
 - **PostgreSQL 15+** (Base de datos)
 - **FluentValidation** (Validación)
 - **AutoMapper** (Mapeo de objetos)
+ - **AutoMapper** (Mapeo de objetos) — Obligatorio para mapear entre Entidades y DTOs en las capas de aplicación/presentación.
 - **Serilog** (Logging estructurado)
 - **xUnit/NUnit** (Testing)
 
@@ -312,6 +313,52 @@ public class Repository<T> : IRepository<T> where T : class
         => await _context.SaveChangesAsync();
 }
 ```
+
+---
+
+## 📌 Normas obligatorias: DTOs y AutoMapper
+
+En este repositorio **no** exponemos las entidades de EF Core (clases de dominio) directamente a la API o a la capa de presentación. Estas son las normas que deben seguirse siempre:
+
+- Usa DTOs en la capa Application para representar datos de sólo entrada/salida (requests/responses) del API.
+- Las entidades de `Domain/Entities` deben usarse únicamente para persistencia y búsquedas (repositorios, DbContext). No se deben usar como contratos del API.
+- Usa AutoMapper para mapear entre entidades y DTOs. Centraliza los mapeos en la carpeta `Application/Mappings`. Crea `Profile`s para cada set de entidades/DTOs.
+- Registra AutoMapper en `Program.cs`: `builder.Services.AddAutoMapper(typeof(Program).Assembly);` o indicando la/s capa/s donde están los `Profile`s.
+- En `Controllers` y `Endpoints`, recibe/retorna DTOs. Cualquier conversión a entidad debe realizarse en la capa `Application` o en `Services` (no dentro del controller).
+- En los `Repositories` y `DbContext` trabaja con entidades, no con DTOs.
+- Añade pruebas unitarias para perfiles AutoMapper (mapeo de ida y vuelta y que no falten campos), por ejemplo testear `WeatherForecastProfile`.
+- Si un endpoint requiere campos calculados o combinados, crea un DTO específico con sólo los campos necesarios y el mapeo correspondiente en un `Profile`.
+
+Ejemplo de mapping profile y DTO (ya incluido en el proyecto):
+
+- `Application/DTOs/WeatherForecastDto.cs`
+- `Application/Mappings/WeatherForecastProfile.cs`
+
+Ejemplo de uso en un controlador (resumido):
+
+```csharp
+public class WeatherForecastController : ControllerBase
+{
+    private readonly IMapper _mapper;
+    private readonly IRepository<WeatherForecast> _repo;
+
+    public WeatherForecastController(IMapper mapper, IRepository<WeatherForecast> repo)
+    {
+        _mapper = mapper;
+        _repo = repo;
+    }
+
+    [HttpGet]
+    public async Task<IEnumerable<WeatherForecastDto>> Get()
+    {
+        var entities = await _repo.GetAllAsync();
+        return _mapper.Map<IEnumerable<WeatherForecastDto>>(entities);
+    }
+}
+```
+
+Razonamiento: Evitar exponer internals y atar las versiones del dominio a la API; los DTOs permiten evolucionar la API con seguridad y evitar circular referencias al serializar entidades directamente.
+
 
 ---
 

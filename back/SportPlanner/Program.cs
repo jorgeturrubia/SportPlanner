@@ -1,11 +1,15 @@
 using SportPlanner.Models;
 using SportPlanner.Data;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllers();
+
+// Register AutoMapper profiles located in the project (Application.Mappings namespace)
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
 
 // Configure EF Core with Npgsql (PostgreSQL)
 builder.Services.AddDbContext<AppDbContext>(options =>

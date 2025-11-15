@@ -1,5 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using SportPlanner.Models;
+using AutoMapper;
+using SportPlanner.Application.DTOs;
 
 namespace SportPlanner.Controllers;
 
@@ -13,20 +15,25 @@ public class WeatherForecastController : ControllerBase
     };
 
     private readonly ILogger<WeatherForecastController> _logger;
+    private readonly IMapper _mapper;
 
-    public WeatherForecastController(ILogger<WeatherForecastController> logger)
+    public WeatherForecastController(ILogger<WeatherForecastController> logger, IMapper mapper)
     {
         _logger = logger;
+        _mapper = mapper;
     }
 
     [HttpGet(Name = "GetWeatherForecast")]
-    public IEnumerable<WeatherForecast> Get()
+    public IEnumerable<WeatherForecastDto> Get()
     {
-        return Enumerable.Range(1, 5).Select(index => new WeatherForecast
+        var entities = Enumerable.Range(1, 5).Select(index => new WeatherForecast
         (
             DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
             Random.Shared.Next(-20, 55),
             Summaries[Random.Shared.Next(Summaries.Length)]
         ));
+
+        // Map to DTOs for API responses
+        return _mapper.Map<IEnumerable<WeatherForecastDto>>(entities);
     }
 }
