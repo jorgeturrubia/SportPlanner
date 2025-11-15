@@ -39,6 +39,27 @@ The project includes a minimal `ApplicationUser` entity and a service that maps 
 - Start frontend and login with Supabase.
 - Call `GET https://localhost:7146/api/auth/me` with the `Authorization` header.
 
+## CORS (development)
+
+If you're calling the backend from the frontend running on `http://localhost:4200`, make sure the backend allows the frontend's origin for CORS. The project includes a development CORS policy named `AllowLocalhostFrontend` in `Program.cs` configured to allow:
+
+- http://localhost:4200
+- http://127.0.0.1:4200
+- https://localhost:4200
+
+Make sure you restart the backend after modifying `Program.cs` so the new policy takes effect. To verify CORS manually:
+
+```powershell
+# Start backend
+cd back/SportPlanner
+dotnet run --launch-profile https
+
+# Send a preflight (OPTIONS) request from the terminal
+curl -i -X OPTIONS "https://localhost:7152/api/auth/me" -H "Origin: http://localhost:4200" -H "Access-Control-Request-Method: GET" -k
+
+# The response should include Access-Control-Allow-Origin: http://localhost:4200
+``` 
+
 The endpoint returns the mapped user DTO or a fallback claims JSON if mapping is not configured.
 
 **NOTE:** For production, prefer using JWKS with `supabaseUrl` discovery rather than using the symmetric `JwtSecret`. Keep secrets in environment variables or a secure vault.

@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
-import { NgIf, NgFor } from '@angular/common';
+import { NgIf, NgFor, JsonPipe } from '@angular/common';
 
 @Component({
   standalone: true,
@@ -74,7 +74,7 @@ import { NgIf, NgFor } from '@angular/common';
       </button>
     </div>
   `,
-  imports: [NgIf, NgFor]
+  imports: [NgIf, NgFor, JsonPipe]
 })
 export class ProfileComponent {
   private userSvc = inject(UserService);

@@ -34,14 +34,14 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = true;
-        if (!string.IsNullOrEmpty(supabaseJwtSecret))
+            if (!string.IsNullOrEmpty(supabaseJwtSecret))
         {
             // Symmetric validation (dev/test). Value comes from Supabase project's JWT secret.
             var key = System.Text.Encoding.UTF8.GetBytes(supabaseJwtSecret);
-            options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = supabaseUrl,
+                    ValidIssuers = new[] { supabaseUrl, $"{supabaseUrl?.TrimEnd('/')}/auth/v1" },
                 ValidateAudience = true,
                 ValidAudience = "authenticated",
                 ValidateIssuerSigningKey = true,
@@ -57,7 +57,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
             options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuer = supabaseUrl,
+                    ValidIssuers = new[] { supabaseUrl, $"{supabaseUrl.TrimEnd('/')}/auth/v1" },
                 ValidateAudience = true,
                 ValidAudience = "authenticated",
                 ValidateLifetime = true,
@@ -75,7 +75,44 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
                 NameClaimType = "sub"
             };
         }
+        // Add events to help debugging token validation issues in development
+        options.Events = new Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerEvents
+        {
+            OnMessageReceived = ctx =>
+            {
+                var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                var token = ctx.Request.Headers["Authorization"].FirstOrDefault();
+                logger.LogInformation("OnMessageReceived - Raw Authorization header: {AuthHeader}", token);
+                return Task.CompletedTask;
+            },
+            OnAuthenticationFailed = ctx =>
+            {
+                var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ctx.Exception, "Authentication failed: {Message}", ctx.Exception.Message);
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = ctx =>
+            {
+                var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                var claims = ctx.Principal?.Claims?.Select(c => new { c.Type, c.Value }).ToArray();
+                logger.LogInformation("Token validated. Claims: {@Claims}", claims);
+                return Task.CompletedTask;
+            }
+        };
     });
+
+// CORS policy: allow the frontend dev server to call the API
+builder.Services.AddCors(options =>
+{
+                        options.AddPolicy(name: "AllowLocalhostFrontend",
+        policy =>
+        {
+                        policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200", "https://localhost:4200")
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
 
 builder.Services.AddAuthorization();
 
@@ -89,6 +126,8 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// IMPORTANT: UseCors must be called before UseAuthentication/Authorization
+app.UseCors("AllowLocalhostFrontend");
 app.UseAuthentication();
 // Run our middleware after authentication so we can map claims to an application user
 app.UseMiddleware<SportPlanner.Middleware.AuthenticatedUserMiddleware>();
