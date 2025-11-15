@@ -16,8 +16,7 @@
 | **ORM** | Entity Framework Core | 8.0+ | ORM robusto con migraciones, integrado con .NET |
 | **Base de Datos** | PostgreSQL | 15+ | ACID, JSON support, RLS (Row Level Security) |
 | **BaaS** | Supabase | Latest | Auth + Storage + Realtime, PostgreSQL managed |
-| **Hosting Frontend** | Vercel | - | Deploy automatico, CDN global, free tier generoso |
-| **Hosting Backend** | Railway | - | PaaS simple, PostgreSQL incluido, pricing accesible |
+| **Hosting** | TBD | - | Hosting strategy to be defined; local development will use `appsettings.json` for configuration. |
 
 **Filosofia:** Equilibrio entre **developer experience** (velocidad de desarrollo) y **production readiness** (escalabilidad y mantenibilidad).
 
@@ -269,7 +268,7 @@ SportPlanner.API/
 - **Minimal APIs:** Sintaxis concisa para endpoints
 - **Dependency Injection:** Nativo del framework
 - **Middleware pipeline:** Para auth, logging, error handling
-- **CORS:** Configurado para frontend en Vercel
+- **CORS:** Configurado para el dominio del frontend (a definir por el equipo)
 - **Rate Limiting:** Proteccion contra abuso
 
 **Por que .NET 8:**
@@ -411,53 +410,45 @@ public class SportPlannerDbContext : DbContext
 
 ## HOSTING E INFRAESTRUCTURA
 
-### Frontend: Vercel
+### Frontend: Hosting TBD
 
-**Plan:** Free tier (suficiente para MVP)
+**Plan:** TBD (Free options may be used for MVP)
 
 **Caracteristicas:**
-- Deploy automatico desde GitHub (CI/CD integrado)
-- CDN global (Edge Network)
-- Preview deployments por PR
-- Analytics basicos
-- HTTPS automatico
-- Escalado automatico
+- Build para producción local y/o por el host elegido (sin CI/CD configurado por defecto)
+- CDN / hosting global (según proveedor)
+- HTTPS y escalado según proveedor (opcional)
+- Analytics: según proveedor (opcional)
 
-**Por que Vercel:**
-- Especializado en frameworks frontend (Angular, React, etc.)
-- Deploy en segundos
-- Free tier muy generoso (100GB bandwidth/mes)
-- DX excepcional
+**Por que Hosting TBD:**
+- Flexibilidad para elegir proveedor según prioridades de coste y DX
+- No se fuerza integración CI/CD por defecto en la documentación
 
-**Alternativa descartada:**
-- Netlify: Similar pero menos optimizado para Angular
-- AWS S3 + CloudFront: Mas complejo de configurar
+**Alternativas descartadas:**
+- Netlify: Similar pero menos optimizado para Angular (si se elige esta opción)
+- AWS S3 + CloudFront: Más complejo en configuración (opcional)
 
 ---
 
-### Backend: Railway
+### Backend: Hosting TBD
 
-**Plan:** Hobby ($5/mes) o Pro ($20/mes segun uso)
+**Plan:** TBD (según el proveedor elegido)
 
 **Caracteristicas:**
-- Deploy desde GitHub
-- PostgreSQL incluido (no necesita Supabase DB si prefieres)
-- Variables de entorno faciles
-- Logs en tiempo real
-- Escalado vertical simple
+- Deploy y hosting por definir (sin CI/CD integrado por defecto)
+- PostgreSQL gestionado (puede usar Supabase u otro proveedor)
+- Variables de entorno configurables por el host
+- Logs y monitorizacion segun el proveedor
 - Redis opcional (cache)
 
-**Por que Railway:**
-- PaaS simple (menos complejo que AWS/Azure)
-- PostgreSQL managed incluido
-- Pricing predecible
-- DX excelente
-- Integracion con GitHub
+**Por que Hosting TBD:**
+- Permite elegir la mejor opción según prioridades de coste y escalado
+- No se fuerza integración con ningún host ni CI/CD por defecto
 
 **Alternativas descartadas:**
-- Heroku: Mas caro, menos features
-- Render: Similar pero Railway tiene mejor UI
-- AWS ECS: Overkill para MVP, complejo
+- Heroku: Más caro, menos features
+- Render: Similar pero depende de preferencia
+- AWS ECS: Overkill para MVP, más complejo de configurar
 
 ---
 
@@ -465,7 +456,7 @@ public class SportPlannerDbContext : DbContext
 
 **Opcion simplificada:** Si quieres minimizar costos y complejidad inicial:
 
-1. **Frontend:** Vercel (Angular SPA)
+1. **Frontend:** Hosting TBD (Angular SPA)
 2. **Backend:** Supabase Edge Functions (Deno/TypeScript)
 3. **Database:** Supabase PostgreSQL
 4. **Auth + Storage:** Supabase
@@ -480,7 +471,7 @@ public class SportPlannerDbContext : DbContext
 - Menos control sobre backend
 - Vendor lock-in mayor
 
-**Recomendacion:** Empezar con Stack propuesto (Vercel + Railway + Supabase) porque:
+**Recomendacion:** Empezar con Stack propuesto (Supabase + backend/frontend a definir) porque:
 - .NET backend es mas profesional y escalable
 - Mejor separacion de concerns
 - Mas facil migrar si Supabase no escala
@@ -491,9 +482,9 @@ public class SportPlannerDbContext : DbContext
 
 ### Control de Versiones
 
-- **Git** + **GitHub**
+- **Git** (hosting del repositorio a elección del equipo)
 - Repositorio monorepo (frontend + backend en un solo repo) o separados
-- GitHub Actions para CI/CD
+- CI/CD: No definido en esta documentación (integración automatizada opcional)
 
 ### IDE Recomendados
 
@@ -575,8 +566,8 @@ public class SportPlannerDbContext : DbContext
 
 | Servicio | Plan | Costo |
 |----------|------|-------|
-| Vercel | Free | $0 |
-| Railway | Hobby | $5 |
+| Hosting (frontend) | TBD | $0 - TBD |
+| Hosting (backend) | TBD | $0 - TBD |
 | Supabase | Free | $0 |
 | SendGrid | Free | $0 |
 | Sentry | Free | $0 |
@@ -585,10 +576,8 @@ public class SportPlannerDbContext : DbContext
 
 **Escalabilidad de costos:**
 - Con 100 usuarios: $5-10/mes
-- Con 500 usuarios: $20-30/mes (Railway Pro)
-- Con 1000+ usuarios: $50-100/mes (Supabase Pro + Railway scaling)
-
----
+- Con 500 usuarios: $20-30/mes (hosting provider plan estimado)
+- Con 1000+ usuarios: $50-100/mes (Supabase Pro + hosting provider escalado)
 
 ## DEPENDENCIAS Y VERSIONES (Resumen)
 

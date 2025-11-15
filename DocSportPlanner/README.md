@@ -98,7 +98,6 @@
 - Backlog inicial
 
 ### Fase 5: Operaciones - PENDIENTE
-- CI/CD
 - Estrategia de pruebas
 - Monitoring
 

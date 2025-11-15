@@ -13,7 +13,7 @@ Key locations (read these first):
 Primary architecture summary:
 - Frontend: Angular 20+ (standalone components, Signals, Tailwind CSS, Fabric.js for canvas and GSAP for animations).
 - Backend: .NET 8 (minimal APIs, EF Core with code-first migrations, FluentValidation, Serilog); API base path `/api/v1`.
-- Data/Integration: Supabase (Auth, Storage, Realtime) backed by PostgreSQL; hosting typically Vercel (frontend) and Railway (backend).
+- Data/Integration: Supabase (Auth, Storage, Realtime) backed by PostgreSQL; hosting strategy TO_BE_DEFINED (we will use `appsettings.json` for local configuration).
 
 Repository-specific conventions (follow these):
 - Language: Spanish — produce user-facing text and docs in Spanish by default.
@@ -21,8 +21,8 @@ Repository-specific conventions (follow these):
 - Backend patterns: minimal APIs, DTOs + FluentValidation, use named folders: `Controllers`, `Services`, `Repositories`, `Models`, `Data` (DbContext & migrations).
 - API docs: Keep `docs/tecnico/openapi.yaml` in sync with controllers. When adding endpoints, update OpenAPI and `/docs` swagger exposure.
 
-Developer quick start & workflows (doc-derived):
-- Frontend: cd to `frontend`, run `npm install`, `ng serve` for local dev. Use `ng build` for production artifacts and deploy to Vercel.
+- Developer quick start & workflows (doc-derived):
+- Frontend: cd to `frontend`, run `npm install`, `ng serve` for local dev. Use `ng build` for production artifacts (hosting TBD).
 - Backend: cd to `backend` (or `SportPlanner.API`), run `dotnet restore` then `dotnet run`. Manage EF migrations via `dotnet ef migrations add` and `dotnet ef database update`.
 - Auth: Supabase JWTs validated server-side via `Microsoft.AspNetCore.Authentication.JwtBearer`.
 
@@ -48,5 +48,5 @@ Thanks — keep outputs concise and localized (Spanish). Ask for clarifications 
 
 Edge cases & guidance for agents:
 - This repository is documentation-first; if source code (frontend/backend folders) is missing, prefer to propose minimal scaffolding rather than inventing whole implementations.
-- When missing files are required for a task (e.g., controllers, components, CI), ask clarifying questions or create a PR with a tiny, safe change and guidance for the developer to fill in secrets, configs, or other environment-specific items.
+- When missing files are required for a task (e.g., controllers, components), ask clarifying questions or create a PR with a tiny, safe change and guidance for the developer to fill in secrets, configs, or other environment-specific items.
 - When adding or altering API endpoints: update `docs/tecnico/openapi.yaml`, `docs/tecnico/04-api-contracts.md`, and add a short example request/response in the same format used in the repository.
