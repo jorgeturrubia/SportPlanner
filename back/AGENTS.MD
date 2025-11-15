@@ -2,7 +2,6 @@
 
 > Agente especializado en .NET 8, Clean Architecture, PostgreSQL, EF Core, patrones de diseño y best practices
 
----
 
 ## 📦 ARCHIVO 1: AGENTE PRINCIPAL
 
@@ -37,6 +36,76 @@ Eres un **Arquitecto Senior de .NET 8** especializado en monolitos limpios, esca
 
 ### 📏 Clasificación de Tareas
 
+
+---
+
+## 🧭 Flujo recomendado: Instructions → Agents → Development
+
+En este repositorio distinguimos entre dos conceptos importantes:
+
+- **Instruction**: Es la especificación/brief de la tarea. Puede vivir en el cuerpo de un Issue o PR, o en un archivo markdown (`instructions/*.md`). Las instrucciones contienen un bloque YAML frontmatter con metadatos (agente, contexto, tamaño de tarea) y un plan breve.
+- **Agent**: Es el agente (o rol) utilizado para implementar esas instrucciones: por ejemplo `dotnet-backend-expert` para tareas de backend. El agente es quien aplica las mejores prácticas, los patrones y las verificaciones del flujo de trabajo.
+
+### ¿Cómo usarlo en la práctica?
+
+1. **Crear la Instruction** (Issue o PR): añade un frontmatter YAML con la siguiente estructura al inicio del Markdown:
+
+```yaml
+---
+agent: dotnet-backend-expert
+context: back/SportPlanner
+task-size: MEDIANA
+---
+```
+
+- `agent`: Nombre del agente/rol a usar.
+- `context`: Carpeta o área de código objetivo.
+- `task-size`: `PEQUEÑA`/`MEDIANA`/`GRANDE`.
+
+2. **Describir la tarea / plan**: en el cuerpo del Issue/PR añade el plan (si `task-size` es MEDIANA/GRANDE), incluyendo fases y puntos de verificación.
+
+3. **Asignar y ejecutar**: el desarrollador o agente responsable clona el repo, crea la rama y ejecuta el plan fase por fase. Para tareas pequeñas, puede ejecutarse directamente; para las otras categorias, seguir las fases y confirmar resultados.
+
+4. **Checklist y validaciones**: la Instruction debe contener puntos obligatorios:
+    - Build exitoso
+    - Tests pasando
+    - Migraciones complementarias (si aplica)
+    - Revisiones requeridas (archivos a revisar, cambios de API)
+
+5. **Automatización (opcional)**: el repo incluye una serie de plantillas y un helper para generar un `instruction` inicial y facilitar la apertura del Issue/PR (ver `.github/ISSUE_TEMPLATE` y `tools/generate-agent-instruction.ps1`).
+
+### Beneficios
+- Facilita que los AI/UX agents utilicen las mismas convenciones y reduzca malentendidos.
+- Fomenta la documentación previa al desarrollo y la trazabilidad en PRs y Issues.
+- Permite automatizar validaciones y checklist en CI si se desea.
+
+---
+
+## 🧩 Plantillas y checklists (Ejemplos)
+Incluye un ejemplo rápido de PR/Issue y un template mínimo que tu CI o revisores pueden usar para validar que la instrucción y el agente están correctamente configurados.
+
+### PR / Issue frontmatter mínimo
+
+```yaml
+---
+agent: dotnet-backend-expert
+context: back/SportPlanner
+task-size: PEQUEÑA
+---
+```
+
+### Plantilla de PR (Checklist)
+- [ ] Contained YAML frontmatter with agent and context
+- [ ] Build and tests run locally
+- [ ] If MEDIANA/GRANDE: Plan included (phases), DB implications stated
+- [ ] Update `Application/DTOs`, `Application/Mappings` and `Program.cs` registration if new mapping added
+- [ ] Add EF migration commands in PR description if schema changes
+
+---
+
+## 🔎 Validación y Automatización sugerida
+Si quieres podemos añadir un GitHub Action que valide la presencia del YAML frontmatter y compruebe los puntos del checklist (build/test/migrations). Esto es opcional — dime si quieres que lo implemente.
+**Ya se incluye una acción ligera** que valida que el cuerpo del PR incluye `agent:` y `context:` frontmatter. Se puede extender para ejecutar tests y build automáticamente en cada PR.
 **🟢 TAREA PEQUEÑA** (Ejecutar directamente)
 - Agregar un campo a una entidad existente
 - Crear un DTO simple

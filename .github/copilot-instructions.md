@@ -8,6 +8,7 @@ Read-first files (context + entry points):
 - `back/SportPlanner/Program.cs` (entry point, DI, AutoMapper, EF Core registration)
 - `back/SportPlanner/README.md` (local dev + migrations workflow)
 - `back/AGENTS.MD` (agent conventions, Clean Architecture, DTO/AutoMapper policy)
+- `back/AGENTS.MD` (agent conventions, Clean Architecture, DTO/AutoMapper policy). Use `instructions` + `agents` flow described in `back/AGENTS.MD` — if you open a task, prefer using the PR/Issue template with the agent frontmatter.
 - `DocSportPlanner/docs/tecnico/StackTecnologico.md` (stack and architectural rationale)
 
 Quick architecture summary:
@@ -42,6 +43,7 @@ Safety & secrets:
 Development constraints & PR etiquette:
 - Small tasks (add property/endpoint) can be implemented directly.
 - Medium/large tasks (multi-file features) require a brief 2–3 phase plan in a PR description (per `back/AGENTS.MD` guidelines).
+ - To create a reproducible 'instruction', use `.github/ISSUE_TEMPLATE/agent_task.md` or the PR template `PULL_REQUEST_TEMPLATE.md` and add YAML frontmatter `agent` field. You can generate a local instruction template with `tools/generate-agent-instruction.ps1`.
 - Keep changes backwards compatible (DTOs) and preserve Clear Architecture layering.
 
 If uncertain / missing information:
