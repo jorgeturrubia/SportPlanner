@@ -11,11 +11,21 @@ export interface BackendUserDto {
   supabaseUserId?: string;
 }
 
+export interface DebugClaimsResponse {
+  isAuthenticated: boolean;
+  claimsCount: number;
+  claims: Array<{ type: string; value: string }>;
+}
+
 @Injectable({ providedIn: 'root' })
 export class UserService {
   constructor(private http: HttpClient) {}
 
   me(): Observable<BackendUserDto> {
     return this.http.get<BackendUserDto>(`${environment.apiUrl}/auth/me`);
+  }
+
+  debugClaims(): Observable<DebugClaimsResponse> {
+    return this.http.get<DebugClaimsResponse>(`${environment.apiUrl}/auth/debug-claims`);
   }
 }
