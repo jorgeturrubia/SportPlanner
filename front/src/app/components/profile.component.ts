@@ -1,4 +1,5 @@
 import { Component, inject, signal } from '@angular/core';
+import { Router } from '@angular/router';
 import { UserService } from '../services/user.service';
 import { AuthService } from '../services/auth.service';
 import { SupabaseService } from '../services/supabase.service';
@@ -79,6 +80,7 @@ import { CommonModule, NgIf, NgFor, JsonPipe } from '@angular/common';
 export class ProfileComponent {
   private userSvc = inject(UserService);
   private auth = inject(AuthService);
+  private router = inject(Router);
   private supabase = inject(SupabaseService);
   protected user = signal<any | null>(null);
   protected loading = signal(false);
@@ -141,7 +143,8 @@ export class ProfileComponent {
     });
   }
 
-  signOut() {
-    this.auth.signOut();
+  async signOut() {
+    await this.auth.signOut();
+    await this.router.navigate(['/login']);
   }
 }

@@ -185,9 +185,14 @@
 <main class="main">
   <nav style="display:flex; gap: 1rem; margin-bottom: 1rem;">
     <a routerLink="/" style="text-decoration:none">Home</a>
-    <a routerLink="/login" style="text-decoration:none">Login</a>
-    <a routerLink="/register" style="text-decoration:none">Register</a>
-    <a routerLink="/profile" style="text-decoration:none">Profile</a>
+    <ng-container *ngIf="auth.isAuthenticated(); else anon">
+      <a (click)="signOut()" style="text-decoration:none; cursor: pointer;">Logout</a>
+      <a routerLink="/profile" style="text-decoration:none">Profile</a>
+    </ng-container>
+    <ng-template #anon>
+      <a routerLink="/login" style="text-decoration:none">Login</a>
+      <a routerLink="/register" style="text-decoration:none">Register</a>
+    </ng-template>
   </nav>
 
   <div class="content">

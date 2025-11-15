@@ -93,5 +93,16 @@ public class AuthController : ControllerBase
         return Ok(new { isAuthenticated, claimsCount, claims });
     }
 
+    [HttpPost("logout")]
+    [Authorize]
+    public IActionResult Logout()
+    {
+        // NOTE: Currently the app uses Supabase client-side sessions. This endpoint
+        // is a placeholder for server-side logout/revoke operations.
+        // If you need to revoke a user's refresh tokens from the server, implement
+        // a call to Supabase admin API here using a service-role key and the user's JWT.
+        return NoContent();
+    }
+
     // NOTE: DebugClaims already implemented above; no duplicate methods
 }
