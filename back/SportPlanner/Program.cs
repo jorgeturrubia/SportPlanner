@@ -8,6 +8,8 @@ using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.IdentityModel.Protocols;
 using System.Text;
 using SportPlanner.Services;
+using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,6 +42,17 @@ builder.Services.AddScoped<IUserService, UserService>();
 
 // Add authorization services
 builder.Services.AddAuthorization();
+// CORS policy to allow local frontend dev origins
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("LocalDevCorsPolicy", policy =>
+    {
+        policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200", "http://localhost:5173", "http://127.0.0.1:5173")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 
 // Configure authentication using Supabase token validation (JWKS or symmetric secret fallback)
 // Ensure default authentication scheme is set
@@ -48,11 +61,34 @@ var authBuilder = builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
 });
-var supabaseProjectUrl = builder.Configuration["Supabase:ProjectUrl"]; // e.g. https://xyz.supabase.co
-var supabaseJwksUri = builder.Configuration["Supabase:JwksUri"]; // optional: override JWKS URI
-var jwtSecret = builder.Configuration["Jwt:Secret"]; // symmetric key fallback for local dev
-var authority = supabaseProjectUrl?.TrimEnd('/');
-var jwks = supabaseJwksUri ?? (authority != null ? $"{authority}/auth/v1/.well-known/jwks.json" : null);
+// Read Supabase and JWT configuration values from appsettings.json form (supporting multiple key names)
+var supabaseProjectUrl = builder.Configuration["Supabase:Url"] ?? builder.Configuration["Supabase:ProjectUrl"]; // e.g. https://xyz.supabase.co
+var supabaseJwksUri = builder.Configuration["Supabase:JwksUri"] ?? builder.Configuration["Supabase:JWKSUri"];
+var jwtSecret = builder.Configuration["Supabase:JwtSecret"] ?? builder.Configuration["Jwt:Secret"]; // symmetric key fallback for local dev
+    var authority = supabaseProjectUrl?.TrimEnd('/');
+    // The tokens' issuer uses the /auth/v1 path in Supabase: https://<project>.supabase.co/auth/v1
+    var authorityAuth = !string.IsNullOrWhiteSpace(authority) ? $"{authority}/auth/v1" : null;
+    var jwks = supabaseJwksUri ?? (authorityAuth != null ? $"{authorityAuth}/.well-known/jwks.json" : null);
+    // Load JWKS keys if using Supabase
+    if (!string.IsNullOrWhiteSpace(supabaseProjectUrl) && !string.IsNullOrWhiteSpace(jwks))
+    {
+        try
+        {
+            using var httpClient = new HttpClient();
+            var json = httpClient.GetStringAsync(jwks).GetAwaiter().GetResult();
+            var jwksDoc = JsonDocument.Parse(json);
+            var keys = jwksDoc.RootElement.GetProperty("keys");
+            foreach (var keyElement in keys.EnumerateArray())
+            {
+                JwksCache.Keys.Add(JsonWebKey.Create(keyElement.ToString()));
+            }
+        }
+        catch (Exception ex)
+        {
+            // Log or handle error
+        }
+    }
+    var openIdConfig = authorityAuth != null ? $"{authorityAuth}/.well-known/openid-configuration" : null;
 // Prepare symmetric key if present
 SymmetricSecurityKey? symmetricKey = null;
 if (!string.IsNullOrWhiteSpace(jwtSecret))
@@ -99,11 +135,24 @@ authBuilder.AddJwtBearer(options =>
         ValidateLifetime = true
     };
 
-    if (!string.IsNullOrWhiteSpace(jwks))
+    // Prefer JWKS if Supabase URL is provided, otherwise use symmetric key for local dev
+    if (!string.IsNullOrWhiteSpace(supabaseProjectUrl))
     {
-        options.ConfigurationManager = new ConfigurationManager<OpenIdConnectConfiguration>(jwks, new OpenIdConnectConfigurationRetriever());
+        // Use JWKS for Supabase tokens
+        options.Authority = authorityAuth;
+        options.RequireHttpsMetadata = false; // Allow HTTP metadata for dev
+        // Set custom key resolver to fetch JWKS
+        options.TokenValidationParameters.IssuerSigningKeyResolver = (token, keyIdentifier, securityToken, validationParameters) =>
+        {
+            var key = JwksCache.Keys.FirstOrDefault(k => k.Kid == keyIdentifier.Id);
+            return key != null ? new[] { key } : Array.Empty<SecurityKey>();
+        };
+        // Accept both the authority root and the common Supabase issuer path (/auth/v1)
+        var authorityTrimmed = authority.TrimEnd('/');
+        options.TokenValidationParameters.ValidIssuers = new[] { authorityTrimmed, $"{authorityTrimmed}/auth/v1" };
+        options.TokenValidationParameters.ValidateIssuer = true;
     }
-    else if (symmetricKey != null)
+    else if (!string.IsNullOrWhiteSpace(jwtSecret) && symmetricKey != null)
     {
         options.TokenValidationParameters.IssuerSigningKey = symmetricKey;
         options.TokenValidationParameters.IssuerSigningKeys = new[] { symmetricKey };
@@ -124,7 +173,17 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Enable CORS before authentication/authorization
+app.UseCors("LocalDevCorsPolicy");
+
+// Global API error handler middleware
+app.UseMiddleware<SportPlanner.Middleware.ApiExceptionMiddleware>();
+
 app.UseAuthentication();
+
+// Attach application-level user to HttpContext (resolved from claims via IUserService)
+app.UseMiddleware<SportPlanner.Middleware.AuthenticatedUserMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();
@@ -133,3 +192,9 @@ app.Run();
 
 // Expose the Program class to support WebApplicationFactory<T> in integration tests
 public partial class Program { }
+
+// Static class to hold JWKS keys
+public static class JwksCache
+{
+    public static List<JsonWebKey> Keys { get; } = new();
+}

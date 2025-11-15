@@ -53,6 +53,24 @@ Link: `docs/tecnico/openapi.yaml`
 ## Autenticación
 - JWT Bearer token required for all `/user/*` and write endpoints. Supabase integration for auth via validation of JWTs.
 
+### Autenticación con Supabase (detalles)
+- El frontend obtiene el token de Supabase mediante sesiones y lo envía al backend utilizando el header `Authorization: Bearer <token>`.
+- El backend valida el JWT usando JWKS (predeterminado con Supabase) o una clave simétrica de desarrollo (configurada en `Supabase:JwtSecret`).
+- Reclamaciones esperadas en el JWT: `sub` (Supabase user id), `email`, `name`, `preferred_username` o `username` (opcional).
+- En el backend, el middleware `AuthenticatedUserMiddleware` intentará crear o recuperar el usuario local a partir del `sub` claim. Posteriormente los controllers pueden leer la entidad `UserDto` desde `HttpContext.Items["AppUser"]`.
+
+Example header to call protected API:
+
+```
+Authorization: Bearer <supabase-jwt>
+```
+
+Endpoint `/api/auth/me` details:
+- Method: GET
+- Authorization: `Bearer` token required (Supabase JWT)
+- Returns `200 OK` with `UserDto` of the application user (created if necessary), or `401` if the token is invalid.
+
+
 ## Versioning
 - Base path: `/api/v1` (próximo: `/api/v2` para breaking changes)
 

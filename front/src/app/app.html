@@ -183,6 +183,13 @@
 </style>
 
 <main class="main">
+  <nav style="display:flex; gap: 1rem; margin-bottom: 1rem;">
+    <a routerLink="/" style="text-decoration:none">Home</a>
+    <a routerLink="/login" style="text-decoration:none">Login</a>
+    <a routerLink="/register" style="text-decoration:none">Register</a>
+    <a routerLink="/profile" style="text-decoration:none">Profile</a>
+  </nav>
+
   <div class="content">
     <div class="left-side">
       <svg
@@ -329,6 +336,8 @@
     </div>
   </div>
 </main>
+
+<router-outlet></router-outlet>
 
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->

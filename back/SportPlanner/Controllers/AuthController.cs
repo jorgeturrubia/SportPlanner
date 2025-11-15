@@ -18,14 +18,21 @@ namespace SportPlanner.Controllers
             _logger = logger;
         }
 
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme + ",Test")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [HttpGet("me")]
         public async Task<IActionResult> Me()
         {
             // Log the Authorization header for debugging
             var aHeader = Request.Headers["Authorization"].ToString();
             _logger.LogDebug("Auth header received: {authHeader}", aHeader);
-            var userDto = await _userService.GetOrCreateUserFromClaimsAsync(User);
+            // First try to get the user resolved by middleware
+            var userDto = HttpContext.Items.ContainsKey(SportPlanner.Middleware.AuthenticatedUserMiddleware.HttpContextItemUserKey)
+                ? HttpContext.Items[SportPlanner.Middleware.AuthenticatedUserMiddleware.HttpContextItemUserKey] as Application.DTOs.UserDto
+                : null;
+            if (userDto == null)
+            {
+                userDto = await _userService.GetOrCreateUserFromClaimsAsync(User);
+            }
             if (userDto == null)
                 return Unauthorized();
             return Ok(userDto);
