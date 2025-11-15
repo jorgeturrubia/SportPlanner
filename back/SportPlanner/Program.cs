@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -11,9 +12,22 @@ var configuration = builder.Configuration;
 var supabaseUrl = configuration.GetValue<string>("Supabase:Url");
 var supabaseJwtSecret = configuration.GetValue<string>("Supabase:JwtSecret");
 
-// Add DI for user service and middleware
+// Add DI for user service; middleware will be resolved by UseMiddleware (don't register it as a Scoped service)
+// Add DB context using the DefaultConnection connection string
+var defaultConn = configuration.GetConnectionString("DefaultConnection");
+if (!string.IsNullOrEmpty(defaultConn))
+{
+    builder.Services.AddDbContext<SportPlanner.Data.AppDbContext>(options =>
+        options.UseNpgsql(defaultConn));
+}
+else
+{
+    // Fallback for scenarios where a connection string isn't provided; use in-memory DB for tests / convenience
+    builder.Services.AddDbContext<SportPlanner.Data.AppDbContext>(options =>
+        options.UseInMemoryDatabase("SportPlannerDev"));
+}
+
 builder.Services.AddScoped<SportPlanner.Services.IUserService, SportPlanner.Services.UserService>();
-builder.Services.AddScoped<SportPlanner.Middleware.AuthenticatedUserMiddleware>();
 
 // Configure authentication for Supabase tokens
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)

@@ -220,7 +220,7 @@ tl.to('.jugador1', { x: 100, duration: 1 })
 
 ## BACKEND
 
-### .NET 8.0 LTS
+### .NET 10.0 LTS
 
 **Version:** 8.0 (Long-Term Support)
 
@@ -271,7 +271,7 @@ SportPlanner.API/
 - **CORS:** Configurado para el dominio del frontend (a definir por el equipo)
 - **Rate Limiting:** Proteccion contra abuso
 
-**Por que .NET 8:**
+**Por que .NET 10:**
 - Performance excepcional (top 3 en benchmarks)
 - Type-safe como TypeScript (C# es robusto)
 - Async/await nativo (escalabilidad)
@@ -622,7 +622,7 @@ public class SportPlannerDbContext : DbContext
 ```xml
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>net8.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>

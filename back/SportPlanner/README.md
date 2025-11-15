@@ -1,5 +1,7 @@
 # SportPlanner Backend
 
+This backend targets **.NET 10** (net10.0). Ensure you have the .NET 10 SDK installed to build and run this project.
+
 ## Supabase authentication setup
 
 To make backend endpoints accept and validate Supabase JWTs (sent from the frontend in the Authorization header):
@@ -15,6 +17,21 @@ To make backend endpoints accept and validate Supabase JWTs (sent from the front
    - The middleware will call a service that maps the JWT claims into an application user and attaches it as `HttpContext.Items["AppUser"]`.
 
 4. Use `[Authorize]` on controllers and access `HttpContext.Items["AppUser"]` or `User` to inspect claims.
+
+## Database (EF Core)
+
+This backend uses EF Core with Npgsql to persist application users. By default, the context uses `ConnectionStrings:DefaultConnection` in `appsettings.Development.json` or its environment variable.
+
+Local dev: create and apply migrations
+```powershell
+cd back/SportPlanner
+dotnet new tool-manifest --force
+dotnet tool install --local dotnet-ef --version 10.*
+dotnet tool run dotnet-ef migrations add InitialCreate
+dotnet tool run dotnet-ef database update
+```
+
+The project includes a minimal `ApplicationUser` entity and a service that maps JWT `sub` and user claims into a local user persisted in the DB. Replace or extend the model as needed.
 
 ## Minimal testing
 

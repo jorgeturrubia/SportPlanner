@@ -18,7 +18,7 @@
 - **Usuarios objetivo MVP:** 500 entrenadores en 12 meses
 - **Plazo de lanzamiento MVP:** 12 meses (desarrollo part-time)
 - **Equipo:** 1 persona (fundador/desarrollador part-time)
-- **Stack principal:** Angular 20+ / .NET 8 / Supabase (PostgreSQL)
+- **Stack principal:** Angular 20+ / .NET 10 / Supabase (PostgreSQL)
 
 ---
 
@@ -107,7 +107,7 @@
 
 ### Requisitos Previos
 - Node.js 20+
-- .NET 8 SDK
+- .NET 10 SDK
 - Cuenta Supabase
 
 ### Configuracion

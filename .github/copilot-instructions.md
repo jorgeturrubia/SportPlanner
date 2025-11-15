@@ -22,7 +22,7 @@ Important workflows and commands:
   - cd to `back/SportPlanner` and run `dotnet build` and `dotnet run`.
 - EF Migrations (local tool):
   - initialize: `dotnet new tool-manifest --force` (if not present)
-  - install: `dotnet tool install --local dotnet-ef --version 8.*`
+  - install: `dotnet tool install --local dotnet-ef --version 10.*`
   - add migration: `dotnet tool run dotnet-ef migrations add InitialCreate`
   - apply migrations: `dotnet tool run dotnet-ef database update`
 - Environment: use `appsettings.Development.json` or `ConnectionStrings__DefaultConnection` env var. Program.cs will throw if DefaultConnection is missing.

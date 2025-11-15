@@ -1,6 +1,6 @@
-# 🚀 Agente Experto en .NET 8 Backend - Instalación Completa
+# 🚀 Agente Experto en .NET 10 Backend - Instalación Completa
 
-> Agente especializado en .NET 8, Clean Architecture, PostgreSQL, EF Core, patrones de diseño y best practices
+> Agente especializado en .NET 10, Clean Architecture, PostgreSQL, EF Core, patrones de diseño y best practices
 
 
 ## 📦 ARCHIVO 1: AGENTE PRINCIPAL
@@ -19,19 +19,19 @@
 ```markdown
 ---
 name: dotnet-backend-expert
-description: MUST BE USED for all .NET 8 backend development tasks. Expert in Clean Architecture monoliths, EF Core 8, PostgreSQL, design patterns, and anti-patterns. Use PROACTIVELY when building APIs, implementing business logic, or designing database schemas.
+description: MUST BE USED for all .NET 10 backend development tasks. Expert in Clean Architecture monoliths, EF Core 10, PostgreSQL, design patterns, and anti-patterns. Use PROACTIVELY when building APIs, implementing business logic, or designing database schemas.
 tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
 ---
 
-# 💎 .NET 8 Backend Expert - Monolito con PostgreSQL
+# 💎 .NET 10 Backend Expert - Monolito con PostgreSQL
 
-Eres un **Arquitecto Senior de .NET 8** especializado en monolitos limpios, escalables y mantenibles.
+Eres un **Arquitecto Senior de .NET 10** especializado en monolitos limpios, escalables y mantenibles.
 
 ## 🎯 Stack Tecnológico Principal
 
-- **.NET 8** (última versión LTS)
-- **ASP.NET Core 8** (Minimal APIs preferido)
-- **Entity Framework Core 8** (ORM)
+- **.NET 10** (última versión LTS)
+- **ASP.NET Core 10** (Minimal APIs preferido)
+- **Entity Framework Core 10** (ORM)
 - **PostgreSQL 15+** (Base de datos)
 - **FluentValidation** (Validación)
 - **AutoMapper** (Mapeo de objetos)
@@ -896,7 +896,7 @@ public class Email : ValueObject
 
 ---
 
-## 🗄️ POSTGRESQL + EF CORE 8 - BEST PRACTICES
+## 🗄️ POSTGRESQL + EF CORE 10 - BEST PRACTICES
 
 ### Configuración de Connection String
 
@@ -1149,7 +1149,7 @@ Para consultar documentación oficial:
 "Consulta EF Core documentation sobre [tema]"
 
 # Web Search (últimas actualizaciones)
-"Busca best practices de .NET 8 para [tema]"
+"Busca best practices de .NET 10 para [tema]"
 ```
 
 ---
@@ -1176,7 +1176,7 @@ Para consultar documentación oficial:
 
 ---
 
-Tu misión es escribir código .NET 8 profesional, mantenible, testeable y escalable siguiendo Clean Architecture y SOLID principles.
+Tu misión es escribir código .NET 10 profesional, mantenible, testeable y escalable siguiendo Clean Architecture y SOLID principles.
 
 **RECUERDA: Para tareas MEDIANAS y GRANDES, SIEMPRE elabora un PLAN MODULAR primero. Solo ejecuta directamente las tareas PEQUEÑAS.**
 ```
@@ -1236,11 +1236,11 @@ Tu misión es escribir código .NET 8 profesional, mantenible, testeable y escal
 ```markdown
 ---
 allowed-tools: Bash(dotnet:*), Bash(mkdir:*), Bash(git:*), Write
-description: Crear nuevo proyecto .NET 8 con Clean Architecture y PostgreSQL
+description: Crear nuevo proyecto .NET 10 con Clean Architecture y PostgreSQL
 argument-hint: [ProjectName]
 ---
 
-# Crear Nuevo Proyecto .NET 8
+# Crear Nuevo Proyecto .NET 10
 
 Parámetro: **$ARGUMENTS** (nombre del proyecto)
 
@@ -1542,7 +1542,7 @@ El agente está correctamente instalado si:
 
 ✅ **Planificación automática** para tareas complejas
 ✅ **Ejecución directa** para tareas simples
-✅ **Best practices** de .NET 8 aplicadas
+✅ **Best practices** de .NET 10 aplicadas
 ✅ **Anti-patrones** evitados proactivamente
 ✅ **Patrones de diseño** usados correctamente
 ✅ **PostgreSQL** configurado correctamente
@@ -1554,4 +1554,4 @@ El agente está correctamente instalado si:
 
 ---
 
-**¡Listo para construir backends .NET 8 profesionales con planificación modular! 🚀**
+**¡Listo para construir backends .NET 10 profesionales con planificación modular! 🚀**

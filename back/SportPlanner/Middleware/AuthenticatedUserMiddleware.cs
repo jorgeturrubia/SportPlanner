@@ -10,12 +10,9 @@ namespace SportPlanner.Middleware;
 public class AuthenticatedUserMiddleware
 {
     private readonly RequestDelegate _next;
-    private readonly IUserService _userService;
-
-    public AuthenticatedUserMiddleware(RequestDelegate next, IUserService userService)
+    public AuthenticatedUserMiddleware(RequestDelegate next)
     {
         _next = next;
-        _userService = userService;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -23,11 +20,16 @@ public class AuthenticatedUserMiddleware
         // Only attempt if user is authenticated
         if (context.User?.Identity?.IsAuthenticated == true)
         {
-            var userDto = await _userService.GetOrCreateUserFromClaimsAsync(context.User);
-            if (userDto != null)
+            // Resolve IUserService from the request scope so we don't try to resolve a scoped
+            // service from the root provider at application startup (which causes errors).
+            var userService = context.RequestServices.GetService(typeof(SportPlanner.Services.IUserService)) as SportPlanner.Services.IUserService;
+            if (userService != null)
             {
-                // Attach to Items so controllers can access without DB lookups.
-                context.Items["AppUser"] = userDto;
+                var userDto = await userService.GetOrCreateUserFromClaimsAsync(context.User);
+                if (userDto != null)
+                {
+                    context.Items["AppUser"] = userDto;
+                }
             }
         }
 
