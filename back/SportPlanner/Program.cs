@@ -1,9 +1,17 @@
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
 builder.Services.AddControllers();
+// AutoMapper profiles in Application/Mappings
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+// Register FluentValidation validators
+// FluentValidation: register validators
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<SportPlanner.Application.Validators.CreateSubscriptionValidator>();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
