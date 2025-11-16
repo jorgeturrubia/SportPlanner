@@ -30,6 +30,12 @@ public class SubscriptionProcessingService : IHostedService, IDisposable
         return Task.CompletedTask;
     }
 
+    // Make the processing method public for testing purposes
+    public async Task ProcessPendingChangesAsync()
+    {
+        await DoWorkAsync();
+    }
+
     private async Task DoWorkAsync()
     {
         try
@@ -40,12 +46,11 @@ public class SubscriptionProcessingService : IHostedService, IDisposable
 
             // 1) Apply scheduled subscription history changes (downgrades/upgrades) with EffectiveAt <= now
             var pendings = await db.SubscriptionHistories
-                .Include(h => h.Subscription)
                 .Where(h => h.EffectiveAt <= DateTime.UtcNow)
                 .ToListAsync();
             foreach (var h in pendings)
             {
-                var sub = h.Subscription;
+                var sub = await db.Subscriptions.FindAsync(h.SubscriptionId);
                 if (sub == null) continue;
                 if (h.ChangeType == SubscriptionChangeType.Downgrade || h.ChangeType == SubscriptionChangeType.Upgrade)
                 {
@@ -56,6 +61,7 @@ public class SubscriptionProcessingService : IHostedService, IDisposable
                         db.Subscriptions.Update(sub);
                         // mark history as applied by clearing EffectiveAt or adding a ProcessedAt timestamp
                         db.SubscriptionHistories.Remove(h);
+                        await db.SaveChangesAsync();
                     }
                 }
             }
