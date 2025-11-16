@@ -1,1557 +1,1161 @@
-# 🚀 Agente Experto en .NET 10 Backend - Instalación Completa
+# SportPlanner Backend - Guía para Agentes de IA
 
-> Agente especializado en .NET 10, Clean Architecture, PostgreSQL, EF Core, patrones de diseño y best practices
-
-
-## 📦 ARCHIVO 1: AGENTE PRINCIPAL
-
-**Ubicación**: `C:\Proyectos\SportPlanner\back`
-
-> 📁 **Nota - Documentación del proyecto**
->
-> Este repositorio incluye una carpeta central de documentación con especificaciones y artefactos técnicos en: `C:\Proyectos\SportPlanner\DocSportPlanner`.
->
-> - Contiene documentos técnicos, modelo de datos, OpenAPI (`DocSportPlanner/docs/openapi.yaml`) y decisiones arquitectónicas (ADR).
-> - Antes de implementar features, revisar `DocSportPlanner/` para alinear requisitos, contratos de API y convenciones.
->
-> Las instrucciones (instructions) y agentes (agents) deben asumir que toda la información del proyecto está en esa carpeta y consultar sus archivos al planificar o estandarizar cambios.
-
-```markdown
----
-name: dotnet-backend-expert
-description: MUST BE USED for all .NET 10 backend development tasks. Expert in Clean Architecture monoliths, EF Core 10, PostgreSQL, design patterns, and anti-patterns. Use PROACTIVELY when building APIs, implementing business logic, or designing database schemas.
-tools: Read, Write, Edit, Bash, Grep, Glob, WebSearch
----
-
-# 💎 .NET 10 Backend Expert - Monolito con PostgreSQL
-
-Eres un **Arquitecto Senior de .NET 10** especializado en monolitos limpios, escalables y mantenibles.
-
-## 🎯 Stack Tecnológico Principal
-
-- **.NET 10** (última versión LTS)
-- **ASP.NET Core 10** (Minimal APIs preferido)
-- **Entity Framework Core 10** (ORM)
-- **PostgreSQL 15+** (Base de datos)
-- **FluentValidation** (Validación)
-- **AutoMapper** (Mapeo de objetos)
- - **AutoMapper** (Mapeo de objetos) — Obligatorio para mapear entre Entidades y DTOs en las capas de aplicación/presentación.
-- **Serilog** (Logging estructurado)
-- **xUnit/NUnit** (Testing)
+**Última actualización:** Noviembre 2025  
+**Stack:** .NET 10 + C# 14 + EF Core 10 + PostgreSQL  
+**Arquitectura:** Clean Architecture (Monolítica)
 
 ---
 
-## ⚡ PROTOCOLO DE PLANIFICACIÓN OBLIGATORIO
+## 📋 Tabla de Contenidos
 
-### 📏 Clasificación de Tareas
-
-
----
-
-## 🧭 Flujo recomendado: Instructions → Agents → Development
-
-En este repositorio distinguimos entre dos conceptos importantes:
-
-- **Instruction**: Es la especificación/brief de la tarea. Puede vivir en el cuerpo de un Issue o PR, o en un archivo markdown (`instructions/*.md`). Las instrucciones contienen un bloque YAML frontmatter con metadatos (agente, contexto, tamaño de tarea) y un plan breve.
-- **Agent**: Es el agente (o rol) utilizado para implementar esas instrucciones: por ejemplo `dotnet-backend-expert` para tareas de backend. El agente es quien aplica las mejores prácticas, los patrones y las verificaciones del flujo de trabajo.
-
-### ¿Cómo usarlo en la práctica?
-
-1. **Crear la Instruction** (Issue o PR): añade un frontmatter YAML con la siguiente estructura al inicio del Markdown:
-
-```yaml
----
-agent: dotnet-backend-expert
-context: back/SportPlanner
-task-size: MEDIANA
----
-```
-
-- `agent`: Nombre del agente/rol a usar.
-- `context`: Carpeta o área de código objetivo.
-- `task-size`: `PEQUEÑA`/`MEDIANA`/`GRANDE`.
-
-2. **Describir la tarea / plan**: en el cuerpo del Issue/PR añade el plan (si `task-size` es MEDIANA/GRANDE), incluyendo fases y puntos de verificación.
-
-3. **Asignar y ejecutar**: el desarrollador o agente responsable clona el repo, crea la rama y ejecuta el plan fase por fase. Para tareas pequeñas, puede ejecutarse directamente; para las otras categorias, seguir las fases y confirmar resultados.
-
-4. **Checklist y validaciones**: la Instruction debe contener puntos obligatorios:
-    - Build exitoso
-    - Tests pasando
-    - Migraciones complementarias (si aplica)
-    - Revisiones requeridas (archivos a revisar, cambios de API)
-
-5. **Automatización (opcional)**: el repo incluye una serie de plantillas y un helper para generar un `instruction` inicial y facilitar la apertura del Issue/PR (ver `.github/ISSUE_TEMPLATE` y `tools/generate-agent-instruction.ps1`).
-
-### Beneficios
-- Facilita que los AI/UX agents utilicen las mismas convenciones y reduzca malentendidos.
-- Fomenta la documentación previa al desarrollo y la trazabilidad en PRs y Issues.
-- Permite automatizar validaciones y checklist en CI si se desea.
+1. [Contexto del Proyecto](#contexto-del-proyecto)
+2. [Arquitectura y Estructura](#arquitectura-y-estructura)
+3. [Mejores Prácticas Obligatorias](#mejores-prácticas-obligatorias)
+4. [Flujo de Trabajo para Nuevas Funcionalidades](#flujo-de-trabajo-para-nuevas-funcionalidades)
+5. [Patrones y Convenciones](#patrones-y-convenciones)
+6. [Validación y Testing](#validación-y-testing)
+7. [Ejemplos de Implementación](#ejemplos-de-implementación)
+8. [Checklist Pre-Commit](#checklist-pre-commit)
 
 ---
 
-## 🧩 Plantillas y checklists (Ejemplos)
-Incluye un ejemplo rápido de PR/Issue y un template mínimo que tu CI o revisores pueden usar para validar que la instrucción y el agente están correctamente configurados.
+## 🎯 Contexto del Proyecto
 
-### PR / Issue frontmatter mínimo
+SportPlanner es una aplicación monolítica backend construida con .NET 10 que sigue **Clean Architecture** para gestionar planificación deportiva, equipos, sesiones de entrenamiento y conceptos deportivos.
 
-```yaml
----
-agent: dotnet-backend-expert
-context: back/SportPlanner
-task-size: PEQUEÑA
----
-```
+### Archivos de Referencia Obligatorios
 
-### Plantilla de PR (Checklist)
-- [ ] Contained YAML frontmatter with agent and context
-- [ ] Build and tests run locally
-- [ ] If MEDIANA/GRANDE: Plan included (phases), DB implications stated
-- [ ] Update `Application/DTOs`, `Application/Mappings` and `Program.cs` registration if new mapping added
-- [ ] Add EF migration commands in PR description if schema changes
+**ANTES de crear/modificar código backend, debes consultar:**
 
----
+#### 📘 Mejores Prácticas y Configuración Técnica
 
-## 🔎 Validación y Automatización sugerida
-Si quieres podemos añadir un GitHub Action que valide la presencia del YAML frontmatter y compruebe los puntos del checklist (build/test/migrations). Esto es opcional — dime si quieres que lo implemente.
-**Ya se incluye una acción ligera** que valida que el cuerpo del PR incluye `agent:` y `context:` frontmatter. Se puede extender para ejecutar tests y build automáticamente en cada PR.
-**🟢 TAREA PEQUEÑA** (Ejecutar directamente)
-- Agregar un campo a una entidad existente
-- Crear un DTO simple
-- Agregar un endpoint CRUD básico
-- Corregir un bug específico
-- Agregar validación a un campo
-- Refactorizar un método pequeño
+1. **`back/dotnet10-best-practices.md`** - Mejores prácticas de .NET 10, patrones de diseño, arquitectura, infraestructura y antipatrones a evitar.
+2. **`back/SportPlanner/Program.cs`** - Entry point, configuración de DI, AutoMapper y EF Core.
+3. **`back/SportPlanner/README.md`** - Workflow de desarrollo local y migraciones.
 
-**🟡 TAREA MEDIANA** (HACER PLAN PRIMERO)
-- Crear una feature CRUD completa (entidad + repo + service + endpoints + tests)
-- Implementar un patrón de diseño específico
-- Agregar autenticación/autorización
-- Refactorizar múltiples clases relacionadas
-- Migración de base de datos compleja
-- Implementar paginación/filtrado/sorting
+#### 📐 Arquitectura y Stack Tecnológico
 
-**🔴 TAREA GRANDE** (HACER PLAN DETALLADO OBLIGATORIO)
-- Crear nuevo proyecto desde cero
-- Diseñar múltiples features relacionadas
-- Implementar sistema completo (ej: carrito de compras)
-- Refactoring arquitectónico mayor
-- Migración de tecnología
-- Integración con sistemas externos complejos
+4. **`DocSportPlanner/docs/tecnico/StackTecnologico.md`** - Stack tecnológico y decisiones arquitectónicas.
+5. **`DocSportPlanner/docs/tecnico/ModeloDatos.md`** - Modelo de datos y rationale.
+6. **`DocSportPlanner/docs/arquitectura/`** - Diagramas y decisiones arquitectónicas (ADR).
 
-### 📋 Protocolo para Tareas MEDIANAS y GRANDES
+#### 💼 Contexto de Negocio y Dominio
 
-**PASO 1: ANÁLISIS Y CLASIFICACIÓN**
-```
-📊 ANÁLISIS DE COMPLEJIDAD:
-- Tamaño: [PEQUEÑA/MEDIANA/GRANDE]
-- Archivos a crear: [número estimado]
-- Archivos a modificar: [número estimado]
-- Capas afectadas: [Domain/Application/Infrastructure/WebAPI]
-- Patrones requeridos: [lista]
-- Tiempo estimado: [minutos]
-```
+7. **`DocSportPlanner/docs/01-vision-negocio.md`** - Visión general del negocio, objetivos y alcance del proyecto.
+8. **`DocSportPlanner/docs/negocio/`** - Reglas de negocio, casos de uso y requisitos funcionales específicos del dominio deportivo.
+9. **`DocSportPlanner/README.md`** - Introducción al proyecto y estado actual.
+10. **`DocSportPlanner/EstadoProyecto.md`** - Estado actual del desarrollo y roadmap.
+11. **`DocSportPlanner/backlog/backlog.yaml`** - Backlog de funcionalidades y tareas pendientes.
 
-**PASO 2: ELABORACIÓN DE PLAN (Solo si es MEDIANA o GRANDE)**
-```
-📝 PLAN DE IMPLEMENTACIÓN MODULAR:
-
-FASE 1: [Nombre de la fase]
-├─ Objetivo: [qué se logrará]
-├─ Archivos a crear:
-│  ├─ Domain/[archivo1.cs] - [propósito]
-│  └─ Application/[archivo2.cs] - [propósito]
-├─ Orden de creación: [secuencia lógica]
-└─ Punto de verificación: [cómo validar]
-
-FASE 2: [Nombre de la fase]
-├─ Objetivo: [qué se logrará]
-├─ Archivos a crear/modificar:
-│  └─ [lista]
-└─ Dependencias: [de qué fase depende]
-
-FASE 3: [Nombre de la fase]
-└─ ...
-
-VALIDACIÓN FINAL:
-- [ ] Build exitoso
-- [ ] Tests pasando
-- [ ] No anti-patrones
-- [ ] Siguiendo Clean Architecture
-```
-
-**PASO 3: CONFIRMACIÓN (Solo para GRANDES)**
-```
-⚠️ ESTA ES UNA TAREA GRANDE
-He elaborado un plan en 3 fases. 
-¿Deseas que proceda con la implementación o ajustar el plan?
-```
-
-**PASO 4: EJECUCIÓN FASE POR FASE**
-```
-🚀 EJECUTANDO FASE 1: [nombre]
-[implementación]
-✅ FASE 1 COMPLETADA
-
-🚀 EJECUTANDO FASE 2: [nombre]
-[implementación]
-✅ FASE 2 COMPLETADA
-
-...
-```
-
-### ⚡ Ejemplo de Aplicación
-
-**Tarea**: "Crear CRUD completo de Products con validaciones"
-
-```
-📊 ANÁLISIS DE COMPLEJIDAD:
-- Tamaño: MEDIANA
-- Archivos a crear: ~8 archivos
-- Archivos a modificar: 2 (Program.cs, DbContext)
-- Capas: Domain, Application, Infrastructure, WebAPI
-- Patrones: Repository, DTO, Validation
-- Tiempo estimado: 15-20 minutos
-
-📝 PLAN DE IMPLEMENTACIÓN MODULAR:
-
-FASE 1: CAPA DE DOMINIO
-├─ Objetivo: Crear entidad Product con lógica de negocio
-├─ Archivos:
-│  ├─ Domain/Entities/Product.cs - Entidad con validaciones
-│  └─ Domain/Interfaces/IProductRepository.cs - Contrato
-└─ Validación: Compilación sin errores
-
-FASE 2: CAPA DE APLICACIÓN
-├─ Objetivo: DTOs, servicios y validaciones
-├─ Archivos:
-│  ├─ Application/DTOs/ProductDto.cs
-│  ├─ Application/DTOs/CreateProductRequest.cs
-│  ├─ Application/Validators/CreateProductValidator.cs
-│  └─ Application/Interfaces/IProductService.cs
-└─ Validación: DTOs correctamente mapeados
-
-FASE 3: CAPA DE INFRAESTRUCTURA
-├─ Objetivo: Implementar acceso a datos
-├─ Archivos:
-│  ├─ Infrastructure/Repositories/ProductRepository.cs
-│  ├─ Infrastructure/Configurations/ProductConfiguration.cs
-│  └─ Infrastructure/Persistence/ApplicationDbContext.cs (modificar)
-└─ Validación: DbContext actualizado correctamente
-
-FASE 4: CAPA DE PRESENTACIÓN
-├─ Objetivo: Endpoints REST
-├─ Archivos:
-│  ├─ WebAPI/Endpoints/ProductEndpoints.cs
-│  └─ WebAPI/Program.cs (modificar)
-└─ Validación: Endpoints funcionando
-
-¿Procedo con la implementación?
-```
+**⚠️ Importante:** La documentación en `DocSportPlanner/` contiene información crítica sobre las reglas de negocio, terminología del dominio deportivo y requisitos funcionales. Consúltala para entender el contexto antes de implementar funcionalidades relacionadas con conceptos deportivos, planificación de entrenamientos, o gestión de equipos.
 
 ---
 
-## 🏗️ ARQUITECTURA MONOLÍTICA LIMPIA
+## 🏗️ Arquitectura y Estructura
 
-### Estructura de Capas
+### Estructura de Carpetas (Clean Architecture)
 
 ```
-src/
-├── YourProject.Domain/              # Capa de Dominio
-│   ├── Entities/                    # Entidades de negocio
-│   ├── ValueObjects/                # Objetos de valor
-│   ├── Enums/                       # Enumeraciones
-│   ├── Exceptions/                  # Excepciones de dominio
-│   └── Interfaces/                  # Contratos del dominio
+back/SportPlanner/
+├── Program.cs                    # Entry point, DI, configuración
+├── appsettings.json              # Configuración base (NO SECRETOS)
+├── appsettings.Development.json  # Config local
 │
-├── YourProject.Application/         # Capa de Aplicación
-│   ├── Features/                    # Casos de uso por feature
-│   │   └── Products/
-│   │       ├── Commands/            # Comandos (write)
-│   │       ├── Queries/             # Consultas (read)
-│   │       ├── DTOs/                # Data Transfer Objects
-│   │       └── Validators/          # FluentValidation
-│   ├── Interfaces/                  # Contratos de servicios
-│   ├── Mappings/                    # Perfiles AutoMapper
-│   └── Common/                      # Utilidades compartidas
+├── Controllers/                  # Capa de Presentación (WebAPI)
+│   ├── AuthController.cs
+│   ├── TeamsController.cs
+│   └── ...
 │
-├── YourProject.Infrastructure/      # Capa de Infraestructura
-│   ├── Persistence/                 # EF Core + PostgreSQL
-│   │   ├── ApplicationDbContext.cs
-│   │   ├── Configurations/          # Entity configurations
-│   │   ├── Migrations/              # Migraciones EF
-│   │   └── Repositories/            # Implementación repos
-│   ├── Services/                    # Servicios externos
-│   └── Logging/                     # Configuración Serilog
+├── Application/                  # Capa de Aplicación (Casos de Uso)
+│   ├── DTOs/                    # Data Transfer Objects
+│   ├── Mappings/                # AutoMapper Profiles
+│   └── Validators/              # FluentValidation Validators
 │
-└── YourProject.WebAPI/              # Capa de Presentación
-    ├── Endpoints/                   # Minimal API endpoints
-    ├── Middleware/                  # Middleware custom
-    ├── Filters/                     # Filtros globales
-    └── Program.cs                   # Entry point
-
-tests/
-├── YourProject.UnitTests/           # Tests unitarios
-├── YourProject.IntegrationTests/    # Tests de integración
-└── YourProject.ArchitectureTests/   # Tests de arquitectura
+├── Models/                       # Capa de Dominio (Entidades)
+│   ├── ApplicationUser.cs
+│   ├── Team.cs
+│   ├── SportConcept.cs
+│   └── ...
+│
+├── Data/                         # Capa de Infraestructura (EF Core)
+│   └── AppDbContext.cs          # DbContext principal
+│
+├── Migrations/                   # EF Core Migrations
+│   └── ...
+│
+├── Middleware/                   # Middleware personalizado
+│   └── AuthenticatedUserMiddleware.cs
+│
+└── Services/                     # Servicios de aplicación
+    └── ...
 ```
 
-### Principios de Diseño
+### Principios Arquitectónicos
 
-**1. Dependency Rule**
-- Domain NO depende de nadie
-- Application depende SOLO de Domain
-- Infrastructure depende de Application y Domain
-- WebAPI depende de Application (NO Infrastructure directamente)
-
-**2. Separation of Concerns**
-- Cada capa tiene responsabilidades específicas
-- No mezclar lógica de negocio con infraestructura
-- Controllers/Endpoints SOLO coordinan, no procesan
-
-**3. SOLID Principles**
-- **S**ingle Responsibility: Una clase, una razón para cambiar
-- **O**pen/Closed: Abierto a extensión, cerrado a modificación
-- **L**iskov Substitution: Las derivadas deben ser intercambiables
-- **I**nterface Segregation: Interfaces específicas, no genéricas
-- **D**ependency Inversion: Depender de abstracciones, no implementaciones
+1. **Separation of Concerns:** Cada capa tiene una responsabilidad única.
+2. **Dependency Rule:** Las dependencias apuntan hacia el dominio (Models).
+3. **DTO-First:** NUNCA exponer entidades EF Core directamente en APIs.
+4. **Repository Pattern:** Para lógica de persistencia compleja.
+5. **AutoMapper:** Para mapeo entre entidades y DTOs.
 
 ---
 
-## 🎨 PATRONES DE DISEÑO - CUÁNDO USARLOS
+## ✅ Mejores Prácticas Obligatorias
 
-### 1. Repository Pattern
+### 1. Consultar `dotnet10-best-practices.md` SIEMPRE
 
-**📌 CUÁNDO USAR:**
-- ✅ Necesitas abstraer el acceso a datos de EF Core
-- ✅ Quieres facilitar testing (mockear repos)
-- ✅ Operaciones de datos complejas reutilizables
-- ✅ Multiple fuentes de datos (cache + DB)
+**Antes de escribir código, revisa:**
 
-**❌ CUÁNDO NO USAR:**
-- ❌ CRUD simple sin lógica adicional (usa DbContext directamente)
-- ❌ Operaciones específicas de una sola entidad sin reutilización
-- ❌ Queries complejas con múltiples joins (usa Specifications)
+- ✅ Configuración base .NET 10
+- ✅ Patrones arquitectónicos (CQRS, DDD, Repository, Unit of Work)
+- ✅ Patrones de diseño (DI, Mediator, Specification, Factory)
+- ✅ Infraestructura y persistencia (EF Core 10)
+- ✅ Async/Await correcto
+- ✅ Validación con FluentValidation
+- ✅ Logging estructurado (Serilog)
+- ✅ Error handling con Result Pattern
+- ✅ Seguridad (JWT, SQL Injection, XSS, CSRF)
+- ✅ Performance (Span<T>, ValueTask, Query Optimization)
+- ❌ **Antipatrones a EVITAR** (God Class, Magic Strings, N+1 Queries, etc.)
 
-**💡 IMPLEMENTACIÓN:**
+### 2. Reglas de DTOs y AutoMapper
+
+**Regla de oro:** NUNCA exponer entidades EF Core como contratos de API.
+
+#### Ejemplo Correcto
 
 ```csharp
-// Domain/Interfaces/IRepository.cs
-public interface IRepository<T> where T : class
+// ❌ MAL - Exponer entidad directamente
+[HttpGet("{id}")]
+public async Task<ActionResult<Team>> GetTeam(int id)
 {
-    Task<T?> GetByIdAsync(Guid id);
-    Task<IEnumerable<T>> GetAllAsync();
-    Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate);
-    Task<T> AddAsync(T entity);
-    Task UpdateAsync(T entity);
-    Task DeleteAsync(T entity);
-    Task<int> SaveChangesAsync();
+    return await _context.Teams.FindAsync(id); // ¡NUNCA!
 }
 
-// Infrastructure/Repositories/Repository.cs
-public class Repository<T> : IRepository<T> where T : class
+// ✅ BIEN - Usar DTO
+[HttpGet("{id}")]
+public async Task<ActionResult<TeamDto>> GetTeam(int id)
 {
-    protected readonly ApplicationDbContext _context;
-    protected readonly DbSet<T> _dbSet;
-
-    public Repository(ApplicationDbContext context)
-    {
-        _context = context;
-        _dbSet = context.Set<T>();
-    }
-
-    public async Task<T?> GetByIdAsync(Guid id)
-        => await _dbSet.FindAsync(id);
-
-    public async Task<IEnumerable<T>> GetAllAsync()
-        => await _dbSet.ToListAsync();
-
-    public async Task<IEnumerable<T>> FindAsync(Expression<Func<T, bool>> predicate)
-        => await _dbSet.Where(predicate).ToListAsync();
-
-    public async Task<T> AddAsync(T entity)
-    {
-        await _dbSet.AddAsync(entity);
-        return entity;
-    }
-
-    public async Task UpdateAsync(T entity)
-    {
-        _dbSet.Update(entity);
-        await Task.CompletedTask;
-    }
-
-    public async Task DeleteAsync(T entity)
-    {
-        _dbSet.Remove(entity);
-        await Task.CompletedTask;
-    }
-
-    public async Task<int> SaveChangesAsync()
-        => await _context.SaveChangesAsync();
+    var team = await _context.Teams.FindAsync(id);
+    return team == null 
+        ? NotFound() 
+        : Ok(_mapper.Map<TeamDto>(team));
 }
 ```
 
----
+#### Crear DTOs
 
-## 📌 Normas obligatorias: DTOs y AutoMapper
-
-En este repositorio **no** exponemos las entidades de EF Core (clases de dominio) directamente a la API o a la capa de presentación. Estas son las normas que deben seguirse siempre:
-
-- Usa DTOs en la capa Application para representar datos de sólo entrada/salida (requests/responses) del API.
-- Las entidades de `Domain/Entities` deben usarse únicamente para persistencia y búsquedas (repositorios, DbContext). No se deben usar como contratos del API.
-- Usa AutoMapper para mapear entre entidades y DTOs. Centraliza los mapeos en la carpeta `Application/Mappings`. Crea `Profile`s para cada set de entidades/DTOs.
-- Registra AutoMapper en `Program.cs`: `builder.Services.AddAutoMapper(typeof(Program).Assembly);` o indicando la/s capa/s donde están los `Profile`s.
-- En `Controllers` y `Endpoints`, recibe/retorna DTOs. Cualquier conversión a entidad debe realizarse en la capa `Application` o en `Services` (no dentro del controller).
-- En los `Repositories` y `DbContext` trabaja con entidades, no con DTOs.
-- Añade pruebas unitarias para perfiles AutoMapper (mapeo de ida y vuelta y que no falten campos), por ejemplo testear `WeatherForecastProfile`.
-- Si un endpoint requiere campos calculados o combinados, crea un DTO específico con sólo los campos necesarios y el mapeo correspondiente en un `Profile`.
-
-Ejemplo de mapping profile y DTO (ya incluido en el proyecto):
-
-- `Application/DTOs/WeatherForecastDto.cs`
-- `Application/Mappings/WeatherForecastProfile.cs`
-
-Ejemplo de uso en un controlador (resumido):
+**Ubicación:** `Application/DTOs/`
 
 ```csharp
-public class WeatherForecastController : ControllerBase
+// Application/DTOs/TeamDto.cs
+namespace SportPlanner.Application.DTOs;
+
+public record TeamDto
 {
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Category { get; init; }
+    public string? Level { get; init; }
+}
+
+public record CreateTeamDto
+{
+    public string Name { get; init; } = string.Empty;
+    public int? CategoryId { get; init; }
+    public int? LevelId { get; init; }
+}
+
+public record UpdateTeamDto
+{
+    public string? Name { get; init; }
+    public int? CategoryId { get; init; }
+    public int? LevelId { get; init; }
+}
+```
+
+#### Crear Mappings (AutoMapper Profile)
+
+**Ubicación:** `Application/Mappings/`
+
+```csharp
+// Application/Mappings/TeamMappingProfile.cs
+using AutoMapper;
+using SportPlanner.Application.DTOs;
+using SportPlanner.Models;
+
+namespace SportPlanner.Application.Mappings;
+
+public class TeamMappingProfile : Profile
+{
+    public TeamMappingProfile()
+    {
+        // Entity -> DTO
+        CreateMap<Team, TeamDto>()
+            .ForMember(dest => dest.Category, 
+                opt => opt.MapFrom(src => src.Category != null ? src.Category.Name : null))
+            .ForMember(dest => dest.Level, 
+                opt => opt.MapFrom(src => src.Level != null ? src.Level.Name : null));
+
+        // CreateDto -> Entity
+        CreateMap<CreateTeamDto, Team>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        // UpdateDto -> Entity (solo actualizar propiedades no nulas)
+        CreateMap<UpdateTeamDto, Team>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+    }
+}
+```
+
+**Registrar AutoMapper en `Program.cs`:**
+
+```csharp
+// Ya registrado en Program.cs
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+```
+
+### 3. Reglas de Validación
+
+**Usar FluentValidation** para validación de DTOs.
+
+**Ubicación:** `Application/Validators/`
+
+```csharp
+// Application/Validators/CreateTeamDtoValidator.cs
+using FluentValidation;
+using SportPlanner.Application.DTOs;
+
+namespace SportPlanner.Application.Validators;
+
+public class CreateTeamDtoValidator : AbstractValidator<CreateTeamDto>
+{
+    public CreateTeamDtoValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("El nombre del equipo es obligatorio")
+            .MaximumLength(100).WithMessage("El nombre no puede exceder 100 caracteres");
+
+        RuleFor(x => x.CategoryId)
+            .GreaterThan(0).When(x => x.CategoryId.HasValue)
+            .WithMessage("CategoryId debe ser mayor que 0");
+
+        RuleFor(x => x.LevelId)
+            .GreaterThan(0).When(x => x.LevelId.HasValue)
+            .WithMessage("LevelId debe ser mayor que 0");
+    }
+}
+```
+
+**Registrar FluentValidation en `Program.cs`:**
+
+```csharp
+using FluentValidation;
+using FluentValidation.AspNetCore;
+
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+```
+
+### 4. Entity Framework Core - Mejores Prácticas
+
+#### Configuración de Entidades
+
+**Ubicación:** `Data/AppDbContext.cs` o en clases `IEntityTypeConfiguration<T>` separadas.
+
+```csharp
+// Data/Configurations/TeamConfiguration.cs
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using SportPlanner.Models;
+
+namespace SportPlanner.Data.Configurations;
+
+public class TeamConfiguration : IEntityTypeConfiguration<Team>
+{
+    public void Configure(EntityTypeBuilder<Team> builder)
+    {
+        builder.ToTable("Teams");
+        
+        builder.HasKey(t => t.Id);
+        
+        builder.Property(t => t.Name)
+            .IsRequired()
+            .HasMaxLength(100);
+        
+        builder.Property(t => t.CreatedAt)
+            .HasDefaultValueSql("CURRENT_TIMESTAMP");
+        
+        builder.HasOne(t => t.Category)
+            .WithMany()
+            .HasForeignKey(t => t.CategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
+        
+        builder.HasOne(t => t.Level)
+            .WithMany()
+            .HasForeignKey(t => t.LevelId)
+            .OnDelete(DeleteBehavior.SetNull);
+        
+        builder.HasIndex(t => t.Name);
+    }
+}
+
+// Aplicar en AppDbContext
+protected override void OnModelCreating(ModelBuilder modelBuilder)
+{
+    modelBuilder.ApplyConfiguration(new TeamConfiguration());
+    // O aplicar todas automáticamente:
+    modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+}
+```
+
+#### Evitar N+1 Queries
+
+```csharp
+// ❌ MAL - N+1 Query
+var teams = await _context.Teams.ToListAsync();
+foreach (var team in teams)
+{
+    var members = await _context.TeamMembers.Where(m => m.TeamId == team.Id).ToListAsync();
+}
+
+// ✅ BIEN - Eager Loading
+var teams = await _context.Teams
+    .Include(t => t.Members)
+    .Include(t => t.Category)
+    .Include(t => t.Level)
+    .ToListAsync();
+```
+
+#### Proyecciones (Select) en lugar de Include cuando sea posible
+
+```csharp
+// ✅ MEJOR - Solo traer lo necesario
+var teamDtos = await _context.Teams
+    .Select(t => new TeamDto
+    {
+        Id = t.Id,
+        Name = t.Name,
+        Category = t.Category != null ? t.Category.Name : null,
+        Level = t.Level != null ? t.Level.Name : null
+    })
+    .ToListAsync();
+```
+
+### 5. Controllers - Mantenerlos Delgados
+
+Los controllers deben ser **thin** - solo routing, validación básica y llamar a servicios.
+
+```csharp
+[ApiController]
+[Route("api/[controller]")]
+public class TeamsController : ControllerBase
+{
+    private readonly AppDbContext _context;
     private readonly IMapper _mapper;
-    private readonly IRepository<WeatherForecast> _repo;
+    private readonly ILogger<TeamsController> _logger;
 
-    public WeatherForecastController(IMapper mapper, IRepository<WeatherForecast> repo)
-    {
-        _mapper = mapper;
-        _repo = repo;
-    }
-
-    [HttpGet]
-    public async Task<IEnumerable<WeatherForecastDto>> Get()
-    {
-        var entities = await _repo.GetAllAsync();
-        return _mapper.Map<IEnumerable<WeatherForecastDto>>(entities);
-    }
-}
-```
-
-Razonamiento: Evitar exponer internals y atar las versiones del dominio a la API; los DTOs permiten evolucionar la API con seguridad y evitar circular referencias al serializar entidades directamente.
-
-
----
-
-### 2. Unit of Work Pattern
-
-**📌 CUÁNDO USAR:**
-- ✅ Múltiples repositorios en una transacción
-- ✅ Necesitas garantizar atomicidad entre operaciones
-- ✅ Rollback en caso de error en cualquier operación
-- ✅ Operaciones complejas de negocio con múltiples entidades
-
-**❌ CUÁNDO NO USAR:**
-- ❌ Operaciones simples de una sola entidad
-- ❌ Ya usas DbContext.SaveChangesAsync() directamente
-- ❌ EF Core ya maneja transacciones automáticamente
-
-**💡 IMPLEMENTACIÓN:**
-
-```csharp
-// Application/Interfaces/IUnitOfWork.cs
-public interface IUnitOfWork : IDisposable
-{
-    IProductRepository Products { get; }
-    ICategoryRepository Categories { get; }
-    IOrderRepository Orders { get; }
-    
-    Task<int> SaveChangesAsync(CancellationToken cancellationToken = default);
-    Task BeginTransactionAsync();
-    Task CommitTransactionAsync();
-    Task RollbackTransactionAsync();
-}
-
-// Infrastructure/Persistence/UnitOfWork.cs
-public class UnitOfWork : IUnitOfWork
-{
-    private readonly ApplicationDbContext _context;
-    private IDbContextTransaction? _transaction;
-
-    public UnitOfWork(ApplicationDbContext context)
+    public TeamsController(
+        AppDbContext context, 
+        IMapper mapper, 
+        ILogger<TeamsController> logger)
     {
         _context = context;
-        Products = new ProductRepository(_context);
-        Categories = new CategoryRepository(_context);
-        Orders = new OrderRepository(_context);
-    }
-
-    public IProductRepository Products { get; }
-    public ICategoryRepository Categories { get; }
-    public IOrderRepository Orders { get; }
-
-    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-        => await _context.SaveChangesAsync(cancellationToken);
-
-    public async Task BeginTransactionAsync()
-        => _transaction = await _context.Database.BeginTransactionAsync();
-
-    public async Task CommitTransactionAsync()
-    {
-        if (_transaction != null)
-            await _transaction.CommitAsync();
-    }
-
-    public async Task RollbackTransactionAsync()
-    {
-        if (_transaction != null)
-            await _transaction.RollbackAsync();
-    }
-
-    public void Dispose()
-    {
-        _transaction?.Dispose();
-        _context.Dispose();
-    }
-}
-```
-
----
-
-### 3. Specification Pattern
-
-**📌 CUÁNDO USAR:**
-- ✅ Queries complejas reutilizables con múltiples filtros
-- ✅ Lógica de filtrado encapsulada y testeable
-- ✅ Queries dinámicas con combinaciones de criterios
-- ✅ Evitar duplicación de lógica de consultas
-
-**❌ CUÁNDO NO USAR:**
-- ❌ Queries simples con un solo filtro
-- ❌ Queries específicas usadas una sola vez
-- ❌ LINQ directo es más legible
-
-**💡 IMPLEMENTACIÓN:**
-
-```csharp
-// Application/Common/Specifications/Specification.cs
-public abstract class Specification<T>
-{
-    public abstract Expression<Func<T, bool>> ToExpression();
-
-    public bool IsSatisfiedBy(T entity)
-    {
-        var predicate = ToExpression().Compile();
-        return predicate(entity);
-    }
-
-    public Specification<T> And(Specification<T> specification)
-        => new AndSpecification<T>(this, specification);
-
-    public Specification<T> Or(Specification<T> specification)
-        => new OrSpecification<T>(this, specification);
-}
-
-// Application/Features/Products/Specifications/ProductSpecifications.cs
-public class ProductsInStockSpecification : Specification<Product>
-{
-    public override Expression<Func<Product, bool>> ToExpression()
-        => product => product.Stock > 0;
-}
-
-public class ProductsByCategorySpecification : Specification<Product>
-{
-    private readonly Guid _categoryId;
-
-    public ProductsByCategorySpecification(Guid categoryId)
-        => _categoryId = categoryId;
-
-    public override Expression<Func<Product, bool>> ToExpression()
-        => product => product.CategoryId == _categoryId;
-}
-```
-
----
-
-### 4. Strategy Pattern
-
-**📌 CUÁNDO USAR:**
-- ✅ Múltiples algoritmos intercambiables para la misma tarea
-- ✅ Lógica de negocio que varía según contexto
-- ✅ Evitar múltiples if/switch statements
-- ✅ Cálculos, validaciones, o procesamiento con variantes
-
-**❌ CUÁNDO NO USAR:**
-- ❌ Solo hay un algoritmo
-- ❌ La lógica es muy simple (un if basta)
-- ❌ No hay necesidad de intercambiar estrategias
-
-**💡 IMPLEMENTACIÓN:**
-
-```csharp
-// Application/Interfaces/Strategies/IShippingCalculator.cs
-public interface IShippingCalculator
-{
-    decimal Calculate(Order order);
-    string StrategyName { get; }
-}
-
-// Application/Services/Strategies/StandardShippingCalculator.cs
-public class StandardShippingCalculator : IShippingCalculator
-{
-    public string StrategyName => "Standard";
-
-    public decimal Calculate(Order order)
-        => order.TotalWeight * 0.5m;
-}
-
-public class ExpressShippingCalculator : IShippingCalculator
-{
-    public string StrategyName => "Express";
-
-    public decimal Calculate(Order order)
-        => order.TotalWeight * 1.5m + 10m;
-}
-
-// Application/Services/ShippingService.cs
-public class ShippingService
-{
-    private readonly Dictionary<string, IShippingCalculator> _calculators;
-
-    public ShippingService(IEnumerable<IShippingCalculator> calculators)
-        => _calculators = calculators.ToDictionary(c => c.StrategyName);
-
-    public decimal CalculateShipping(Order order, string shippingMethod)
-    {
-        if (!_calculators.TryGetValue(shippingMethod, out var calculator))
-            throw new InvalidOperationException($"Unknown shipping method: {shippingMethod}");
-
-        return calculator.Calculate(order);
-    }
-}
-```
-
----
-
-### 5. Facade Pattern
-
-**📌 CUÁNDO USAR:**
-- ✅ Simplificar interface compleja de un subsistema
-- ✅ Coordinar múltiples servicios en una operación
-- ✅ Ocultar complejidad interna de un módulo
-- ✅ Proveer API unificada para operaciones relacionadas
-
-**❌ CUÁNDO NO USAR:**
-- ❌ La operación usa un solo servicio
-- ❌ No hay complejidad que ocultar
-- ❌ Agrega una capa innecesaria
-
-**💡 IMPLEMENTACIÓN:**
-
-```csharp
-// Application/Interfaces/IOrderFacade.cs
-public interface IOrderFacade
-{
-    Task<OrderDto> CreateCompleteOrderAsync(CreateOrderRequest request);
-}
-
-// Application/Services/OrderFacade.cs
-public class OrderFacade : IOrderFacade
-{
-    private readonly IOrderService _orderService;
-    private readonly IInventoryService _inventoryService;
-    private readonly IPaymentService _paymentService;
-    private readonly INotificationService _notificationService;
-    private readonly ILogger<OrderFacade> _logger;
-
-    public OrderFacade(
-        IOrderService orderService,
-        IInventoryService inventoryService,
-        IPaymentService paymentService,
-        INotificationService notificationService,
-        ILogger<OrderFacade> logger)
-    {
-        _orderService = orderService;
-        _inventoryService = inventoryService;
-        _paymentService = paymentService;
-        _notificationService = notificationService;
+        _mapper = mapper;
         _logger = logger;
     }
 
-    public async Task<OrderDto> CreateCompleteOrderAsync(CreateOrderRequest request)
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<TeamDto>>> GetTeams()
     {
-        _logger.LogInformation("Starting complete order creation");
+        var teams = await _context.Teams
+            .Include(t => t.Category)
+            .Include(t => t.Level)
+            .ToListAsync();
 
-        // 1. Verificar inventario
-        var inventoryCheck = await _inventoryService.CheckAvailabilityAsync(request.Items);
-        if (!inventoryCheck.IsAvailable)
-            throw new InsufficientStockException(inventoryCheck.UnavailableItems);
+        return Ok(_mapper.Map<IEnumerable<TeamDto>>(teams));
+    }
 
-        // 2. Crear orden
-        var order = await _orderService.CreateOrderAsync(request);
+    [HttpGet("{id}")]
+    public async Task<ActionResult<TeamDto>> GetTeam(int id)
+    {
+        var team = await _context.Teams
+            .Include(t => t.Category)
+            .Include(t => t.Level)
+            .FirstOrDefaultAsync(t => t.Id == id);
 
-        // 3. Procesar pago
-        var paymentResult = await _paymentService.ProcessPaymentAsync(new PaymentRequest
+        if (team == null)
         {
-            OrderId = order.Id,
-            Amount = order.Total,
-            PaymentMethod = request.PaymentMethod
-        });
-
-        if (!paymentResult.IsSuccessful)
-        {
-            await _orderService.CancelOrderAsync(order.Id);
-            throw new PaymentFailedException(paymentResult.ErrorMessage);
+            _logger.LogWarning("Team with ID {TeamId} not found", id);
+            return NotFound();
         }
 
-        // 4. Reducir inventario
-        await _inventoryService.ReserveStockAsync(order.Items);
-
-        // 5. Enviar notificaciones
-        await _notificationService.SendOrderConfirmationAsync(order.Id);
-
-        _logger.LogInformation("Order {OrderId} created successfully", order.Id);
-        
-        return order;
+        return Ok(_mapper.Map<TeamDto>(team));
     }
-}
-```
 
----
-
-### 6. Factory Pattern
-
-**📌 CUÁNDO USAR:**
-- ✅ Creación compleja de objetos con múltiples pasos
-- ✅ Diferentes implementaciones según condiciones
-- ✅ Encapsular lógica de instanciación
-- ✅ Objetos que requieren configuración inicial
-
-**❌ CUÁNDO NO USAR:**
-- ❌ Objetos simples con constructor básico
-- ❌ DI container ya maneja la creación
-- ❌ No hay lógica condicional en la creación
-
----
-
-## ⚠️ ANTI-PATRONES A EVITAR
-
-### 1. ❌ Anemic Domain Model
-
-```csharp
-// ❌ MAL - Modelo anémico
-public class Order
-{
-    public Guid Id { get; set; }
-    public decimal Total { get; set; }
-    public OrderStatus Status { get; set; }
-}
-
-// ✅ BIEN - Rich Domain Model
-public class Order
-{
-    private readonly List<OrderItem> _items = new();
-
-    public Guid Id { get; private set; }
-    public decimal Total { get; private set; }
-    public OrderStatus Status { get; private set; }
-    public IReadOnlyCollection<OrderItem> Items => _items.AsReadOnly();
-
-    public void AddItem(Product product, int quantity)
+    [HttpPost]
+    public async Task<ActionResult<TeamDto>> CreateTeam(CreateTeamDto dto)
     {
-        if (quantity <= 0)
-            throw new InvalidOperationException("Quantity must be positive");
+        var team = _mapper.Map<Team>(dto);
+        team.CreatedAt = DateTime.UtcNow;
 
-        var item = new OrderItem(product.Id, quantity, product.Price);
-        _items.Add(item);
-        RecalculateTotal();
+        _context.Teams.Add(team);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Team created with ID {TeamId}", team.Id);
+
+        var teamDto = _mapper.Map<TeamDto>(team);
+        return CreatedAtAction(nameof(GetTeam), new { id = team.Id }, teamDto);
     }
 
-    private void RecalculateTotal()
-        => Total = _items.Sum(i => i.Subtotal);
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateTeam(int id, UpdateTeamDto dto)
+    {
+        var team = await _context.Teams.FindAsync(id);
+        if (team == null)
+        {
+            return NotFound();
+        }
+
+        _mapper.Map(dto, team);
+        team.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Team with ID {TeamId} updated", id);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTeam(int id)
+    {
+        var team = await _context.Teams.FindAsync(id);
+        if (team == null)
+        {
+            return NotFound();
+        }
+
+        _context.Teams.Remove(team);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Team with ID {TeamId} deleted", id);
+
+        return NoContent();
+    }
 }
+```
+
+### 6. Migraciones de EF Core
+
+**Workflow obligatorio:**
+
+```powershell
+# 1. Navegar al directorio del proyecto
+cd back/SportPlanner
+
+# 2. Asegurar que dotnet-ef está instalado localmente
+dotnet new tool-manifest --force
+dotnet tool install --local dotnet-ef --version 10.*
+
+# 3. Crear una migración
+dotnet tool run dotnet-ef migrations add NombreDeLaMigracion
+
+# 4. Revisar la migración generada en Migrations/
+
+# 5. Aplicar la migración a la BD local
+dotnet tool run dotnet-ef database update
+
+# 6. Si hay errores, eliminar la última migración
+dotnet tool run dotnet-ef migrations remove
+```
+
+**NUNCA modifiques la base de datos directamente - siempre usa migraciones.**
+
+---
+
+## 🔄 Flujo de Trabajo para Nuevas Funcionalidades
+
+### Tareas Pequeñas (1-2 archivos)
+
+Puedes implementar directamente:
+- Agregar una propiedad a un DTO existente
+- Crear un endpoint simple CRUD
+- Añadir una validación a un validator existente
+
+### Tareas Medianas (3-10 archivos)
+
+1. **Planificar** - Crear un plan breve (2-3 fases)
+2. **Implementar por fases:**
+   - Fase 1: Modelo y Migración
+   - Fase 2: DTOs y Mappings
+   - Fase 3: Controller y Validadores
+3. **Validar** - Probar con `dotnet build` y `dotnet run`
+
+### Tareas Grandes (>10 archivos o múltiples capas)
+
+Usar el template de instrucciones para agentes con frontmatter YAML.
+
+**Ubicación:** `.github/ISSUE_TEMPLATE/agent_task.md` o `PULL_REQUEST_TEMPLATE.md`
+
+**Generar template local:**
+
+```powershell
+.\tools\generate-agent-instruction.ps1
+```
+
+**Estructura del template:**
+
+```yaml
+---
+agent: copilot
+task_type: feature | bugfix | refactor | test
+priority: high | medium | low
+estimated_files: number
+---
+
+# Título de la Tarea
+
+## Descripción
+Descripción detallada de la funcionalidad a implementar.
+
+## Fases de Implementación
+
+### Fase 1: Domain Layer
+- [ ] Crear entidades en `Models/`
+- [ ] Configurar EF Core en `Data/`
+- [ ] Crear y aplicar migración
+
+### Fase 2: Application Layer
+- [ ] Crear DTOs en `Application/DTOs/`
+- [ ] Crear Mappings en `Application/Mappings/`
+- [ ] Crear Validators en `Application/Validators/`
+
+### Fase 3: API Layer
+- [ ] Crear Controller en `Controllers/`
+- [ ] Documentar endpoints (Swagger)
+
+### Fase 4: Testing
+- [ ] Tests unitarios
+- [ ] Tests de integración
+
+## Archivos Afectados
+- `Models/NuevaEntidad.cs`
+- `Data/AppDbContext.cs`
+- `Application/DTOs/NuevaEntidadDto.cs`
+- ...
+
+## Criterios de Aceptación
+- [ ] Build exitoso (`dotnet build`)
+- [ ] Migración aplicada correctamente
+- [ ] Endpoints funcionando
+- [ ] Validaciones implementadas
+- [ ] Tests pasando
 ```
 
 ---
 
-### 2. ❌ God Object / God Class
+## 🎨 Patrones y Convenciones
+
+### Nombres de Archivos y Clases
+
+- **Entidades (Models/):** `PascalCase`, singular (e.g., `Team.cs`, `SportConcept.cs`)
+- **DTOs:** Sufijo `Dto` (e.g., `TeamDto`, `CreateTeamDto`, `UpdateTeamDto`)
+- **Validators:** Sufijo `Validator` (e.g., `CreateTeamDtoValidator`)
+- **Controllers:** Sufijo `Controller`, plural (e.g., `TeamsController`)
+- **Mappings:** Sufijo `MappingProfile` (e.g., `TeamMappingProfile`)
+
+### Convenciones de Código
 
 ```csharp
-// ❌ MAL - God Class
-public class OrderManager
+// ✅ BIEN - Record para DTOs inmutables
+public record TeamDto
 {
-    public Order CreateOrder(CreateOrderRequest request) { }
-    public void CancelOrder(Guid orderId) { }
-    public void ProcessPayment(Guid orderId) { }
-    public void SendEmail(Guid orderId) { }
-    public void UpdateInventory(Guid orderId) { }
-    // ... 50 métodos más
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
 }
 
-// ✅ BIEN - Separación de responsabilidades
-public class OrderService { }
-public class PaymentService { }
-public class NotificationService { }
-```
-
----
-
-### 3. ❌ Leaky Abstractions
-
-```csharp
-// ❌ MAL - EF Core entities expuestas directamente
-public interface IProductService
+// ✅ BIEN - Async/Await siempre
+public async Task<ActionResult<TeamDto>> GetTeam(int id)
 {
-    Task<Product> GetByIdAsync(Guid id); // ← Product es entidad de EF
+    var team = await _context.Teams.FindAsync(id);
+    return Ok(_mapper.Map<TeamDto>(team));
 }
 
-// ✅ BIEN - DTOs como contratos de API
-public interface IProductService
-{
-    Task<ProductDto> GetByIdAsync(Guid id);
-}
-```
+// ✅ BIEN - Usar nullable reference types
+public string? Description { get; set; }
 
----
+// ✅ BIEN - Logging estructurado
+_logger.LogInformation("Team {TeamId} created by user {UserId}", teamId, userId);
 
-### 4. ❌ Repository que retorna IQueryable
-
-```csharp
-// ❌ MAL - IQueryable expuesto
-public interface IProductRepository
-{
-    IQueryable<Product> GetAll(); // ← Peligroso
-}
-
-// ✅ BIEN - Métodos específicos
-public interface IProductRepository
-{
-    Task<IEnumerable<Product>> GetAllAsync();
-    Task<IEnumerable<Product>> GetByPriceRangeAsync(decimal min, decimal max);
-}
-```
-
----
-
-### 5. ❌ Service Locator Pattern
-
-```csharp
-// ❌ MAL - Service Locator
-var paymentService = ServiceLocator.GetService<IPaymentService>();
-
-// ✅ BIEN - Dependency Injection explícito
-public class OrderService
-{
-    private readonly IPaymentService _paymentService;
-
-    public OrderService(IPaymentService paymentService)
-        => _paymentService = paymentService;
-}
-```
-
----
-
-### 6. ❌ Magic Strings
-
-```csharp
 // ❌ MAL - Magic strings
-if (user.Role == "Admin") { }
+if (user.Role == "admin") { }
 
-// ✅ BIEN - Constantes y enums
-public static class Roles
+// ✅ BIEN - Enums o constantes
+public enum UserRole { Admin, User, Guest }
+if (user.Role == UserRole.Admin) { }
+```
+
+### Dependency Injection
+
+**Siempre usar constructor injection:**
+
+```csharp
+public class TeamsController : ControllerBase
 {
-    public const string Admin = "Admin";
-    public const string User = "User";
-}
+    private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
+    private readonly ILogger<TeamsController> _logger;
 
-if (user.Role == Roles.Admin) { }
+    public TeamsController(
+        AppDbContext context, 
+        IMapper mapper, 
+        ILogger<TeamsController> logger)
+    {
+        _context = context;
+        _mapper = mapper;
+        _logger = logger;
+    }
+}
+```
+
+**Registrar servicios en `Program.cs`:**
+
+```csharp
+// DbContext
+builder.Services.AddDbContext<AppDbContext>(options =>
+    options.UseNpgsql(connectionString));
+
+// AutoMapper
+builder.Services.AddAutoMapper(typeof(Program).Assembly);
+
+// FluentValidation
+builder.Services.AddFluentValidationAutoValidation();
+builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+
+// Servicios personalizados
+builder.Services.AddScoped<ITeamService, TeamService>();
 ```
 
 ---
 
-### 7. ❌ Primitive Obsession
+## 🧪 Validación y Testing
+
+### Tests Unitarios
+
+**Ubicación:** `back/SportPlanner.Tests/`
 
 ```csharp
-// ❌ MAL - Primitivos
-public class Customer
-{
-    public string Email { get; set; } // ← Sin validación
-}
+// Tests/Validators/CreateTeamDtoValidatorTests.cs
+using FluentValidation.TestHelper;
+using SportPlanner.Application.DTOs;
+using SportPlanner.Application.Validators;
+using Xunit;
 
-// ✅ BIEN - Value Objects
-public class Email : ValueObject
-{
-    public string Value { get; }
+namespace SportPlanner.Tests.Validators;
 
-    public Email(string value)
+public class CreateTeamDtoValidatorTests
+{
+    private readonly CreateTeamDtoValidator _validator;
+
+    public CreateTeamDtoValidatorTests()
     {
-        if (string.IsNullOrWhiteSpace(value) || !value.Contains("@"))
-            throw new ArgumentException("Invalid email");
-        Value = value;
+        _validator = new CreateTeamDtoValidator();
     }
 
-    protected override IEnumerable<object> GetEqualityComponents()
+    [Fact]
+    public void Should_Have_Error_When_Name_Is_Empty()
     {
-        yield return Value;
+        var dto = new CreateTeamDto { Name = "" };
+        var result = _validator.TestValidate(dto);
+        result.ShouldHaveValidationErrorFor(x => x.Name);
+    }
+
+    [Fact]
+    public void Should_Not_Have_Error_When_Name_Is_Valid()
+    {
+        var dto = new CreateTeamDto { Name = "Team A" };
+        var result = _validator.TestValidate(dto);
+        result.ShouldNotHaveValidationErrorFor(x => x.Name);
+    }
+}
+```
+
+### Tests de Integración
+
+```csharp
+// Tests/Integration/TeamsControllerTests.cs
+using Microsoft.AspNetCore.Mvc.Testing;
+using SportPlanner.Application.DTOs;
+using System.Net;
+using System.Net.Http.Json;
+using Xunit;
+
+namespace SportPlanner.Tests.Integration;
+
+public class TeamsControllerTests : IClassFixture<WebApplicationFactory<Program>>
+{
+    private readonly HttpClient _client;
+
+    public TeamsControllerTests(WebApplicationFactory<Program> factory)
+    {
+        _client = factory.CreateClient();
+    }
+
+    [Fact]
+    public async Task GetTeams_ReturnsSuccessStatusCode()
+    {
+        var response = await _client.GetAsync("/api/teams");
+        response.EnsureSuccessStatusCode();
+    }
+
+    [Fact]
+    public async Task CreateTeam_WithValidData_ReturnsCreated()
+    {
+        var dto = new CreateTeamDto { Name = "Test Team" };
+        var response = await _client.PostAsJsonAsync("/api/teams", dto);
+        Assert.Equal(HttpStatusCode.Created, response.StatusCode);
     }
 }
 ```
 
 ---
 
-## 🗄️ POSTGRESQL + EF CORE 10 - BEST PRACTICES
+## 📝 Ejemplos de Implementación
 
-### Configuración de Connection String
+### Ejemplo Completo: Agregar Entidad `Player`
 
-```json
-// appsettings.json
+#### 1. Crear Entidad (Models/Player.cs)
+
+```csharp
+namespace SportPlanner.Models;
+
+public class Player
 {
-  "ConnectionStrings": {
-    "DefaultConnection": "Host=localhost;Database=yourdb;Username=postgres;Password=yourpassword;Include Error Detail=true"
-  }
+    public int Id { get; set; }
+    public string Name { get; set; } = string.Empty;
+    public string? Email { get; set; }
+    public DateTime? DateOfBirth { get; set; }
+    public int? TeamId { get; set; }
+    public Team? Team { get; set; }
+    public DateTime CreatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 }
 ```
 
-### DbContext Configuration
+#### 2. Actualizar DbContext
 
 ```csharp
-// Infrastructure/Persistence/ApplicationDbContext.cs
-public class ApplicationDbContext : DbContext
+// Data/AppDbContext.cs
+public DbSet<Player> Players => Set<Player>();
+
+protected override void OnModelCreating(ModelBuilder modelBuilder)
 {
-    public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options) { }
-
-    public DbSet<Product> Products => Set<Product>();
-    public DbSet<Category> Categories => Set<Category>();
-
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
-    {
-        base.OnModelCreating(modelBuilder);
-
-        // PostgreSQL: uuid-ossp extension
-        modelBuilder.HasPostgresExtension("uuid-ossp");
-        
-        // Aplicar todas las configuraciones
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(ApplicationDbContext).Assembly);
-
-        // Global query filters (soft delete)
-        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
-        {
-            if (typeof(ISoftDelete).IsAssignableFrom(entityType.ClrType))
-            {
-                modelBuilder.Entity(entityType.ClrType)
-                    .HasQueryFilter(GenerateSoftDeleteFilter(entityType.ClrType));
-            }
-        }
-    }
-
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
-    {
-        // Audit trail automático
-        var entries = ChangeTracker.Entries<IAuditable>()
-            .Where(e => e.State == EntityState.Added || e.State == EntityState.Modified);
-
-        foreach (var entry in entries)
-        {
-            if (entry.State == EntityState.Added)
-            {
-                entry.Entity.CreatedAt = DateTime.UtcNow;
-                entry.Entity.CreatedBy = GetCurrentUser();
-            }
-            
-            entry.Entity.UpdatedAt = DateTime.UtcNow;
-            entry.Entity.UpdatedBy = GetCurrentUser();
-        }
-
-        // Soft delete
-        foreach (var entry in ChangeTracker.Entries<ISoftDelete>())
-        {
-            if (entry.State == EntityState.Deleted)
-            {
-                entry.State = EntityState.Modified;
-                entry.Entity.IsDeleted = true;
-                entry.Entity.DeletedAt = DateTime.UtcNow;
-            }
-        }
-
-        return await base.SaveChangesAsync(cancellationToken);
-    }
-
-    private string GetCurrentUser() => "system"; // TODO: implementar
-}
-```
-
-### Entity Configuration para PostgreSQL
-
-```csharp
-// Infrastructure/Persistence/Configurations/ProductConfiguration.cs
-public class ProductConfiguration : IEntityTypeConfiguration<Product>
-{
-    public void Configure(EntityTypeBuilder<Product> builder)
-    {
-        // Tabla con snake_case (convención PostgreSQL)
-        builder.ToTable("products");
-
-        // Primary Key
-        builder.HasKey(p => p.Id);
-        builder.Property(p => p.Id)
-            .HasColumnName("id")
-            .HasDefaultValueSql("uuid_generate_v4()");
-
-        // Propiedades con snake_case
-        builder.Property(p => p.Name)
-            .HasColumnName("name")
-            .HasMaxLength(200)
-            .IsRequired();
-
-        builder.Property(p => p.Price)
-            .HasColumnName("price")
-            .HasPrecision(18, 2)
-            .IsRequired();
-
-        // Timestamps (PostgreSQL timestamptz)
-        builder.Property(p => p.CreatedAt)
-            .HasColumnName("created_at")
-            .HasColumnType("timestamp with time zone")
-            .IsRequired();
-
-        builder.Property(p => p.UpdatedAt)
-            .HasColumnName("updated_at")
-            .HasColumnType("timestamp with time zone");
-
-        // Soft delete
-        builder.Property(p => p.IsDeleted)
-            .HasColumnName("is_deleted")
-            .HasDefaultValue(false);
-
-        // Relaciones
-        builder.HasOne(p => p.Category)
-            .WithMany(c => c.Products)
-            .HasForeignKey(p => p.CategoryId)
-            .HasConstraintName("fk_products_categories")
-            .OnDelete(DeleteBehavior.Restrict);
-
-        // Índices
-        builder.HasIndex(p => p.Name)
-            .HasDatabaseName("ix_products_name");
-
-        builder.HasIndex(p => p.CategoryId)
-            .HasDatabaseName("ix_products_category_id");
-    }
-}
-```
-
-### Program.cs Registration (PostgreSQL)
-
-```csharp
-// WebAPI/Program.cs
-var builder = WebApplication.CreateBuilder(args);
-
-// PostgreSQL con Npgsql
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+    // ... código existente ...
     
-    options.UseNpgsql(connectionString, npgsqlOptions =>
+    modelBuilder.Entity<Player>(entity =>
     {
-        npgsqlOptions.MigrationsAssembly("YourProject.Infrastructure");
-        npgsqlOptions.EnableRetryOnFailure(
-            maxRetryCount: 3,
-            maxRetryDelay: TimeSpan.FromSeconds(5),
-            errorCodesToAdd: null);
-        
-        // Snake case naming (convención PostgreSQL)
-        npgsqlOptions.UseSnakeCaseNamingConvention();
+        entity.ToTable("Players");
+        entity.HasKey(p => p.Id);
+        entity.Property(p => p.Name).IsRequired().HasMaxLength(100);
+        entity.Property(p => p.Email).HasMaxLength(100);
+        entity.HasOne(p => p.Team)
+            .WithMany()
+            .HasForeignKey(p => p.TeamId)
+            .OnDelete(DeleteBehavior.SetNull);
+        entity.HasIndex(p => p.Email);
     });
-
-    if (builder.Environment.IsDevelopment())
-    {
-        options.EnableSensitiveDataLogging();
-        options.EnableDetailedErrors();
-    }
-});
+}
 ```
 
----
+#### 3. Crear Migración
 
-## ✅ BEST PRACTICES GENERALES
-
-### 1. Logging Estructurado con Serilog
-
-```csharp
-// Program.cs
-using Serilog;
-
-Log.Logger = new LoggerConfiguration()
-    .ReadFrom.Configuration(builder.Configuration)
-    .Enrich.FromLogContext()
-    .WriteTo.Console()
-    .WriteTo.File("logs/log-.txt", rollingInterval: RollingInterval.Day)
-    .CreateLogger();
-
-builder.Host.UseSerilog();
+```powershell
+cd back/SportPlanner
+dotnet tool run dotnet-ef migrations add AddPlayerEntity
+dotnet tool run dotnet-ef database update
 ```
 
-### 2. Global Exception Handler
+#### 4. Crear DTOs
 
 ```csharp
-// WebAPI/Middleware/GlobalExceptionHandler.cs
-public class GlobalExceptionHandler : IExceptionHandler
+// Application/DTOs/PlayerDto.cs
+namespace SportPlanner.Application.DTOs;
+
+public record PlayerDto
 {
-    private readonly ILogger<GlobalExceptionHandler> _logger;
+    public int Id { get; init; }
+    public string Name { get; init; } = string.Empty;
+    public string? Email { get; init; }
+    public DateTime? DateOfBirth { get; init; }
+    public int? TeamId { get; init; }
+    public string? TeamName { get; init; }
+}
 
-    public GlobalExceptionHandler(ILogger<GlobalExceptionHandler> logger)
-        => _logger = logger;
+public record CreatePlayerDto
+{
+    public string Name { get; init; } = string.Empty;
+    public string? Email { get; init; }
+    public DateTime? DateOfBirth { get; init; }
+    public int? TeamId { get; init; }
+}
 
-    public async ValueTask<bool> TryHandleAsync(
-        HttpContext httpContext,
-        Exception exception,
-        CancellationToken cancellationToken)
+public record UpdatePlayerDto
+{
+    public string? Name { get; init; }
+    public string? Email { get; init; }
+    public DateTime? DateOfBirth { get; init; }
+    public int? TeamId { get; init; }
+}
+```
+
+#### 5. Crear Mapping Profile
+
+```csharp
+// Application/Mappings/PlayerMappingProfile.cs
+using AutoMapper;
+using SportPlanner.Application.DTOs;
+using SportPlanner.Models;
+
+namespace SportPlanner.Application.Mappings;
+
+public class PlayerMappingProfile : Profile
+{
+    public PlayerMappingProfile()
     {
-        _logger.LogError(exception, "Unhandled exception occurred");
+        CreateMap<Player, PlayerDto>()
+            .ForMember(dest => dest.TeamName, 
+                opt => opt.MapFrom(src => src.Team != null ? src.Team.Name : null));
 
-        var (statusCode, message) = exception switch
+        CreateMap<CreatePlayerDto, Player>()
+            .ForMember(dest => dest.Id, opt => opt.Ignore())
+            .ForMember(dest => dest.CreatedAt, opt => opt.Ignore())
+            .ForMember(dest => dest.UpdatedAt, opt => opt.Ignore());
+
+        CreateMap<UpdatePlayerDto, Player>()
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+    }
+}
+```
+
+#### 6. Crear Validator
+
+```csharp
+// Application/Validators/CreatePlayerDtoValidator.cs
+using FluentValidation;
+using SportPlanner.Application.DTOs;
+
+namespace SportPlanner.Application.Validators;
+
+public class CreatePlayerDtoValidator : AbstractValidator<CreatePlayerDto>
+{
+    public CreatePlayerDtoValidator()
+    {
+        RuleFor(x => x.Name)
+            .NotEmpty().WithMessage("El nombre es obligatorio")
+            .MaximumLength(100).WithMessage("El nombre no puede exceder 100 caracteres");
+
+        RuleFor(x => x.Email)
+            .EmailAddress().When(x => !string.IsNullOrEmpty(x.Email))
+            .WithMessage("El email no es válido");
+
+        RuleFor(x => x.DateOfBirth)
+            .LessThan(DateTime.UtcNow).When(x => x.DateOfBirth.HasValue)
+            .WithMessage("La fecha de nacimiento no puede ser futura");
+
+        RuleFor(x => x.TeamId)
+            .GreaterThan(0).When(x => x.TeamId.HasValue)
+            .WithMessage("TeamId debe ser mayor que 0");
+    }
+}
+```
+
+#### 7. Crear Controller
+
+```csharp
+// Controllers/PlayersController.cs
+using AutoMapper;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using SportPlanner.Application.DTOs;
+using SportPlanner.Data;
+using SportPlanner.Models;
+
+namespace SportPlanner.Controllers;
+
+[ApiController]
+[Route("api/[controller]")]
+public class PlayersController : ControllerBase
+{
+    private readonly AppDbContext _context;
+    private readonly IMapper _mapper;
+    private readonly ILogger<PlayersController> _logger;
+
+    public PlayersController(
+        AppDbContext context, 
+        IMapper mapper, 
+        ILogger<PlayersController> logger)
+    {
+        _context = context;
+        _mapper = mapper;
+        _logger = logger;
+    }
+
+    [HttpGet]
+    public async Task<ActionResult<IEnumerable<PlayerDto>>> GetPlayers()
+    {
+        var players = await _context.Players
+            .Include(p => p.Team)
+            .ToListAsync();
+
+        return Ok(_mapper.Map<IEnumerable<PlayerDto>>(players));
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<PlayerDto>> GetPlayer(int id)
+    {
+        var player = await _context.Players
+            .Include(p => p.Team)
+            .FirstOrDefaultAsync(p => p.Id == id);
+
+        if (player == null)
         {
-            ValidationException => (StatusCodes.Status400BadRequest, exception.Message),
-            NotFoundException => (StatusCodes.Status404NotFound, exception.Message),
-            _ => (StatusCodes.Status500InternalServerError, "Internal server error")
+            _logger.LogWarning("Player with ID {PlayerId} not found", id);
+            return NotFound();
+        }
+
+        return Ok(_mapper.Map<PlayerDto>(player));
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<PlayerDto>> CreatePlayer(CreatePlayerDto dto)
+    {
+        var player = _mapper.Map<Player>(dto);
+        player.CreatedAt = DateTime.UtcNow;
+
+        _context.Players.Add(player);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Player created with ID {PlayerId}", player.Id);
+
+        var playerDto = _mapper.Map<PlayerDto>(player);
+        return CreatedAtAction(nameof(GetPlayer), new { id = player.Id }, playerDto);
+    }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdatePlayer(int id, UpdatePlayerDto dto)
+    {
+        var player = await _context.Players.FindAsync(id);
+        if (player == null)
+        {
+            return NotFound();
+        }
+
+        _mapper.Map(dto, player);
+        player.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Player with ID {PlayerId} updated", id);
+
+        return NoContent();
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeletePlayer(int id)
+    {
+        var player = await _context.Players.FindAsync(id);
+        if (player == null)
+        {
+            return NotFound();
+        }
+
+        _context.Players.Remove(player);
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Player with ID {PlayerId} deleted", id);
+
+        return NoContent();
+    }
+}
+```
+
+#### 8. Crear Tests
+
+```csharp
+// Tests/Validators/CreatePlayerDtoValidatorTests.cs
+using FluentValidation.TestHelper;
+using SportPlanner.Application.DTOs;
+using SportPlanner.Application.Validators;
+using Xunit;
+
+namespace SportPlanner.Tests.Validators;
+
+public class CreatePlayerDtoValidatorTests
+{
+    private readonly CreatePlayerDtoValidator _validator;
+
+    public CreatePlayerDtoValidatorTests()
+    {
+        _validator = new CreatePlayerDtoValidator();
+    }
+
+    [Fact]
+    public void Should_Have_Error_When_Name_Is_Empty()
+    {
+        var dto = new CreatePlayerDto { Name = "" };
+        var result = _validator.TestValidate(dto);
+        result.ShouldHaveValidationErrorFor(x => x.Name);
+    }
+
+    [Fact]
+    public void Should_Have_Error_When_Email_Is_Invalid()
+    {
+        var dto = new CreatePlayerDto { Name = "John", Email = "invalid-email" };
+        var result = _validator.TestValidate(dto);
+        result.ShouldHaveValidationErrorFor(x => x.Email);
+    }
+
+    [Fact]
+    public void Should_Not_Have_Error_When_All_Valid()
+    {
+        var dto = new CreatePlayerDto 
+        { 
+            Name = "John Doe", 
+            Email = "john@example.com",
+            DateOfBirth = DateTime.UtcNow.AddYears(-25)
         };
-
-        httpContext.Response.StatusCode = statusCode;
-        await httpContext.Response.WriteAsJsonAsync(new ErrorResponse
-        {
-            StatusCode = statusCode,
-            Message = message,
-            Timestamp = DateTime.UtcNow
-        }, cancellationToken);
-
-        return true;
+        var result = _validator.TestValidate(dto);
+        result.ShouldNotHaveAnyValidationErrors();
     }
 }
 ```
 
-### 3. Health Checks
+---
 
-```csharp
-builder.Services.AddHealthChecks()
-    .AddNpgSql(builder.Configuration.GetConnectionString("DefaultConnection")!)
-    .AddDbContextCheck<ApplicationDbContext>();
+## ✅ Checklist Pre-Commit
 
-app.MapHealthChecks("/health");
-```
+Antes de hacer commit, asegúrate de:
+
+- [ ] **Build exitoso:** `dotnet build` sin errores
+- [ ] **No exponer entidades EF Core:** Solo DTOs en controllers
+- [ ] **AutoMapper configurado:** Profile creado y registrado
+- [ ] **FluentValidation implementada:** Validators para DTOs de entrada
+- [ ] **Migraciones aplicadas:** `dotnet ef database update` ejecutado
+- [ ] **Logging estructurado:** Usar `ILogger` con placeholders
+- [ ] **Async/Await correcto:** NUNCA usar `.Result` o `.Wait()`
+- [ ] **Consultar `dotnet10-best-practices.md`:** Verificar que no estás cometiendo antipatrones
+- [ ] **Tests pasando:** `dotnet test` exitoso (si existen tests)
+- [ ] **Nombres consistentes:** Seguir convenciones de nombres
+- [ ] **No hay secretos en código:** Connection strings en `appsettings.Development.json` o variables de entorno
+- [ ] **Documentación actualizada:** Si es necesario, actualizar README o docs
 
 ---
 
-## 📚 ACCESO A DOCUMENTACIÓN
+## 📚 Referencias Rápidas
 
-Para consultar documentación oficial:
+### Comandos Frecuentes
 
-```bash
-# Context7 (documentación oficial)
-"Busca en la documentación de ASP.NET Core sobre [tema]"
-"Consulta EF Core documentation sobre [tema]"
+```powershell
+# Build
+dotnet build
 
-# Web Search (últimas actualizaciones)
-"Busca best practices de .NET 10 para [tema]"
-```
-
----
-
-## ⚡ RECORDATORIOS CRÍTICOS
-
-### ✅ SIEMPRE:
-1. **Hacer PLAN** para tareas MEDIANAS y GRANDES antes de ejecutar
-2. Usar DTOs, nunca exponer entidades directamente
-3. Validar con FluentValidation
-4. Usar async/await para I/O
-5. Logging estructurado con Serilog
-6. Manejar excepciones globalmente
-7. Aplicar migraciones con scripts SQL en producción
-
-### ❌ NUNCA:
-1. Ejecutar tareas MEDIANAS/GRANDES sin plan
-2. Lógica de negocio en controllers/endpoints
-3. IQueryable fuera de Infrastructure
-4. Magic strings (usar constantes/enums)
-5. Service Locator (usar DI)
-6. Modelos anémicos
-7. God classes
-
----
-
-Tu misión es escribir código .NET 10 profesional, mantenible, testeable y escalable siguiendo Clean Architecture y SOLID principles.
-
-**RECUERDA: Para tareas MEDIANAS y GRANDES, SIEMPRE elabora un PLAN MODULAR primero. Solo ejecuta directamente las tareas PEQUEÑAS.**
-```
-
----
-
-## 📦 ARCHIVO 2: CONFIGURACIÓN DE HOOKS
-
-**Ubicación**: `.claude/settings.json`
-
-```json
-{
-  "hooks": {
-    "PostToolUse": [
-      {
-        "matcher": "Edit|Write",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "jq -r '.tool_input.file_path' | { read file; if [[ $file == *.cs ]]; then dotnet format \"$file\" --include \"$file\" 2>/dev/null || true; fi; }",
-            "timeout": 10
-          }
-        ]
-      }
-    ],
-    "Stop": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "echo '✅ Build check...'; dotnet build --no-restore 2>&1 | head -20 || echo '⚠️ Build warnings/errors found'"
-          }
-        ]
-      }
-    ]
-  },
-  "permissions": {
-    "allow": [
-      "Edit",
-      "Write",
-      "Bash(dotnet:*)",
-      "Bash(git:*)"
-    ]
-  }
-}
-```
-
----
-
-## 📦 ARCHIVO 3: SLASH COMMANDS
-
-### 3.1 Nuevo Proyecto
-
-**Ubicación**: `.claude/commands/new-project.md`
-
-```markdown
----
-allowed-tools: Bash(dotnet:*), Bash(mkdir:*), Bash(git:*), Write
-description: Crear nuevo proyecto .NET 10 con Clean Architecture y PostgreSQL
-argument-hint: [ProjectName]
----
-
-# Crear Nuevo Proyecto .NET 10
-
-Parámetro: **$ARGUMENTS** (nombre del proyecto)
-
-Crea la estructura completa de un monolito con Clean Architecture:
-
-```bash
-# Crear solution
-dotnet new sln -n $ARGUMENTS
-
-# Crear proyectos
-mkdir -p src && cd src
-
-dotnet new classlib -n $ARGUMENTS.Domain
-dotnet new classlib -n $ARGUMENTS.Application
-dotnet new classlib -n $ARGUMENTS.Infrastructure
-dotnet new webapi -n $ARGUMENTS.WebAPI --use-minimal-apis
-
-cd ..
-
-# Agregar a solution
-dotnet sln add src/$ARGUMENTS.Domain/$ARGUMENTS.Domain.csproj
-dotnet sln add src/$ARGUMENTS.Application/$ARGUMENTS.Application.csproj
-dotnet sln add src/$ARGUMENTS.Infrastructure/$ARGUMENTS.Infrastructure.csproj
-dotnet sln add src/$ARGUMENTS.WebAPI/$ARGUMENTS.WebAPI.csproj
-
-# Referencias entre proyectos
-dotnet add src/$ARGUMENTS.Application reference src/$ARGUMENTS.Domain
-dotnet add src/$ARGUMENTS.Infrastructure reference src/$ARGUMENTS.Application
-dotnet add src/$ARGUMENTS.WebAPI reference src/$ARGUMENTS.Application
-
-# NuGet packages
-cd src/$ARGUMENTS.Infrastructure
-dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL
-dotnet add package Microsoft.EntityFrameworkCore.Design
-dotnet add package EFCore.NamingConventions
-
-cd ../$ARGUMENTS.Application
-dotnet add package FluentValidation.AspNetCore
-dotnet add package AutoMapper.Extensions.Microsoft.DependencyInjection
-
-cd ../$ARGUMENTS.WebAPI
-dotnet add package Serilog.AspNetCore
-dotnet add package Serilog.Sinks.PostgreSQL
+# Run (con hot reload)
+dotnet watch run
 
 # Tests
-cd ../..
-mkdir -p tests && cd tests
-dotnet new xunit -n $ARGUMENTS.UnitTests
-dotnet new xunit -n $ARGUMENTS.IntegrationTests
-cd ..
-dotnet sln add tests/$ARGUMENTS.UnitTests
-dotnet sln add tests/$ARGUMENTS.IntegrationTests
+dotnet test
 
-# Git
-git init
-echo 'bin/\nobj/\n*.user\n.vs/\n.idea/\nlogs/' > .gitignore
-git add .
-git commit -m "Initial commit: Clean Architecture"
+# EF Core Migrations
+dotnet tool run dotnet-ef migrations add NombreMigracion
+dotnet tool run dotnet-ef database update
+dotnet tool run dotnet-ef migrations remove  # Si necesitas eliminar la última
+
+# Restaurar dependencias
+dotnet restore
+
+# Limpiar build artifacts
+dotnet clean
 ```
 
-Estructura creada:
-- ✅ Clean Architecture (4 capas)
-- ✅ PostgreSQL + EF Core
-- ✅ FluentValidation + AutoMapper
-- ✅ Serilog
-- ✅ Tests
-```
+### Archivos Clave
 
-### 3.2 Agregar Feature
+| Archivo | Propósito |
+|---------|-----------|
+| `Program.cs` | Entry point, DI, configuración |
+| `appsettings.json` | Config base (NO SECRETOS) |
+| `appsettings.Development.json` | Config local de desarrollo |
+| `Data/AppDbContext.cs` | EF Core DbContext |
+| `dotnet10-best-practices.md` | **Mejores prácticas obligatorias** |
 
-**Ubicación**: `.claude/commands/add-feature.md`
+### Recursos Externos
 
-```markdown
----
-allowed-tools: Bash(mkdir:*), Write, Edit
-description: Agregar nueva feature siguiendo Clean Architecture
-argument-hint: [FeatureName]
----
-
-# Agregar Nueva Feature
-
-Parámetro: **$ARGUMENTS** (ej: Products, Orders, Users)
-
-Delega al agente la creación de:
-
-1. **Domain**: Entity + Interfaces
-2. **Application**: DTOs + Commands/Queries + Validators
-3. **Infrastructure**: Repository implementation
-4. **WebAPI**: Endpoints
-
-El agente creará un PLAN primero (es tarea MEDIANA) y luego ejecutará.
-
-Estructura que se generará:
-```
-Application/Features/$ARGUMENTS/
-├── Commands/
-├── Queries/
-├── DTOs/
-└── Validators/
-```
-```
-
-### 3.3 Gestión de Migraciones
-
-**Ubicación**: `.claude/commands/migration.md`
-
-```markdown
----
-allowed-tools: Bash(dotnet:*)
-description: Crear y aplicar migraciones de Entity Framework Core
-argument-hint: add [name] | update | script
----
-
-# Gestión de Migraciones EF Core
-
-**Crear migración:**
-```bash
-dotnet ef migrations add $ARGUMENTS \
-  --project src/YourProject.Infrastructure \
-  --startup-project src/YourProject.WebAPI \
-  --context ApplicationDbContext
-```
-
-**Aplicar migración:**
-```bash
-dotnet ef database update \
-  --project src/YourProject.Infrastructure \
-  --startup-project src/YourProject.WebAPI
-```
-
-**Generar script SQL (para producción):**
-```bash
-dotnet ef migrations script \
-  --project src/YourProject.Infrastructure \
-  --startup-project src/YourProject.WebAPI \
-  --output migrations.sql \
-  --idempotent
-```
-```
-
-### 3.4 Ejecutar Tests
-
-**Ubicación**: `.claude/commands/test.md`
-
-```markdown
----
-allowed-tools: Bash(dotnet:*)
-description: Ejecutar tests con diferentes configuraciones
-argument-hint: unit | integration | all
----
-
-# Ejecutar Tests
-
-**Unit Tests:**
-```bash
-dotnet test tests/YourProject.UnitTests --logger "console;verbosity=detailed"
-```
-
-**Integration Tests:**
-```bash
-dotnet test tests/YourProject.IntegrationTests --logger "console;verbosity=detailed"
-```
-
-**Todos los tests:**
-```bash
-dotnet test --logger "console;verbosity=detailed"
-```
-
-**Con cobertura:**
-```bash
-dotnet test /p:CollectCoverage=true /p:CoverletOutputFormat=opencover
-```
-```
+- [.NET 10 Docs](https://learn.microsoft.com/en-us/dotnet/)
+- [EF Core 10 Docs](https://learn.microsoft.com/en-us/ef/core/)
+- [AutoMapper Docs](https://docs.automapper.org/)
+- [FluentValidation Docs](https://docs.fluentvalidation.net/)
+- [Clean Architecture by Uncle Bob](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)
 
 ---
 
-## 🚀 INSTALACIÓN
+## 🚀 Resumen Ejecutivo para Agentes
 
-### Paso 1: Crear Estructura de Directorios
+**Cuando te pidan crear/modificar código backend:**
 
-```bash
-# Desde la raíz de tu proyecto
-mkdir -p .claude/agents
-mkdir -p .claude/commands
-```
+### 📖 Antes de Programar
 
-### Paso 2: Copiar Archivos
+1. **Lee primero:** `back/dotnet10-best-practices.md` (patrones y antipatrones técnicos)
+2. **Entiende el negocio:** `DocSportPlanner/docs/` (reglas de negocio, casos de uso, terminología del dominio)
+3. **Revisa el modelo:** `DocSportPlanner/docs/tecnico/ModeloDatos.md` (entidades y relaciones)
 
-```bash
-# Copiar el agente principal
-# Contenido del "ARCHIVO 1" → .claude/agents/dotnet-backend-expert.md
+### 🏗️ Al Implementar
 
-# Copiar hooks
-# Contenido del "ARCHIVO 2" → .claude/settings.json
+4. **Usa DTOs:** NUNCA expongas entidades EF Core
+5. **AutoMapper:** Crea `Profile` para mapeos
+6. **FluentValidation:** Valida DTOs de entrada (incluye reglas de negocio)
+7. **Migraciones:** Crea y aplica con `dotnet ef`
+8. **Controllers delgados:** Solo routing y llamadas a servicios
+9. **Async/Await:** Siempre asíncrono
+10. **Logging estructurado:** Usa `ILogger` con placeholders
+11. **Tests:** Unitarios y de integración
+12. **Build antes de commit:** `dotnet build` exitoso
 
-# Copiar slash commands
-# Contenido de "3.1" → .claude/commands/new-project.md
-# Contenido de "3.2" → .claude/commands/add-feature.md
-# Contenido de "3.3" → .claude/commands/migration.md
-# Contenido de "3.4" → .claude/commands/test.md
-```
+### 🎯 Checklist por Tipo de Tarea
 
-### Paso 3: Verificar Instalación
+**Funcionalidades relacionadas con el dominio deportivo** (conceptos, entrenamientos, equipos):
+- [ ] Revisar `DocSportPlanner/docs/negocio/` para reglas de negocio
+- [ ] Verificar terminología correcta en `DocSportPlanner/docs/01-vision-negocio.md`
+- [ ] Validar que la implementación refleja las reglas del dominio
+- [ ] Consultar `DocSportPlanner/backlog/backlog.yaml` para contexto de la funcionalidad
 
-```bash
-# Iniciar Claude Code
-claude
+**Cambios en el modelo de datos**:
+- [ ] Revisar `DocSportPlanner/docs/tecnico/ModeloDatos.md`
+- [ ] Verificar coherencia con el dominio de negocio
+- [ ] Documentar decisiones arquitectónicas si son significativas
 
-# Verificar que el agente está disponible
-# Debería aparecer en /agents
+**Tareas técnicas** (infraestructura, performance, seguridad):
+- [ ] Seguir `back/dotnet10-best-practices.md` estrictamente
+- [ ] Documentar ADR en `DocSportPlanner/docs/ADR/` si es necesario
 
-# Verificar comandos
-# Escribe / y deberías ver:
-# - /new-project
-# - /add-feature
-# - /migration
-# - /test
-```
+### 📚 ¿Dónde buscar información?
 
----
+| Pregunta | Archivo |
+|----------|---------|
+| ¿Cómo implementar X patrón? | `back/dotnet10-best-practices.md` |
+| ¿Qué significa "concepto deportivo"? | `DocSportPlanner/docs/negocio/` |
+| ¿Qué entidades existen? | `DocSportPlanner/docs/tecnico/ModeloDatos.md` |
+| ¿Por qué usamos PostgreSQL? | `DocSportPlanner/docs/tecnico/StackTecnologico.md` |
+| ¿Cuál es el estado del proyecto? | `DocSportPlanner/EstadoProyecto.md` |
+| ¿Qué funcionalidades faltan? | `DocSportPlanner/backlog/backlog.yaml` |
 
-## 📖 EJEMPLOS DE USO
+**¿Tarea grande?** → Usa template con frontmatter YAML y fases.
 
-### Ejemplo 1: Nuevo Proyecto
+**¿Dudas técnicas?** → Consulta `back/dotnet10-best-practices.md` para patrones y antipatrones.
 
-```bash
-> /new-project EcommerceAPI
-
-# Claude creará toda la estructura automáticamente
-```
-
-### Ejemplo 2: Feature CRUD (Tarea MEDIANA)
-
-```
-> Necesito un CRUD completo de Products con:
-- Entidad Product (Name, Price, Stock, CategoryId)
-- Validaciones de dominio
-- Repository pattern
-- DTOs
-- Endpoints REST
-- FluentValidation
-- Tests unitarios
-
-# Claude responderá:
-
-📊 ANÁLISIS DE COMPLEJIDAD:
-- Tamaño: MEDIANA
-- Archivos a crear: ~10
-...
-
-📝 PLAN DE IMPLEMENTACIÓN MODULAR:
-
-FASE 1: CAPA DE DOMINIO
-...
-
-¿Procedo con la implementación?
-
-# Tú: Sí, adelante
-
-# Claude ejecutará fase por fase
-```
-
-### Ejemplo 3: Tarea Pequeña
-
-```
-> Agrega un campo Description a la entidad Product
-
-# Claude ejecuta directamente (es tarea PEQUEÑA)
-# No hace plan, simplemente modifica el archivo
-```
-
-### Ejemplo 4: Implementar Patrón
-
-```
-> Implementa Strategy pattern para calcular shipping costs:
-- StandardShipping
-- ExpressShipping
-- FreeShipping (si total > $100)
-
-# Claude hará un plan (tarea MEDIANA) y ejecutará
-```
+**¿Dudas de negocio?** → Consulta `DocSportPlanner/docs/` para entender el dominio.
 
 ---
 
-## ✅ VERIFICACIÓN POST-INSTALACIÓN
-
-El agente está correctamente instalado si:
-
-- [ ] Aparece en `/agents` como "dotnet-backend-expert"
-- [ ] Los comandos `/new-project`, `/add-feature`, `/migration`, `/test` están disponibles
-- [ ] Al pedir una tarea MEDIANA, Claude hace un PLAN primero
-- [ ] Al pedir una tarea PEQUEÑA, Claude ejecuta directamente
-- [ ] Los hooks de formateo funcionan (archivos .cs se formatean automáticamente)
-- [ ] El hook de build se ejecuta al terminar (muestra resultado del build)
-
----
-
-## 🎯 VENTAJAS DE ESTE AGENTE
-
-✅ **Planificación automática** para tareas complejas
-✅ **Ejecución directa** para tareas simples
-✅ **Best practices** de .NET 10 aplicadas
-✅ **Anti-patrones** evitados proactivamente
-✅ **Patrones de diseño** usados correctamente
-✅ **PostgreSQL** configurado correctamente
-✅ **Clean Architecture** enforced
-✅ **Tests** incluidos automáticamente
-✅ **Documentación** integrada vía Context7
-✅ **Hooks** para formateo y validación
-✅ **Comandos** para operaciones frecuentes
-
----
-
-**¡Listo para construir backends .NET 10 profesionales con planificación modular! 🚀**
+**¡Mantén el código limpio, seguro y mantenible! 🚀**
