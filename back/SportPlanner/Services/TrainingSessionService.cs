@@ -49,26 +49,32 @@ public class TrainingSessionService : ITrainingSessionService
         var plan = await _db.TrainingSchedules
             .Include(s => s.PlanConcepts)
                 .ThenInclude(pc => pc.SportConcept)
+                    .ThenInclude(sc => sc.ConceptPhase)
+            .Include(s => s.PlanConcepts)
+                .ThenInclude(pc => pc.SportConcept)
+                    .ThenInclude(sc => sc.DifficultyLevel)
             .FirstOrDefaultAsync(s => s.Id == scheduleId);
         if (plan == null) throw new ArgumentException("Schedule not found");
 
         var candidates = plan.PlanConcepts
             .Select(pc => pc.SportConcept!)
-            .Where(sc => sc != null && sc.IsActive);
+            .Where(sc => sc != null && sc.IsActive)
+            .ToList();
 
         if (!string.IsNullOrEmpty(dto.Phase))
         {
-            candidates = candidates.Where(sc => sc.ConceptPhase != null && sc.ConceptPhase.Name.Equals(dto.Phase, StringComparison.OrdinalIgnoreCase) || sc.ConceptPhase == null);
+            var phaseLower = dto.Phase!.ToLowerInvariant();
+            candidates = candidates.Where(sc => sc.ConceptPhase == null || (sc.ConceptPhase.Name != null && sc.ConceptPhase.Name.ToLower() == phaseLower)).ToList();
         }
 
         if (dto.MaxDifficultyLevelId.HasValue)
         {
             var maxRank = (await _db.DifficultyLevels.FindAsync(dto.MaxDifficultyLevelId.Value))?.Rank ?? int.MaxValue;
-            candidates = candidates.Where(sc => sc.DifficultyLevel == null || sc.DifficultyLevel!.Rank <= maxRank);
+            candidates = candidates.Where(sc => sc.DifficultyLevel == null || sc.DifficultyLevel!.Rank <= maxRank).ToList();
         }
 
         // sort: Difficulty Rank asc (easier first), ProgressWeight desc
-        candidates = candidates.OrderBy(sc => sc.DifficultyLevel?.Rank ?? int.MaxValue).ThenByDescending(sc => sc.ProgressWeight);
+        candidates = candidates.OrderBy(sc => sc.DifficultyLevel?.Rank ?? int.MaxValue).ThenByDescending(sc => sc.ProgressWeight).ToList();
 
         int available = dto.AvailableTimeMinutes ?? (int)dto.Duration.TotalMinutes;
         int order = 1;
@@ -90,5 +96,13 @@ public class TrainingSessionService : ITrainingSessionService
         _db.TrainingSessions.Add(session);
         await _db.SaveChangesAsync();
         return session;
+    }
+
+    public async Task<TrainingSession?> GetByIdAsync(int id)
+    {
+        return await _db.TrainingSessions
+            .Include(ts => ts.SessionConcepts)
+                .ThenInclude(sc => sc.SportConcept)
+            .FirstOrDefaultAsync(ts => ts.Id == id);
     }
 }

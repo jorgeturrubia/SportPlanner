@@ -24,6 +24,7 @@ public class TrainingScheduleService : ITrainingScheduleService
             EndDate = dto.EndDate
         };
 
+        var seenDays = new HashSet<DayOfWeek>();
         foreach (var dayDto in dto.ScheduleDays)
         {
             if (!Enum.TryParse<DayOfWeek>(dayDto.DayOfWeek, true, out var dow))
@@ -33,6 +34,8 @@ public class TrainingScheduleService : ITrainingScheduleService
             TimeSpan? end = null;
             if (!string.IsNullOrEmpty(dayDto.EndTime)) end = TimeSpan.Parse(dayDto.EndTime);
 
+            if (seenDays.Contains(dow)) throw new ArgumentException($"Duplicate day: {dow}");
+            seenDays.Add(dow);
             schedule.ScheduleDays.Add(new TrainingScheduleDay
             {
                 DayOfWeek = dow,
@@ -43,8 +46,16 @@ public class TrainingScheduleService : ITrainingScheduleService
         }
 
         // add plan concepts (just join records)
-        foreach (var scId in dto.PlanConceptIds.Distinct())
+        var distinctIds = dto.PlanConceptIds.Distinct().ToList();
+        if (distinctIds.Count != dto.PlanConceptIds.Count)
         {
+            // duplicates found
+        }
+        foreach (var scId in distinctIds)
+        {
+            var exists = await _db.SportConcepts.AnyAsync(s => s.Id == scId);
+            if (!exists)
+                throw new ArgumentException($"SportConcept {scId} does not exist");
             schedule.PlanConcepts.Add(new PlanConcept { SportConceptId = scId });
         }
 
@@ -80,6 +91,15 @@ public class TrainingScheduleService : ITrainingScheduleService
         }
 
         return occurrences.OrderBy(o => o).ToList();
+    }
+
+    public async Task<TrainingSchedule?> GetByIdAsync(int scheduleId)
+    {
+        return await _db.TrainingSchedules
+            .Include(s => s.ScheduleDays)
+            .Include(s => s.PlanConcepts)
+                .ThenInclude(pc => pc.SportConcept)
+            .FirstOrDefaultAsync(s => s.Id == scheduleId);
     }
 
     private static DateTime MaxDate(DateTime a, DateTime b) => a > b ? a : b;

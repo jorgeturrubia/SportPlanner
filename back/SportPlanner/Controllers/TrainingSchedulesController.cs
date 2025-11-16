@@ -29,8 +29,10 @@ public class TrainingSchedulesController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
     {
-        // lightweight: not fully implemented (service missing GetById)
-        return Ok();
+        var schedule = await _service.GetByIdAsync(id);
+        if (schedule == null) return NotFound();
+        var dto = _mapper.Map<TrainingScheduleDto>(schedule);
+        return Ok(dto);
     }
 
     [HttpGet("{id}/occurrences")]

@@ -37,7 +37,9 @@ public class TrainingSessionsController : ControllerBase
     [HttpGet("{id}")]
     public async Task<IActionResult> Get(int id)
     {
-        // Not implemented: service method to get session by id
-        return Ok();
+        var session = await _service.GetByIdAsync(id);
+        if (session == null) return NotFound();
+        var dto = _mapper.Map<TrainingSessionDto>(session);
+        return Ok(dto);
     }
 }

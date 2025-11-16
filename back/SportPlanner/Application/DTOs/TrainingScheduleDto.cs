@@ -6,6 +6,7 @@ public class PlanConceptDto
 {
     public int Id { get; set; }
     public int SportConceptId { get; set; }
+    public SportConceptDto? SportConcept { get; set; }
 }
 
 public class TrainingScheduleDayDto
