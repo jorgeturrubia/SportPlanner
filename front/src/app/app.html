@@ -185,10 +185,11 @@
 <main class="main">
   <nav style="display:flex; gap: 1rem; margin-bottom: 1rem;">
     <a routerLink="/" style="text-decoration:none">Home</a>
-    <ng-container *ngIf="auth.isAuthenticated(); else anon">
+    <ng-container>
       <a (click)="signOut()" style="text-decoration:none; cursor: pointer;">Logout</a>
       <a routerLink="/profile" style="text-decoration:none">Profile</a>
       <button class="pill" style="cursor:pointer" (click)="createDemoPlan()">Crear Planificacion (Demo)</button>
+      <button class="pill" style="cursor:pointer" (click)="openPlanModal()">Crear Plan (Asistente)</button>
     </ng-container>
     <ng-template #anon>
       <a routerLink="/login" style="text-decoration:none">Login</a>
@@ -344,6 +345,58 @@
 </main>
 
 <router-outlet></router-outlet>
+
+<!-- Simple modal for proposing plan concepts -->
+<div *ngIf="showPlanModal()" style="position:fixed; inset:0; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.45); z-index:1000;">
+  <div style="background:white; padding:1rem; width:90%; max-width:760px; border-radius:8px; box-shadow: 0 10px 30px rgba(0,0,0,0.3);">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <h3>Asistente creación de planificación</h3>
+      <button (click)="closePlanModal()">Cerrar</button>
+    </div>
+    <div style="display:grid; grid-template-columns:1fr 1fr; gap: 0.75rem; margin-top:1rem;">
+      <label>Team ID <input type="number" [value]="proposalTeamId()" (input)="proposalTeamId.set($any($event.target).value ? +$any($event.target).value : null)" /></label>
+      <label>Level ID
+        <select [value]="overrideLevelId() || ''" (change)="overrideLevelId.set($any($event.target).value ? +$any($event.target).value : null)">
+          <option value="">-- Seleccione nivel --</option>
+          <option *ngFor="let l of teamLevels()" [value]="l.id">{{ l.name }}</option>
+        </select>
+      </label>
+      <label>Category ID
+        <select [value]="overrideCategoryId() || ''" (change)="overrideCategoryId.set($any($event.target).value ? +$any($event.target).value : null)">
+          <option value="">-- Seleccione categoria --</option>
+          <option *ngFor="let c of teamCategories()" [value]="c.id">{{ c.name }} ({{ c.minAge }}-{{ c.maxAge }})</option>
+        </select>
+      </label>
+      <label>Edad (opcional) <input type="number" /></label>
+      <label>Nombre Plan <input type="text" [value]="planName()" (input)="planName.set($any($event.target).value)" /></label>
+      <label>Start Date <input type="date" [value]="planStartDate()" (input)="planStartDate.set($any($event.target).value)" /></label>
+      <label>End Date <input type="date" [value]="planEndDate()" (input)="planEndDate.set($any($event.target).value)" /></label>
+      <label>Start time <input type="time" [value]="planStartTime()" (input)="planStartTime.set($any($event.target).value)" /></label>
+      <label>End time <input type="time" [value]="planEndTime()" (input)="planEndTime.set($any($event.target).value)" /></label>
+    </div>
+
+    <div style="margin-top:1rem; display:flex; gap:0.5rem; align-items:center;">
+      <button (click)="proposeConcepts()">Proponer conceptos</button>
+      <button (click)="confirmProposals()" [disabled]="selectedConceptIds().length === 0">Confirmar y Crear Plan</button>
+    </div>
+
+    <div style="margin-top:1rem;">
+      <h4>Propuestas</h4>
+      <div *ngIf="proposals().length === 0">No hay propuestas. Pulse "Proponer conceptos" para generar.</div>
+      <ul *ngIf="proposals().length > 0" style="list-style:none; padding:0; max-height:300px; overflow:auto;">
+        <li *ngFor="let p of proposals()" style="display:flex; justify-content:space-between; align-items:center; gap:0.5rem; padding:0.5rem 0; border-bottom:1px solid #eee;">
+          <div style="display:flex; gap:0.75rem; align-items:center;">
+            <input type="checkbox" [checked]="selectedConceptIds().indexOf(p.concept.id) >= 0" (change)="toggleConceptSelection(p.concept.id)" />
+            <div><strong>{{ p.concept.name }}</strong><div style="font-size:0.85rem; color:#666">Score: {{ p.score }} Suggested: {{ p.isSuggested }}</div></div>
+          </div>
+          <div>
+            <button (click)="toggleConceptSelection(p.concept.id)">{{ selectedConceptIds().indexOf(p.concept.id) >= 0 ? 'Eliminar' : 'Añadir' }}</button>
+          </div>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>
 
 <!-- * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * -->
 <!-- * * * * * * * * * * * The content above * * * * * * * * * * * * -->

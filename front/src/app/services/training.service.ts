@@ -12,8 +12,12 @@ export interface TrainingScheduleCreateDto { name?: string | null; startDate: st
 export class TrainingService {
   constructor(private http: HttpClient) {}
 
-  getPlanProposals(teamId: number) {
-    return this.http.get<ConceptProposal[]>(`${environment.apiUrl}/teams/${teamId}/plan-proposals`);
+  getPlanProposals(teamId: number, overrideLevelId?: number | null, overrideCategoryId?: number | null) {
+    const params: any = {};
+    if (overrideLevelId != null) params.overrideLevelId = overrideLevelId;
+    if (overrideCategoryId != null) params.overrideCategoryId = overrideCategoryId;
+    const url = `${environment.apiUrl}/teams/${teamId}/plan-proposals`;
+    return this.http.get<ConceptProposal[]>(url, { params });
   }
 
   createSchedule(teamId: number, dto: TrainingScheduleCreateDto) {
