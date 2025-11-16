@@ -20,8 +20,9 @@ namespace SportPlanner.Tests.Integration;
 public class IntegrationTestBase : IAsyncLifetime
 {
     public readonly TestcontainersContainer _postgresContainer;
-    public WebApplicationFactory<Program> _factory;
-    public HttpClient _client;
+        private bool _containerStarted = false;
+    public WebApplicationFactory<Program>? _factory;
+    public HttpClient? _client;
 
     public IntegrationTestBase()
     {
@@ -38,15 +39,18 @@ public class IntegrationTestBase : IAsyncLifetime
         // We'll create factory after container starts in InitializeAsync
         _factory = null;
         _client = null;
+        _containerStarted = false; // Reset the container started flag
         // note: DB seeding will be done in InitializeAsync after container start and migrations
     }
 
     public async Task InitializeAsync()
     {
         var runIntegration = Environment.GetEnvironmentVariable("RUN_INTEGRATION_TESTS");
-        var run = !string.IsNullOrEmpty(runIntegration) && bool.TryParse(runIntegration, out var r) && r;
+        var run = !string.IsNullOrEmpty(runIntegration) && bool.TryParse(runIntegration, out var parsed) && parsed;
         if (!run)
             return; // skip starting container if integration tests are not enabled
+        await _postgresContainer.StartAsync();
+        _containerStarted = true;
         // create web factory that overrides DB connection, now that container is started
         _factory = new WebApplicationFactory<Program>().WithWebHostBuilder(builder =>
         {
@@ -87,10 +91,15 @@ public class IntegrationTestBase : IAsyncLifetime
 
     public async Task DisposeAsync()
     {
-        _client.Dispose();
-        _factory.Dispose();
-        await _postgresContainer.StopAsync();
-        await _postgresContainer.DisposeAsync();
+        if (_client != null)
+            _client.Dispose();
+        if (_factory != null)
+            _factory.Dispose();
+            if (_containerStarted)
+            {
+                await _postgresContainer.StopAsync();
+                await _postgresContainer.DisposeAsync();
+            }
     }
 
     // already implemented DisposeAsync() above for IAsyncLifetime

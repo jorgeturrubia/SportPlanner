@@ -16,7 +16,7 @@ public class SubscriptionConcurrencyTests : IClassFixture<IntegrationTestBase>
     public async Task CreateSubscription_ConcurrentRequests_OnlyOneSucceeds()
     {
         var runIntegration = System.Environment.GetEnvironmentVariable("RUN_INTEGRATION_TESTS");
-        var run = !string.IsNullOrEmpty(runIntegration) && bool.TryParse(runIntegration, out var r) && r;
+        var run = !string.IsNullOrEmpty(runIntegration) && bool.TryParse(runIntegration, out var parsed) && parsed;
         if (!run)
             return; // skip when not enabled in environment
         var client = _base._client;

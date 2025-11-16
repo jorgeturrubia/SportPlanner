@@ -68,6 +68,7 @@ public class SubscriptionsControllerTests : IDisposable
         var sub = await _db.Subscriptions.FirstOrDefaultAsync(s => s.PlanId == 2 && s.SportId == 1 && s.UserSupabaseId == "user-1");
         sub.Should().NotBeNull();
         sub!.IsActive.Should().BeTrue();
+        _billingMock.Verify(b => b.CreateSubscriptionAsync(It.IsAny<string?>(), It.IsAny<int?>(), It.IsAny<int>(), It.IsAny<int>()), Times.Once);
     }
 
     [Fact]
