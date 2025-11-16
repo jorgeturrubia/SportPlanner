@@ -18,6 +18,7 @@ public class SubscriptionsControllerTests : IDisposable
     private readonly AppDbContext _db;
     private readonly IMapper _mapper;
     private readonly Mock<IUserService> _userServiceMock;
+    private readonly Mock<IBillingService> _billingMock;
 
     public SubscriptionsControllerTests()
     {
@@ -37,6 +38,10 @@ public class SubscriptionsControllerTests : IDisposable
         _mapper = config.CreateMapper();
 
         _userServiceMock = new Mock<IUserService>();
+        _billingMock = new Mock<IBillingService>();
+        _billingMock.Setup(b => b.CreateSubscriptionAsync(It.IsAny<string?>(), It.IsAny<int?>(), It.IsAny<int>(), It.IsAny<int>())).ReturnsAsync(true);
+        _billingMock.Setup(b => b.CancelSubscriptionAsync(It.IsAny<int>())).ReturnsAsync(true);
+        _billingMock.Setup(b => b.ReactivateSubscriptionAsync(It.IsAny<int>())).ReturnsAsync(true);
         _userServiceMock.Setup(u => u.GetOrCreateUserFromClaimsAsync(It.IsAny<System.Security.Claims.ClaimsPrincipal>()))
             .ReturnsAsync(new UserDto("user-1", "a@b.com", "User 1"));
     }
@@ -49,7 +54,7 @@ public class SubscriptionsControllerTests : IDisposable
     [Fact]
     public async System.Threading.Tasks.Task CreateSubscription_CreatesRecord()
     {
-        var controller = new SubscriptionsController(_db, _mapper, _userServiceMock.Object);
+        var controller = new SubscriptionsController(_db, _mapper, _userServiceMock.Object, _billingMock.Object);
         var dto = new CreateSubscriptionDto
         {
             PlanId = 2,
@@ -82,7 +87,7 @@ public class SubscriptionsControllerTests : IDisposable
         _db.Subscriptions.Add(sub);
         await _db.SaveChangesAsync();
 
-        var controller = new SubscriptionsController(_db, _mapper, _userServiceMock.Object);
+        var controller = new SubscriptionsController(_db, _mapper, _userServiceMock.Object, _billingMock.Object);
         var action = await controller.Cancel(sub.Id);
         var reloaded = await _db.Subscriptions.FindAsync(sub.Id);
         reloaded!.IsActive.Should().BeFalse();
@@ -108,7 +113,7 @@ public class SubscriptionsControllerTests : IDisposable
         _db.Subscriptions.Add(sub);
         await _db.SaveChangesAsync();
 
-        var controller = new SubscriptionsController(_db, _mapper, _userServiceMock.Object);
+        var controller = new SubscriptionsController(_db, _mapper, _userServiceMock.Object, _billingMock.Object);
         var action = await controller.Reactivate(sub.Id);
         var reloaded = await _db.Subscriptions.FindAsync(sub.Id);
         reloaded!.IsActive.Should().BeTrue();

@@ -36,6 +36,11 @@ else
 }
 
 builder.Services.AddScoped<SportPlanner.Services.IUserService, SportPlanner.Services.UserService>();
+// Billing stub
+builder.Services.AddScoped<SportPlanner.Services.IBillingService, SportPlanner.Services.BillingServiceStub>();
+// Subscription processing service and emitter
+builder.Services.AddScoped<SportPlanner.Services.ISubscriptionDeletionPublisher, SportPlanner.Services.SubscriptionDeletionPublisherStub>();
+builder.Services.AddHostedService<SportPlanner.Services.SubscriptionProcessingService>();
 
 // Configure authentication for Supabase tokens
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)
@@ -125,6 +130,22 @@ builder.Services.AddCors(options =>
 builder.Services.AddAuthorization();
 
 var app = builder.Build();
+
+// Apply pending migrations automatically in Development/Test environments when using Npgsql
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetService<SportPlanner.Data.AppDbContext>();
+    try
+    {
+        if (db != null && db.Database.IsNpgsql())
+            db.Database.Migrate();
+    }
+    catch (Exception ex)
+    {
+        var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+        logger.LogError(ex, "Error while migrating database on startup");
+    }
+}
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())

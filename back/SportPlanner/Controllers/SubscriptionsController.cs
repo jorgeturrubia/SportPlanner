@@ -21,11 +21,13 @@ public class SubscriptionsController : ControllerBase
     private readonly IMapper _mapper;
     private readonly IUserService _userService;
 
-    public SubscriptionsController(AppDbContext db, IMapper mapper, IUserService userService)
+    private readonly IBillingService _billing;
+    public SubscriptionsController(AppDbContext db, IMapper mapper, IUserService userService, IBillingService billing)
     {
         _db = db;
         _mapper = mapper;
         _userService = userService;
+        _billing = billing;
     }
 
     // POST /api/subscriptions
@@ -105,7 +107,13 @@ public class SubscriptionsController : ControllerBase
             _db.SubscriptionHistories.Add(history);
             await _db.SaveChangesAsync();
 
-            // TODO: Call billing service here. If billing fails, consider rollback
+            // Call billing service here. If billing fails, rollback and return 402
+            var billingOk = await _billing.CreateSubscriptionAsync(subscription.UserSupabaseId, subscription.OrganizationId, subscription.PlanId, subscription.SportId);
+            if (!billingOk)
+            {
+                await tx.RollbackAsync();
+                return StatusCode(402, "Payment required or billing failed.");
+            }
             await tx.CommitAsync();
         }
         catch (DbUpdateException ex)
@@ -180,7 +188,8 @@ public class SubscriptionsController : ControllerBase
         _db.SubscriptionHistories.Add(history);
         await _db.SaveChangesAsync();
 
-        // TODO: call billing service to disable autobilling
+        // Call billing service to disable autobilling
+        await _billing.CancelSubscriptionAsync(subscription.Id);
 
         return Ok(_mapper.Map<SubscriptionDto>(subscription));
     }
@@ -228,7 +237,8 @@ public class SubscriptionsController : ControllerBase
         });
         await _db.SaveChangesAsync();
 
-        // TODO: call billing to resume billing
+        // Call billing to resume billing
+        await _billing.ReactivateSubscriptionAsync(subscription.Id);
 
         return Ok(_mapper.Map<SubscriptionDto>(subscription));
     }
