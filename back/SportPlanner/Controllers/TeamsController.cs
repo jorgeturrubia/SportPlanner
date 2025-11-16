@@ -83,4 +83,49 @@ public class TeamsController : ControllerBase
         if (team == null) return NotFound();
         return Ok(team);
     }
+
+    [HttpGet("{id}/plan-proposals")]
+    [Authorize]
+    public async Task<IActionResult> GetPlanProposals(int id, [FromQuery] int? overrideLevelId, [FromQuery] int? overrideCategoryId)
+    {
+        var team = await _db.Teams.FindAsync(id);
+        if (team == null) return NotFound();
+
+        var levelId = overrideLevelId ?? team.TeamLevelId;
+        var categoryId = overrideCategoryId ?? team.TeamCategoryId;
+        var sportId = team.SportId;
+        if (!sportId.HasValue) return BadRequest("Team does not specify a sport.");
+
+        // Get active concepts for this sport
+        var concepts = await _db.SportConcepts
+            .Where(sc => sc.SportId == sportId && sc.IsActive)
+            .ToListAsync();
+
+        var proposals = new List<ConceptProposalDto>();
+        foreach (var sc in concepts)
+        {
+            // find best matching interpretation: exact team > category > level > default
+            var interpretation = await _db.ConceptInterpretations
+                .Where(ci => ci.SportConceptId == sc.Id)
+                .OrderByDescending(ci => ci.TeamId == id ? 3 : 0)
+                .ThenByDescending(ci => (ci.TeamCategoryId.HasValue && categoryId.HasValue && ci.TeamCategoryId == categoryId) ? 2 : 0)
+                .ThenByDescending(ci => (ci.TeamLevelId.HasValue && levelId.HasValue && ci.TeamLevelId == levelId) ? 1 : 0)
+                .FirstOrDefaultAsync();
+
+            decimal priorityMultiplier = interpretation?.PriorityMultiplier ?? 1.0m;
+            var score = sc.ProgressWeight * priorityMultiplier; // simple scoring model
+
+            var dto = _mapper.Map<SportConceptDto>(sc);
+            var proposal = new ConceptProposalDto
+            {
+                Concept = dto,
+                Score = Math.Round(score, 2),
+                IsSuggested = interpretation?.IsSuggested ?? false
+            };
+            proposals.Add(proposal);
+        }
+
+        var ordered = proposals.OrderByDescending(p => p.Score).ThenByDescending(p => p.IsSuggested).ToList();
+        return Ok(ordered);
+    }
 }
