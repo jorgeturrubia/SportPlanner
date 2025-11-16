@@ -15,8 +15,13 @@ public class Team
     public Subscription? Subscription { get; set; }
     public int? SportId { get; set; }
     public Sport? Sport { get; set; }
+    public int? TeamCategoryId { get; set; }
+    public TeamCategory? TeamCategory { get; set; }
+    public int? TeamLevelId { get; set; }
+    public TeamLevel? TeamLevel { get; set; }
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public ICollection<TrainingSchedule> TrainingSchedules { get; set; } = new List<TrainingSchedule>();
+    public TeamPreference? Preference { get; set; }
 }
