@@ -13,7 +13,8 @@ export const appConfig: ApplicationConfig = {
     provideHttpClient(withInterceptorsFromDi()),
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideRouter([
-  
+      { path: '', redirectTo: '/landing', pathMatch: 'full' },
+      { path: 'landing', loadComponent: () => import('./features/landing/landing').then(m => m.LandingComponent) }
     ])
   ]
 };
