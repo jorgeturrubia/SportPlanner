@@ -76,6 +76,8 @@ public class TeamsController : ControllerBase
             OrganizationId = dto.OrganizationId,
             SubscriptionId = sub.Id,
             SportId = dto.SportId,
+            TeamCategoryId = dto.TeamCategoryId,
+            TeamLevelId = dto.TeamLevelId,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -138,6 +140,78 @@ public class TeamsController : ControllerBase
         var ordered = proposals.OrderByDescending(p => p.Score).ThenByDescending(p => p.IsSuggested).ToList();
         return Ok(ordered);
     }
+    [HttpPut("{id}")]
+    [Authorize]
+    public async Task<IActionResult> Update(int id, [FromBody] UpdateTeamDto dto)
+    {
+        var team = await _db.Teams.FindAsync(id);
+        if (team == null) return NotFound();
+
+        var user = await _userService.GetOrCreateUserFromClaimsAsync(User);
+        if (user == null) return Forbid();
+
+        // Check ownership
+        if (team.OwnerUserSupabaseId != user.Id && 
+            (!team.OrganizationId.HasValue || !await _db.OrganizationMemberships.AnyAsync(m => m.OrganizationId == team.OrganizationId && m.UserSupabaseId == user.Id)))
+        {
+            return Forbid();
+        }
+
+        team.Name = dto.Name;
+        team.TeamCategoryId = dto.TeamCategoryId;
+        team.TeamLevelId = dto.TeamLevelId;
+        team.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+        return Ok(team);
+    }
+
+    [HttpDelete("{id}")]
+    [Authorize]
+    public async Task<IActionResult> Delete(int id)
+    {
+        var team = await _db.Teams.FindAsync(id);
+        if (team == null) return NotFound();
+
+        var user = await _userService.GetOrCreateUserFromClaimsAsync(User);
+        if (user == null) return Forbid();
+
+        // Check ownership
+        if (team.OwnerUserSupabaseId != user.Id && 
+            (!team.OrganizationId.HasValue || !await _db.OrganizationMemberships.AnyAsync(m => m.OrganizationId == team.OrganizationId && m.UserSupabaseId == user.Id)))
+        {
+            return Forbid();
+        }
+
+        _db.Teams.Remove(team);
+        await _db.SaveChangesAsync();
+        return NoContent();
+    }
+
+    [HttpPatch("{id}/toggle-active")]
+    [Authorize]
+    public async Task<IActionResult> ToggleActive(int id)
+    {
+        var team = await _db.Teams.FindAsync(id);
+        if (team == null) return NotFound();
+
+        var user = await _userService.GetOrCreateUserFromClaimsAsync(User);
+        if (user == null) return Forbid();
+
+        // Check ownership
+        if (team.OwnerUserSupabaseId != user.Id && 
+            (!team.OrganizationId.HasValue || !await _db.OrganizationMemberships.AnyAsync(m => m.OrganizationId == team.OrganizationId && m.UserSupabaseId == user.Id)))
+        {
+            return Forbid();
+        }
+
+        team.IsActive = !team.IsActive;
+        team.UpdatedAt = DateTime.UtcNow;
+
+        await _db.SaveChangesAsync();
+        return Ok(new { IsActive = team.IsActive });
+    }
+
     [HttpGet("my-teams")]
     [Authorize]
     public async Task<IActionResult> GetMyTeams()
@@ -152,6 +226,8 @@ public class TeamsController : ControllerBase
             .ToListAsync();
 
         var teams = await _db.Teams
+            .Include(t => t.TeamCategory)
+            .Include(t => t.TeamLevel)
             .Where(t => t.OwnerUserSupabaseId == user.Id || (t.OrganizationId.HasValue && userOrgIds.Contains(t.OrganizationId.Value)))
             .ToListAsync();
 

@@ -13,7 +13,7 @@
 
 <!-- Form Section -->
 <div *ngIf="showForm()" class="mb-8 p-6 bg-dark-surface border border-dark-border">
-    <h3 class="text-xl font-bold text-white mb-4">Nuevo Equipo</h3>
+    <h3 class="text-xl font-bold text-white mb-4">{{ editingTeamId() ? 'Editar Equipo' : 'Nuevo Equipo' }}</h3>
     <form [formGroup]="teamForm" (ngSubmit)="onSubmit()">
         <div class="mb-4">
             <label class="block text-sm font-bold text-gray-400 mb-2">NOMBRE DEL EQUIPO</label>
@@ -30,39 +30,238 @@
             </p>
         </div>
 
+        <!-- Team Category -->
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-400 mb-2">CATEGORÍA (Opcional)</label>
+            <select formControlName="teamCategoryId"
+                class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors">
+                <option [value]="null">Selecciona una categoría</option>
+                <option *ngFor="let category of teamCategories()" [value]="category.id">
+                    {{ category.name }}
+                    <span *ngIf="category.minAge || category.maxAge">
+                        ({{ category.minAge ? category.minAge + ' años' : '' }}{{ category.minAge && category.maxAge ? '
+                        - ' : '' }}{{ category.maxAge ? category.maxAge + ' años' : '' }})
+                    </span>
+                </option>
+            </select>
+        </div>
+
+        <!-- Team Level -->
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-400 mb-2">NIVEL (Opcional)</label>
+            <select formControlName="teamLevelId"
+                class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors">
+                <option [value]="null">Selecciona un nivel</option>
+                <option *ngFor="let level of teamLevels()" [value]="level.id">
+                    {{ level.name }}
+                    <span *ngIf="level.description"> - {{ level.description }}</span>
+                </option>
+            </select>
+        </div>
+
         <button type="submit" [disabled]="!teamForm.valid || isLoading()"
             class="w-full px-6 py-3 bg-secondary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            {{ isLoading() ? 'GUARDANDO...' : 'GUARDAR EQUIPO' }}
+            {{ isLoading() ? 'GUARDANDO...' : (editingTeamId() ? 'ACTUALIZAR EQUIPO' : 'GUARDAR EQUIPO') }}
         </button>
     </form>
 </div>
 
 <!-- Teams Grid -->
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6" (click)="closeMenu()">
     <div *ngFor="let team of teams()"
-        class="card-bold group hover:border-primary transition-all p-6 bg-dark-surface border border-dark-border">
-        <div class="flex justify-between items-start mb-4">
-            <div
-                class="p-3 bg-dark-surface border border-dark-border rounded-none group-hover:bg-primary group-hover:text-black transition-colors">
+        class="group relative bg-dark-surface border border-dark-border hover:border-gray-500 transition-all duration-300 h-64">
+
+        <!-- Decorative top bar gradient -->
+        <div
+            class="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-primary to-secondary opacity-50 group-hover:opacity-100 transition-opacity rounded-t-lg">
+        </div>
+
+        <!-- Main Content (Dimmed when menu is active) -->
+        <div class="p-6 h-full flex flex-col transition-all duration-300" [class.blur-sm]="activeMenuId() === team.id"
+            [class.opacity-20]="activeMenuId() === team.id">
+            <!-- Header -->
+            <div class="flex justify-between items-start mb-4">
+                <div class="p-3 bg-dark-bg rounded-lg text-white group-hover:text-primary transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    </svg>
+                </div>
+                <!-- Status indicator -->
+                <div
+                    [class]="'h-3 w-3 rounded-full shadow-[0_0_10px] transition-colors duration-300 ' + (team.isActive ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50')">
+                </div>
+            </div>
+
+            <!-- Team Name -->
+            <h3 class="text-2xl font-black text-white mb-auto tracking-tight truncate" title="{{ team.name }}">
+                {{ team.name }}
+            </h3>
+
+            <!-- Stats Grid -->
+            <div class="grid grid-cols-2 gap-3 mt-4">
+                <!-- Category Box -->
+                <div class="bg-dark-bg p-2 rounded border border-dark-border relative overflow-hidden">
+                    <div class="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">CATEGORÍA</div>
+                    <div class="font-bold text-white text-sm truncate">
+                        {{ team.teamCategory?.name || '-' }}
+                    </div>
+                </div>
+
+                <!-- Level Box -->
+                <div class="bg-dark-bg p-2 rounded border border-dark-border relative overflow-hidden">
+                    <div class="text-[10px] font-black text-primary uppercase tracking-widest mb-1">NIVEL</div>
+                    <div class="font-bold text-white text-sm truncate">
+                        {{ team.teamLevel?.name || '-' }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Central Trigger Button (Visible on Hover) -->
+        <div *ngIf="activeMenuId() !== team.id"
+            class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 z-10">
+            <button (click)="toggleMenu(team.id, $event)"
+                class="transform scale-0 group-hover:scale-100 transition-transform duration-300 w-16 h-16 bg-white text-black rounded-full shadow-[0_0_20px_rgba(255,255,255,0.3)] flex items-center justify-center hover:bg-primary hover:scale-110">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path
+                        d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z">
+                    </path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Radial Menu Overlay -->
+        <div *ngIf="activeMenuId() === team.id"
+            class="absolute inset-0 z-20 bg-black/80 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-200"
+            (click)="closeMenu()">
+
+            <!-- Center Close Button -->
+            <button (click)="closeMenu()"
+                class="absolute z-30 w-14 h-14 bg-white text-black rounded-full shadow-lg flex items-center justify-center hover:bg-gray-200 hover:scale-105 transition-all duration-200">
                 <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                    <circle cx="9" cy="7" r="4"></circle>
-                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
+            </button>
+
+            <!-- Radial Items -->
+            <!-- 1. View (Top) -->
+            <div class="absolute w-12 h-12 transition-all duration-300 animate-in zoom-in slide-in-from-bottom-4 fade-in fill-mode-both"
+                style="transform: translate(0px, -85px); animation-delay: 0ms;">
+                <button (click)="viewTeam(team); $event.stopPropagation()"
+                    class="w-full h-full rounded-full bg-cyan-500 text-white shadow-[0_0_15px_rgba(6,182,212,0.5)] flex items-center justify-center hover:scale-125 transition-transform group/btn relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                        <circle cx="12" cy="12" r="3" />
+                    </svg>
+                    <span
+                        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-cyan-500 text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">VER</span>
+                </button>
             </div>
-            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Equipo</span>
+
+            <!-- 2. Planning (Top Right) -->
+            <div class="absolute w-12 h-12 transition-all duration-300 animate-in zoom-in slide-in-from-bottom-4 fade-in fill-mode-both"
+                style="transform: translate(81px, -26px); animation-delay: 50ms;">
+                <button (click)="managePlanning(team); $event.stopPropagation()"
+                    class="w-full h-full rounded-full bg-violet-500 text-white shadow-[0_0_15px_rgba(139,92,246,0.5)] flex items-center justify-center hover:scale-125 transition-transform group/btn relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <span
+                        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-violet-500 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">PLANIFICAR</span>
+                </button>
+            </div>
+
+            <!-- 3. Edit (Bottom Right) -->
+            <div class="absolute w-12 h-12 transition-all duration-300 animate-in zoom-in slide-in-from-bottom-4 fade-in fill-mode-both"
+                style="transform: translate(50px, 69px); animation-delay: 100ms;">
+                <button (click)="editTeam(team); $event.stopPropagation()"
+                    class="w-full h-full rounded-full bg-amber-500 text-black shadow-[0_0_15px_rgba(245,158,11,0.5)] flex items-center justify-center hover:scale-125 transition-transform group/btn relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                    </svg>
+                    <span
+                        class="absolute -bottom-8 left-1/2 -translate-x-1/2 bg-amber-500 text-black text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">EDITAR</span>
+                </button>
+            </div>
+
+            <!-- 4. Toggle Active (Bottom Left) -->
+            <div class="absolute w-12 h-12 transition-all duration-300 animate-in zoom-in slide-in-from-bottom-4 fade-in fill-mode-both"
+                style="transform: translate(-50px, 69px); animation-delay: 150ms;">
+                <button (click)="toggleTeamActive(team); $event.stopPropagation()"
+                    [class]="'w-full h-full rounded-full text-white shadow-[0_0_15px] flex items-center justify-center hover:scale-125 transition-transform group/btn relative ' + (team.isActive ? 'bg-rose-500 shadow-rose-500/50' : 'bg-emerald-500 shadow-emerald-500/50')">
+                    <svg *ngIf="team.isActive" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                    <svg *ngIf="!team.isActive" xmlns="http://www.w3.org/2000/svg" width="20" height="20"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2" />
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2" />
+                        <line x1="6" y1="6" x2="6.01" y2="6" />
+                        <line x1="6" y1="18" x2="6.01" y2="18" />
+                    </svg>
+                    <span
+                        [class]="'absolute -bottom-8 left-1/2 -translate-x-1/2 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none ' + (team.isActive ? 'bg-rose-500' : 'bg-emerald-500')">
+                        {{ team.isActive ? 'DESACTIVAR' : 'ACTIVAR' }}
+                    </span>
+                </button>
+            </div>
+
+            <!-- 5. Delete (Top Left) -->
+            <div class="absolute w-12 h-12 transition-all duration-300 animate-in zoom-in slide-in-from-bottom-4 fade-in fill-mode-both"
+                style="transform: translate(-81px, -26px); animation-delay: 200ms;">
+                <button (click)="deleteTeam(team); $event.stopPropagation()"
+                    class="w-full h-full rounded-full bg-red-600 text-white shadow-[0_0_15px_rgba(220,38,38,0.5)] flex items-center justify-center hover:scale-125 transition-transform group/btn relative">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="3 6 5 6 21 6" />
+                        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                        <line x1="10" y1="11" x2="10" y2="17" />
+                        <line x1="14" y1="11" x2="14" y2="17" />
+                    </svg>
+                    <span
+                        class="absolute -top-8 left-1/2 -translate-x-1/2 bg-red-600 text-white text-[10px] font-bold px-2 py-1 rounded opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">ELIMINAR</span>
+                </button>
+            </div>
+
         </div>
-        <h3 class="text-xl font-bold text-white mb-1">{{ team.name }}</h3>
-        <p class="text-sm text-gray-500">Creado: {{ team.createdAt | date }}</p>
     </div>
 
     <!-- Empty State -->
     <div *ngIf="teams().length === 0 && !isLoading()"
-        class="col-span-full text-center py-12 border border-dashed border-dark-border">
-        <p class="text-gray-400">No tienes equipos creados aún.</p>
-        <p class="text-gray-500 text-sm mt-2">Haz clic en "CREAR EQUIPO" para comenzar.</p>
+        class="col-span-full flex flex-col items-center justify-center py-16 border-2 border-dashed border-dark-border bg-dark-bg/30 rounded-lg">
+        <div class="p-4 bg-dark-surface rounded-full mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                class="text-gray-600">
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+        </div>
+        <p class="text-gray-400 font-bold text-lg">No tienes equipos creados</p>
+        <p class="text-gray-600 text-sm mt-2 mb-6">Comienza creando tu primer equipo para gestionar entrenamientos</p>
+        <button (click)="toggleForm()"
+            class="px-6 py-2 bg-dark-surface border border-primary text-primary font-bold uppercase text-sm hover:bg-primary hover:text-black transition-all">
+            Crear mi primer equipo
+        </button>
     </div>
 </div>
 

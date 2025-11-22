@@ -4,7 +4,12 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+        options.JsonSerializerOptions.PropertyNamingPolicy = System.Text.Json.JsonNamingPolicy.CamelCase;
+    });
 // AutoMapper profiles in Application/Mappings
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 // Register FluentValidation validators (manual validation only, no auto-validation to support async rules)
