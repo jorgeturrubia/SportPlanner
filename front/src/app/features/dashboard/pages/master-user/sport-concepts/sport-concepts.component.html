@@ -76,22 +76,6 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">PESO DE PROGRESO (0-100) *</label>
-                <input type="number" formControlName="progressWeight" min="0" max="100"
-                    class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors">
-            </div>
-
-            <div class="flex items-center pt-8">
-                <input type="checkbox" formControlName="isProgressive" class="w-5 h-5 accent-primary cursor-pointer">
-                <label class="ml-3 text-sm font-bold text-white cursor-pointer"
-                    (click)="conceptForm.patchValue({ isProgressive: !conceptForm.value.isProgressive })">
-                    ES PROGRESIVO
-                </label>
-            </div>
-        </div>
-
         <button type="submit" [disabled]="!conceptForm.valid || isLoading()"
             class="w-full px-6 py-3 bg-secondary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {{ isLoading() ? 'GUARDANDO...' : (editingConceptId() ? 'ACTUALIZAR CONCEPTO' : 'GUARDAR CONCEPTO') }}
@@ -109,14 +93,16 @@
                     <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Categoría</th>
                     <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Dificultad</th>
                     <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Deporte</th>
-                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider text-right">Acciones</th>
+                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider text-right">
+                        Acciones</th>
                 </tr>
             </thead>
             <tbody class="divide-y divide-dark-border">
                 <tr *ngFor="let concept of concepts()" class="hover:bg-dark-bg/50 transition-colors group">
                     <td class="p-4">
                         <div class="font-bold text-white">{{ concept.name }}</div>
-                        <div class="text-xs text-gray-500 truncate max-w-xs">{{ concept.description || '-' }}</div>
+                        <div class="text-xs text-gray-500 truncate max-w-xs">{{ concept.description || '-'
+                            }}</div>
                     </td>
                     <td class="p-4 text-gray-300">{{ concept.conceptCategory?.name || '-' }}</td>
                     <td class="p-4">
