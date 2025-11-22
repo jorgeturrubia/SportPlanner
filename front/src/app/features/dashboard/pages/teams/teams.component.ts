@@ -5,11 +5,12 @@ import { TeamsService } from '../../../../services/teams.service';
 import { NotificationService } from '../../../../services/notification.service';
 import { SubscriptionsService, Subscription } from '../../../../services/subscriptions.service';
 import { LookupService, TeamCategory, TeamLevel } from '../../../../services/lookup.service';
+import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
     selector: 'app-teams',
     standalone: true,
-    imports: [CommonModule, ReactiveFormsModule],
+    imports: [CommonModule, ReactiveFormsModule, ConfirmDialogComponent],
     templateUrl: './teams.component.html',
 })
 export class TeamsComponent implements OnInit {
@@ -21,6 +22,11 @@ export class TeamsComponent implements OnInit {
     hasActiveSubscription = signal(false);
     teamCategories = signal<TeamCategory[]>([]);
     teamLevels = signal<TeamLevel[]>([]);
+    
+    // Confirm dialog properties
+    showDeleteDialog = signal(false);
+    isDeletingTeam = signal(false);
+    teamToDelete = signal<any>(null);
 
     constructor(
         private teamsService: TeamsService,
@@ -129,20 +135,37 @@ export class TeamsComponent implements OnInit {
 
     deleteTeam(team: any) {
         this.closeMenu();
-        if (confirm(`¿Estás seguro de que deseas eliminar el equipo "${team.name}"?`)) {
-            this.isLoading.set(true);
-            this.teamsService.deleteTeam(team.id).subscribe({
-                next: () => {
-                    this.loadTeams();
-                    this.isLoading.set(false);
-                    this.notificationService.success('Equipo eliminado', 'El equipo ha sido eliminado correctamente.');
-                },
-                error: (err) => {
-                    console.error('Error deleting team', err);
-                    this.isLoading.set(false);
-                }
-            });
-        }
+        this.teamToDelete.set(team);
+        this.showDeleteDialog.set(true);
+    }
+
+    confirmDeleteTeam() {
+        const team = this.teamToDelete();
+        if (!team) return;
+        
+        this.isDeletingTeam.set(true);
+        this.teamsService.deleteTeam(team.id).subscribe({
+            next: () => {
+                this.loadTeams();
+                this.isDeletingTeam.set(false);
+                this.cancelDeleteTeam(); // Close dialog
+                this.notificationService.success('Equipo eliminado', 'El equipo ha sido eliminado correctamente.');
+            },
+            error: (err) => {
+                console.error('Error deleting team', err);
+                this.isDeletingTeam.set(false);
+                this.notificationService.error(
+                    'Error',
+                    'No se pudo eliminar el equipo. Inténtalo de nuevo.'
+                );
+            }
+        });
+    }
+
+    cancelDeleteTeam() {
+        this.showDeleteDialog.set(false);
+        this.teamToDelete.set(null);
+        this.isDeletingTeam.set(false);
     }
 
     toggleTeamActive(team: any) {
@@ -167,8 +190,7 @@ export class TeamsComponent implements OnInit {
 
     viewTeam(team: any) {
         this.closeMenu();
-        console.log('View team', team);
-        // Navigate to details page when available
+        this.editTeam(team);
     }
 
     managePlanning(team: any) {
