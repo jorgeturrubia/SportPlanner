@@ -1,8 +1,46 @@
 /* Tailwind CSS v4 */
 @import "tailwindcss";
 
+@theme {
+  --color-primary: #FF6B00;
+  --color-secondary: #CCFF00;
+  --color-dark-bg: #121212;
+  --color-dark-surface: #1A1A1A;
+  --color-dark-border: #404040;
+}
+
 /* Ensure Tailwind layers are loaded */
 @layer theme, base, components, utilities;
+
+@layer components {
+  .btn {
+    @apply font-black uppercase tracking-widest px-6 py-3 border-2 transition-all duration-200 cursor-pointer inline-flex items-center justify-center text-sm md:text-base;
+  }
+
+  .btn-primary {
+    @apply bg-primary text-black border-primary hover:bg-white hover:border-white hover:scale-105;
+  }
+
+  .btn-secondary {
+    @apply bg-secondary text-black border-secondary hover:bg-white hover:border-white hover:scale-105;
+  }
+
+  .btn-outline {
+    @apply bg-transparent text-white border-dark-border hover:border-primary hover:text-primary;
+  }
+
+  .btn-ghost {
+    @apply bg-transparent text-gray-400 border-transparent hover:text-white hover:bg-dark-surface;
+  }
+
+  .input-bold {
+    @apply bg-dark-surface border-2 border-dark-border p-4 text-white w-full focus:outline-none focus:border-primary transition-colors placeholder-gray-600 font-medium;
+  }
+
+  .card-bold {
+    @apply bg-dark-bg border-2 border-dark-border p-6 hover:border-gray-600 transition-colors;
+  }
+}
 
 /* Global base styles */
 html,

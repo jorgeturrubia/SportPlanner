@@ -14,7 +14,9 @@ export const appConfig: ApplicationConfig = {
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
     provideRouter([
       { path: '', redirectTo: '/landing', pathMatch: 'full' },
-      { path: 'landing', loadComponent: () => import('./features/landing/landing').then(m => m.LandingComponent) }
+      { path: 'landing', loadComponent: () => import('./features/landing/landing').then(m => m.LandingComponent) },
+      { path: 'login', loadComponent: () => import('./features/auth/login/login.component').then(m => m.LoginComponent) },
+      { path: 'register', loadComponent: () => import('./features/auth/register/register.component').then(m => m.RegisterComponent) }
     ])
   ]
 };

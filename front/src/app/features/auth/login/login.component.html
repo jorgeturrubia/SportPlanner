@@ -1,0 +1,38 @@
+<div class="min-h-screen bg-dark-bg flex items-center justify-center p-6 relative overflow-hidden">
+    <!-- Background Elements -->
+    <div class="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
+        <div class="absolute top-[-10%] right-[-5%] w-96 h-96 bg-primary/10 rounded-full blur-3xl"></div>
+        <div class="absolute bottom-[-10%] left-[-5%] w-96 h-96 bg-secondary/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="card-bold w-full max-w-md relative z-10">
+        <div class="text-center mb-8">
+            <div class="text-2xl font-black tracking-tighter uppercase mb-2 text-white">Sport<span
+                    class="text-primary">Planner</span></div>
+            <h2 class="text-3xl font-black uppercase text-white">Acceso</h2>
+        </div>
+
+        <form class="space-y-6">
+            <div>
+                <label class="block text-sm font-bold text-gray-400 uppercase mb-2">Email</label>
+                <input type="email" class="input-bold" placeholder="TU@EMAIL.COM">
+            </div>
+
+            <div>
+                <label class="block text-sm font-bold text-gray-400 uppercase mb-2">Contraseña</label>
+                <input type="password" class="input-bold" placeholder="••••••••">
+            </div>
+
+            <button type="button" class="btn btn-primary w-full">
+                Entrar
+            </button>
+        </form>
+
+        <div class="mt-8 text-center">
+            <p class="text-gray-400">
+                ¿No tienes cuenta?
+                <a routerLink="/register" class="text-primary font-bold hover:underline uppercase">Regístrate</a>
+            </p>
+        </div>
+    </div>
+</div>
