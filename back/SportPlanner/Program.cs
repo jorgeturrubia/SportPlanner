@@ -41,6 +41,7 @@ builder.Services.AddScoped<SportPlanner.Services.IUserService, SportPlanner.Serv
 // Billing stub
 builder.Services.AddScoped<SportPlanner.Services.IBillingService, SportPlanner.Services.BillingServiceStub>();
 builder.Services.AddScoped<SportPlanner.Services.ISportConceptService, SportPlanner.Services.SportConceptService>();
+builder.Services.AddScoped<SportPlanner.Services.IConceptCategoryService, SportPlanner.Services.ConceptCategoryService>();
 // Concept interpretation & team metadata
 
 // Configure authentication for Supabase tokens

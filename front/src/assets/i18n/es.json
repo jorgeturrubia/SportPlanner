@@ -2,19 +2,6 @@
     "SIDEBAR": {
         "HOME": "Inicio",
         "MY_TEAMS": "Mis Equipos",
-        "PLANNINGS": "Planificaciones",
-        "LOGOUT": "Cerrar Sesión",
-        "PROFILE": "Perfil",
-        "CORE_MASTERS": "Maestros Core",
-        "SUBSCRIPTION_SPORTS": "Deportes de Suscripción",
-        "MASTER_USER": "Master User",
-        "SPORT_CONCEPTS": "Conceptos"
-    },
-    "DASHBOARD": {
-        "WELCOME": "Bienvenido",
-        "TITLE": "Panel de Control"
-    },
-    "AUTH": {
         "LOGIN": "Iniciar Sesión",
         "REGISTER": "Registrarse",
         "EMAIL": "Correo Electrónico",
