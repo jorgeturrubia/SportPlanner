@@ -1,17 +1,19 @@
-import { Component } from '@angular/core';
-import { AuthService } from '../../services/auth.service';
-import { Router } from '@angular/router';
+import { Component, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterModule } from '@angular/router';
+import { SidebarComponent } from './components/sidebar/sidebar.component';
+import { NavbarComponent } from './components/navbar/navbar.component';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
+  imports: [CommonModule, RouterModule, SidebarComponent, NavbarComponent],
   templateUrl: './dashboard.component.html',
 })
 export class DashboardComponent {
-  constructor(private authService: AuthService, private router: Router) {}
+  sidebarCollapsed = signal(false);
 
-  async logout() {
-    await this.authService.signOut();
-    this.router.navigate(['/login']);
+  toggleSidebar() {
+    this.sidebarCollapsed.update(v => !v);
   }
 }
