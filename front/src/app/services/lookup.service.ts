@@ -8,7 +8,7 @@ export interface TeamCategory { id: number; name: string; minAge?: number; maxAg
 
 @Injectable({ providedIn: 'root' })
 export class LookupService {
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
 
   getTeamLevels(): Observable<TeamLevel[]> {
     return this.http.get<TeamLevel[]>(`${environment.apiUrl}/lookups/team-levels`);
@@ -16,5 +16,17 @@ export class LookupService {
 
   getTeamCategories(): Observable<TeamCategory[]> {
     return this.http.get<TeamCategory[]>(`${environment.apiUrl}/lookups/team-categories`);
+  }
+
+  getConceptCategories(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/lookups/concept-categories`);
+  }
+
+  getConceptPhases(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/lookups/concept-phases`);
+  }
+
+  getDifficultyLevels(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/lookups/difficulty-levels`);
   }
 }

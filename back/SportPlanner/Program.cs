@@ -40,15 +40,8 @@ else
 builder.Services.AddScoped<SportPlanner.Services.IUserService, SportPlanner.Services.UserService>();
 // Billing stub
 builder.Services.AddScoped<SportPlanner.Services.IBillingService, SportPlanner.Services.BillingServiceStub>();
-// Subscription processing service and emitter
-builder.Services.AddScoped<SportPlanner.Services.ISubscriptionDeletionPublisher, SportPlanner.Services.SubscriptionDeletionPublisherStub>();
-builder.Services.AddHostedService<SportPlanner.Services.SubscriptionProcessingService>();
-// Training scheduling services
-builder.Services.AddScoped<SportPlanner.Services.ITrainingScheduleService, SportPlanner.Services.TrainingScheduleService>();
-builder.Services.AddScoped<SportPlanner.Services.ITrainingSessionService, SportPlanner.Services.TrainingSessionService>();
 builder.Services.AddScoped<SportPlanner.Services.ISportConceptService, SportPlanner.Services.SportConceptService>();
 // Concept interpretation & team metadata
-builder.Services.AddScoped<SportPlanner.Services.IConceptInterpretationService, SportPlanner.Services.ConceptInterpretationService>();
 
 // Configure authentication for Supabase tokens
 builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer.JwtBearerDefaults.AuthenticationScheme)

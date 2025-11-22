@@ -19,19 +19,15 @@ public class AppDbContext : DbContext
     public DbSet<Team> Teams { get; set; } = null!;
     public DbSet<TeamMember> TeamMembers { get; set; } = null!;
     public DbSet<ConceptCategory> ConceptCategories { get; set; } = null!;
-    public DbSet<ConceptPhase> ConceptPhases { get; set; } = null!;
     public DbSet<DifficultyLevel> DifficultyLevels { get; set; } = null!;
     public DbSet<SportConcept> SportConcepts { get; set; } = null!;
     public DbSet<PlanConcept> PlanConcepts { get; set; } = null!;
-    public DbSet<TrainingSchedule> TrainingSchedules { get; set; } = null!;
-    public DbSet<TrainingScheduleDay> TrainingScheduleDays { get; set; } = null!;
+    public DbSet<Planning> TrainingSchedules { get; set; } = null!;
+    public DbSet<PlaningScheduleDay> TrainingScheduleDays { get; set; } = null!;
     public DbSet<Court> Courts { get; set; } = null!;
-    public DbSet<TrainingSession> TrainingSessions { get; set; } = null!;
-    public DbSet<SessionConcept> SessionConcepts { get; set; } = null!;
     public DbSet<TeamCategory> TeamCategories { get; set; } = null!;
     public DbSet<TeamLevel> TeamLevels { get; set; } = null!;
-    public DbSet<TeamPreference> TeamPreferences { get; set; } = null!;
-    public DbSet<ConceptInterpretation> ConceptInterpretations { get; set; } = null!;
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -99,8 +95,13 @@ public class AppDbContext : DbContext
             .IsUnique();
 
         modelBuilder.Entity<ConceptCategory>().HasKey(c => c.Id);
+        modelBuilder.Entity<ConceptCategory>()
+            .HasOne(c => c.Parent)
+            .WithMany(c => c.SubCategories)
+            .HasForeignKey(c => c.ParentId)
+            .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<ConceptPhase>().HasKey(cp => cp.Id);
+
 
         modelBuilder.Entity<DifficultyLevel>().HasKey(dl => dl.Id);
 
@@ -124,23 +125,23 @@ public class AppDbContext : DbContext
             .HasForeignKey(pc => pc.SportConceptId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        modelBuilder.Entity<TrainingSchedule>().HasKey(ts => ts.Id);
-        modelBuilder.Entity<TrainingSchedule>()
+        modelBuilder.Entity<Planning>().HasKey(ts => ts.Id);
+        modelBuilder.Entity<Planning>()
             .HasOne(ts => ts.Team)
             .WithMany(t => t.TrainingSchedules)
             .HasForeignKey(ts => ts.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<TrainingScheduleDay>().HasKey(tds => tds.Id);
-        modelBuilder.Entity<TrainingScheduleDay>()
+        modelBuilder.Entity<PlaningScheduleDay>().HasKey(tds => tds.Id);
+        modelBuilder.Entity<PlaningScheduleDay>()
             .HasIndex(tds => new { tds.TrainingScheduleId, tds.DayOfWeek })
             .IsUnique(true);
-        modelBuilder.Entity<TrainingScheduleDay>()
+        modelBuilder.Entity<PlaningScheduleDay>()
             .HasOne(tds => tds.TrainingSchedule)
             .WithMany(ts => ts.ScheduleDays)
             .HasForeignKey(tds => tds.TrainingScheduleId)
             .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<TrainingScheduleDay>()
+        modelBuilder.Entity<PlaningScheduleDay>()
             .HasOne(tds => tds.Court)
             .WithMany()
             .HasForeignKey(tds => tds.CourtId)
@@ -148,77 +149,12 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<Court>().HasKey(c => c.Id);
 
-        modelBuilder.Entity<TrainingSession>().HasKey(ts => ts.Id);
-        modelBuilder.Entity<TrainingSession>()
-            .HasOne(ts => ts.TrainingSchedule)
-            .WithMany()
-            .HasForeignKey(ts => ts.TrainingScheduleId)
-            .OnDelete(DeleteBehavior.SetNull);
-        modelBuilder.Entity<TrainingSession>()
-            .HasOne(ts => ts.Court)
-            .WithMany()
-            .HasForeignKey(ts => ts.CourtId)
-            .OnDelete(DeleteBehavior.Restrict);
-
-        modelBuilder.Entity<SessionConcept>().HasKey(sc => sc.Id);
-        modelBuilder.Entity<SessionConcept>()
-            .HasIndex(sc => new { sc.TrainingSessionId, sc.Order })
-            .IsUnique(true);
-        modelBuilder.Entity<SessionConcept>()
-            .HasOne(sc => sc.TrainingSession)
-            .WithMany(ts => ts.SessionConcepts)
-            .HasForeignKey(sc => sc.TrainingSessionId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<SessionConcept>()
-            .HasOne(sc => sc.SportConcept)
-            .WithMany()
-            .HasForeignKey(sc => sc.SportConceptId)
-            .OnDelete(DeleteBehavior.Restrict);
-        modelBuilder.Entity<SessionConcept>()
-            .HasOne(sc => sc.PlanConcept)
-            .WithMany()
-            .HasForeignKey(sc => sc.PlanConceptId)
-            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<TeamCategory>().HasKey(tc => tc.Id);
 
         modelBuilder.Entity<TeamLevel>().HasKey(tl => tl.Id);
 
-        modelBuilder.Entity<TeamPreference>().HasKey(tp => tp.Id);
-        modelBuilder.Entity<TeamPreference>()
-            .HasIndex(tp => tp.TeamId)
-            .IsUnique();
-        modelBuilder.Entity<TeamPreference>()
-            .HasOne(tp => tp.Team)
-            .WithOne(t => t.Preference)
-            .HasForeignKey<TeamPreference>(tp => tp.TeamId)
-            .OnDelete(DeleteBehavior.Cascade);
-
-        modelBuilder.Entity<ConceptInterpretation>().HasKey(ci => ci.Id);
-        modelBuilder.Entity<ConceptInterpretation>()
-            .HasOne(ci => ci.SportConcept)
-            .WithMany()
-            .HasForeignKey(ci => ci.SportConceptId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<ConceptInterpretation>()
-            .HasOne(ci => ci.Team)
-            .WithMany()
-            .HasForeignKey(ci => ci.TeamId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<ConceptInterpretation>()
-            .HasOne(ci => ci.TeamCategory)
-            .WithMany()
-            .HasForeignKey(ci => ci.TeamCategoryId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<ConceptInterpretation>()
-            .HasOne(ci => ci.TeamLevel)
-            .WithMany()
-            .HasForeignKey(ci => ci.TeamLevelId)
-            .OnDelete(DeleteBehavior.Cascade);
-        modelBuilder.Entity<ConceptInterpretation>()
-            .HasOne(ci => ci.InterpretedDifficultyLevel)
-            .WithMany()
-            .HasForeignKey(ci => ci.InterpretedDifficultyLevelId)
-            .OnDelete(DeleteBehavior.Restrict);
+      
+     
     }
 }

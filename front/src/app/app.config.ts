@@ -52,6 +52,11 @@ export const appConfig: ApplicationConfig = {
         children: [
           { path: '', loadComponent: () => import('./features/dashboard/pages/home/home.component').then(m => m.HomeComponent) },
           { path: 'teams', loadComponent: () => import('./features/dashboard/pages/teams/teams.component').then(m => m.TeamsComponent) },
+          { path: 'plannings', loadComponent: () => import('./features/dashboard/pages/plannings/plannings.component').then(m => m.PlanningsComponent) },
+          { path: 'plannings/view/:id', loadComponent: () => import('./features/dashboard/pages/planning-details/planning-details.component').then(m => m.PlanningDetailsComponent) },
+          { path: 'teams/planning/:teamId', loadComponent: () => import('./features/dashboard/pages/team-planning/team-planning.component').then(m => m.TeamPlanningComponent) },
+          { path: 'teams/planning/:teamId/edit/:scheduleId', loadComponent: () => import('./features/dashboard/pages/team-planning/team-planning.component').then(m => m.TeamPlanningComponent) },
+          { path: 'master-user/sport-concepts', loadComponent: () => import('./features/dashboard/pages/master-user/sport-concepts/sport-concepts.component').then(m => m.SportConceptsComponent) },
           { path: 'core-masters/subscription-sports', loadComponent: () => import('./features/dashboard/pages/core-masters/subscription-sports/subscription-sports.component').then(m => m.SubscriptionSportsComponent) }
         ]
       }

@@ -53,4 +53,20 @@ public class LookupsController : ControllerBase
         var dtos = _mapper.Map<List<PlanDto>>(plans);
         return Ok(dtos);
     }
+
+    [HttpGet("concept-categories")]
+    public async Task<IActionResult> GetConceptCategories()
+    {
+        var categories = await _db.ConceptCategories.Where(c => c.IsActive).OrderBy(c => c.Name).ToListAsync();
+        var dtos = _mapper.Map<List<ConceptCategoryDto>>(categories);
+        return Ok(dtos);
+    }
+
+    [HttpGet("difficulty-levels")]
+    public async Task<IActionResult> GetDifficultyLevels()
+    {
+        var levels = await _db.DifficultyLevels.Where(l => l.IsActive).OrderBy(l => l.Rank).ToListAsync();
+        var dtos = _mapper.Map<List<DifficultyLevelDto>>(levels);
+        return Ok(dtos);
+    }
 }

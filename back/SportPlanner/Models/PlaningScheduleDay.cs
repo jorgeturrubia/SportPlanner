@@ -1,10 +1,10 @@
 namespace SportPlanner.Models;
 
-public class TrainingScheduleDay
+public class PlaningScheduleDay
 {
     public int Id { get; set; }
     public int TrainingScheduleId { get; set; }
-    public TrainingSchedule? TrainingSchedule { get; set; }
+    public Planning? TrainingSchedule { get; set; }
 
     public DayOfWeek DayOfWeek { get; set; }
     public TimeSpan StartTime { get; set; }

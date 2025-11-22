@@ -1,0 +1,124 @@
+<div *ngIf="isLoading()" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+</div>
+
+<div *ngIf="!isLoading() && schedule()" class="animate-in fade-in duration-300">
+    <!-- Header -->
+    <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2 text-gray-400 text-sm mb-1">
+                <span class="cursor-pointer hover:text-white transition-colors" (click)="goBack()">Mis
+                    Planificaciones</span>
+                <span>/</span>
+                <span class="text-primary font-bold">{{ schedule().team?.name }}</span>
+            </div>
+            <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">
+                {{ schedule().name || 'Planificación Sin Nombre' }}
+            </h2>
+            <p class="text-gray-400 text-lg">
+                {{ schedule().startDate | date:'dd/MM/yyyy' }} - {{ schedule().endDate | date:'dd/MM/yyyy' }}
+            </p>
+        </div>
+        <div class="flex gap-3">
+            <button (click)="goBack()"
+                class="px-6 py-2 border border-dark-border text-white font-bold uppercase text-sm hover:bg-dark-bg transition-colors rounded">
+                Volver
+            </button>
+            <button (click)="editSchedule()"
+                class="px-6 py-2 bg-secondary text-black font-bold uppercase text-sm hover:bg-white transition-colors rounded shadow-lg shadow-secondary/20">
+                Editar
+            </button>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <!-- Schedule Info -->
+        <div class="lg:col-span-1 space-y-6">
+            <!-- Days Card -->
+            <div class="bg-dark-surface border border-dark-border p-6 rounded-lg">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-primary">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                        <line x1="16" y1="2" x2="16" y2="6" />
+                        <line x1="8" y1="2" x2="8" y2="6" />
+                        <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    Horarios
+                </h3>
+                <div class="space-y-3">
+                    <div *ngFor="let day of schedule().scheduleDays"
+                        class="flex justify-between items-center p-3 bg-dark-bg rounded border border-dark-border">
+                        <span class="font-bold text-white">{{ getDayName(day.dayOfWeek) }}</span>
+                        <span class="text-gray-400 text-sm">{{ day.startTime | slice:0:5 }} - {{ day.endTime | slice:0:5
+                            }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Team Info Card -->
+            <div class="bg-dark-surface border border-dark-border p-6 rounded-lg">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-secondary">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                        <circle cx="9" cy="7" r="4" />
+                        <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                        <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                    </svg>
+                    Equipo
+                </h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Nombre:</span>
+                        <span class="text-white font-bold">{{ schedule().team?.name }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Categoría:</span>
+                        <span class="text-white">{{ schedule().team?.teamCategory?.name || '-' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-400">Nivel:</span>
+                        <span class="text-white">{{ schedule().team?.teamLevel?.name || '-' }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Concepts List -->
+        <div class="lg:col-span-2">
+            <div class="bg-dark-surface border border-dark-border p-6 rounded-lg h-full">
+                <h3 class="text-xl font-bold text-white mb-4 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                        class="text-cyan-500">
+                        <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+                        <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+                    </svg>
+                    Conceptos Trabajados
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div *ngFor="let pc of schedule().planConcepts"
+                        class="p-4 bg-dark-bg border border-dark-border rounded hover:border-gray-500 transition-colors">
+                        <div class="flex justify-between items-start mb-2">
+                            <h4 class="font-bold text-white">{{ pc.sportConcept?.name }}</h4>
+                            <span *ngIf="pc.sportConcept?.difficultyLevel"
+                                class="text-[10px] font-bold border border-gray-600 text-gray-400 px-2 py-0.5 rounded uppercase">
+                                {{ pc.sportConcept?.difficultyLevel?.name }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-400 line-clamp-3">{{ pc.sportConcept?.description || 'Sin
+                            descripción.' }}</p>
+                    </div>
+                    <div *ngIf="!schedule().planConcepts || schedule().planConcepts.length === 0"
+                        class="col-span-full text-center py-8 text-gray-500">
+                        No hay conceptos seleccionados para esta planificación.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

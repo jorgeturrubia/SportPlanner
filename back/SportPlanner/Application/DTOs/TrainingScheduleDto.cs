@@ -22,6 +22,8 @@ public class TrainingScheduleDto
 {
     public int Id { get; set; }
     public string? Name { get; set; }
+    public int TeamId { get; set; }
+    public TeamDto? Team { get; set; }
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
     public List<TrainingScheduleDayDto> ScheduleDays { get; set; } = new();

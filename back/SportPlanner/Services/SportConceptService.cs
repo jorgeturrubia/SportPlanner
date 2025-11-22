@@ -20,7 +20,6 @@ public class SportConceptService : ISportConceptService
             Name = dto.Name,
             Description = dto.Description,
             ConceptCategoryId = dto.ConceptCategoryId,
-            ConceptPhaseId = dto.ConceptPhaseId,
             DifficultyLevelId = dto.DifficultyLevelId,
             ProgressWeight = dto.ProgressWeight,
             IsProgressive = dto.IsProgressive,
@@ -33,6 +32,61 @@ public class SportConceptService : ISportConceptService
 
     public async Task<List<SportConcept>> GetBySportAsync(int sportId)
     {
-        return await _db.SportConcepts.Where(sc => sc.SportId == sportId).ToListAsync();
+        return await _db.SportConcepts
+            .Include(sc => sc.ConceptCategory)
+            .Include(sc => sc.DifficultyLevel)
+            .Where(sc => sc.SportId == sportId && sc.IsActive)
+            .ToListAsync();
+    }
+
+    public async Task<List<SportConcept>> GetAllAsync(int? sportId = null)
+    {
+        var query = _db.SportConcepts
+            .Include(sc => sc.ConceptCategory)
+            .Include(sc => sc.DifficultyLevel)
+            .Where(sc => sc.IsActive);
+
+        if (sportId.HasValue)
+        {
+            query = query.Where(sc => sc.SportId == sportId);
+        }
+
+        return await query.OrderBy(sc => sc.Name).ToListAsync();
+    }
+
+    public async Task<SportConcept?> GetByIdAsync(int id)
+    {
+        return await _db.SportConcepts
+            .Include(sc => sc.ConceptCategory)
+            .Include(sc => sc.DifficultyLevel)
+            .FirstOrDefaultAsync(sc => sc.Id == id);
+    }
+
+    public async Task<SportConcept> UpdateAsync(int id, CreateSportConceptDto dto)
+    {
+        var concept = await _db.SportConcepts.FindAsync(id);
+        if (concept == null)
+            throw new ArgumentException("Concept not found");
+
+        concept.Name = dto.Name;
+        concept.Description = dto.Description;
+        concept.ConceptCategoryId = dto.ConceptCategoryId;
+        concept.DifficultyLevelId = dto.DifficultyLevelId;
+        concept.ProgressWeight = dto.ProgressWeight;
+        concept.IsProgressive = dto.IsProgressive;
+        concept.SportId = dto.SportId;
+
+        await _db.SaveChangesAsync();
+        return concept;
+    }
+
+    public async Task DeleteAsync(int id)
+    {
+        var concept = await _db.SportConcepts.FindAsync(id);
+        if (concept != null)
+        {
+            concept.IsActive = false;
+            await _db.SaveChangesAsync();
+        }
     }
 }

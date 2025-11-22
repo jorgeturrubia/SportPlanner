@@ -11,24 +11,23 @@ public class TrainingProfile : Profile
         CreateMap<CreateSportConceptDto, SportConcept>();
         CreateMap<SportConcept, SportConceptDto>();
 
-        CreateMap<TrainingScheduleCreateDto, TrainingSchedule>()
+        CreateMap<Team, TeamDto>();
+        CreateMap<TeamCategory, TeamCategoryDto>();
+        CreateMap<TeamLevel, TeamLevelDto>();
+        CreateMap<DifficultyLevel, DifficultyLevelDto>();
+        CreateMap<ConceptCategory, ConceptCategoryDto>();
+
+        CreateMap<TrainingScheduleCreateDto, Planning>()
             .ForMember(dest => dest.PlanConcepts, opt => opt.Ignore())
             .ForMember(dest => dest.ScheduleDays, opt => opt.Ignore());
-        CreateMap<TrainingSchedule, TrainingScheduleDto>();
+        CreateMap<Planning, TrainingScheduleDto>();
         CreateMap<PlanConcept, PlanConceptDto>();
-        CreateMap<ConceptInterpretation, ConceptInterpretationDto>();
-        CreateMap<TrainingScheduleDay, TrainingScheduleDayDto>()
+        CreateMap<PlaningScheduleDay, TrainingScheduleDayDto>()
             .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime.ToString()))
             .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => src.EndTime.HasValue ? src.EndTime.Value.ToString() : null));
-        CreateMap<TrainingScheduleDayCreateDto, TrainingScheduleDay>()
+        CreateMap<TrainingScheduleDayCreateDto, PlaningScheduleDay>()
             .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => TimeSpan.Parse(src.StartTime)))
             .ForMember(dest => dest.EndTime, opt => opt.MapFrom(src => string.IsNullOrEmpty(src.EndTime) ? (TimeSpan?)null : TimeSpan.Parse(src.EndTime)));
 
-        CreateMap<TrainingSession, TrainingSessionDto>();
-        CreateMap<SessionConcept, SessionConceptDto>();
-        CreateMap<TrainingSessionCreateDto, TrainingSession>()
-            .ForMember(dest => dest.SessionConcepts, opt => opt.Ignore());
-        CreateMap<SessionConcept, SessionConceptDto>();
-        CreateMap<SessionConceptDto, SessionConcept>();
     }
 }

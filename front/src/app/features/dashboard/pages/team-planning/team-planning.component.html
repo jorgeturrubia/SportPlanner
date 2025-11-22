@@ -1,0 +1,139 @@
+<div class="mb-8">
+    <h2 class="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+        {{ scheduleId ? 'EDITAR PLANIFICACIÓN' : 'PLANIFICACIÓN DEL EQUIPO' }}
+    </h2>
+    <p class="text-gray-400 text-lg">Configura el calendario y objetivos de entrenamiento.</p>
+</div>
+
+<div class="bg-dark-surface border border-dark-border p-6 md:p-8">
+    <!-- Steps Indicator -->
+    <div class="flex mb-8 items-center justify-center">
+        <div
+            [class]="'w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors duration-300 ' + (step() >= 1 ? 'bg-primary text-black' : 'bg-dark-bg text-gray-500 border border-gray-700')">
+            1</div>
+        <div class="w-24 h-1 bg-dark-bg mx-2 relative">
+            <div [class]="'absolute top-0 left-0 h-full bg-primary transition-all duration-500 ease-out'"
+                [style.width]="step() >= 2 ? '100%' : '0%'"></div>
+        </div>
+        <div
+            [class]="'w-10 h-10 rounded-full flex items-center justify-center font-bold transition-colors duration-300 delay-150 ' + (step() >= 2 ? 'bg-primary text-black' : 'bg-dark-bg text-gray-500 border border-gray-700')">
+            2</div>
+    </div>
+
+    <form [formGroup]="planForm" (ngSubmit)="onSubmit()">
+        <!-- STEP 1: Schedule -->
+        <div *ngIf="step() === 1" class="animate-in fade-in slide-in-from-right-4 duration-300">
+            <h3 class="text-xl font-bold text-white mb-6 border-b border-dark-border pb-2">Configuración de Calendario
+            </h3>
+
+            <div class="mb-6">
+                <label class="block text-sm font-bold text-gray-400 mb-2">NOMBRE DE LA PLANIFICACIÓN (Opcional)</label>
+                <input type="text" formControlName="name"
+                    class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors rounded"
+                    placeholder="Ej: Pretemporada 2024">
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div>
+                    <label class="block text-sm font-bold text-gray-400 mb-2">FECHA DE INICIO</label>
+                    <input type="date" formControlName="startDate"
+                        class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors rounded">
+                </div>
+                <div>
+                    <label class="block text-sm font-bold text-gray-400 mb-2">FECHA DE FIN</label>
+                    <input type="date" formControlName="endDate"
+                        class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors rounded">
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <label class="block text-sm font-bold text-gray-400 mb-4">DÍAS Y HORARIOS DE ENTRENAMIENTO</label>
+                <div class="grid grid-cols-1 gap-4" formArrayName="days">
+                    <div *ngFor="let day of daysFormArray.controls; let i = index" [formGroupName]="i"
+                        class="p-4 border border-dark-border bg-dark-bg flex flex-wrap items-center gap-4 rounded hover:border-gray-600 transition-colors">
+
+                        <div class="flex items-center gap-3 w-32">
+                            <input type="checkbox" formControlName="selected"
+                                class="w-5 h-5 accent-primary cursor-pointer">
+                            <span class="text-white font-bold cursor-pointer"
+                                (click)="day.get('selected')?.setValue(!day.get('selected')?.value)">{{ weekDays[i]
+                                }}</span>
+                        </div>
+
+                        <div *ngIf="day.get('selected')?.value"
+                            class="flex items-center gap-2 animate-in fade-in ml-auto sm:ml-0 flex-grow sm:justify-end">
+                            <div class="flex items-center gap-2">
+                                <input type="time" formControlName="startTime"
+                                    class="bg-dark-surface border border-dark-border p-2 text-white text-sm w-28 rounded focus:border-primary outline-none">
+                                <span class="text-gray-400 font-bold">-</span>
+                                <input type="time" formControlName="endTime"
+                                    class="bg-dark-surface border border-dark-border p-2 text-white text-sm w-28 rounded focus:border-primary outline-none">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end">
+                <button type="button" (click)="nextStep()" [disabled]="!isStep1Valid()"
+                    class="px-8 py-3 bg-primary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-lg shadow-primary/20">
+                    SIGUIENTE
+                </button>
+            </div>
+        </div>
+
+        <!-- STEP 2: Concepts -->
+        <div *ngIf="step() === 2" class="animate-in fade-in slide-in-from-right-4 duration-300">
+            <h3 class="text-xl font-bold text-white mb-2">Propuesta de Conceptos</h3>
+            <p class="text-gray-400 mb-6 border-b border-dark-border pb-4">Basado en la categoría y nivel de tu equipo,
+                te sugerimos trabajar estos conceptos.</p>
+
+            <div *ngIf="isLoadingConcepts()" class="flex justify-center py-20">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+            </div>
+
+            <div *ngIf="!isLoadingConcepts()" class="space-y-3 mb-8 max-h-[600px] overflow-y-auto pr-2">
+                <div *ngFor="let proposal of concepts()" (click)="toggleConcept(proposal.concept.id)"
+                    [class]="'p-4 border rounded cursor-pointer transition-all duration-200 ' + (isConceptSelected(proposal.concept.id) ? 'border-primary bg-primary/10 shadow-[0_0_10px_rgba(34,197,94,0.1)]' : 'border-dark-border bg-dark-bg hover:border-gray-500')">
+                    <div class="flex items-start gap-4">
+                        <div
+                            [class]="'mt-1 w-6 h-6 rounded border flex items-center justify-center transition-colors ' + (isConceptSelected(proposal.concept.id) ? 'bg-primary border-primary' : 'border-gray-500')">
+                            <svg *ngIf="isConceptSelected(proposal.concept.id)" xmlns="http://www.w3.org/2000/svg"
+                                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-black">
+                                <polyline points="20 6 9 17 4 12"></polyline>
+                            </svg>
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex justify-between items-center mb-1 flex-wrap gap-2">
+                                <h4 class="font-bold text-white text-lg">{{ proposal.concept.name }}</h4>
+                                <div class="flex gap-2">
+                                    <span *ngIf="proposal.concept.difficultyLevel"
+                                        class="text-[10px] font-bold border border-gray-600 text-gray-400 px-2 py-0.5 rounded uppercase">
+                                        {{ proposal.concept.difficultyLevel.name }}
+                                    </span>
+                                    <span *ngIf="proposal.isSuggested"
+                                        class="text-[10px] font-bold bg-secondary text-black px-2 py-0.5 rounded uppercase shadow-sm shadow-secondary/50">RECOMENDADO</span>
+                                </div>
+                            </div>
+                            <p class="text-sm text-gray-400">{{ proposal.concept.description || 'Sin descripción
+                                disponible.' }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-between pt-4 border-t border-dark-border">
+                <button type="button" (click)="prevStep()"
+                    class="px-8 py-3 bg-transparent border border-dark-border text-white font-bold uppercase tracking-wider hover:bg-dark-bg hover:border-gray-400 transition-colors rounded">
+                    ATRÁS
+                </button>
+                <button type="submit" [disabled]="isLoading()"
+                    class="px-8 py-3 bg-secondary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-lg shadow-secondary/20">
+                    {{ isLoading() ? 'GUARDANDO...' : (scheduleId ? 'ACTUALIZAR PLANIFICACIÓN' : 'FINALIZAR
+                    PLANIFICACIÓN') }}
+                </button>
+            </div>
+        </div>
+    </form>
+</div>

@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using SportPlanner.Data;
@@ -11,9 +12,11 @@ using SportPlanner.Data;
 namespace SportPlanner.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20251122204812_AddConceptCategoryHierarchy")]
+    partial class AddConceptCategoryHierarchy
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -117,6 +120,29 @@ namespace SportPlanner.Migrations
                     b.HasIndex("TeamLevelId");
 
                     b.ToTable("ConceptInterpretations");
+                });
+
+            modelBuilder.Entity("SportPlanner.Models.ConceptPhase", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("ConceptPhases");
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Court", b =>
@@ -334,6 +360,9 @@ namespace SportPlanner.Migrations
                     b.Property<int?>("ConceptCategoryId")
                         .HasColumnType("integer");
 
+                    b.Property<int?>("ConceptPhaseId")
+                        .HasColumnType("integer");
+
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -359,6 +388,8 @@ namespace SportPlanner.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("ConceptCategoryId");
+
+                    b.HasIndex("ConceptPhaseId");
 
                     b.HasIndex("DifficultyLevelId");
 
@@ -896,6 +927,10 @@ namespace SportPlanner.Migrations
                         .WithMany()
                         .HasForeignKey("ConceptCategoryId");
 
+                    b.HasOne("SportPlanner.Models.ConceptPhase", "ConceptPhase")
+                        .WithMany()
+                        .HasForeignKey("ConceptPhaseId");
+
                     b.HasOne("SportPlanner.Models.DifficultyLevel", "DifficultyLevel")
                         .WithMany()
                         .HasForeignKey("DifficultyLevelId");
@@ -905,6 +940,8 @@ namespace SportPlanner.Migrations
                         .HasForeignKey("SportId");
 
                     b.Navigation("ConceptCategory");
+
+                    b.Navigation("ConceptPhase");
 
                     b.Navigation("DifficultyLevel");
 

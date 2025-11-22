@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { ActivatedRoute, Router } from '@angular/router';
 import { TeamsService } from '../../../../services/teams.service';
 import { NotificationService } from '../../../../services/notification.service';
 import { SubscriptionsService, Subscription } from '../../../../services/subscriptions.service';
@@ -31,6 +32,7 @@ export class TeamsComponent implements OnInit {
     constructor(
         private teamsService: TeamsService,
         private fb: FormBuilder,
+        private router: Router,
         private notificationService: NotificationService,
         private subscriptionsService: SubscriptionsService,
         private lookupService: LookupService
@@ -195,8 +197,7 @@ export class TeamsComponent implements OnInit {
 
     managePlanning(team: any) {
         this.closeMenu();
-        console.log('Manage planning for team', team);
-        // Navigate to planning page when available
+        this.router.navigate(['/dashboard/teams/planning', team.id]);
     }
 
     onSubmit() {
