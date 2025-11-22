@@ -14,8 +14,8 @@ export class AuthService {
     });
   }
 
-  signUp(email: string, password: string) {
-    return this.supabase.signUp(email, password);
+  signUp(email: string, password: string, name?: string) {
+    return this.supabase.signUp(email, password, { name });
   }
 
   signIn(email: string, password: string) {

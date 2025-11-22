@@ -6,7 +6,8 @@ import { environment } from '../../environments/environment';
 @Injectable({ providedIn: 'root' })
 export class SupabaseService {
   private client: SupabaseClient;
-  public session$ = new BehaviorSubject<Session | null>(null);
+  // undefined = loading, null = not logged in, Session = logged in
+  public session$ = new BehaviorSubject<Session | null | undefined>(undefined);
   public user$ = new BehaviorSubject<User | null>(null);
 
   constructor() {
@@ -26,8 +27,14 @@ export class SupabaseService {
     });
   }
 
-  public signUp(email: string, password: string) {
-    return this.client.auth.signUp({ email, password });
+  public signUp(email: string, password: string, data?: any) {
+    return this.client.auth.signUp({ 
+      email, 
+      password,
+      options: {
+        data
+      }
+    });
   }
 
   public signIn(email: string, password: string) {
