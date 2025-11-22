@@ -9,4 +9,6 @@ public class CreateTeamDto
     public int? OrganizationId { get; set; }
     public int SportId { get; set; }
     public int? SubscriptionId { get; set; }
+    public int? TeamCategoryId { get; set; }
+    public int? TeamLevelId { get; set; }
 }

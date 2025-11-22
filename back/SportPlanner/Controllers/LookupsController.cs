@@ -37,4 +37,20 @@ public class LookupsController : ControllerBase
         var dtos = _mapper.Map<List<TeamCategoryDto>>(cats);
         return Ok(dtos);
     }
+
+    [HttpGet("sports")]
+    public async Task<IActionResult> GetSports()
+    {
+        var sports = await _db.Sports.Where(s => s.IsActive).OrderBy(s => s.Name).ToListAsync();
+        var dtos = _mapper.Map<List<SportDto>>(sports);
+        return Ok(dtos);
+    }
+
+    [HttpGet("subscription-plans")]
+    public async Task<IActionResult> GetSubscriptionPlans()
+    {
+        var plans = await _db.SubscriptionPlans.Where(p => p.IsActive).OrderBy(p => p.Price).ToListAsync();
+        var dtos = _mapper.Map<List<PlanDto>>(plans);
+        return Ok(dtos);
+    }
 }

@@ -1,0 +1,29 @@
+{
+    "SIDEBAR": {
+        "HOME": "Home",
+        "MY_TEAMS": "My Teams",
+        "LOGOUT": "Logout",
+        "PROFILE": "Profile",
+        "CORE_MASTERS": "Core Masters",
+        "SUBSCRIPTION_SPORTS": "Subscription Sports"
+    },
+    "DASHBOARD": {
+        "WELCOME": "Welcome",
+        "TITLE": "Dashboard"
+    },
+    "AUTH": {
+        "LOGIN": "Login",
+        "REGISTER": "Register",
+        "EMAIL": "Email",
+        "PASSWORD": "Password",
+        "NAME": "Name",
+        "SURNAME": "Surname"
+    },
+    "COMMON": {
+        "LOADING": "Loading...",
+        "ERROR": "Error",
+        "SUCCESS": "Success",
+        "SAVE": "Save",
+        "CANCEL": "Cancel"
+    }
+}

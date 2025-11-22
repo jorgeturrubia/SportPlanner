@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SportPlanner.Application.DTOs;
+using SportPlanner.Application.Validators;
 using SportPlanner.Data;
 using SportPlanner.Models;
 using SportPlanner.Services;
@@ -18,18 +19,27 @@ public class TeamsController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IMapper _mapper;
     private readonly IUserService _userService;
+    private readonly CreateTeamValidator _createTeamValidator;
 
-    public TeamsController(AppDbContext db, IMapper mapper, IUserService userService)
+    public TeamsController(AppDbContext db, IMapper mapper, IUserService userService, CreateTeamValidator createTeamValidator)
     {
         _db = db;
         _mapper = mapper;
         _userService = userService;
+        _createTeamValidator = createTeamValidator;
     }
 
     [HttpPost]
     [Authorize]
     public async Task<IActionResult> Create([FromBody] CreateTeamDto dto)
     {
+        // Manual validation to support async rules
+        var validationResult = await _createTeamValidator.ValidateAsync(dto);
+        if (!validationResult.IsValid)
+        {
+            return BadRequest(validationResult.Errors);
+        }
+
         var user = await _userService.GetOrCreateUserFromClaimsAsync(User);
         if (user == null) return Forbid();
         if (string.IsNullOrEmpty(dto.OwnerUserSupabaseId) && !dto.OrganizationId.HasValue)
@@ -127,5 +137,24 @@ public class TeamsController : ControllerBase
 
         var ordered = proposals.OrderByDescending(p => p.Score).ThenByDescending(p => p.IsSuggested).ToList();
         return Ok(ordered);
+    }
+    [HttpGet("my-teams")]
+    [Authorize]
+    public async Task<IActionResult> GetMyTeams()
+    {
+        var user = await _userService.GetOrCreateUserFromClaimsAsync(User);
+        if (user == null) return Forbid();
+
+        // Get organizations the user belongs to
+        var userOrgIds = await _db.OrganizationMemberships
+            .Where(om => om.UserSupabaseId == user.Id)
+            .Select(om => om.OrganizationId)
+            .ToListAsync();
+
+        var teams = await _db.Teams
+            .Where(t => t.OwnerUserSupabaseId == user.Id || (t.OrganizationId.HasValue && userOrgIds.Contains(t.OrganizationId.Value)))
+            .ToListAsync();
+
+        return Ok(teams);
     }
 }

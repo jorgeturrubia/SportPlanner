@@ -21,12 +21,12 @@ public class CreateTeamValidator : AbstractValidator<CreateTeamDto>
 
     private async Task ValidatePlanLimitsAsync(CreateTeamDto dto, ValidationContext<CreateTeamDto> ctx, CancellationToken ct)
     {
-        // Determine owner or org
+        // Skip validation if neither owner nor org is provided (controller will set owner from claims)
         if (string.IsNullOrEmpty(dto.OwnerUserSupabaseId) && !dto.OrganizationId.HasValue)
         {
-            ctx.AddFailure("OwnerUserSupabaseId or OrganizationId must be provided");
             return;
         }
+        
         // find active subscription for user or org and sport
         var subQuery = _db.Subscriptions.AsQueryable();
         if (!string.IsNullOrEmpty(dto.OwnerUserSupabaseId))

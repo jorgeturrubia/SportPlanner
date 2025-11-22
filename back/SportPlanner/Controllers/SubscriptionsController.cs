@@ -242,4 +242,36 @@ public class SubscriptionsController : ControllerBase
 
         return Ok(_mapper.Map<SubscriptionDto>(subscription));
     }
+
+    // GET /api/subscriptions/my-subscriptions
+    [HttpGet("my-subscriptions")]
+    [Authorize]
+    public async Task<IActionResult> GetMySubscriptions()
+    {
+        var user = await _userService.GetOrCreateUserFromClaimsAsync(User);
+        if (user == null) return Forbid();
+
+        // Get user's direct subscriptions
+        var userSubs = await _db.Subscriptions
+            .Include(s => s.Plan)
+            .Include(s => s.Sport)
+            .Where(s => s.UserSupabaseId == user.Id && s.IsActive)
+            .ToListAsync();
+
+        // Get organization subscriptions
+        var userOrgIds = await _db.OrganizationMemberships
+            .Where(om => om.UserSupabaseId == user.Id)
+            .Select(om => om.OrganizationId)
+            .ToListAsync();
+
+        var orgSubs = await _db.Subscriptions
+            .Include(s => s.Plan)
+            .Include(s => s.Sport)
+            .Where(s => s.OrganizationId.HasValue && userOrgIds.Contains(s.OrganizationId.Value) && s.IsActive)
+            .ToListAsync();
+
+        var allSubs = userSubs.Concat(orgSubs).ToList();
+        var dtos = _mapper.Map<List<SubscriptionDto>>(allSubs);
+        return Ok(dtos);
+    }
 }

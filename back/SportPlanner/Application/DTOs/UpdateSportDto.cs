@@ -1,12 +1,15 @@
-using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace SportPlanner.Application.DTOs;
 
-public class SportDto
+public class UpdateSportDto
 {
-    public int Id { get; set; }
+    [Required]
+    [StringLength(100)]
     public string Name { get; set; } = null!;
-    public string? Slug { get; set; }
+    
+    [StringLength(500)]
     public string? Description { get; set; }
+    
     public bool IsActive { get; set; }
 }

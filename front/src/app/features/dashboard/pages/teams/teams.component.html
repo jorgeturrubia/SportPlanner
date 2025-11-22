@@ -1,0 +1,72 @@
+<div class="mb-8 flex justify-between items-center">
+    <div>
+        <h2 class="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+            MIS EQUIPOS
+        </h2>
+        <p class="text-gray-400 text-lg">Gestiona tus equipos y sus configuraciones.</p>
+    </div>
+    <button (click)="toggleForm()"
+        class="px-6 py-3 bg-primary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors">
+        {{ showForm() ? 'CANCELAR' : 'CREAR EQUIPO' }}
+    </button>
+</div>
+
+<!-- Form Section -->
+<div *ngIf="showForm()" class="mb-8 p-6 bg-dark-surface border border-dark-border">
+    <h3 class="text-xl font-bold text-white mb-4">Nuevo Equipo</h3>
+    <form [formGroup]="teamForm" (ngSubmit)="onSubmit()">
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-400 mb-2">NOMBRE DEL EQUIPO</label>
+            <input type="text" formControlName="name"
+                class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors"
+                placeholder="Ej: Equipo A">
+        </div>
+
+        <!-- Show sport info if user has active subscription -->
+        <div *ngIf="hasActiveSubscription()" class="mb-4 p-3 bg-dark-bg border border-dark-border">
+            <p class="text-sm text-gray-400">
+                <span class="font-bold text-primary">Deporte:</span>
+                {{ activeSubscriptions()[0]?.sport?.name || 'Sport ID: ' + activeSubscriptions()[0]?.sportId }}
+            </p>
+        </div>
+
+        <button type="submit" [disabled]="!teamForm.valid || isLoading()"
+            class="w-full px-6 py-3 bg-secondary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+            {{ isLoading() ? 'GUARDANDO...' : 'GUARDAR EQUIPO' }}
+        </button>
+    </form>
+</div>
+
+<!-- Teams Grid -->
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div *ngFor="let team of teams()"
+        class="card-bold group hover:border-primary transition-all p-6 bg-dark-surface border border-dark-border">
+        <div class="flex justify-between items-start mb-4">
+            <div
+                class="p-3 bg-dark-surface border border-dark-border rounded-none group-hover:bg-primary group-hover:text-black transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+            </div>
+            <span class="text-xs font-bold text-gray-400 uppercase tracking-wider">Equipo</span>
+        </div>
+        <h3 class="text-xl font-bold text-white mb-1">{{ team.name }}</h3>
+        <p class="text-sm text-gray-500">Creado: {{ team.createdAt | date }}</p>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="teams().length === 0 && !isLoading()"
+        class="col-span-full text-center py-12 border border-dashed border-dark-border">
+        <p class="text-gray-400">No tienes equipos creados aún.</p>
+        <p class="text-gray-500 text-sm mt-2">Haz clic en "CREAR EQUIPO" para comenzar.</p>
+    </div>
+</div>
+
+<!-- Loading State -->
+<div *ngIf="isLoading()" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+</div>

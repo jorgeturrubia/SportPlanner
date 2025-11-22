@@ -10,5 +10,8 @@ public class LookupProfile : Profile
     {
         CreateMap<TeamLevel, TeamLevelDto>();
         CreateMap<TeamCategory, TeamCategoryDto>();
+        CreateMap<Sport, SportDto>();
+        CreateMap<CreateSportDto, Sport>();
+        CreateMap<UpdateSportDto, Sport>();
     }
 }

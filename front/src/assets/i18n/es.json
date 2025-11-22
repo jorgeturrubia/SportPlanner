@@ -1,0 +1,29 @@
+{
+    "SIDEBAR": {
+        "HOME": "Inicio",
+        "MY_TEAMS": "Mis Equipos",
+        "LOGOUT": "Cerrar Sesión",
+        "PROFILE": "Perfil",
+        "CORE_MASTERS": "Maestros Core",
+        "SUBSCRIPTION_SPORTS": "Deportes de Suscripción"
+    },
+    "DASHBOARD": {
+        "WELCOME": "Bienvenido",
+        "TITLE": "Panel de Control"
+    },
+    "AUTH": {
+        "LOGIN": "Iniciar Sesión",
+        "REGISTER": "Registrarse",
+        "EMAIL": "Correo Electrónico",
+        "PASSWORD": "Contraseña",
+        "NAME": "Nombre",
+        "SURNAME": "Apellidos"
+    },
+    "COMMON": {
+        "LOADING": "Cargando...",
+        "ERROR": "Error",
+        "SUCCESS": "Éxito",
+        "SAVE": "Guardar",
+        "CANCEL": "Cancelar"
+    }
+}

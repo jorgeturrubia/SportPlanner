@@ -1,0 +1,50 @@
+<div class="notification-container">
+    <!-- Header con botón de limpiar todo -->
+    <div class="notification-header" *ngIf="(notifications$ | async)?.length">
+        <button (click)="dismissAll()" class="clear-all-btn" title="Limpiar todas">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
+            </svg>
+            Limpiar todo
+        </button>
+    </div>
+
+    <!-- Lista de notificaciones -->
+    <div class="notifications-list">
+        <div *ngFor="let notification of notifications$ | async; trackBy: trackByFn" class="notification-wrapper"
+            [@slideIn]>
+            <div class="notification" [ngClass]="'notification-' + notification.type">
+                <!-- Icono -->
+                <div class="notification-icon" [innerHTML]="getIcon(notification.type)"></div>
+
+                <!-- Contenido -->
+                <div class="notification-content">
+                    <div class="notification-title">{{ notification.title }}</div>
+                    <div class="notification-message">{{ notification.message }}</div>
+
+                    <!-- Acción opcional -->
+                    <button *ngIf="notification.action" (click)="executeAction(notification)"
+                        class="notification-action-btn">
+                        {{ notification.action.label }}
+                    </button>
+                </div>
+
+                <!-- Botón de cerrar -->
+                <button *ngIf="notification.dismissible" (click)="dismiss(notification.id)" class="notification-close"
+                    title="Cerrar">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18" />
+                        <line x1="6" y1="6" x2="18" y2="18" />
+                    </svg>
+                </button>
+
+                <!-- Barra de progreso para auto-dismiss -->
+                <div *ngIf="notification.duration && notification.duration > 0" class="notification-progress"
+                    [style.animation-duration.ms]="notification.duration"></div>
+            </div>
+        </div>
+    </div>
+</div>
