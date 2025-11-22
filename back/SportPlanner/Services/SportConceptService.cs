@@ -21,8 +21,6 @@ public class SportConceptService : ISportConceptService
             Description = dto.Description,
             ConceptCategoryId = dto.ConceptCategoryId,
             DifficultyLevelId = dto.DifficultyLevelId,
-            ProgressWeight = dto.ProgressWeight,
-            IsProgressive = dto.IsProgressive,
             SportId = dto.SportId
         };
         _db.SportConcepts.Add(concept);
@@ -72,8 +70,6 @@ public class SportConceptService : ISportConceptService
         concept.Description = dto.Description;
         concept.ConceptCategoryId = dto.ConceptCategoryId;
         concept.DifficultyLevelId = dto.DifficultyLevelId;
-        concept.ProgressWeight = dto.ProgressWeight;
-        concept.IsProgressive = dto.IsProgressive;
         concept.SportId = dto.SportId;
 
         await _db.SaveChangesAsync();

@@ -16,8 +16,7 @@ public class SportConcept
     public int? DifficultyLevelId { get; set; }
     public DifficultyLevel? DifficultyLevel { get; set; }
 
-    public int ProgressWeight { get; set; } = 50; // 0..100
-    public bool IsProgressive { get; set; } = true;
+  
 
     public int? SportId { get; set; }
     public Sport? Sport { get; set; }
