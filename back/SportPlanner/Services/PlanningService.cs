@@ -1,0 +1,100 @@
+using AutoMapper;
+using Microsoft.EntityFrameworkCore;
+using SportPlanner.Application.DTOs.Planning;
+using SportPlanner.Data;
+using SportPlanner.Models;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace SportPlanner.Services
+{
+    public class PlanningService : IPlanningService
+    {
+        private readonly AppDbContext _context;
+        private readonly IMapper _mapper;
+
+        public PlanningService(AppDbContext context, IMapper mapper)
+        {
+            _context = context;
+            _mapper = mapper;
+        }
+
+        public async Task<PlanningDto> CreateAsync(CreatePlanningDto createPlanningDto)
+        {
+            var planning = _mapper.Map<Planning>(createPlanningDto);
+            _context.Plannings.Add(planning);
+            await _context.SaveChangesAsync();
+            return _mapper.Map<PlanningDto>(planning);
+        }
+
+        public async Task<bool> DeleteAsync(int id)
+        {
+            var planning = await _context.Plannings.FindAsync(id);
+            if (planning == null)
+            {
+                return false;
+            }
+
+            _context.Plannings.Remove(planning);
+            await _context.SaveChangesAsync();
+            return true;
+        }
+
+        public async Task<IEnumerable<PlanningDto>> GetAllAsync()
+        {
+            var plannings = await _context.Plannings
+                .Include(p => p.Team).ThenInclude(t => t.TeamCategory)
+                .Include(p => p.ScheduleDays)
+                .Include(p => p.PlanConcepts).ThenInclude(pc => pc.SportConcept).ThenInclude(sc => sc.DifficultyLevel)
+                .ToListAsync();
+            return _mapper.Map<IEnumerable<PlanningDto>>(plannings);
+        }
+
+        public async Task<PlanningDto?> GetByIdAsync(int id)
+        {
+            var planning = await _context.Plannings
+                .Include(p => p.Team).ThenInclude(t => t.TeamCategory)
+                .Include(p => p.ScheduleDays)
+                .Include(p => p.PlanConcepts).ThenInclude(pc => pc.SportConcept).ThenInclude(sc => sc.DifficultyLevel)
+                .FirstOrDefaultAsync(p => p.Id == id);
+            
+            return _mapper.Map<PlanningDto>(planning);
+        }
+
+        public async Task<PlanningDto?> UpdateAsync(int id, UpdatePlanningDto updatePlanningDto)
+        {
+            var planning = await _context.Plannings.FindAsync(id);
+            if (planning == null)
+            {
+                return null;
+            }
+
+            _mapper.Map(updatePlanningDto, planning);
+            _context.Entry(planning).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!PlanningExists(id))
+                {
+                    return null;
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return _mapper.Map<PlanningDto>(planning);
+        }
+
+        private bool PlanningExists(int id)
+        {
+            return _context.Plannings.Any(e => e.Id == id);
+        }
+    }
+}

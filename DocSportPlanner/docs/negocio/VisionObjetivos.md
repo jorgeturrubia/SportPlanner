@@ -201,7 +201,7 @@ SportPlanner ofrece:
 | **Tiempo** | Desarrollo part-time (~20h/semana) | Timeline extendido (12-18 meses para MVP completo) |
 | **Presupuesto** | Minimo (servicios managed gratuitos/baratos) | Stack basado en Supabase (free tier), Vercel (free), Railway (low cost) |
 | **Equipo** | 1 persona | Priorizacion extrema, MVP muy reducido, usar servicios managed |
-| **Conocimiento** | Aprendizaje de Angular 20+ y .NET 8 | Curva de aprendizaje incluida en timeline |
+| **Conocimiento** | Aprendizaje de Angular 20+ y .NET 10 | Curva de aprendizaje incluida en timeline |
 
 ### Restricciones Tecnicas
 

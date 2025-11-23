@@ -1,4 +1,4 @@
-@SportPlanner_HostAddress = http://localhost:5269
+@SportPlanner_HostAddress = http://localhost:5115
 
 GET {{SportPlanner_HostAddress}}/weatherforecast/
 Accept: application/json

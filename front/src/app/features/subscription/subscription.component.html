@@ -1,0 +1,103 @@
+<div class="subscription-container">
+    <div class="subscription-card">
+        <!-- Header -->
+        <div class="header">
+            <h1 class="title">Complete Your Setup</h1>
+            <p class="subtitle">Choose your sport and subscription plan to get started</p>
+            <button class="logout-btn" (click)="logout()">Logout</button>
+        </div>
+
+        <!-- Progress Steps -->
+        <div class="progress-steps">
+            <div class="step" [class.active]="step() === 'sport'"
+                [class.completed]="step() === 'plan' || step() === 'confirm'">
+                <div class="step-number">1</div>
+                <div class="step-label">Choose Sport</div>
+            </div>
+            <div class="step-line" [class.completed]="step() === 'plan' || step() === 'confirm'"></div>
+            <div class="step" [class.active]="step() === 'plan'" [class.completed]="step() === 'confirm'">
+                <div class="step-number">2</div>
+                <div class="step-label">Select Plan</div>
+            </div>
+            <div class="step-line" [class.completed]="step() === 'confirm'"></div>
+            <div class="step" [class.active]="step() === 'confirm'">
+                <div class="step-number">3</div>
+                <div class="step-label">Confirm</div>
+            </div>
+        </div>
+
+        <!-- Error Message -->
+        <div *ngIf="error()" class="error-message">
+            {{ error() }}
+        </div>
+
+        <!-- Loading State -->
+        <div *ngIf="isLoading()" class="loading">
+            <div class="spinner"></div>
+            <p>Loading...</p>
+        </div>
+
+        <!-- Step 1: Select Sport -->
+        <div *ngIf="step() === 'sport' && !isLoading()" class="step-content">
+            <h2 class="step-title">Select Your Sport</h2>
+            <div class="cards-grid">
+                <div *ngFor="let sport of sports()" class="card sport-card" (click)="selectSport(sport)">
+                    <div class="card-icon">🏃</div>
+                    <h3 class="card-title">{{ sport.name }}</h3>
+                    <p class="card-description" *ngIf="sport.description">{{ sport.description }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 2: Select Plan -->
+        <div *ngIf="step() === 'plan' && !isLoading()" class="step-content">
+            <button class="back-btn" (click)="goBack()">← Back</button>
+            <h2 class="step-title">Choose Your Plan for {{ selectedSport()?.name }}</h2>
+            <div class="cards-grid">
+                <div *ngFor="let plan of plans()" class="card plan-card" (click)="selectPlan(plan)">
+                    <div class="plan-header">
+                        <h3 class="card-title">{{ plan.name }}</h3>
+                        <div class="plan-price">
+                            <span class="price">${{ plan.price }}</span>
+                            <span class="period">/{{ plan.billingPeriod }}</span>
+                        </div>
+                    </div>
+                    <p class="card-description" *ngIf="plan.description">{{ plan.description }}</p>
+                    <div class="plan-features">
+                        <div class="feature" *ngIf="plan.maxTeams">
+                            <span class="feature-icon">✓</span>
+                            <span>Up to {{ plan.maxTeams }} teams</span>
+                        </div>
+                        <div class="feature" *ngIf="plan.maxPlayers">
+                            <span class="feature-icon">✓</span>
+                            <span>Up to {{ plan.maxPlayers }} players</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Step 3: Confirm -->
+        <div *ngIf="step() === 'confirm' && !isLoading()" class="step-content">
+            <button class="back-btn" (click)="goBack()">← Back</button>
+            <h2 class="step-title">Confirm Your Subscription</h2>
+            <div class="confirmation-card">
+                <div class="confirmation-item">
+                    <span class="label">Sport:</span>
+                    <span class="value">{{ selectedSport()?.name }}</span>
+                </div>
+                <div class="confirmation-item">
+                    <span class="label">Plan:</span>
+                    <span class="value">{{ selectedPlan()?.name }}</span>
+                </div>
+                <div class="confirmation-item">
+                    <span class="label">Price:</span>
+                    <span class="value">${{ selectedPlan()?.price }} / {{ selectedPlan()?.billingPeriod }}</span>
+                </div>
+                <button class="confirm-btn" (click)="confirmSubscription()">
+                    Confirm Subscription
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,37 @@
+[33m❯[39m Building...
+[32m✔[39m Building...
+Application bundle generation failed. [2.783 seconds] - 2025-11-22T21:51:01.542Z
+
+[1m[33m[33m▲ [43;33m[[43;30mWARNING[43;33m][0m [1mNG8113: ConfirmDialogComponent is not used within the template of SportConceptsComponent[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/dashboard/pages/master-user/sport-concepts/sport-concepts.component.ts:14:49:
+[37m      14 │ ...orts: [CommonModule, ReactiveFormsModule, [32mConfirmDialogComponent[37m],
+         ╵                                              [32m~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m
+[1m[31m[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Unexpected closing tag "h2". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/dashboard/pages/master-user/sport-concepts/sport-concepts.component.html:5:12:
+[37m      5 │             [32m</h2>[37m
+        ╵             [32m~~~~~[0m
+
+  Error occurs in the template of component SportConceptsComponent.
+
+    src/app/features/dashboard/pages/master-user/sport-concepts/sport-concepts.component.ts:15:17:
+[37m      15 │     templateUrl: [32m'./sport-concepts.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+
+[31mX [41;31m[[41;97mERROR[41;31m][0m [1mNG5002: Unexpected closing tag "div". It may happen when the tag has already been closed by another tag. For more info see https://www.w3.org/TR/html5/syntax.html#closing-elements-that-have-implied-end-tags[0m [1m[35m[plugin angular-compiler][0m
+
+    src/app/features/dashboard/pages/master-user/sport-concepts/sport-concepts.component.html:7:4:
+[37m      7 │     [32m</div>[37m
+        ╵     [32m~~~~~~[0m
+
+  Error occurs in the template of component SportConceptsComponent.
+
+    src/app/features/dashboard/pages/master-user/sport-concepts/sport-concepts.component.ts:15:17:
+[37m      15 │     templateUrl: [32m'./sport-concepts.component.html'[37m
+         ╵                  [32m~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~[0m
+
+[39m[22m

@@ -67,7 +67,7 @@
 
 1. **⏳ 01-stack-tecnologico.md** - PENDIENTE
    - Frontend: Angular 20+, Tailwind 4
-   - Backend: .NET 8, EF Core
+   - Backend: .NET 10, EF Core
    - Base de datos: Supabase (PostgreSQL)
    - Hosting y DevOps
 
@@ -107,7 +107,7 @@
 2. **⏳ ADR/** (Architecture Decision Records) - PENDIENTE
    - ADR-001: Modelo Separado Marketplace (ya definido en 02-modelo-datos.md)
    - ADR-002: Angular 20+ vs React
-   - ADR-003: .NET 8 vs Node.js
+   - ADR-003: .NET 10 vs Node.js
    - ADR-004: Supabase vs Firebase
 
 ---
@@ -170,7 +170,7 @@
 - Animaciones: Angular Animations / GSAP
 
 **Backend:**
-- .NET 8
+.NET 10
 - Entity Framework Core
 - ASP.NET Core Web API
 

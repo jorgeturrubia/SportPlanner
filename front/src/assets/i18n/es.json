@@ -1,0 +1,19 @@
+{
+    "SIDEBAR": {
+        "HOME": "Inicio",
+        "MY_TEAMS": "Mis Equipos",
+        "LOGIN": "Iniciar Sesión",
+        "REGISTER": "Registrarse",
+        "EMAIL": "Correo Electrónico",
+        "PASSWORD": "Contraseña",
+        "NAME": "Nombre",
+        "SURNAME": "Apellidos"
+    },
+    "COMMON": {
+        "LOADING": "Cargando...",
+        "ERROR": "Error",
+        "SUCCESS": "Éxito",
+        "SAVE": "Guardar",
+        "CANCEL": "Cancelar"
+    }
+}

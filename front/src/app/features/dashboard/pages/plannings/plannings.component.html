@@ -1,0 +1,94 @@
+<div class="mb-8">
+    <h2 class="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
+        MIS PLANIFICACIONES
+    </h2>
+    <p class="text-gray-400 text-lg">Gestiona las planificaciones de entrenamiento de tus equipos.</p>
+</div>
+
+<div class="bg-dark-surface border border-dark-border rounded-lg overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-dark-bg border-b border-dark-border">
+                <tr>
+                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Equipo</th>
+                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Nombre / Periodo</th>
+                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Días</th>
+                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider text-right">Acciones</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-dark-border">
+                <tr *ngFor="let planning of plannings()" class="hover:bg-dark-bg/50 transition-colors group">
+                    <td class="p-4">
+                        <div class="font-bold text-white">{{ planning.team?.name || 'Sin Equipo' }}</div>
+                        <div class="text-xs text-gray-500">{{ planning.team?.teamCategory?.name }}</div>
+                    </td>
+                    <td class="p-4">
+                        <div class="text-white font-medium">{{ planning.name || 'Planificación' }}</div>
+                        <div class="text-sm text-gray-400">
+                            {{ planning.startDate | date:'dd/MM/yyyy' }} - {{ planning.endDate | date:'dd/MM/yyyy' }}
+                        </div>
+                    </td>
+                    <td class="p-4">
+                        <div class="flex gap-1 flex-wrap">
+                            <span *ngFor="let day of planning.scheduleDays"
+                                class="px-2 py-1 rounded bg-dark-bg border border-dark-border text-xs text-gray-300">
+                                {{ day.dayOfWeek | slice:0:3 }}
+                            </span>
+                        </div>
+                    </td>
+                    <td class="p-4 text-right">
+                        <div
+                            class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button (click)="viewPlanning(planning)"
+                                class="p-2 text-cyan-500 hover:bg-cyan-500/10 rounded transition-colors"
+                                title="Ver Detalles">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
+                                    <circle cx="12" cy="12" r="3" />
+                                </svg>
+                            </button>
+                            <button (click)="editPlanning(planning)"
+                                class="p-2 text-amber-500 hover:bg-amber-500/10 rounded transition-colors"
+                                title="Editar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                </svg>
+                            </button>
+                            <button (click)="deletePlanning(planning)"
+                                class="p-2 text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Eliminar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6" />
+                                    <path
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                    <line x1="10" y1="11" x2="10" y2="17" />
+                                    <line x1="14" y1="11" x2="14" y2="17" />
+                                </svg>
+                            </button>
+                        </div>
+                    </td>
+                </tr>
+                <tr *ngIf="plannings().length === 0 && !isLoading()">
+                    <td colspan="4" class="p-8 text-center text-gray-500">
+                        No hay planificaciones creadas. Ve a "Mis Equipos" para crear una.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div *ngIf="isLoading()" class="flex justify-center items-center py-12">
+    <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+</div>
+
+<app-confirm-dialog [isVisible]="showDeleteDialog()" [isLoading]="isDeleting()" title="Eliminar Planificación"
+    message="¿Estás seguro de que deseas eliminar esta planificación? Esta acción no se puede deshacer."
+    confirmText="Eliminar" cancelText="Cancelar" (confirm)="confirmDelete()" (cancel)="cancelDelete()"
+    (visibilityChange)="showDeleteDialog.set($event)">
+</app-confirm-dialog>

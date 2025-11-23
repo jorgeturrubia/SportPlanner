@@ -1,0 +1,18 @@
+name: Validate agent instructions
+
+on:
+  pull_request:
+    types: [opened, edited, synchronize, reopened]
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check PR body for agent frontmatter
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const body = context.payload.pull_request.body || '';
+            if (!/agent:/m.test(body) || !/context:/m.test(body)) {
+              core.setFailed('PR body must contain YAML frontmatter with agent and context (e.g., agent: dotnet-backend-expert)');
+            }

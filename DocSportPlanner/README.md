@@ -18,7 +18,7 @@
 - **Usuarios objetivo MVP:** 500 entrenadores en 12 meses
 - **Plazo de lanzamiento MVP:** 12 meses (desarrollo part-time)
 - **Equipo:** 1 persona (fundador/desarrollador part-time)
-- **Stack principal:** Angular 20+ / .NET 8 / Supabase (PostgreSQL)
+- **Stack principal:** Angular 20+ / .NET 10 / Supabase (PostgreSQL)
 
 ---
 
@@ -47,7 +47,99 @@
 ## Estructura de Documentacion
 
 ### 1. Documentacion de Negocio
-- [Vision y Objetivos](docs/negocio/VisionObjetivos.md)
+- [Vision y Objetivos](docs/01-vision-negocio.md)
+- [Reglas de Negocio](docs/negocio/)
+- [Casos de Uso](docs/negocio/)
+
+### 2. Documentacion Tecnica
+- [Stack Tecnologico](docs/tecnico/StackTecnologico.md)
+- [Modelo de Datos](docs/tecnico/ModeloDatos.md)
+- **[Tailwind CSS v4 - Guía de Estilos](docs/tecnico/TailwindCSS.md)** ⭐ NUEVO
+- [OpenAPI Specification](docs/tecnico/openapi.yaml)
+
+### 3. Arquitectura
+- [Decisiones Arquitectonicas (ADR)](docs/ADR/)
+- [Diagramas de Arquitectura](docs/arquitectura/)
+
+### 4. Guías para Agentes de IA
+- **[Backend - AGENTS.MD](../back/AGENTS.MD)** - Guía completa .NET 10 + EF Core
+- **[Frontend - AGENTS.MD](../front/AGENTS.md)** - Guía completa Angular 20 + Tailwind CSS v4
+- **[.NET 10 Best Practices](../back/dotnet10-best-practices.md)**
+- **[TypeScript Best Practices](../back/typescript-best-practices.md)**
+
+---
+
+## 🎨 Stack Tecnológico Frontend
+
+### Angular 20 + Tailwind CSS v4
+
+**Decisiones clave de diseño:**
+
+1. **Tailwind CSS v4 como único framework de estilos**
+   - ✅ Utility-first approach para consistencia
+   - ✅ Dark mode nativo (class-based)
+   - ✅ Performance con tree-shaking automático
+   - 📖 **[Documentación completa](docs/tecnico/TailwindCSS.md)**
+
+2. **Modo Light y Dark obligatorio**
+   - Todos los componentes deben soportar ambos modos
+   - Uso de clases `dark:` de Tailwind
+   - Toggle de tema persistido en localStorage
+
+3. **Componentización exhaustiva**
+   - Atomic Design (atoms, molecules, organisms)
+   - Componentes reutilizables en `shared/components/`
+   - Separación obligatoria: `.ts`, `.html`, `.scss`
+
+4. **Control Flow moderno**
+   - Bloques `@if`, `@for`, `@switch` (no `*ngIf`, `*ngFor`)
+   - Signals para estado local
+   - Standalone components por defecto
+
+5. **MCP Server de Angular**
+   - Acceso a best practices oficiales actualizadas
+   - Búsqueda en documentación oficial (angular.dev)
+   - **Obligatorio consultar antes de programar**
+
+📖 **Ver guía completa:** [front/AGENTS.md](../front/AGENTS.md)
+
+---
+
+## 🔧 Stack Tecnológico Backend
+
+### .NET 10 + EF Core 10 + PostgreSQL
+
+**Decisiones clave de arquitectura:**
+
+1. **Clean Architecture monolítica**
+   - Domain Layer (Models)
+   - Application Layer (DTOs, Mappings, Validators)
+   - Infrastructure Layer (Data, EF Core)
+   - WebAPI Layer (Controllers)
+
+2. **DTO-First approach**
+   - ✅ NUNCA exponer entidades EF Core en APIs
+   - ✅ AutoMapper para mapeos
+   - ✅ FluentValidation para validación
+
+3. **Entity Framework Core 10**
+   - Code-First con Migrations
+   - Repository Pattern para lógica compleja
+   - Proyecciones en lugar de Include cuando sea posible
+
+4. **Best Practices obligatorias**
+   - Async/Await siempre
+   - Logging estructurado (Serilog)
+   - Dependency Injection (constructor injection)
+   - Result Pattern para error handling
+
+📖 **Ver guías completas:**
+- [back/AGENTS.MD](../back/AGENTS.MD) - Guía de desarrollo
+- [back/dotnet10-best-practices.md](../back/dotnet10-best-practices.md) - Patrones y antipatrones
+
+---
+
+## 📚 Documentación Adicional
 - [User Personas](docs/negocio/UserPersonas.md)
 - [User Stories](docs/negocio/UserStories.md)
 - [Modelo de Negocio](docs/negocio/04-modelo-negocio.md)
@@ -98,7 +190,6 @@
 - Backlog inicial
 
 ### Fase 5: Operaciones - PENDIENTE
-- CI/CD
 - Estrategia de pruebas
 - Monitoring
 
@@ -108,7 +199,7 @@
 
 ### Requisitos Previos
 - Node.js 20+
-- .NET 8 SDK
+- .NET 10 SDK
 - Cuenta Supabase
 
 ### Configuracion

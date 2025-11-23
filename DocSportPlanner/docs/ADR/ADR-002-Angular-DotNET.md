@@ -29,14 +29,14 @@ Necesitamos un stack que equilibre:
 ### Opcion 1: Angular + .NET (ELEGIDA)
 
 **Frontend:** Angular 20+ con TypeScript  
-**Backend:** .NET 8 con C#
+**Backend:** .NET 10 con C#
 
 **Pros:**
 - TypeScript end-to-end (Angular) + C# type-safe (similar)
 - Angular es empresarial, estructura clara, escalable
 - .NET tiene performance excepcional (top 3 en benchmarks)
 - Ecosistemas maduros (NPM + NuGet)
-- Soporte LTS (.NET 8 hasta 2026)
+- Soporte LTS (.NET 10, ver política de soporte .NET)
 - Experiencia del equipo (conoce ambos)
 - Entity Framework Core para ORM robusto
 - Inyeccion de dependencias nativa en ambos
@@ -124,7 +124,7 @@ Necesitamos un stack que equilibre:
 3. **Estructura:** Angular fuerza buenas practicas (importante para equipo de 1)
 4. **Type-safety:** TypeScript + C# minimizan bugs en tiempo de compilacion
 5. **Ecosistemas maduros:** NPM + NuGet son gigantes, cualquier problema tiene solucion
-6. **LTS:** .NET 8 tiene soporte hasta 2026, estabilidad garantizada
+6. **LTS:** .NET 10, ver la política de soporte de .NET (https://dotnet.microsoft.com/platform/support/policy)
 7. **Escalabilidad:** Ambos escalan bien (Angular con lazy loading, .NET con async/await)
 8. **Separacion clara:** Frontend y Backend totalmente desacoplados (facil distribuir trabajo si crece equipo)
 
@@ -164,7 +164,7 @@ Si el proyecto crece y necesita optimizaciones:
 
 - Benchmarks .NET vs Node.js: https://www.techempower.com/benchmarks/
 - Angular 20 Standalone: https://angular.dev/guide/components/importing
-- .NET 8 LTS: https://dotnet.microsoft.com/platform/support/policy
+- .NET 10 LTS: https://dotnet.microsoft.com/platform/support/policy
 
 ---
 
