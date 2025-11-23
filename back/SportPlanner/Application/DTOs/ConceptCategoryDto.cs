@@ -8,5 +8,6 @@ public class ConceptCategoryDto
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public int? ParentId { get; set; }
+    public ConceptCategoryDto? Parent { get; set; }
     public List<ConceptCategoryDto> SubCategories { get; set; } = new List<ConceptCategoryDto>();
 }

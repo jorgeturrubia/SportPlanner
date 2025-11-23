@@ -1,3 +1,5 @@
+using SportPlanner.Application.DTOs;
+
 namespace SportPlanner.Application.DTOs.SportConcept
 {
     public class SportConceptDto
@@ -6,5 +8,6 @@ namespace SportPlanner.Application.DTOs.SportConcept
         public string Name { get; set; } = null!;
         public string? Description { get; set; }
         public DifficultyLevelDto? DifficultyLevel { get; set; }
+        public ConceptCategoryDto? ConceptCategory { get; set; }
     }
 }

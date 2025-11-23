@@ -3,11 +3,21 @@ export interface DifficultyLevel {
   name: string;
 }
 
+export interface ConceptCategory {
+  id: number;
+  name: string;
+  description?: string;
+  parentId?: number;
+  parent?: ConceptCategory;
+  subCategories?: ConceptCategory[];
+}
+
 export interface SportConcept {
   id: number;
   name: string;
   description: string | null;
   difficultyLevel: DifficultyLevel | null;
+  conceptCategory?: ConceptCategory;
 }
 
 export interface TeamCategory {

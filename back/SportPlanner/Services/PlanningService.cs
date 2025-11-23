@@ -52,7 +52,13 @@ namespace SportPlanner.Services
             var plannings = await _context.Plannings
                 .Include(p => p.Team).ThenInclude(t => t.TeamCategory)
                 .Include(p => p.ScheduleDays)
-                .Include(p => p.PlanConcepts).ThenInclude(pc => pc.SportConcept).ThenInclude(sc => sc.DifficultyLevel)
+                .Include(p => p.PlanConcepts)
+                    .ThenInclude(pc => pc.SportConcept)
+                        .ThenInclude(sc => sc.DifficultyLevel)
+                .Include(p => p.PlanConcepts)
+                    .ThenInclude(pc => pc.SportConcept)
+                        .ThenInclude(sc => sc.ConceptCategory)
+                            .ThenInclude(cc => cc.Parent)
                 .ToListAsync();
             return _mapper.Map<IEnumerable<PlanningDto>>(plannings);
         }
@@ -62,7 +68,13 @@ namespace SportPlanner.Services
             var planning = await _context.Plannings
                 .Include(p => p.Team).ThenInclude(t => t.TeamCategory)
                 .Include(p => p.ScheduleDays)
-                .Include(p => p.PlanConcepts).ThenInclude(pc => pc.SportConcept).ThenInclude(sc => sc.DifficultyLevel)
+                .Include(p => p.PlanConcepts)
+                    .ThenInclude(pc => pc.SportConcept)
+                        .ThenInclude(sc => sc.DifficultyLevel)
+                .Include(p => p.PlanConcepts)
+                    .ThenInclude(pc => pc.SportConcept)
+                        .ThenInclude(sc => sc.ConceptCategory)
+                            .ThenInclude(cc => cc.Parent)
                 .FirstOrDefaultAsync(p => p.Id == id);
             
             return _mapper.Map<PlanningDto>(planning);

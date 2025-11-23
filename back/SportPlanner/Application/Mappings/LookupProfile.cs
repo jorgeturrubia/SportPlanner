@@ -13,5 +13,6 @@ public class LookupProfile : Profile
         CreateMap<Sport, SportDto>();
         CreateMap<CreateSportDto, Sport>();
         CreateMap<UpdateSportDto, Sport>();
+        CreateMap<ConceptCategory, ConceptCategoryDto>();
     }
 }
