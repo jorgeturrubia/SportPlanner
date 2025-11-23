@@ -83,4 +83,9 @@ export class PlanningsComponent implements OnInit {
     viewPlanning(planning: Planning) {
         this.router.navigate(['/dashboard/plannings/view', planning.id]);
     }
+
+    getDayName(dayOfWeek: number): string {
+        const days = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+        return days[dayOfWeek] || '?';
+    }
 }

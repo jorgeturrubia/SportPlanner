@@ -32,7 +32,7 @@
                         <div class="flex gap-1 flex-wrap">
                             <span *ngFor="let day of planning.scheduleDays"
                                 class="px-2 py-1 rounded bg-dark-bg border border-dark-border text-xs text-gray-300">
-                                {{ day.dayOfWeek | slice:0:3 }}
+                                {{ getDayName(day.dayOfWeek) }}
                             </span>
                         </div>
                     </td>
