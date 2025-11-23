@@ -2,7 +2,7 @@
     <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
 </div>
 
-<div *ngIf="!isLoading() && schedule()" class="animate-in fade-in duration-300">
+<div *ngIf="!isLoading() && planning()" class="animate-in fade-in duration-300">
     <!-- Header -->
     <div class="mb-8 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
@@ -10,13 +10,13 @@
                 <span class="cursor-pointer hover:text-white transition-colors" (click)="goBack()">Mis
                     Planificaciones</span>
                 <span>/</span>
-                <span class="text-primary font-bold">{{ schedule().team?.name }}</span>
+                <span class="text-primary font-bold">{{ planning()?.team?.name }}</span>
             </div>
             <h2 class="text-3xl md:text-4xl font-black text-white tracking-tight">
-                {{ schedule().name || 'Planificación Sin Nombre' }}
+                {{ planning()?.name || 'Planificación Sin Nombre' }}
             </h2>
             <p class="text-gray-400 text-lg">
-                {{ schedule().startDate | date:'dd/MM/yyyy' }} - {{ schedule().endDate | date:'dd/MM/yyyy' }}
+                {{ planning()?.startDate | date:'dd/MM/yyyy' }} - {{ planning()?.endDate | date:'dd/MM/yyyy' }}
             </p>
         </div>
         <div class="flex gap-3">
@@ -24,7 +24,7 @@
                 class="px-6 py-2 border border-dark-border text-white font-bold uppercase text-sm hover:bg-dark-bg transition-colors rounded">
                 Volver
             </button>
-            <button (click)="editSchedule()"
+            <button (click)="editPlanning()"
                 class="px-6 py-2 bg-secondary text-black font-bold uppercase text-sm hover:bg-white transition-colors rounded shadow-lg shadow-secondary/20">
                 Editar
             </button>
@@ -48,7 +48,7 @@
                     Horarios
                 </h3>
                 <div class="space-y-3">
-                    <div *ngFor="let day of schedule().scheduleDays"
+                    <div *ngFor="let day of planning()?.scheduleDays"
                         class="flex justify-between items-center p-3 bg-dark-bg rounded border border-dark-border">
                         <span class="font-bold text-white">{{ getDayName(day.dayOfWeek) }}</span>
                         <span class="text-gray-400 text-sm">{{ day.startTime | slice:0:5 }} - {{ day.endTime | slice:0:5
@@ -73,15 +73,15 @@
                 <div class="space-y-2">
                     <div class="flex justify-between">
                         <span class="text-gray-400">Nombre:</span>
-                        <span class="text-white font-bold">{{ schedule().team?.name }}</span>
+                        <span class="text-white font-bold">{{ planning()?.team?.name }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-400">Categoría:</span>
-                        <span class="text-white">{{ schedule().team?.teamCategory?.name || '-' }}</span>
+                        <span class="text-white">{{ planning()?.team?.teamCategory?.name || '-' }}</span>
                     </div>
                     <div class="flex justify-between">
                         <span class="text-gray-400">Nivel:</span>
-                        <span class="text-white">{{ schedule().team?.teamLevel?.name || '-' }}</span>
+                        <span class="text-white">{{ '-' }}</span>
                     </div>
                 </div>
             </div>
@@ -101,7 +101,7 @@
                 </h3>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div *ngFor="let pc of schedule().planConcepts"
+                    <div *ngFor="let pc of planning()?.planConcepts"
                         class="p-4 bg-dark-bg border border-dark-border rounded hover:border-gray-500 transition-colors">
                         <div class="flex justify-between items-start mb-2">
                             <h4 class="font-bold text-white">{{ pc.sportConcept?.name }}</h4>
@@ -113,7 +113,7 @@
                         <p class="text-sm text-gray-400 line-clamp-3">{{ pc.sportConcept?.description || 'Sin
                             descripción.' }}</p>
                     </div>
-                    <div *ngIf="!schedule().planConcepts || schedule().planConcepts.length === 0"
+                    <div *ngIf="!planning()?.planConcepts || planning()?.planConcepts.length === 0"
                         class="col-span-full text-center py-8 text-gray-500">
                         No hay conceptos seleccionados para esta planificación.
                     </div>

@@ -22,6 +22,6 @@ public class Team
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
-    public ICollection<Planning> TrainingSchedules { get; set; } = new List<Planning>();
+    public ICollection<Planning> Plannings { get; set; } = new List<Planning>();
 
 }

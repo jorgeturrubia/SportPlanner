@@ -26,7 +26,6 @@
                         class="w-full bg-dark-bg border-2 border-dark-border p-2 text-white focus:border-primary outline-none transition-colors">
                         <option [ngValue]="null">Ninguna (Raíz)</option>
                         <ng-container *ngFor="let cat of flatCategories()">
-                            <!-- Disable selection of itself as parent if editing -->
                             <option *ngIf="cat.id !== editingCategoryId()" [value]="cat.id">{{ cat.name }}</option>
                         </ng-container>
                     </select>
@@ -91,8 +90,8 @@
     </div>
 </div>
 
-<app-confirm-dialog [isOpen]="showDeleteDialog()" title="Eliminar Categoría"
+<app-confirm-dialog [isVisible]="showDeleteDialog()" title="Eliminar Categoría"
     message="¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer."
-    confirmText="Eliminar" cancelText="Cancelar" type="danger" [isLoading]="isDeleting()" (confirm)="confirmDelete()"
+    confirmText="Eliminar" cancelText="Cancelar" [isLoading]="isDeleting()" (confirm)="confirmDelete()"
     (cancel)="cancelDelete()">
 </app-confirm-dialog>

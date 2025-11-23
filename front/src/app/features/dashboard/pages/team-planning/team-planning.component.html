@@ -1,6 +1,6 @@
 <div class="mb-8">
     <h2 class="text-3xl md:text-4xl font-black text-white mb-2 tracking-tight">
-        {{ scheduleId ? 'EDITAR PLANIFICACIÓN' : 'PLANIFICACIÓN DEL EQUIPO' }}
+        {{ planningId ? 'EDITAR PLANIFICACIÓN' : 'PLANIFICACIÓN DEL EQUIPO' }}
     </h2>
     <p class="text-gray-400 text-lg">Configura el calendario y objetivos de entrenamiento.</p>
 </div>
@@ -93,12 +93,12 @@
             </div>
 
             <div *ngIf="!isLoadingConcepts()" class="space-y-3 mb-8 max-h-[600px] overflow-y-auto pr-2">
-                <div *ngFor="let proposal of concepts()" (click)="toggleConcept(proposal.concept.id)"
-                    [class]="'p-4 border rounded cursor-pointer transition-all duration-200 ' + (isConceptSelected(proposal.concept.id) ? 'border-primary bg-primary/10 shadow-[0_0_10px_rgba(34,197,94,0.1)]' : 'border-dark-border bg-dark-bg hover:border-gray-500')">
+                <div *ngFor="let concept of concepts()" (click)="toggleConcept(concept.id)"
+                    [class]="'p-4 border rounded cursor-pointer transition-all duration-200 ' + (isConceptSelected(concept.id) ? 'border-primary bg-primary/10 shadow-[0_0_10px_rgba(34,197,94,0.1)]' : 'border-dark-border bg-dark-bg hover:border-gray-500')">
                     <div class="flex items-start gap-4">
                         <div
-                            [class]="'mt-1 w-6 h-6 rounded border flex items-center justify-center transition-colors ' + (isConceptSelected(proposal.concept.id) ? 'bg-primary border-primary' : 'border-gray-500')">
-                            <svg *ngIf="isConceptSelected(proposal.concept.id)" xmlns="http://www.w3.org/2000/svg"
+                            [class]="'mt-1 w-6 h-6 rounded border flex items-center justify-center transition-colors ' + (isConceptSelected(concept.id) ? 'bg-primary border-primary' : 'border-gray-500')">
+                            <svg *ngIf="isConceptSelected(concept.id)" xmlns="http://www.w3.org/2000/svg"
                                 width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                                 stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-black">
                                 <polyline points="20 6 9 17 4 12"></polyline>
@@ -106,17 +106,15 @@
                         </div>
                         <div class="flex-1">
                             <div class="flex justify-between items-center mb-1 flex-wrap gap-2">
-                                <h4 class="font-bold text-white text-lg">{{ proposal.concept.name }}</h4>
+                                <h4 class="font-bold text-white text-lg">{{ concept.name }}</h4>
                                 <div class="flex gap-2">
-                                    <span *ngIf="proposal.concept.difficultyLevel"
+                                    <span *ngIf="concept.difficultyLevel"
                                         class="text-[10px] font-bold border border-gray-600 text-gray-400 px-2 py-0.5 rounded uppercase">
-                                        {{ proposal.concept.difficultyLevel.name }}
+                                        {{ concept.difficultyLevel.name }}
                                     </span>
-                                    <span *ngIf="proposal.isSuggested"
-                                        class="text-[10px] font-bold bg-secondary text-black px-2 py-0.5 rounded uppercase shadow-sm shadow-secondary/50">RECOMENDADO</span>
                                 </div>
                             </div>
-                            <p class="text-sm text-gray-400">{{ proposal.concept.description || 'Sin descripción
+                            <p class="text-sm text-gray-400">{{ concept.description || 'Sin descripción
                                 disponible.' }}</p>
                         </div>
                     </div>
@@ -130,7 +128,7 @@
                 </button>
                 <button type="submit" [disabled]="isLoading()"
                     class="px-8 py-3 bg-secondary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-lg shadow-secondary/20">
-                    {{ isLoading() ? 'GUARDANDO...' : (scheduleId ? 'ACTUALIZAR PLANIFICACIÓN' : 'FINALIZAR
+                    {{ isLoading() ? 'GUARDANDO...' : (planningId ? 'ACTUALIZAR PLANIFICACIÓN' : 'FINALIZAR
                     PLANIFICACIÓN') }}
                 </button>
             </div>

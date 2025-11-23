@@ -22,7 +22,7 @@ public class AppDbContext : DbContext
     public DbSet<DifficultyLevel> DifficultyLevels { get; set; } = null!;
     public DbSet<SportConcept> SportConcepts { get; set; } = null!;
     public DbSet<PlanConcept> PlanConcepts { get; set; } = null!;
-    public DbSet<Planning> TrainingSchedules { get; set; } = null!;
+    public DbSet<Planning> Plannings { get; set; } = null!;
     public DbSet<PlaningScheduleDay> TrainingScheduleDays { get; set; } = null!;
     public DbSet<Court> Courts { get; set; } = null!;
     public DbSet<TeamCategory> TeamCategories { get; set; } = null!;
@@ -112,12 +112,12 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<PlanConcept>().HasKey(pc => pc.Id);
         modelBuilder.Entity<PlanConcept>()
-            .HasIndex(pc => new { pc.TrainingScheduleId, pc.SportConceptId })
+            .HasIndex(pc => new { pc.PlanningId, pc.SportConceptId })
             .IsUnique(true);
         modelBuilder.Entity<PlanConcept>()
-            .HasOne(pc => pc.TrainingSchedule)
+            .HasOne(pc => pc.Planning)
             .WithMany(ts => ts.PlanConcepts)
-            .HasForeignKey(pc => pc.TrainingScheduleId)
+            .HasForeignKey(pc => pc.PlanningId)
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<PlanConcept>()
             .HasOne(pc => pc.SportConcept)
@@ -128,18 +128,18 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Planning>().HasKey(ts => ts.Id);
         modelBuilder.Entity<Planning>()
             .HasOne(ts => ts.Team)
-            .WithMany(t => t.TrainingSchedules)
+            .WithMany(t => t.Plannings)
             .HasForeignKey(ts => ts.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<PlaningScheduleDay>().HasKey(tds => tds.Id);
         modelBuilder.Entity<PlaningScheduleDay>()
-            .HasIndex(tds => new { tds.TrainingScheduleId, tds.DayOfWeek })
+            .HasIndex(tds => new { tds.PlanningId, tds.DayOfWeek })
             .IsUnique(true);
         modelBuilder.Entity<PlaningScheduleDay>()
-            .HasOne(tds => tds.TrainingSchedule)
+            .HasOne(tds => tds.Planning)
             .WithMany(ts => ts.ScheduleDays)
-            .HasForeignKey(tds => tds.TrainingScheduleId)
+            .HasForeignKey(tds => tds.PlanningId)
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<PlaningScheduleDay>()
             .HasOne(tds => tds.Court)

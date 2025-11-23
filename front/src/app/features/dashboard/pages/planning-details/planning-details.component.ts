@@ -1,8 +1,9 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TrainingScheduleService } from '../../../../services/training-schedule.service';
+import { PlanningService } from '../../../../services/planning.service';
 import { NotificationService } from '../../../../services/notification.service';
+import { Planning } from '../../../../core/models/planning.model';
 
 @Component({
     selector: 'app-planning-details',
@@ -11,37 +12,36 @@ import { NotificationService } from '../../../../services/notification.service';
     templateUrl: './planning-details.component.html'
 })
 export class PlanningDetailsComponent implements OnInit {
-    scheduleId: number = 0;
-    schedule = signal<any>(null);
+    planningId: number = 0;
+    planning = signal<Planning | null>(null);
     isLoading = signal(true);
-    weekDaysEn = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    weekDaysEs = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+    weekDays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
     constructor(
         private route: ActivatedRoute,
         private router: Router,
-        private planningService: TrainingScheduleService,
+        private planningService: PlanningService,
         private notificationService: NotificationService
     ) { }
 
     ngOnInit() {
         this.route.params.subscribe(params => {
             if (params['id']) {
-                this.scheduleId = +params['id'];
-                this.loadSchedule();
+                this.planningId = +params['id'];
+                this.loadPlanning();
             }
         });
     }
 
-    loadSchedule() {
+    loadPlanning() {
         this.isLoading.set(true);
-        this.planningService.getScheduleById(this.scheduleId).subscribe({
+        this.planningService.getPlanning(this.planningId).subscribe({
             next: (data) => {
-                this.schedule.set(data);
+                this.planning.set(data);
                 this.isLoading.set(false);
             },
             error: (err) => {
-                console.error('Error loading schedule', err);
+                console.error('Error loading planning', err);
                 this.notificationService.error('Error', 'No se pudo cargar la planificación.');
                 this.isLoading.set(false);
                 this.router.navigate(['/dashboard/plannings']);
@@ -49,15 +49,14 @@ export class PlanningDetailsComponent implements OnInit {
         });
     }
 
-    getDayName(dayEn: string): string {
-        const index = this.weekDaysEn.indexOf(dayEn);
-        return index !== -1 ? this.weekDaysEs[index] : dayEn;
+    getDayName(day: number): string {
+        return this.weekDays[day] || '';
     }
 
-    editSchedule() {
-        const s = this.schedule();
-        if (s) {
-            this.router.navigate(['/dashboard/teams/planning', s.teamId, 'edit', s.id]);
+    editPlanning() {
+        const p = this.planning();
+        if (p && p.team) {
+            this.router.navigate(['/dashboard/teams/planning', p.team.id, 'edit', p.id]);
         }
     }
 

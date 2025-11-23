@@ -2,8 +2,11 @@ import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { TrainingScheduleService, ConceptProposal } from '../../../../services/training-schedule.service';
+import { PlanningService } from '../../../../services/planning.service';
 import { NotificationService } from '../../../../services/notification.service';
+import { Planning, PlanConcept, PlaningScheduleDay } from '../../../../core/models/planning.model';
+import { SportConcept } from '../../../../core/models/sport-concept.model';
+import { SportConceptService } from '../../../../services/sport-concept.service';
 
 @Component({
     selector: 'app-team-planning',
@@ -13,22 +16,22 @@ import { NotificationService } from '../../../../services/notification.service';
 })
 export class TeamPlanningComponent implements OnInit {
     teamId: number = 0;
-    scheduleId: number | null = null;
+    planningId: number | null = null;
     step = signal(1);
     planForm: FormGroup;
     isLoading = signal(false);
     isLoadingConcepts = signal(false);
-    concepts = signal<ConceptProposal[]>([]);
+    concepts = signal<SportConcept[]>([]);
     selectedConceptIds = signal<number[]>([]);
 
-    weekDays = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
-    weekDaysEn = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
+    weekDays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
     constructor(
         private fb: FormBuilder,
         private route: ActivatedRoute,
         private router: Router,
-        private planningService: TrainingScheduleService,
+        private planningService: PlanningService,
+        private sportConceptService: SportConceptService,
         private notificationService: NotificationService
     ) {
         this.planForm = this.fb.group({
@@ -57,28 +60,28 @@ export class TeamPlanningComponent implements OnInit {
             if (params['teamId']) {
                 this.teamId = +params['teamId'];
             }
-            if (params['scheduleId']) {
-                this.scheduleId = +params['scheduleId'];
-                this.loadSchedule(this.scheduleId);
+            if (params['planningId']) {
+                this.planningId = +params['planningId'];
+                this.loadPlanning(this.planningId);
             }
         });
     }
 
-    loadSchedule(id: number) {
+    loadPlanning(id: number) {
         this.isLoading.set(true);
-        this.planningService.getScheduleById(id).subscribe({
-            next: (schedule) => {
+        this.planningService.getPlanning(id).subscribe({
+            next: (planning) => {
                 // Populate form
                 this.planForm.patchValue({
-                    name: schedule.name,
-                    startDate: schedule.startDate.split('T')[0],
-                    endDate: schedule.endDate.split('T')[0]
+                    name: planning.name,
+                    startDate: planning.startDate.split('T')[0],
+                    endDate: planning.endDate.split('T')[0]
                 });
 
                 // Populate days
-                if (schedule.scheduleDays) {
-                    schedule.scheduleDays.forEach((day: any) => {
-                        const index = this.weekDaysEn.indexOf(day.dayOfWeek);
+                if (planning.scheduleDays) {
+                    planning.scheduleDays.forEach((day: PlaningScheduleDay) => {
+                        const index = day.dayOfWeek;
                         if (index !== -1) {
                             const dayGroup = this.daysFormArray.at(index);
                             dayGroup.patchValue({
@@ -91,14 +94,14 @@ export class TeamPlanningComponent implements OnInit {
                 }
 
                 // Populate concepts
-                if (schedule.planConcepts) {
-                    this.selectedConceptIds.set(schedule.planConcepts.map((pc: any) => pc.sportConceptId));
+                if (planning.planConcepts) {
+                    this.selectedConceptIds.set(planning.planConcepts.map((pc: PlanConcept) => pc.sportConcept.id));
                 }
 
                 this.isLoading.set(false);
             },
             error: (err) => {
-                console.error('Error loading schedule', err);
+                console.error('Error loading planning', err);
                 this.notificationService.error('Error', 'No se pudo cargar la planificación.');
                 this.isLoading.set(false);
             }
@@ -124,16 +127,13 @@ export class TeamPlanningComponent implements OnInit {
 
     loadConcepts() {
         this.isLoadingConcepts.set(true);
-        this.planningService.getProposedConcepts(this.teamId).subscribe({
+        // TODO: This should be replaced with a proper method to get concepts for a team
+        this.sportConceptService.getConcepts().subscribe({
             next: (data) => {
                 this.concepts.set(data);
-                // If creating new, pre-select suggested. If editing, keep existing selection unless empty?
-                // Actually, if editing, we already have selectedConceptIds set from loadSchedule.
-                // But we might want to merge or just keep what we have.
-                // If selectedConceptIds is empty (new schedule), select suggested.
-                if (this.selectedConceptIds().length === 0 && !this.scheduleId) {
-                    const suggestedIds = data.filter(p => p.isSuggested).map(p => p.concept.id);
-                    this.selectedConceptIds.set(suggestedIds);
+                if (this.selectedConceptIds().length === 0 && !this.planningId) {
+                    //const suggestedIds = data.filter(p => p.isSuggested).map(p => p.concept.id);
+                    //this.selectedConceptIds.set(suggestedIds);
                 }
                 this.isLoadingConcepts.set(false);
             },
@@ -164,7 +164,7 @@ export class TeamPlanningComponent implements OnInit {
 
             const formVal = this.planForm.value;
             const scheduleDays = formVal.days
-                .map((d: any, i: number) => ({ ...d, dayOfWeek: this.weekDaysEn[i] }))
+                .map((d: any, i: number) => ({ ...d, dayOfWeek: i }))
                 .filter((d: any) => d.selected)
                 .map((d: any) => ({
                     dayOfWeek: d.dayOfWeek,
@@ -172,34 +172,49 @@ export class TeamPlanningComponent implements OnInit {
                     endTime: d.endTime
                 }));
 
-            const payload = {
-                name: formVal.name,
-                startDate: formVal.startDate,
-                endDate: formVal.endDate,
-                scheduleDays: scheduleDays,
-                planConceptIds: this.selectedConceptIds()
-            };
+            const planConcepts: PlanConcept[] = this.selectedConceptIds().map((id, index) => ({
+                id: 0,
+                planningId: 0,
+                sportConcept: null,
+                sportConceptId: id,
+                order: index
+            }));
 
-            if (this.scheduleId) {
-                this.planningService.updateSchedule(this.scheduleId, payload).subscribe({
+            if (this.planningId) {
+                const payload = {
+                    name: formVal.name,
+                    startDate: formVal.startDate,
+                    endDate: formVal.endDate,
+                    scheduleDays: scheduleDays,
+                    planConcepts: planConcepts
+                };
+                this.planningService.updatePlanning(this.planningId, payload).subscribe({
                     next: () => {
                         this.notificationService.success('Planificación actualizada', 'Se ha actualizado la planificación correctamente.');
                         this.router.navigate(['/dashboard/plannings']);
                     },
                     error: (err) => {
-                        console.error('Error updating schedule', err);
+                        console.error('Error updating planning', err);
                         this.notificationService.error('Error', 'No se pudo actualizar la planificación.');
                         this.isLoading.set(false);
                     }
                 });
             } else {
-                this.planningService.createSchedule(this.teamId, payload).subscribe({
+                const payload = {
+                    name: formVal.name,
+                    teamId: this.teamId,
+                    startDate: formVal.startDate,
+                    endDate: formVal.endDate,
+                    scheduleDays: scheduleDays,
+                    planConcepts: planConcepts
+                };
+                this.planningService.createPlanning(payload).subscribe({
                     next: () => {
                         this.notificationService.success('Planificación creada', 'Se ha generado la planificación correctamente.');
                         this.router.navigate(['/dashboard/plannings']);
                     },
                     error: (err) => {
-                        console.error('Error creating schedule', err);
+                        console.error('Error creating planning', err);
                         this.notificationService.error('Error', 'No se pudo guardar la planificación.');
                         this.isLoading.set(false);
                     }

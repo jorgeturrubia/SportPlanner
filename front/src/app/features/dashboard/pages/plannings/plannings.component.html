@@ -17,20 +17,20 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-dark-border">
-                <tr *ngFor="let schedule of schedules()" class="hover:bg-dark-bg/50 transition-colors group">
+                <tr *ngFor="let planning of plannings()" class="hover:bg-dark-bg/50 transition-colors group">
                     <td class="p-4">
-                        <div class="font-bold text-white">{{ schedule.team?.name || 'Sin Equipo' }}</div>
-                        <div class="text-xs text-gray-500">{{ schedule.team?.teamCategory?.name }}</div>
+                        <div class="font-bold text-white">{{ planning.team?.name || 'Sin Equipo' }}</div>
+                        <div class="text-xs text-gray-500">{{ planning.team?.teamCategory?.name }}</div>
                     </td>
                     <td class="p-4">
-                        <div class="text-white font-medium">{{ schedule.name || 'Planificación' }}</div>
+                        <div class="text-white font-medium">{{ planning.name || 'Planificación' }}</div>
                         <div class="text-sm text-gray-400">
-                            {{ schedule.startDate | date:'dd/MM/yyyy' }} - {{ schedule.endDate | date:'dd/MM/yyyy' }}
+                            {{ planning.startDate | date:'dd/MM/yyyy' }} - {{ planning.endDate | date:'dd/MM/yyyy' }}
                         </div>
                     </td>
                     <td class="p-4">
                         <div class="flex gap-1 flex-wrap">
-                            <span *ngFor="let day of schedule.scheduleDays"
+                            <span *ngFor="let day of planning.scheduleDays"
                                 class="px-2 py-1 rounded bg-dark-bg border border-dark-border text-xs text-gray-300">
                                 {{ day.dayOfWeek | slice:0:3 }}
                             </span>
@@ -39,7 +39,7 @@
                     <td class="p-4 text-right">
                         <div
                             class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button (click)="viewSchedule(schedule)"
+                            <button (click)="viewPlanning(planning)"
                                 class="p-2 text-cyan-500 hover:bg-cyan-500/10 rounded transition-colors"
                                 title="Ver Detalles">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
@@ -49,7 +49,7 @@
                                     <circle cx="12" cy="12" r="3" />
                                 </svg>
                             </button>
-                            <button (click)="editSchedule(schedule)"
+                            <button (click)="editPlanning(planning)"
                                 class="p-2 text-amber-500 hover:bg-amber-500/10 rounded transition-colors"
                                 title="Editar">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
@@ -58,7 +58,7 @@
                                     <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
                                 </svg>
                             </button>
-                            <button (click)="deleteSchedule(schedule)"
+                            <button (click)="deletePlanning(planning)"
                                 class="p-2 text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Eliminar">
                                 <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
                                     fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
@@ -73,7 +73,7 @@
                         </div>
                     </td>
                 </tr>
-                <tr *ngIf="schedules().length === 0 && !isLoading()">
+                <tr *ngIf="plannings().length === 0 && !isLoading()">
                     <td colspan="4" class="p-8 text-center text-gray-500">
                         No hay planificaciones creadas. Ve a "Mis Equipos" para crear una.
                     </td>
