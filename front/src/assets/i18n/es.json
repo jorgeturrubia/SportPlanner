@@ -7,7 +7,13 @@
         "EMAIL": "Correo Electrónico",
         "PASSWORD": "Contraseña",
         "NAME": "Nombre",
-        "SURNAME": "Apellidos"
+        "SURNAME": "Apellidos",
+        "PLANNINGS": "Planificación",
+        "CORE_MASTERS": "Masters Core",
+        "SUBSCRIPTION_SPORTS": "Deportes de Suscripción",
+        "MASTER_USER": "Master User",
+        "SPORT_CONCEPTS": "Conceptos Deportivos",
+        "CATEGORIES": "Categorias"
     },
     "COMMON": {
         "LOADING": "Cargando...",
