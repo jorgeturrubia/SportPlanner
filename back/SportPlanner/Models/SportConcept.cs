@@ -8,6 +8,7 @@ public class SportConcept
     [Required]
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
+    public string? Url { get; set; }
 
     // Category now handles the full hierarchy (e.g., Attack > Dribbling > Change of direction)
     public int? ConceptCategoryId { get; set; }

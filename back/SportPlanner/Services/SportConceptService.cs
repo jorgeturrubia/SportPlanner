@@ -19,6 +19,7 @@ public class SportConceptService : ISportConceptService
         {
             Name = dto.Name,
             Description = dto.Description,
+            Url = dto.Url,
             ConceptCategoryId = dto.ConceptCategoryId,
             DifficultyLevelId = dto.DifficultyLevelId,
             SportId = dto.SportId
@@ -32,6 +33,7 @@ public class SportConceptService : ISportConceptService
     {
         return await _db.SportConcepts
             .Include(sc => sc.ConceptCategory)
+                .ThenInclude(cc => cc!.Parent)
             .Include(sc => sc.DifficultyLevel)
             .Where(sc => sc.SportId == sportId && sc.IsActive)
             .ToListAsync();
@@ -41,6 +43,7 @@ public class SportConceptService : ISportConceptService
     {
         var query = _db.SportConcepts
             .Include(sc => sc.ConceptCategory)
+                .ThenInclude(cc => cc!.Parent)
             .Include(sc => sc.DifficultyLevel)
             .Where(sc => sc.IsActive);
 
@@ -56,6 +59,7 @@ public class SportConceptService : ISportConceptService
     {
         return await _db.SportConcepts
             .Include(sc => sc.ConceptCategory)
+                .ThenInclude(cc => cc!.Parent)
             .Include(sc => sc.DifficultyLevel)
             .FirstOrDefaultAsync(sc => sc.Id == id);
     }
@@ -68,6 +72,7 @@ public class SportConceptService : ISportConceptService
 
         concept.Name = dto.Name;
         concept.Description = dto.Description;
+        concept.Url = dto.Url;
         concept.ConceptCategoryId = dto.ConceptCategoryId;
         concept.DifficultyLevelId = dto.DifficultyLevelId;
         concept.SportId = dto.SportId;

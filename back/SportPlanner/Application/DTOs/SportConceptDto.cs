@@ -5,6 +5,7 @@ public class SportConceptDto
     public int Id { get; set; }
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
+    public string? Url { get; set; }
     public int? ConceptCategoryId { get; set; }
     public ConceptCategoryDto? ConceptCategory { get; set; }
     public int? DifficultyLevelId { get; set; }
@@ -19,6 +20,7 @@ public class CreateSportConceptDto
 {
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
+    public string? Url { get; set; }
     public int? ConceptCategoryId { get; set; }
     public int? DifficultyLevelId { get; set; }
     public int ProgressWeight { get; set; } = 50;
