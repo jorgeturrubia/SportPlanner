@@ -26,51 +26,59 @@
             <h3 class="text-xl font-bold text-white mb-6 border-b border-dark-border pb-2">Configuración de Calendario
             </h3>
 
-            <div class="mb-6">
-                <label class="block text-sm font-bold text-gray-400 mb-2">NOMBRE DE LA PLANIFICACIÓN (Opcional)</label>
-                <input type="text" formControlName="name"
-                    class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors rounded"
-                    placeholder="Ej: Pretemporada 2024">
-            </div>
-
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div>
-                    <label class="block text-sm font-bold text-gray-400 mb-2">FECHA DE INICIO</label>
+            <!-- Row 1: Name, Start, End -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-4 mb-8 items-end">
+                <div class="md:col-span-6">
+                    <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Nombre
+                        (Opcional)</label>
+                    <input type="text" formControlName="name"
+                        class="w-full bg-dark-bg border border-dark-border p-2 text-white focus:border-primary outline-none transition-colors rounded text-sm"
+                        placeholder="Ej: Pretemporada 2024">
+                </div>
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Inicio</label>
                     <input type="date" formControlName="startDate"
-                        class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors rounded">
+                        class="w-full bg-dark-bg border border-dark-border p-2 text-white focus:border-primary outline-none transition-colors rounded text-sm">
                 </div>
-                <div>
-                    <label class="block text-sm font-bold text-gray-400 mb-2">FECHA DE FIN</label>
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-bold text-gray-400 mb-1 uppercase tracking-wider">Fin</label>
                     <input type="date" formControlName="endDate"
-                        class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors rounded">
+                        class="w-full bg-dark-bg border border-dark-border p-2 text-white focus:border-primary outline-none transition-colors rounded text-sm">
                 </div>
             </div>
 
+            <!-- Row 2: Days Selector -->
             <div class="mb-8">
-                <label class="block text-sm font-bold text-gray-400 mb-4">DÍAS Y HORARIOS DE ENTRENAMIENTO</label>
-                <div class="grid grid-cols-1 gap-4" formArrayName="days">
-                    <div *ngFor="let day of daysFormArray.controls; let i = index" [formGroupName]="i"
-                        class="p-4 border border-dark-border bg-dark-bg flex flex-wrap items-center gap-4 rounded hover:border-gray-600 transition-colors">
+                <label class="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Días de
+                    Entrenamiento</label>
+                <div class="flex flex-wrap gap-2">
+                    <button type="button" *ngFor="let day of weekDays; let i = index" (click)="toggleDay(i)" [class]="'px-4 py-2 rounded font-bold text-sm transition-all duration-200 border ' + 
+                        (isDaySelected(i) 
+                            ? 'bg-primary text-black border-primary shadow-[0_0_10px_rgba(34,197,94,0.3)]' 
+                            : 'bg-dark-bg text-gray-400 border-dark-border hover:border-gray-500 hover:text-white')">
+                        {{ day.substring(0, 3) }}
+                    </button>
+                </div>
+            </div>
 
-                        <div class="flex items-center gap-3 w-32">
-                            <input type="checkbox" formControlName="selected"
-                                class="w-5 h-5 accent-primary cursor-pointer">
-                            <span class="text-white font-bold cursor-pointer"
-                                (click)="day.get('selected')?.setValue(!day.get('selected')?.value)">{{ weekDays[i]
-                                }}</span>
-                        </div>
-
-                        <div *ngIf="day.get('selected')?.value"
-                            class="flex items-center gap-2 animate-in fade-in ml-auto sm:ml-0 flex-grow sm:justify-end">
+            <!-- Row 3: Time Configuration (Only for selected days) -->
+            <div class="mb-8" *ngIf="selectedDaysIndices.length > 0">
+                <label class="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Horarios</label>
+                <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4" formArrayName="days">
+                    <ng-container *ngFor="let dayIndex of selectedDaysIndices">
+                        <div [formGroupName]="dayIndex"
+                            class="bg-dark-bg border border-dark-border p-3 rounded flex flex-col gap-2 animate-in zoom-in-95 duration-200">
+                            <div class="font-bold text-white text-sm border-b border-dark-border pb-1 mb-1">{{
+                                weekDays[dayIndex] }}</div>
                             <div class="flex items-center gap-2">
                                 <input type="time" formControlName="startTime"
-                                    class="bg-dark-surface border border-dark-border p-2 text-white text-sm w-28 rounded focus:border-primary outline-none">
-                                <span class="text-gray-400 font-bold">-</span>
+                                    class="bg-dark-surface border border-dark-border p-1 text-white text-xs w-full rounded focus:border-primary outline-none text-center">
+                                <span class="text-gray-500">-</span>
                                 <input type="time" formControlName="endTime"
-                                    class="bg-dark-surface border border-dark-border p-2 text-white text-sm w-28 rounded focus:border-primary outline-none">
+                                    class="bg-dark-surface border border-dark-border p-1 text-white text-xs w-full rounded focus:border-primary outline-none text-center">
                             </div>
                         </div>
-                    </div>
+                    </ng-container>
                 </div>
             </div>
 
@@ -92,30 +100,120 @@
                 <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
 
-            <div *ngIf="!isLoadingConcepts()" class="space-y-3 mb-8 max-h-[600px] overflow-y-auto pr-2">
-                <div *ngFor="let concept of concepts()" (click)="toggleConcept(concept.id)"
-                    [class]="'p-4 border rounded cursor-pointer transition-all duration-200 ' + (isConceptSelected(concept.id) ? 'border-primary bg-primary/10 shadow-[0_0_10px_rgba(34,197,94,0.1)]' : 'border-dark-border bg-dark-bg hover:border-gray-500')">
-                    <div class="flex items-start gap-4">
-                        <div
-                            [class]="'mt-1 w-6 h-6 rounded border flex items-center justify-center transition-colors ' + (isConceptSelected(concept.id) ? 'bg-primary border-primary' : 'border-gray-500')">
-                            <svg *ngIf="isConceptSelected(concept.id)" xmlns="http://www.w3.org/2000/svg"
-                                width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                                stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="text-black">
-                                <polyline points="20 6 9 17 4 12"></polyline>
+            <div *ngIf="!isLoadingConcepts()">
+                <!-- Filter Controls (Badge Buttons) -->
+                <div class="mb-6 p-4 bg-dark-bg border border-dark-border rounded">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Category Filter Badges -->
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Categorías</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" *ngFor="let cat of availableCategories()"
+                                    (click)="setCategoryFilter(selectedCategoryFilter() === cat.id ? null : cat.id)"
+                                    [class]="'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-200 ' + 
+                                        (selectedCategoryFilter() === cat.id 
+                                            ? 'bg-primary text-black shadow-[0_0_10px_rgba(34,197,94,0.3)]' 
+                                            : 'bg-dark-surface text-gray-400 border border-dark-border hover:border-primary hover:text-white')">
+                                    {{ cat.name }}
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Subcategory Filter Badges -->
+                        <div>
+                            <label
+                                class="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Subcategorías</label>
+                            <div class="flex flex-wrap gap-2">
+                                <button type="button" *ngFor="let sub of availableSubcategories()"
+                                    (click)="setSubcategoryFilter(selectedSubcategoryFilter() === sub.id ? null : sub.id)"
+                                    [class]="'px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wide transition-all duration-200 ' + 
+                                        (selectedSubcategoryFilter() === sub.id 
+                                            ? 'bg-secondary text-black shadow-[0_0_10px_rgba(255,193,7,0.3)]' 
+                                            : 'bg-dark-surface text-gray-400 border border-dark-border hover:border-secondary hover:text-white')">
+                                    {{ sub.name }}
+                                </button>
+                                <span *ngIf="availableSubcategories().length === 0"
+                                    class="text-xs text-gray-500 italic py-1">
+                                    Selecciona una categoría
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Concepts List -->
+                <div class="space-y-6 mb-8 max-h-[600px] overflow-y-auto pr-2">
+                    <!-- Category Groups -->
+                    <div *ngFor="let categoryGroup of groupedConcepts()"
+                        class="border border-dark-border rounded overflow-hidden">
+                        <!-- Category Header (Collapsible) -->
+                        <div (click)="toggleCategory(categoryGroup.categoryId)"
+                            class="bg-dark-bg border-b border-dark-border px-4 py-2 cursor-pointer hover:bg-dark-surface transition-colors flex items-center justify-between">
+                            <h4 class="text-sm font-bold text-primary uppercase tracking-wider">{{
+                                categoryGroup.category }}</h4>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round" class="text-primary transition-transform duration-200"
+                                [class.rotate-180]="!isCategoryCollapsed(categoryGroup.categoryId)">
+                                <polyline points="6 9 12 15 18 9"></polyline>
                             </svg>
                         </div>
-                        <div class="flex-1">
-                            <div class="flex justify-between items-center mb-1 flex-wrap gap-2">
-                                <h4 class="font-bold text-white text-lg">{{ concept.name }}</h4>
-                                <div class="flex gap-2">
-                                    <span *ngIf="concept.difficultyLevel"
-                                        class="text-[10px] font-bold border border-gray-600 text-gray-400 px-2 py-0.5 rounded uppercase">
-                                        {{ concept.difficultyLevel.name }}
-                                    </span>
+
+                        <!-- Subcategories (Collapsible based on category) -->
+                        <div *ngIf="!isCategoryCollapsed(categoryGroup.categoryId)">
+                            <div *ngFor="let subcategory of categoryGroup.subcategories"
+                                class="border-b border-dark-border last:border-b-0">
+                                <!-- Subcategory Header (Collapsible) -->
+                                <div (click)="toggleSubcategory(categoryGroup.categoryId, subcategory.id)"
+                                    class="bg-dark-surface px-4 py-1.5 border-b border-dark-border/50 cursor-pointer hover:bg-dark-bg/50 transition-colors flex items-center justify-between">
+                                    <h5 class="text-xs font-bold text-gray-400 uppercase tracking-wide">{{
+                                        subcategory.name }}</h5>
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round" class="text-gray-400 transition-transform duration-200"
+                                        [class.rotate-180]="!isSubcategoryCollapsed(categoryGroup.categoryId, subcategory.id)">
+                                        <polyline points="6 9 12 15 18 9"></polyline>
+                                    </svg>
+                                </div>
+
+                                <!-- Concepts in this subcategory (Collapsible based on subcategory) -->
+                                <div *ngIf="!isSubcategoryCollapsed(categoryGroup.categoryId, subcategory.id)"
+                                    class="divide-y divide-dark-border/30">
+                                    <div *ngFor="let concept of subcategory.concepts"
+                                        (click)="toggleConcept(concept.id)"
+                                        [class]="'px-4 py-2 cursor-pointer transition-all duration-150 flex items-center gap-3 hover:bg-dark-bg ' + 
+                                            (isConceptSelected(concept.id) ? 'bg-primary/5 border-l-2 border-l-primary' : '')">
+                                        <!-- Checkbox -->
+                                        <div
+                                            [class]="'w-4 h-4 rounded border flex items-center justify-center flex-shrink-0 transition-colors ' + 
+                                            (isConceptSelected(concept.id) ? 'bg-primary border-primary' : 'border-gray-600')">
+                                            <svg *ngIf="isConceptSelected(concept.id)"
+                                                xmlns="http://www.w3.org/2000/svg" width="12" height="12"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                                stroke-linecap="round" stroke-linejoin="round" class="text-black">
+                                                <polyline points="20 6 9 17 4 12"></polyline>
+                                            </svg>
+                                        </div>
+
+                                        <!-- Concept Info -->
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-baseline gap-2">
+                                                <span class="text-sm font-semibold text-white truncate">{{ concept.name
+                                                    }}</span>
+                                                <span *ngIf="concept.difficultyLevel"
+                                                    class="text-[9px] font-bold border border-gray-600 text-gray-500 px-1.5 py-0.5 rounded uppercase flex-shrink-0">
+                                                    {{ concept.difficultyLevel.name }}
+                                                </span>
+                                            </div>
+                                            <p *ngIf="concept.description"
+                                                class="text-xs text-gray-500 truncate mt-0.5">
+                                                {{ concept.description }}
+                                            </p>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
-                            <p class="text-sm text-gray-400">{{ concept.description || 'Sin descripción
-                                disponible.' }}</p>
                         </div>
                     </div>
                 </div>

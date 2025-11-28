@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -23,6 +23,68 @@ export class TeamPlanningComponent implements OnInit {
     isLoadingConcepts = signal(false);
     concepts = signal<SportConcept[]>([]);
     selectedConceptIds = signal<number[]>([]);
+
+    // Collapse/Expand state
+    collapsedCategories = signal<Set<number>>(new Set());
+    collapsedSubcategories = signal<Set<string>>(new Set()); // Use "categoryId-subcategoryId" as key
+
+    // Filter state
+    selectedCategoryFilter = signal<number | null>(null);
+    selectedSubcategoryFilter = signal<number | null>(null);
+
+    // Raw grouped data (before filters)
+    private rawGroupedConcepts = signal<{
+        category: string;
+        categoryId: number;
+        subcategories: {
+            name: string;
+            id: number;
+            concepts: SportConcept[];
+        }[];
+    }[]>([]);
+
+    // Computed: Available categories for filter
+    availableCategories = computed(() => {
+        return this.rawGroupedConcepts().map(g => ({
+            id: g.categoryId,
+            name: g.category
+        }));
+    });
+
+    // Computed: Available subcategories for filter (based on selected category)
+    availableSubcategories = computed(() => {
+        const selectedCat = this.selectedCategoryFilter();
+        if (!selectedCat) {
+            // Return all subcategories from all categories
+            return this.rawGroupedConcepts().flatMap(g =>
+                g.subcategories.map(s => ({ id: s.id, name: s.name }))
+            );
+        }
+        const category = this.rawGroupedConcepts().find(g => g.categoryId === selectedCat);
+        return category ? category.subcategories.map(s => ({ id: s.id, name: s.name })) : [];
+    });
+
+    // Computed: Filtered grouped concepts
+    groupedConcepts = computed(() => {
+        let groups = this.rawGroupedConcepts();
+        const catFilter = this.selectedCategoryFilter();
+        const subFilter = this.selectedSubcategoryFilter();
+
+        // Apply category filter
+        if (catFilter !== null) {
+            groups = groups.filter(g => g.categoryId === catFilter);
+        }
+
+        // Apply subcategory filter
+        if (subFilter !== null) {
+            groups = groups.map(g => ({
+                ...g,
+                subcategories: g.subcategories.filter(s => s.id === subFilter)
+            })).filter(g => g.subcategories.length > 0);
+        }
+
+        return groups;
+    });
 
     weekDays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
@@ -131,6 +193,7 @@ export class TeamPlanningComponent implements OnInit {
         this.sportConceptService.getConcepts().subscribe({
             next: (data) => {
                 this.concepts.set(data);
+                this.groupConcepts(data);
                 if (this.selectedConceptIds().length === 0 && !this.planningId) {
                     //const suggestedIds = data.filter(p => p.isSuggested).map(p => p.concept.id);
                     //this.selectedConceptIds.set(suggestedIds);
@@ -145,6 +208,113 @@ export class TeamPlanningComponent implements OnInit {
         });
     }
 
+    groupConcepts(concepts: SportConcept[]) {
+        // Group concepts by parent category and subcategory
+        const grouped = new Map<number, {
+            category: string;
+            categoryId: number;
+            subcategories: Map<number, {
+                name: string;
+                id: number;
+                concepts: SportConcept[];
+            }>;
+        }>();
+
+        concepts.forEach(concept => {
+            if (!concept.conceptCategory) return;
+
+            // Determine parent category (if it has a parent, use that; otherwise it's a top-level category)
+            const parentCategory = concept.conceptCategory.parent || concept.conceptCategory;
+            const subcategory = concept.conceptCategory.parent ? concept.conceptCategory : null;
+
+            if (!grouped.has(parentCategory.id)) {
+                grouped.set(parentCategory.id, {
+                    category: parentCategory.name,
+                    categoryId: parentCategory.id,
+                    subcategories: new Map()
+                });
+            }
+
+            const categoryGroup = grouped.get(parentCategory.id)!;
+
+            if (subcategory) {
+                // Has subcategory
+                if (!categoryGroup.subcategories.has(subcategory.id)) {
+                    categoryGroup.subcategories.set(subcategory.id, {
+                        name: subcategory.name,
+                        id: subcategory.id,
+                        concepts: []
+                    });
+                }
+                categoryGroup.subcategories.get(subcategory.id)!.concepts.push(concept);
+            } else {
+                // No subcategory, create a default one
+                const defaultSubcatId = -parentCategory.id; // Use negative ID to avoid conflicts
+                if (!categoryGroup.subcategories.has(defaultSubcatId)) {
+                    categoryGroup.subcategories.set(defaultSubcatId, {
+                        name: 'General',
+                        id: defaultSubcatId,
+                        concepts: []
+                    });
+                }
+                categoryGroup.subcategories.get(defaultSubcatId)!.concepts.push(concept);
+            }
+        });
+
+        // Convert to array format
+        const result = Array.from(grouped.values()).map(cat => ({
+            category: cat.category,
+            categoryId: cat.categoryId,
+            subcategories: Array.from(cat.subcategories.values())
+        }));
+
+        this.rawGroupedConcepts.set(result);
+    }
+
+    // Collapse/Expand methods
+    toggleCategory(categoryId: number) {
+        const collapsed = new Set(this.collapsedCategories());
+        if (collapsed.has(categoryId)) {
+            collapsed.delete(categoryId);
+        } else {
+            collapsed.add(categoryId);
+        }
+        this.collapsedCategories.set(collapsed);
+    }
+
+    isCategoryCollapsed(categoryId: number): boolean {
+        return this.collapsedCategories().has(categoryId);
+    }
+
+    toggleSubcategory(categoryId: number, subcategoryId: number) {
+        const key = `${categoryId}-${subcategoryId}`;
+        const collapsed = new Set(this.collapsedSubcategories());
+        if (collapsed.has(key)) {
+            collapsed.delete(key);
+        } else {
+            collapsed.add(key);
+        }
+        this.collapsedSubcategories.set(collapsed);
+    }
+
+    isSubcategoryCollapsed(categoryId: number, subcategoryId: number): boolean {
+        const key = `${categoryId}-${subcategoryId}`;
+        return this.collapsedSubcategories().has(key);
+    }
+
+    // Filter methods
+    setCategoryFilter(categoryId: number | null) {
+        this.selectedCategoryFilter.set(categoryId);
+        // Reset subcategory filter when category changes
+        if (categoryId === null) {
+            this.selectedSubcategoryFilter.set(null);
+        }
+    }
+
+    setSubcategoryFilter(subcategoryId: number | null) {
+        this.selectedSubcategoryFilter.set(subcategoryId);
+    }
+
     isConceptSelected(id: number): boolean {
         return this.selectedConceptIds().includes(id);
     }
@@ -156,6 +326,25 @@ export class TeamPlanningComponent implements OnInit {
         } else {
             this.selectedConceptIds.set([...current, id]);
         }
+    }
+
+    toggleDay(index: number) {
+        const dayControl = this.daysFormArray.at(index);
+        if (dayControl) {
+            const currentVal = dayControl.get('selected')?.value;
+            dayControl.get('selected')?.setValue(!currentVal);
+        }
+    }
+
+    isDaySelected(index: number): boolean {
+        return this.daysFormArray.at(index)?.get('selected')?.value;
+    }
+
+    get selectedDaysIndices(): number[] {
+        return this.daysFormArray.controls
+            .map((control, index) => ({ selected: control.get('selected')?.value, index }))
+            .filter(item => item.selected)
+            .map(item => item.index);
     }
 
     onSubmit() {
