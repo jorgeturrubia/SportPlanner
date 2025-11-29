@@ -13,3 +13,5 @@ obj/
 appsettings*.json
 node_modules/
 .env
+
+.claude/

@@ -78,6 +78,8 @@ public class TeamsController : ControllerBase
             SportId = dto.SportId,
             TeamCategoryId = dto.TeamCategoryId,
             TeamLevelId = dto.TeamLevelId,
+            CurrentTechnicalLevel = dto.CurrentTechnicalLevel,
+            CurrentTacticalLevel = dto.CurrentTacticalLevel,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -117,6 +119,8 @@ public class TeamsController : ControllerBase
         team.Name = dto.Name;
         team.TeamCategoryId = dto.TeamCategoryId;
         team.TeamLevelId = dto.TeamLevelId;
+        team.CurrentTechnicalLevel = dto.CurrentTechnicalLevel;
+        team.CurrentTacticalLevel = dto.CurrentTacticalLevel;
         team.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
