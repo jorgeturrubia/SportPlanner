@@ -19,6 +19,14 @@ public class Team
     public TeamCategory? TeamCategory { get; set; }
     public int? TeamLevelId { get; set; }
     public TeamLevel? TeamLevel { get; set; }
+    
+    // Coach's evaluation of the team's proficiency (1-10 scale)
+    // Technical: Team's skill level with the ball/body
+    public int CurrentTechnicalLevel { get; set; }
+    
+    // Tactical: Team's understanding and cognitive ability
+    public int CurrentTacticalLevel { get; set; }
+    
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;

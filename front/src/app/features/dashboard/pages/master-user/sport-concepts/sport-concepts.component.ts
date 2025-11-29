@@ -30,7 +30,7 @@ export class SportConceptsComponent implements OnInit {
     activeSubscriptions = signal<Subscription[]>([]);
     selectedSportId = signal<number | null>(null);
     conceptCategories = signal<any[]>([]);
-    difficultyLevels = signal<any[]>([]);
+
 
     constructor(
         private fb: FormBuilder,
@@ -45,7 +45,8 @@ export class SportConceptsComponent implements OnInit {
             description: [''],
             sportId: [null, Validators.required],
             conceptCategoryId: [null],
-            difficultyLevelId: [null],
+            technicalDifficulty: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
+            tacticalComplexity: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
             progressWeight: [50, [Validators.required, Validators.min(0), Validators.max(100)]],
             isProgressive: [true]
         });
@@ -79,10 +80,7 @@ export class SportConceptsComponent implements OnInit {
             error: (err) => console.error('Error loading categories', err)
         });
 
-        this.lookupService.getDifficultyLevels().subscribe({
-            next: (data) => this.difficultyLevels.set(data),
-            error: (err) => console.error('Error loading difficulty levels', err)
-        });
+
     }
 
     organizeCategories(categories: any[]): any[] {
@@ -150,6 +148,8 @@ export class SportConceptsComponent implements OnInit {
     resetForm() {
         this.conceptForm.reset({
             sportId: this.selectedSportId(),
+            technicalDifficulty: 5,
+            tacticalComplexity: 5,
             progressWeight: 50,
             isProgressive: true
         });
@@ -164,7 +164,8 @@ export class SportConceptsComponent implements OnInit {
             description: concept.description,
             sportId: concept.sportId,
             conceptCategoryId: concept.conceptCategoryId,
-            difficultyLevelId: concept.difficultyLevelId,
+            technicalDifficulty: concept.technicalDifficulty || 5,
+            tacticalComplexity: concept.tacticalComplexity || 5,
             progressWeight: concept.progressWeight,
             isProgressive: concept.isProgressive
         });

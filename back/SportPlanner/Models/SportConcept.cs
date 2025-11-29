@@ -14,8 +14,12 @@ public class SportConcept
     public int? ConceptCategoryId { get; set; }
     public ConceptCategory? ConceptCategory { get; set; }
 
-    public int? DifficultyLevelId { get; set; }
-    public DifficultyLevel? DifficultyLevel { get; set; }
+    // Proficiency Requirements (1-10 scale)
+    // Technical: How much skill with the ball/body is required?
+    public int TechnicalDifficulty { get; set; }
+    
+    // Tactical/Cognitive: How much thinking/understanding is required?
+    public int TacticalComplexity { get; set; }
 
   
 

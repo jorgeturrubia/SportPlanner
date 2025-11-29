@@ -23,7 +23,7 @@ export class TeamsComponent implements OnInit {
     hasActiveSubscription = signal(false);
     teamCategories = signal<TeamCategory[]>([]);
     teamLevels = signal<TeamLevel[]>([]);
-    
+
     // Confirm dialog properties
     showDeleteDialog = signal(false);
     isDeletingTeam = signal(false);
@@ -41,7 +41,9 @@ export class TeamsComponent implements OnInit {
             name: ['', Validators.required],
             sportId: [null, Validators.required],
             teamCategoryId: [null],
-            teamLevelId: [null]
+            teamLevelId: [null],
+            currentTechnicalLevel: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
+            currentTacticalLevel: [5, [Validators.required, Validators.min(1), Validators.max(10)]]
         });
     }
 
@@ -128,7 +130,9 @@ export class TeamsComponent implements OnInit {
             name: team.name,
             sportId: team.sportId,
             teamCategoryId: team.teamCategoryId,
-            teamLevelId: team.teamLevelId
+            teamLevelId: team.teamLevelId,
+            currentTechnicalLevel: team.currentTechnicalLevel || 5,
+            currentTacticalLevel: team.currentTacticalLevel || 5
         });
         this.showForm.set(true);
         // Scroll to form
@@ -144,7 +148,7 @@ export class TeamsComponent implements OnInit {
     confirmDeleteTeam() {
         const team = this.teamToDelete();
         if (!team) return;
-        
+
         this.isDeletingTeam.set(true);
         this.teamsService.deleteTeam(team.id).subscribe({
             next: () => {
@@ -245,7 +249,9 @@ export class TeamsComponent implements OnInit {
         this.teamForm.reset({
             sportId: currentSportId,
             teamCategoryId: null,
-            teamLevelId: null
+            teamLevelId: null,
+            currentTechnicalLevel: 5,
+            currentTacticalLevel: 5
         });
     }
 

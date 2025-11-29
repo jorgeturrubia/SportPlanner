@@ -59,6 +59,36 @@
             </select>
         </div>
 
+        <!-- Technical Proficiency Level -->
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-400 mb-2">
+                NIVEL TÉCNICO (1-10)
+                <span class="text-primary ml-2">{{ teamForm.get('currentTechnicalLevel')?.value }}</span>
+            </label>
+            <input type="range" formControlName="currentTechnicalLevel" min="1" max="10" step="1"
+                class="w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-primary">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Principiante</span>
+                <span>Intermedio</span>
+                <span>Avanzado</span>
+            </div>
+        </div>
+
+        <!-- Tactical Proficiency Level -->
+        <div class="mb-4">
+            <label class="block text-sm font-bold text-gray-400 mb-2">
+                NIVEL TÁCTICO (1-10)
+                <span class="text-secondary ml-2">{{ teamForm.get('currentTacticalLevel')?.value }}</span>
+            </label>
+            <input type="range" formControlName="currentTacticalLevel" min="1" max="10" step="1"
+                class="w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-secondary">
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+                <span>Básico</span>
+                <span>Competente</span>
+                <span>Experto</span>
+            </div>
+        </div>
+
         <button type="submit" [disabled]="!teamForm.valid || isLoading()"
             class="w-full px-6 py-3 bg-secondary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
             {{ isLoading() ? 'GUARDANDO...' : (editingTeamId() ? 'ACTUALIZAR EQUIPO' : 'GUARDAR EQUIPO') }}
@@ -91,7 +121,7 @@
                         <circle cx="12" cy="19" r="1"></circle>
                     </svg>
                 </button>
-                
+
                 <!-- Status indicator - Same height as Actions Button -->
                 <div
                     [class]="'h-3 w-3 rounded-full shadow-[0_0_10px] transition-colors duration-300 ' + (team.isActive ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50')">
@@ -254,15 +284,10 @@
 </div>
 
 <!-- Delete Confirmation Dialog -->
-<app-confirm-dialog 
-    [isVisible]="showDeleteDialog()"
-    [isLoading]="isDeletingTeam()"
+<app-confirm-dialog [isVisible]="showDeleteDialog()" [isLoading]="isDeletingTeam()"
     title="¿Estás seguro de eliminar este equipo?"
     [message]="teamToDelete() ? 'Estás a punto de eliminar permanentemente el equipo ' + teamToDelete().name + '. Esta acción no se puede deshacer.' : ''"
-    confirmText="Eliminar"
-    cancelText="Cancelar"
-    (confirm)="confirmDeleteTeam()"
-    (cancel)="cancelDeleteTeam()"
+    confirmText="Eliminar" cancelText="Cancelar" (confirm)="confirmDeleteTeam()" (cancel)="cancelDeleteTeam()"
     (visibilityChange)="showDeleteDialog.set($event)">
 </app-confirm-dialog>
 

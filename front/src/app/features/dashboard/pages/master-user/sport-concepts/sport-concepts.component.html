@@ -65,14 +65,36 @@
                     </option>
                 </select>
             </div>
+        </div>
+
+        <!-- Proficiency Levels -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-sm font-bold text-gray-400 mb-2">
+                    NIVEL TÉCNICO (1-10)
+                    <span class="text-primary ml-2">{{ conceptForm.get('technicalDifficulty')?.value }}</span>
+                </label>
+                <input type="range" formControlName="technicalDifficulty" min="1" max="10" step="1"
+                    class="w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-primary">
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Básico</span>
+                    <span>Intermedio</span>
+                    <span>Avanzado</span>
+                </div>
+            </div>
 
             <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">DIFICULTAD</label>
-                <select formControlName="difficultyLevelId"
-                    class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors">
-                    <option [value]="null">Selecciona dificultad</option>
-                    <option *ngFor="let level of difficultyLevels()" [value]="level.id">{{ level.name }}</option>
-                </select>
+                <label class="block text-sm font-bold text-gray-400 mb-2">
+                    NIVEL TÁCTICO (1-10)
+                    <span class="text-secondary ml-2">{{ conceptForm.get('tacticalComplexity')?.value }}</span>
+                </label>
+                <input type="range" formControlName="tacticalComplexity" min="1" max="10" step="1"
+                    class="w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-secondary">
+                <div class="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>Simple</span>
+                    <span>Moderado</span>
+                    <span>Complejo</span>
+                </div>
             </div>
         </div>
 
@@ -91,7 +113,8 @@
                 <tr>
                     <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Nombre</th>
                     <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Categoría</th>
-                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Dificultad</th>
+                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Técnico</th>
+                    <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Táctico</th>
                     <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider">Deporte</th>
                     <th class="p-4 text-gray-400 font-bold text-sm uppercase tracking-wider text-right">
                         Acciones</th>
@@ -106,11 +129,16 @@
                     </td>
                     <td class="p-4 text-gray-300">{{ concept.conceptCategory?.name || '-' }}</td>
                     <td class="p-4">
-                        <span *ngIf="concept.difficultyLevel"
-                            class="px-2 py-1 rounded bg-dark-bg border border-dark-border text-xs text-gray-300">
-                            {{ concept.difficultyLevel.name }}
+                        <span
+                            class="px-2 py-1 rounded bg-primary/20 border border-primary/40 text-xs text-primary font-bold">
+                            {{ concept.technicalDifficulty || '-' }}/10
                         </span>
-                        <span *ngIf="!concept.difficultyLevel" class="text-gray-500">-</span>
+                    </td>
+                    <td class="p-4">
+                        <span
+                            class="px-2 py-1 rounded bg-secondary/20 border border-secondary/40 text-xs text-secondary font-bold">
+                            {{ concept.tacticalComplexity || '-' }}/10
+                        </span>
                     </td>
                     <td class="p-4 text-gray-300">Sport {{ concept.sportId }}</td>
                     <td class="p-4 text-right">
@@ -132,7 +160,7 @@
                                     stroke-linejoin="round">
                                     <polyline points="3 6 5 6 21 6" />
                                     <path
-                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                                     <line x1="10" y1="11" x2="10" y2="17" />
                                     <line x1="14" y1="11" x2="14" y2="17" />
                                 </svg>
@@ -141,7 +169,7 @@
                     </td>
                 </tr>
                 <tr *ngIf="concepts().length === 0 && !isLoading()">
-                    <td colspan="5" class="p-8 text-center text-gray-500">
+                    <td colspan="6" class="p-8 text-center text-gray-500">
                         No hay conceptos creados. Crea tu primer concepto para comenzar.
                     </td>
                 </tr>

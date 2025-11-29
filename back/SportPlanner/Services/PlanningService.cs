@@ -54,9 +54,6 @@ namespace SportPlanner.Services
                 .Include(p => p.ScheduleDays)
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)
-                        .ThenInclude(sc => sc.DifficultyLevel)
-                .Include(p => p.PlanConcepts)
-                    .ThenInclude(pc => pc.SportConcept)
                         .ThenInclude(sc => sc.ConceptCategory)
                             .ThenInclude(cc => cc.Parent)
                 .ToListAsync();
@@ -68,9 +65,6 @@ namespace SportPlanner.Services
             var planning = await _context.Plannings
                 .Include(p => p.Team).ThenInclude(t => t.TeamCategory)
                 .Include(p => p.ScheduleDays)
-                .Include(p => p.PlanConcepts)
-                    .ThenInclude(pc => pc.SportConcept)
-                        .ThenInclude(sc => sc.DifficultyLevel)
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)
                         .ThenInclude(sc => sc.ConceptCategory)
