@@ -24,85 +24,104 @@
     </select>
 </div>
 
-<!-- Form Section -->
-<div *ngIf="showForm()" class="mb-8 p-6 bg-dark-surface border border-dark-border">
-    <h3 class="text-xl font-bold text-white mb-4">{{ editingConceptId() ? 'Editar Concepto' : 'Nuevo Concepto' }}</h3>
-    <form [formGroup]="conceptForm" (ngSubmit)="onSubmit()">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">NOMBRE *</label>
-                <input type="text" formControlName="name"
-                    class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors"
-                    placeholder="Ej: Pase largo">
+<!-- Modal Form -->
+<div *ngIf="showForm()" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+    <div class="bg-dark-surface border border-dark-border rounded-lg shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-white">{{ editingConceptId() ? 'Editar Concepto' : 'Nuevo Concepto' }}</h3>
+                <button (click)="toggleForm()" class="text-gray-400 hover:text-white transition-colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
             </div>
+            
+            <form [formGroup]="conceptForm" (ngSubmit)="onSubmit()">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-400 mb-2">NOMBRE *</label>
+                        <input type="text" formControlName="name"
+                            class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors"
+                            placeholder="Ej: Pase largo">
+                    </div>
 
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">DEPORTE *</label>
-                <select formControlName="sportId"
-                    class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors">
-                    <option [value]="null">Selecciona un deporte</option>
-                    <option *ngFor="let sub of activeSubscriptions()" [value]="sub.sportId">
-                        {{ sub.sport?.name || 'Sport ID: ' + sub.sportId }}
-                    </option>
-                </select>
-            </div>
-        </div>
-
-        <div class="mb-4">
-            <label class="block text-sm font-bold text-gray-400 mb-2">DESCRIPCIÓN</label>
-            <textarea formControlName="description" rows="3"
-                class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors"
-                placeholder="Descripción del concepto..."></textarea>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">CATEGORÍA</label>
-                <select formControlName="conceptCategoryId"
-                    class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors">
-                    <option [value]="null">Selecciona categoría</option>
-                    <option *ngFor="let cat of conceptCategories()" [value]="cat.id">{{ cat.displayName || cat.name }}
-                    </option>
-                </select>
-            </div>
-        </div>
-
-        <!-- Proficiency Levels -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">
-                    NIVEL TÉCNICO (1-10)
-                    <span class="text-primary ml-2">{{ conceptForm.get('technicalDifficulty')?.value }}</span>
-                </label>
-                <input type="range" formControlName="technicalDifficulty" min="1" max="10" step="1"
-                    class="w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-primary">
-                <div class="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Básico</span>
-                    <span>Intermedio</span>
-                    <span>Avanzado</span>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-400 mb-2">DEPORTE *</label>
+                        <select formControlName="sportId"
+                            class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors">
+                            <option [value]="null">Selecciona un deporte</option>
+                            <option *ngFor="let sub of activeSubscriptions()" [value]="sub.sportId">
+                                {{ sub.sport?.name || 'Sport ID: ' + sub.sportId }}
+                            </option>
+                        </select>
+                    </div>
                 </div>
-            </div>
 
-            <div>
-                <label class="block text-sm font-bold text-gray-400 mb-2">
-                    NIVEL TÁCTICO (1-10)
-                    <span class="text-secondary ml-2">{{ conceptForm.get('tacticalComplexity')?.value }}</span>
-                </label>
-                <input type="range" formControlName="tacticalComplexity" min="1" max="10" step="1"
-                    class="w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-secondary">
-                <div class="flex justify-between text-xs text-gray-500 mt-1">
-                    <span>Simple</span>
-                    <span>Moderado</span>
-                    <span>Complejo</span>
+                <div class="mb-4">
+                    <label class="block text-sm font-bold text-gray-400 mb-2">DESCRIPCIÓN</label>
+                    <textarea formControlName="description" rows="3"
+                        class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors"
+                        placeholder="Descripción del concepto..."></textarea>
                 </div>
-            </div>
-        </div>
 
-        <button type="submit" [disabled]="!conceptForm.valid || isLoading()"
-            class="w-full px-6 py-3 bg-secondary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-            {{ isLoading() ? 'GUARDANDO...' : (editingConceptId() ? 'ACTUALIZAR CONCEPTO' : 'GUARDAR CONCEPTO') }}
-        </button>
-    </form>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-400 mb-2">CATEGORÍA</label>
+                        <select formControlName="conceptCategoryId"
+                            class="w-full bg-dark-bg border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors">
+                            <option [value]="null">Selecciona categoría</option>
+                            <option *ngFor="let cat of conceptCategories()" [value]="cat.id">{{ cat.displayName || cat.name }}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Proficiency Levels -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-400 mb-2">
+                            NIVEL TÉCNICO (1-10)
+                            <span class="text-primary ml-2">{{ conceptForm.get('technicalDifficulty')?.value }}</span>
+                        </label>
+                        <input type="range" formControlName="technicalDifficulty" min="1" max="10" step="1"
+                            class="w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-primary">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Básico</span>
+                            <span>Intermedio</span>
+                            <span>Avanzado</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-bold text-gray-400 mb-2">
+                            NIVEL TÁCTICO (1-10)
+                            <span class="text-secondary ml-2">{{ conceptForm.get('tacticalComplexity')?.value }}</span>
+                        </label>
+                        <input type="range" formControlName="tacticalComplexity" min="1" max="10" step="1"
+                            class="w-full h-2 bg-dark-bg rounded-lg appearance-none cursor-pointer accent-secondary">
+                        <div class="flex justify-between text-xs text-gray-500 mt-1">
+                            <span>Simple</span>
+                            <span>Moderado</span>
+                            <span>Complejo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex gap-4 mt-6">
+                    <button type="button" (click)="toggleForm()"
+                        class="flex-1 px-6 py-3 bg-dark-bg border border-dark-border text-white font-bold uppercase tracking-wider hover:bg-dark-border transition-colors">
+                        Cancelar
+                    </button>
+                    <button type="submit" [disabled]="!conceptForm.valid || isLoading()"
+                        class="flex-1 px-6 py-3 bg-secondary text-black font-bold uppercase tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        {{ isLoading() ? 'GUARDANDO...' : (editingConceptId() ? 'ACTUALIZAR' : 'GUARDAR') }}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 
 <!-- Concepts Table -->
@@ -121,53 +140,64 @@
                 </tr>
             </thead>
             <tbody class="divide-y divide-dark-border">
-                <tr *ngFor="let concept of concepts()" class="hover:bg-dark-bg/50 transition-colors group">
-                    <td class="p-4">
-                        <div class="font-bold text-white">{{ concept.name }}</div>
-                        <div class="text-xs text-gray-500 truncate max-w-xs">{{ concept.description || '-'
-                            }}</div>
-                    </td>
-                    <td class="p-4 text-gray-300">{{ concept.conceptCategory?.name || '-' }}</td>
-                    <td class="p-4">
-                        <span
-                            class="px-2 py-1 rounded bg-primary/20 border border-primary/40 text-xs text-primary font-bold">
-                            {{ concept.technicalDifficulty || '-' }}/10
-                        </span>
-                    </td>
-                    <td class="p-4">
-                        <span
-                            class="px-2 py-1 rounded bg-secondary/20 border border-secondary/40 text-xs text-secondary font-bold">
-                            {{ concept.tacticalComplexity || '-' }}/10
-                        </span>
-                    </td>
-                    <td class="p-4 text-gray-300">Sport {{ concept.sportId }}</td>
-                    <td class="p-4 text-right">
-                        <div
-                            class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button (click)="editConcept(concept)"
-                                class="p-2 text-amber-500 hover:bg-amber-500/10 rounded transition-colors"
-                                title="Editar">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
-                                </svg>
-                            </button>
-                            <button (click)="deleteConcept(concept)"
-                                class="p-2 text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Eliminar">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <polyline points="3 6 5 6 21 6" />
-                                    <path
-                                        d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-                                    <line x1="10" y1="11" x2="10" y2="17" />
-                                    <line x1="14" y1="11" x2="14" y2="17" />
-                                </svg>
-                            </button>
-                        </div>
-                    </td>
-                </tr>
+                <ng-container *ngFor="let group of groupedConcepts()">
+                    <!-- Category Header -->
+                    <tr class="bg-dark-bg/80">
+                        <td colspan="6" class="p-3 text-primary font-bold uppercase tracking-wider text-sm border-l-4 border-primary">
+                            {{ group.category.fullPath || group.category.displayName || group.category.name }}
+                        </td>
+                    </tr>
+                    
+                    <!-- Concepts -->
+                    <tr *ngFor="let concept of group.concepts" class="hover:bg-dark-bg/50 transition-colors group">
+                        <td class="p-4 pl-8"> <!-- Added padding-left for indentation relative to header -->
+                            <div class="font-bold text-white">{{ concept.name }}</div>
+                            <div class="text-xs text-gray-500 truncate max-w-xs">{{ concept.description || '-'
+                                }}</div>
+                        </td>
+                        <td class="p-4 text-gray-300">{{ concept.conceptCategory?.name || '-' }}</td>
+                        <td class="p-4">
+                            <span
+                                class="px-2 py-1 rounded bg-primary/20 border border-primary/40 text-xs text-primary font-bold">
+                                {{ concept.technicalDifficulty || '-' }}/10
+                            </span>
+                        </td>
+                        <td class="p-4">
+                            <span
+                                class="px-2 py-1 rounded bg-secondary/20 border border-secondary/40 text-xs text-secondary font-bold">
+                                {{ concept.tacticalComplexity || '-' }}/10
+                            </span>
+                        </td>
+                        <td class="p-4 text-gray-300">Sport {{ concept.sportId }}</td>
+                        <td class="p-4 text-right">
+                            <div
+                                class="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <button (click)="editConcept(concept)"
+                                    class="p-2 text-amber-500 hover:bg-amber-500/10 rounded transition-colors"
+                                    title="Editar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z" />
+                                    </svg>
+                                </button>
+                                <button (click)="deleteConcept(concept)"
+                                    class="p-2 text-red-500 hover:bg-red-500/10 rounded transition-colors" title="Eliminar">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+                                        fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path
+                                            d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                        <line x1="10" y1="11" x2="10" y2="17" />
+                                        <line x1="14" y1="11" x2="14" y2="17" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                </ng-container>
+
                 <tr *ngIf="concepts().length === 0 && !isLoading()">
                     <td colspan="6" class="p-8 text-center text-gray-500">
                         No hay conceptos creados. Crea tu primer concepto para comenzar.

@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -31,6 +31,41 @@ export class SportConceptsComponent implements OnInit {
     selectedSportId = signal<number | null>(null);
     conceptCategories = signal<any[]>([]);
 
+    groupedConcepts = computed(() => {
+        const allConcepts = this.concepts();
+        const categories = this.conceptCategories();
+        
+        if (categories.length === 0) {
+            // If no categories, show all in one group or uncategorized
+            return [{ category: { name: 'Todos los conceptos', displayName: 'Todos los conceptos' }, concepts: allConcepts }];
+        }
+
+        const groups: any[] = [];
+        const processedConceptIds = new Set<number>();
+
+        // Create groups for each category that has concepts
+        categories.forEach(cat => {
+            const catConcepts = allConcepts.filter(c => c.conceptCategoryId === cat.id);
+            if (catConcepts.length > 0) {
+                groups.push({
+                    category: cat,
+                    concepts: catConcepts
+                });
+                catConcepts.forEach(c => processedConceptIds.add(c.id));
+            }
+        });
+
+        // Handle uncategorized concepts
+        const uncategorized = allConcepts.filter(c => !processedConceptIds.has(c.id));
+        if (uncategorized.length > 0) {
+            groups.push({
+                category: { name: 'Sin Categoría', displayName: 'Sin Categoría' },
+                concepts: uncategorized
+            });
+        }
+
+        return groups;
+    });
 
     constructor(
         private fb: FormBuilder,
@@ -100,15 +135,20 @@ export class SportConceptsComponent implements OnInit {
             }
         });
 
-        // Flatten the tree with indentation
-        const flatten = (nodes: any[], level: number = 0): any[] => {
+        // Flatten the tree with indentation and full path
+        const flatten = (nodes: any[], level: number = 0, parentPath: string = ''): any[] => {
             let result: any[] = [];
             nodes.forEach(node => {
-                // Add indentation to the name for display
+                // Add indentation to the name for display (dropdowns)
                 node.displayName = (level > 0 ? '\u00A0\u00A0'.repeat(level) + '└─ ' : '') + node.name;
+                
+                // Add full path for headers
+                const currentPath = parentPath ? `${parentPath} > ${node.name}` : node.name;
+                node.fullPath = currentPath;
+
                 result.push(node);
                 if (node.children && node.children.length > 0) {
-                    result = result.concat(flatten(node.children, level + 1));
+                    result = result.concat(flatten(node.children, level + 1, currentPath));
                 }
             });
             return result;
@@ -170,7 +210,6 @@ export class SportConceptsComponent implements OnInit {
             isProgressive: concept.isProgressive
         });
         this.showForm.set(true);
-        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
     deleteConcept(concept: any) {
