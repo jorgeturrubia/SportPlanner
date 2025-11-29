@@ -109,11 +109,17 @@
         <!-- Main Content (Dimmed when menu is active) -->
         <div class="p-6 h-full flex flex-col transition-all duration-300" [class.blur-sm]="activeMenuId() === team.id"
             [class.opacity-20]="activeMenuId() === team.id">
-            <!-- Header with Actions Button on Left and Status Indicator -->
-            <div class="flex justify-between items-start mb-4">
-                <!-- Actions Button in place of old team icon -->
+
+            <!-- Header with Team Name and Actions Button -->
+            <div class="flex justify-between items-center mb-4">
+                <!-- Team Name -->
+                <h3 class="text-xl font-black text-white tracking-tight truncate flex-1 mr-2" title="{{ team.name }}">
+                    {{ team.name }}
+                </h3>
+
+                <!-- Actions Button -->
                 <button (click)="toggleMenu(team.id, $event)"
-                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-10 h-10 bg-dark-bg border-2 border-primary/30 text-primary rounded-full flex items-center justify-center hover:bg-primary/20 hover:border-primary transition-all">
+                    class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 w-10 h-10 bg-dark-bg border-2 border-primary/30 text-primary rounded-full flex items-center justify-center hover:bg-primary/20 hover:border-primary transition-all flex-shrink-0">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="1"></circle>
@@ -121,20 +127,10 @@
                         <circle cx="12" cy="19" r="1"></circle>
                     </svg>
                 </button>
-
-                <!-- Status indicator - Same height as Actions Button -->
-                <div
-                    [class]="'h-3 w-3 rounded-full shadow-[0_0_10px] transition-colors duration-300 ' + (team.isActive ? 'bg-green-500 shadow-green-500/50' : 'bg-red-500 shadow-red-500/50')">
-                </div>
             </div>
 
-            <!-- Team Name -->
-            <h3 class="text-2xl font-black text-white mb-auto tracking-tight truncate" title="{{ team.name }}">
-                {{ team.name }}
-            </h3>
-
             <!-- Stats Grid -->
-            <div class="grid grid-cols-2 gap-3 mt-4">
+            <div class="grid grid-cols-2 gap-3 mt-auto">
                 <!-- Category Box -->
                 <div class="bg-dark-bg p-2 rounded border border-dark-border relative overflow-hidden">
                     <div class="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">CATEGORÍA</div>
@@ -148,6 +144,22 @@
                     <div class="text-[10px] font-black text-primary uppercase tracking-widest mb-1">NIVEL</div>
                     <div class="font-bold text-white text-sm truncate">
                         {{ team.teamLevel?.name || '-' }}
+                    </div>
+                </div>
+
+                <!-- Technical Level Box -->
+                <div class="bg-dark-bg p-2 rounded border border-dark-border relative overflow-hidden">
+                    <div class="text-[10px] font-black text-primary uppercase tracking-widest mb-1">TÉCNICA</div>
+                    <div class="font-bold text-white text-sm truncate">
+                        {{ team.currentTechnicalLevel || '-' }}/10
+                    </div>
+                </div>
+
+                <!-- Tactical Level Box -->
+                <div class="bg-dark-bg p-2 rounded border border-dark-border relative overflow-hidden">
+                    <div class="text-[10px] font-black text-secondary uppercase tracking-widest mb-1">TÁCTICA</div>
+                    <div class="font-bold text-white text-sm truncate">
+                        {{ team.currentTacticalLevel || '-' }}/10
                     </div>
                 </div>
             </div>

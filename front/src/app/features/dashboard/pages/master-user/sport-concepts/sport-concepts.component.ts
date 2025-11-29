@@ -31,13 +31,44 @@ export class SportConceptsComponent implements OnInit {
     selectedSportId = signal<number | null>(null);
     conceptCategories = signal<any[]>([]);
 
+    // Filters
+    searchQuery = signal('');
+    selectedCategoryFilter = signal<number | null>(null);
+
+    rootCategories = computed(() => this.conceptCategories().filter(c => !c.parentId));
+
     groupedConcepts = computed(() => {
-        const allConcepts = this.concepts();
+        let allConcepts = this.concepts();
         const categories = this.conceptCategories();
+        const query = this.searchQuery().toLowerCase();
+        const categoryFilter = this.selectedCategoryFilter();
+
+        // 1. Filter by Search Query and Category Chip
+        if (query) {
+            allConcepts = allConcepts.filter(c => 
+                c.name.toLowerCase().includes(query) || 
+                (c.description && c.description.toLowerCase().includes(query))
+            );
+        }
+
+        if (categoryFilter) {
+            // Find all subcategory IDs for the selected parent
+            const getDescendantIds = (parentId: number): number[] => {
+                const children = categories.filter(c => c.parentId === parentId);
+                let ids = children.map(c => c.id);
+                children.forEach(child => {
+                    ids = [...ids, ...getDescendantIds(child.id)];
+                });
+                return ids;
+            };
+            
+            const allowedCategoryIds = [categoryFilter, ...getDescendantIds(categoryFilter)];
+            allConcepts = allConcepts.filter(c => allowedCategoryIds.includes(c.conceptCategoryId));
+        }
         
         if (categories.length === 0) {
             // If no categories, show all in one group or uncategorized
-            return [{ category: { name: 'Todos los conceptos', displayName: 'Todos los conceptos' }, concepts: allConcepts }];
+            return [{ category: { name: 'Todos los conceptos', displayName: 'Todos los conceptos', fullPath: 'Todos los conceptos' }, concepts: allConcepts }];
         }
 
         const groups: any[] = [];
@@ -59,7 +90,7 @@ export class SportConceptsComponent implements OnInit {
         const uncategorized = allConcepts.filter(c => !processedConceptIds.has(c.id));
         if (uncategorized.length > 0) {
             groups.push({
-                category: { name: 'Sin Categoría', displayName: 'Sin Categoría' },
+                category: { name: 'Sin Categoría', displayName: 'Sin Categoría', fullPath: 'Sin Categoría' },
                 concepts: uncategorized
             });
         }
@@ -175,6 +206,14 @@ export class SportConceptsComponent implements OnInit {
     filterBySport(sportId: number | null) {
         this.selectedSportId.set(sportId);
         this.loadConcepts();
+    }
+
+    updateSearch(query: string) {
+        this.searchQuery.set(query);
+    }
+
+    filterByCategory(categoryId: number | null) {
+        this.selectedCategoryFilter.set(categoryId);
     }
 
     toggleForm() {
