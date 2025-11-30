@@ -21,6 +21,10 @@ public class SportConcept
     // Tactical/Cognitive: How much thinking/understanding is required?
     public int TacticalComplexity { get; set; }
 
+    // New fields
+    public string? TechnicalTacticalFocus { get; set; } // Enfoque Tecnico/Tactico
+    public string? DevelopmentLevel { get; set; } // Nivel (Escuela -> Junior)
+
   
 
     public int? SportId { get; set; }

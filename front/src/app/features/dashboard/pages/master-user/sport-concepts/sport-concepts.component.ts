@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, computed } from '@angular/core';
+import { Component, OnInit, signal, computed } from '@angular/core'; // Trigger rebuild
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
@@ -45,8 +45,8 @@ export class SportConceptsComponent implements OnInit {
 
         // 1. Filter by Search Query and Category Chip
         if (query) {
-            allConcepts = allConcepts.filter(c => 
-                c.name.toLowerCase().includes(query) || 
+            allConcepts = allConcepts.filter(c =>
+                c.name.toLowerCase().includes(query) ||
                 (c.description && c.description.toLowerCase().includes(query))
             );
         }
@@ -61,11 +61,11 @@ export class SportConceptsComponent implements OnInit {
                 });
                 return ids;
             };
-            
+
             const allowedCategoryIds = [categoryFilter, ...getDescendantIds(categoryFilter)];
             allConcepts = allConcepts.filter(c => allowedCategoryIds.includes(c.conceptCategoryId));
         }
-        
+
         if (categories.length === 0) {
             // If no categories, show all in one group or uncategorized
             return [{ category: { name: 'Todos los conceptos', displayName: 'Todos los conceptos', fullPath: 'Todos los conceptos' }, concepts: allConcepts }];
@@ -114,7 +114,9 @@ export class SportConceptsComponent implements OnInit {
             technicalDifficulty: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
             tacticalComplexity: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
             progressWeight: [50, [Validators.required, Validators.min(0), Validators.max(100)]],
-            isProgressive: [true]
+            isProgressive: [true],
+            technicalTacticalFocus: [''],
+            developmentLevel: ['']
         });
     }
 
@@ -172,7 +174,7 @@ export class SportConceptsComponent implements OnInit {
             nodes.forEach(node => {
                 // Add indentation to the name for display (dropdowns)
                 node.displayName = (level > 0 ? '\u00A0\u00A0'.repeat(level) + '└─ ' : '') + node.name;
-                
+
                 // Add full path for headers
                 const currentPath = parentPath ? `${parentPath} > ${node.name}` : node.name;
                 node.fullPath = currentPath;
@@ -230,7 +232,9 @@ export class SportConceptsComponent implements OnInit {
             technicalDifficulty: 5,
             tacticalComplexity: 5,
             progressWeight: 50,
-            isProgressive: true
+            isProgressive: true,
+            technicalTacticalFocus: '',
+            developmentLevel: ''
         });
         this.editingConceptId.set(null);
         this.showForm.set(false);
@@ -246,7 +250,9 @@ export class SportConceptsComponent implements OnInit {
             technicalDifficulty: concept.technicalDifficulty || 5,
             tacticalComplexity: concept.tacticalComplexity || 5,
             progressWeight: concept.progressWeight,
-            isProgressive: concept.isProgressive
+            isProgressive: concept.isProgressive,
+            technicalTacticalFocus: concept.technicalTacticalFocus,
+            developmentLevel: concept.developmentLevel
         });
         this.showForm.set(true);
     }

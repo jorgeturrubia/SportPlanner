@@ -26,6 +26,8 @@ public class SportConceptService : ISportConceptService
             ConceptCategoryId = dto.ConceptCategoryId,
             TechnicalDifficulty = dto.TechnicalDifficulty,
             TacticalComplexity = dto.TacticalComplexity,
+            TechnicalTacticalFocus = dto.TechnicalTacticalFocus,
+            DevelopmentLevel = dto.DevelopmentLevel,
             SportId = dto.SportId
         };
         _db.SportConcepts.Add(concept);
@@ -122,6 +124,8 @@ public class SportConceptService : ISportConceptService
         concept.ConceptCategoryId = dto.ConceptCategoryId;
         concept.TechnicalDifficulty = dto.TechnicalDifficulty;
         concept.TacticalComplexity = dto.TacticalComplexity;
+        concept.TechnicalTacticalFocus = dto.TechnicalTacticalFocus;
+        concept.DevelopmentLevel = dto.DevelopmentLevel;
         concept.SportId = dto.SportId;
 
         await _db.SaveChangesAsync();
