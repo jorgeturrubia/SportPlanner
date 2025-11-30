@@ -46,49 +46,73 @@
         </form>
     </div>
 
-    <!-- List -->
-    <div class="bg-dark-surface border-2 border-dark-border p-6">
+    <!-- Columns Container -->
+    <div class="overflow-x-auto pb-6">
         <div *ngIf="isLoading() && !categories().length" class="text-center py-8 text-gray-400">
             Cargando categorías...
         </div>
 
-        <div *ngIf="!isLoading() || categories().length" class="space-y-2">
-            <div *ngFor="let cat of categories()"
-                class="p-3 border-2 border-dark-border hover:border-primary transition-colors flex items-center group"
-                [style.marginLeft.px]="cat.level * 20">
-                <div class="w-2 h-2 bg-primary rounded-full mr-3" *ngIf="cat.level === 0"></div>
-                <div class="w-2 h-2 bg-gray-500 rounded-full mr-3" *ngIf="cat.level > 0"></div>
-
-                <div class="flex-1">
-                    <span class="font-bold text-white">{{ cat.name }}</span>
-                    <span class="ml-2 text-xs text-gray-500" *ngIf="cat.description">- {{ cat.description }}</span>
+        <div *ngIf="!isLoading() && categories().length" class="flex flex-nowrap gap-6 items-start">
+            <!-- Root Column -->
+            <div *ngFor="let root of categories()" class="min-w-[350px] w-[350px] flex-shrink-0 bg-dark-surface border-2 border-dark-border flex flex-col">
+                
+                <!-- Root Header -->
+                <div class="p-4 bg-dark-bg border-b-2 border-dark-border flex justify-between items-center group">
+                    <div>
+                        <h3 class="text-xl font-black text-white uppercase">{{ root.name }}</h3>
+                        <p *ngIf="root.description" class="text-xs text-gray-400 mt-1">{{ root.description }}</p>
+                    </div>
+                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <button (click)="editCategory(root)" class="p-1 hover:text-primary text-gray-400 transition-colors" title="Editar">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                        </button>
+                        <button (click)="deleteCategory(root)" class="p-1 hover:text-danger text-gray-400 transition-colors" title="Eliminar">
+                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                        </button>
+                    </div>
                 </div>
 
-                <div class="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button (click)="editCategory(cat)" class="p-1 hover:text-primary text-gray-400 transition-colors"
-                        title="Editar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path>
-                        </svg>
-                    </button>
-                    <button (click)="deleteCategory(cat)" class="p-1 hover:text-danger text-gray-400 transition-colors"
-                        title="Eliminar">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="3 6 5 6 21 6"></polyline>
-                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                            </path>
-                        </svg>
-                    </button>
+                <!-- Children Tree -->
+                <div class="p-4 flex-1">
+                    <ng-container *ngTemplateOutlet="nodeTemplate; context: { $implicit: root.children }"></ng-container>
+                    
+                    <div *ngIf="!root.children || root.children.length === 0" class="text-center py-4 text-gray-500 text-sm italic">
+                        Sin subcategorías
+                    </div>
                 </div>
             </div>
-            <div *ngIf="categories().length === 0" class="text-center py-8 text-gray-400">
-                No hay categorías disponibles.
-            </div>
+        </div>
+         <div *ngIf="!isLoading() && categories().length === 0" class="text-center py-8 text-gray-400">
+            No hay categorías disponibles.
         </div>
     </div>
 </div>
+
+<!-- Recursive Node Template -->
+<ng-template #nodeTemplate let-nodes>
+    <div *ngFor="let node of nodes" class="relative pl-4 border-l-2 border-gray-800 ml-2 mb-2">
+        <!-- Node Content -->
+        <div class="flex justify-between items-center group py-1">
+            <div class="flex items-center">
+                 <div class="w-2 h-2 bg-primary rounded-full mr-2"></div>
+                 <span class="text-gray-300 font-medium hover:text-white transition-colors cursor-default">{{ node.name }}</span>
+            </div>
+             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="editCategory(node)" class="p-1 hover:text-primary text-gray-500 transition-colors" title="Editar">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                </button>
+                <button (click)="deleteCategory(node)" class="p-1 hover:text-danger text-gray-500 transition-colors" title="Eliminar">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Recursion -->
+        <div *ngIf="node.children && node.children.length > 0" class="mt-1">
+             <ng-container *ngTemplateOutlet="nodeTemplate; context: { $implicit: node.children }"></ng-container>
+        </div>
+    </div>
+</ng-template>
 
 <app-confirm-dialog [isVisible]="showDeleteDialog()" title="Eliminar Categoría"
     message="¿Estás seguro de que deseas eliminar esta categoría? Esta acción no se puede deshacer."

@@ -67,18 +67,7 @@ export class ConceptCategoriesComponent implements OnInit {
                 roots.push(node);
             }
         });
-        const flatten = (nodes: any[], level: number = 0): any[] => {
-            let result: any[] = [];
-            nodes.forEach(node => {
-                node.level = level;
-                result.push(node);
-                if (node.children && node.children.length > 0) {
-                    result = result.concat(flatten(node.children, level + 1));
-                }
-            });
-            return result;
-        };
-        return flatten(roots);
+        return roots;
     }
 
     toggleForm() {
