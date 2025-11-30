@@ -57,7 +57,7 @@ export class ConceptCategoriesComponent implements OnInit {
 
     organizeCategories(categories: any[]): any[] {
         const map = new Map();
-        categories.forEach(c => map.set(c.id, { ...c, children: [] }));
+        categories.forEach(c => map.set(c.id, { ...c, children: [], expanded: true }));
         const roots: any[] = [];
         categories.forEach(c => {
             const node = map.get(c.id);
@@ -68,6 +68,10 @@ export class ConceptCategoriesComponent implements OnInit {
             }
         });
         return roots;
+    }
+
+    toggleNode(node: any) {
+        node.expanded = !node.expanded;
     }
 
     toggleForm() {
