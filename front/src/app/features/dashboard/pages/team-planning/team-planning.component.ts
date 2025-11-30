@@ -7,6 +7,7 @@ import { NotificationService } from '../../../../services/notification.service';
 import { Planning, PlanConcept, PlaningScheduleDay } from '../../../../core/models/planning.model';
 import { SportConcept } from '../../../../core/models/sport-concept.model';
 import { SportConceptService } from '../../../../services/sport-concept.service';
+import { TeamsService } from '../../../../services/teams.service';
 
 @Component({
     selector: 'app-team-planning',
@@ -16,6 +17,7 @@ import { SportConceptService } from '../../../../services/sport-concept.service'
 })
 export class TeamPlanningComponent implements OnInit {
     teamId: number = 0;
+    team = signal<any>(null);
     planningId: number | null = null;
     step = signal(1);
     planForm: FormGroup;
@@ -94,7 +96,8 @@ export class TeamPlanningComponent implements OnInit {
         private router: Router,
         private planningService: PlanningService,
         private sportConceptService: SportConceptService,
-        private notificationService: NotificationService
+        private notificationService: NotificationService,
+        private teamsService: TeamsService
     ) {
         this.planForm = this.fb.group({
             name: [''],
@@ -121,11 +124,19 @@ export class TeamPlanningComponent implements OnInit {
         this.route.params.subscribe(params => {
             if (params['teamId']) {
                 this.teamId = +params['teamId'];
+                this.loadTeam(this.teamId);
             }
             if (params['planningId']) {
                 this.planningId = +params['planningId'];
                 this.loadPlanning(this.planningId);
             }
+        });
+    }
+
+    loadTeam(id: number) {
+        this.teamsService.getTeam(id).subscribe({
+            next: (team) => this.team.set(team),
+            error: (err) => console.error('Error loading team', err)
         });
     }
 
@@ -189,15 +200,26 @@ export class TeamPlanningComponent implements OnInit {
 
     loadConcepts() {
         this.isLoadingConcepts.set(true);
-        // TODO: This should be replaced with a proper method to get concepts for a team
-        this.sportConceptService.getConcepts().subscribe({
+        
+        const request = this.teamId 
+            ? this.sportConceptService.getSuggestions(this.teamId)
+            : this.sportConceptService.getConcepts();
+
+        request.subscribe({
             next: (data) => {
                 this.concepts.set(data);
                 this.groupConcepts(data);
-                if (this.selectedConceptIds().length === 0 && !this.planningId) {
-                    //const suggestedIds = data.filter(p => p.isSuggested).map(p => p.concept.id);
-                    //this.selectedConceptIds.set(suggestedIds);
+                
+                // Use backend suggestions
+                if (this.selectedConceptIds().length === 0 && !this.planningId && this.teamId) {
+                     const suggestedIds = data.filter(c => c.isSuggested).map(c => c.id);
+                     
+                     if (suggestedIds.length > 0) {
+                         this.selectedConceptIds.set(suggestedIds);
+                         this.notificationService.success('Sugerencias generadas', `Se han propuesto ${suggestedIds.length} conceptos basados en el nivel del equipo.`);
+                     }
                 }
+                
                 this.isLoadingConcepts.set(false);
             },
             error: (err) => {

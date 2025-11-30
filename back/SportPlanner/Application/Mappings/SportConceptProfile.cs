@@ -1,5 +1,5 @@
 using AutoMapper;
-using SportPlanner.Application.DTOs.SportConcept;
+using SportPlanner.Application.DTOs;
 using SportPlanner.Models;
 
 namespace SportPlanner.Application.Mappings
@@ -9,7 +9,8 @@ namespace SportPlanner.Application.Mappings
         public SportConceptProfile()
         {
             CreateMap<SportConcept, SportConceptDto>();
-            CreateMap<DifficultyLevel, DifficultyLevelDto>();
+            CreateMap<SportConcept, SportConceptWithSuggestionDto>();
+            CreateMap<DifficultyLevel, SportPlanner.Application.DTOs.SportConcept.DifficultyLevelDto>();
         }
     }
 }

@@ -34,6 +34,13 @@ public class SportConceptsController : ControllerBase
         return Ok(result);
     }
 
+    [HttpGet("suggestions/{teamId}")]
+    public async Task<IActionResult> GetSuggestions(int teamId)
+    {
+        var result = await _service.GetConceptsWithSuggestionsAsync(teamId);
+        return Ok(result);
+    }
+
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? sportId = null)
     {

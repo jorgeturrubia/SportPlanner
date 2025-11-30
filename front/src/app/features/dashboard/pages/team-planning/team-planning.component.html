@@ -121,7 +121,7 @@
                         </div>
 
                         <!-- Subcategory Filter Badges -->
-                        <div>
+                        <div *ngIf="selectedCategoryFilter()">
                             <label
                                 class="block text-xs font-bold text-gray-400 mb-3 uppercase tracking-wider">Subcategorías</label>
                             <div class="flex flex-wrap gap-2">
@@ -201,6 +201,10 @@
                                             <div class="flex items-baseline gap-2">
                                                 <span class="text-sm font-semibold text-white truncate">{{ concept.name
                                                     }}</span>
+                                                <span *ngIf="concept.isSuggested"
+                                                    class="text-[9px] font-bold bg-primary/20 text-primary border border-primary/30 px-1.5 py-0.5 rounded uppercase flex-shrink-0 animate-pulse">
+                                                    SUGERIDO
+                                                </span>
                                                 <span *ngIf="concept.difficultyLevel"
                                                     class="text-[9px] font-bold border border-gray-600 text-gray-500 px-1.5 py-0.5 rounded uppercase flex-shrink-0">
                                                     {{ concept.difficultyLevel.name }}

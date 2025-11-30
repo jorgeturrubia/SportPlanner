@@ -1,0 +1,35 @@
+  Determinando los proyectos que se van a restaurar...
+C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj : warning NU1903: El paquete "Microsoft.Build.Tasks.Core" 17.14.8 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq [C:\Proyectos\SportPlanner\back\SportPlanner.sln]
+C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj : warning NU1903: El paquete "Microsoft.Build.Utilities.Core" 17.14.8 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq [C:\Proyectos\SportPlanner\back\SportPlanner.sln]
+  Todos los proyectos están actualizados para la restauración.
+C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj : warning NU1903: El paquete "Microsoft.Build.Tasks.Core" 17.14.8 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq
+C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj : warning NU1903: El paquete "Microsoft.Build.Utilities.Core" 17.14.8 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(53,56): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(57,44): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(58,48): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(70,46): error CS1503: Argumento 1: no se puede convertir de 'int?' a 'int' [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(66,56): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(70,44): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(71,48): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Application\Mappings\SportConceptProfile.cs(12,37): error CS0246: El nombre del tipo o del espacio de nombres 'SportConceptWithSuggestionDto' no se encontró (¿falta una directiva using o una referencia de ensamblado?) [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Program.cs(114,77): warning CS8604: Posible argumento de referencia nulo para el parámetro "args" en "void LoggerExtensions.LogInformation(ILogger logger, string? message, params object?[] args)". [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+
+ERROR al compilar.
+
+C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj : warning NU1903: El paquete "Microsoft.Build.Tasks.Core" 17.14.8 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq [C:\Proyectos\SportPlanner\back\SportPlanner.sln]
+C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj : warning NU1903: El paquete "Microsoft.Build.Utilities.Core" 17.14.8 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq [C:\Proyectos\SportPlanner\back\SportPlanner.sln]
+C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj : warning NU1903: El paquete "Microsoft.Build.Tasks.Core" 17.14.8 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq
+C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj : warning NU1903: El paquete "Microsoft.Build.Utilities.Core" 17.14.8 tiene una vulnerabilidad de gravedad alta conocida, https://github.com/advisories/GHSA-w3q9-fxm7-j8fq
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(53,56): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(57,44): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(58,48): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(66,56): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(70,44): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\PlanningService.cs(71,48): warning CS8602: Desreferencia de una referencia posiblemente NULL. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Program.cs(114,77): warning CS8604: Posible argumento de referencia nulo para el parámetro "args" en "void LoggerExtensions.LogInformation(ILogger logger, string? message, params object?[] args)". [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(70,46): error CS1503: Argumento 1: no se puede convertir de 'int?' a 'int' [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Application\Mappings\SportConceptProfile.cs(12,37): error CS0246: El nombre del tipo o del espacio de nombres 'SportConceptWithSuggestionDto' no se encontró (¿falta una directiva using o una referencia de ensamblado?) [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+    11 Advertencia(s)
+    2 Errores
+
+Tiempo transcurrido 00:00:03.73

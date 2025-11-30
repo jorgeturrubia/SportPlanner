@@ -16,6 +16,11 @@ public class SportConceptDto
     public bool IsActive { get; set; }
 }
 
+public class SportConceptWithSuggestionDto : SportConceptDto
+{
+    public bool IsSuggested { get; set; }
+}
+
 public class CreateSportConceptDto
 {
     public string Name { get; set; } = null!;

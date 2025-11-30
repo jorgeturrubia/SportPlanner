@@ -8,9 +8,12 @@ namespace SportPlanner.Services;
 public class SportConceptService : ISportConceptService
 {
     private readonly AppDbContext _db;
-    public SportConceptService(AppDbContext db)
+    private readonly AutoMapper.IMapper _mapper;
+
+    public SportConceptService(AppDbContext db, AutoMapper.IMapper mapper)
     {
         _db = db;
+        _mapper = mapper;
     }
 
     public async Task<SportConcept> CreateAsync(CreateSportConceptDto dto)
@@ -54,6 +57,48 @@ public class SportConceptService : ISportConceptService
         }
 
         return await query.OrderBy(sc => sc.Name).ToListAsync();
+    }
+
+    public async Task<List<SportConceptWithSuggestionDto>> GetConceptsWithSuggestionsAsync(int teamId)
+    {
+        var team = await _db.Teams
+            .Include(t => t.TeamCategory)
+            .FirstOrDefaultAsync(t => t.Id == teamId);
+
+        if (team == null || team.SportId == null) return new List<SportConceptWithSuggestionDto>();
+
+        var concepts = await GetBySportAsync(team.SportId.Value);
+        var dtos = _mapper.Map<List<SportConceptWithSuggestionDto>>(concepts);
+
+        foreach (var dto in dtos)
+        {
+            bool isSuggested = true;
+
+            // 1. Check Technical Level (Concept Difficulty vs Team Level)
+            // Suggested if concept difficulty is close to team level (within range)
+            // We suggest concepts that are reachable: e.g., difficulty <= teamLevel + 2
+            // And not too easy? e.g., difficulty >= teamLevel - 2
+            if (Math.Abs(dto.TechnicalDifficulty - team.CurrentTechnicalLevel) > 2)
+            {
+                isSuggested = false;
+            }
+
+            // 2. Check Tactical Level
+            if (isSuggested && Math.Abs(dto.TacticalComplexity - team.CurrentTacticalLevel) > 2)
+            {
+                isSuggested = false;
+            }
+
+            // 3. Check Age Appropriateness (if TeamCategory has age limits)
+            // Note: SportConcept currently doesn't have explicit age limits, 
+            // but we could infer or add logic if ConceptCategory had age hints.
+            // For now, we rely on difficulty/complexity as a proxy for age suitability.
+            // Future improvement: Add MinAge/MaxAge to SportConcept or ConceptCategory.
+
+            dto.IsSuggested = isSuggested;
+        }
+
+        return dtos.OrderByDescending(d => d.IsSuggested).ThenBy(d => d.Name).ToList();
     }
 
     public async Task<SportConcept?> GetByIdAsync(int id)

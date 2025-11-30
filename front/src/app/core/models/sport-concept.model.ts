@@ -14,5 +14,6 @@ export interface SportConcept {
   technicalDifficulty: number;
   tacticalComplexity: number;
   conceptCategory: ConceptCategory | null;
+  isSuggested?: boolean;
 }
 

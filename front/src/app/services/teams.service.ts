@@ -11,6 +11,10 @@ export class TeamsService {
         return this.http.get<any[]>(`${environment.apiUrl}/teams/my-teams`);
     }
 
+    getTeam(id: number): Observable<any> {
+        return this.http.get<any>(`${environment.apiUrl}/teams/${id}`);
+    }
+
     createTeam(team: any): Observable<any> {
         return this.http.post<any>(`${environment.apiUrl}/teams`, team);
     }
