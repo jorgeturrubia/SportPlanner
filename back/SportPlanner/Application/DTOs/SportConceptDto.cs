@@ -12,6 +12,7 @@ public class SportConceptDto
     public int TacticalComplexity { get; set; }
     public string? TechnicalTacticalFocus { get; set; }
     public string? DevelopmentLevel { get; set; }
+    public int? ConceptTemplateId { get; set; }
     public int ProgressWeight { get; set; }
     public bool IsProgressive { get; set; }
     public int? SportId { get; set; }
@@ -33,6 +34,7 @@ public class CreateSportConceptDto
     public int TacticalComplexity { get; set; }
     public string? TechnicalTacticalFocus { get; set; }
     public string? DevelopmentLevel { get; set; }
+    public int? ConceptTemplateId { get; set; }
     public int ProgressWeight { get; set; } = 50;
     public bool IsProgressive { get; set; } = true;
     public int? SportId { get; set; }

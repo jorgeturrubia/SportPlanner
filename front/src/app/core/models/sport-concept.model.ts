@@ -13,6 +13,7 @@ export interface SportConcept {
   description: string | null;
   technicalDifficulty: number;
   tacticalComplexity: number;
+  conceptTemplateId?: number | null;
   conceptCategory: ConceptCategory | null;
   isSuggested?: boolean;
 }

@@ -27,6 +27,8 @@ public class AppDbContext : DbContext
     public DbSet<Court> Courts { get; set; } = null!;
     public DbSet<TeamCategory> TeamCategories { get; set; } = null!;
     public DbSet<TeamLevel> TeamLevels { get; set; } = null!;
+    public DbSet<ConceptTemplate> ConceptTemplates { get; set; } = null!;
+
 
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -153,6 +155,29 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<TeamCategory>().HasKey(tc => tc.Id);
 
         modelBuilder.Entity<TeamLevel>().HasKey(tl => tl.Id);
+
+        // ConceptTemplate configuration
+        modelBuilder.Entity<ConceptTemplate>().HasKey(ct => ct.Id);
+        modelBuilder.Entity<ConceptTemplate>()
+            .HasIndex(ct => new { ct.Name, ct.SportId })
+            .IsUnique();
+        modelBuilder.Entity<ConceptTemplate>()
+            .HasOne(ct => ct.Sport)
+            .WithMany()
+            .HasForeignKey(ct => ct.SportId)
+            .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<ConceptTemplate>()
+            .HasOne(ct => ct.ConceptCategory)
+            .WithMany()
+            .HasForeignKey(ct => ct.ConceptCategoryId)
+            .OnDelete(DeleteBehavior.SetNull);
+        
+        // SportConcept - ConceptTemplate relationship
+        modelBuilder.Entity<SportConcept>()
+            .HasOne(sc => sc.ConceptTemplate)
+            .WithMany(ct => ct.Concepts)
+            .HasForeignKey(sc => sc.ConceptTemplateId)
+            .OnDelete(DeleteBehavior.SetNull);
 
       
      

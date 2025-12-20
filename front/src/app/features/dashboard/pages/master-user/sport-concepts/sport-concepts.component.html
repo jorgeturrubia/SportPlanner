@@ -268,6 +268,27 @@
                     </div>
                 </div>
 
+                <!-- Template Selector -->
+                <div class="mb-6 p-4 bg-dark-bg border border-dark-border/50 rounded-lg">
+                    <label class="block text-sm font-bold text-gray-400 mb-3">
+                        📋 PLANTILLA DE COMPLEJIDAD (Opcional)
+                    </label>
+                    <select formControlName="conceptTemplateId" (change)="onTemplateSelected($event)"
+                        class="w-full bg-dark-surface border border-dark-border p-3 text-white focus:border-primary outline-none transition-colors rounded-lg">
+                        <option [ngValue]="null">➜ Sin plantilla (valores manuales)</option>
+                        <option *ngFor="let template of availableTemplates()" [ngValue]="template.id"
+                            class="py-2">
+                            {{ template.name }} 
+                            <span class="text-xs text-gray-400">
+                                (Téc: {{ template.technicalComplexity }}/10 | Tác: {{ template.tacticalComplexity }}/10)
+                            </span>
+                        </option>
+                    </select>
+                    <p class="text-xs text-gray-500 mt-2">
+                        💡 Selecciona una plantilla para auto-rellenar los valores de complejidad según criterios predefinidos
+                    </p>
+                </div>
+
                 <!-- Proficiency Levels -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
