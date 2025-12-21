@@ -40,25 +40,25 @@
             </div>
 
             <!-- SECTIONS LOOP -->
-            <div *ngFor="let section of methodologicalSections" class="mb-12 relative z-10">
+            <div *ngFor="let section of methodologicalSections" class="mb-2 relative z-10">
 
                 <!-- SECTION HEADER (Sticky & Collapsible) -->
                 <div
-                    class="sticky top-0 z-10 bg-neutral-900/95 backdrop-blur-sm mb-6 border-b border-neutral-800 shadow-lg">
+                    class="sticky top-0 z-10 bg-neutral-900/95 backdrop-blur-sm mb-1 border-b border-neutral-800 shadow-lg">
                     <button
-                        class="w-full flex items-center justify-between py-4 text-left hover:bg-neutral-800/30 transition-colors group"
+                        class="w-full flex items-center justify-between py-1 text-left hover:bg-neutral-800/30 transition-colors group"
                         (click)="toggleSection(section)">
                         <h2
-                            class="text-2xl font-black italic text-white uppercase tracking-tighter flex items-center gap-4">
+                            class="text-lg font-black italic text-white uppercase tracking-tighter flex items-center gap-4">
                             <span
-                                class="w-1 h-8 bg-[#CCFF00] rounded-full shadow-[0_0_15px_rgba(204,255,0,0.5)]"></span>
+                                class="w-1 h-5 bg-[#CCFF00] rounded-full shadow-[0_0_15px_rgba(204,255,0,0.5)]"></span>
                             {{ section.name }}
                             <span
                                 class="text-[10px] font-medium text-neutral-500 border border-neutral-700 rounded px-2 py-0.5 not-italic tracking-widest">SECCIÓN</span>
                         </h2>
 
                         <span
-                            class="material-icons text-neutral-400 text-2xl group-hover:text-[#CCFF00] transition-all duration-300 mr-2"
+                            class="material-icons text-neutral-400 text-lg group-hover:text-[#CCFF00] transition-all duration-300 mr-2"
                             [class.rotate-180]="!section.isCollapsed">
                             expand_more
                         </span>
@@ -71,7 +71,7 @@
 
                         <!-- CATEGORY HEADER (Clickable to collapse) -->
                         <div (click)="toggleCategory(category)"
-                            class="group/cat-header cursor-pointer flex items-center gap-4 mb-4 select-none"
+                            class="group/cat-header cursor-pointer flex items-center gap-4 mb-1 select-none"
                             [class.opacity-70]="!category.hasActiveContent">
 
                             <!-- Left Line -->
@@ -81,7 +81,7 @@
 
                             <!-- Title -->
                             <h3
-                                class="text-sm font-bold text-[#CCFF00] group-hover/cat-header:text-lime-300 uppercase tracking-widest transition-colors flex items-center gap-2">
+                                class="text-xs font-bold text-[#CCFF00] group-hover/cat-header:text-lime-300 uppercase tracking-widest transition-colors flex items-center gap-2">
                                 <span class="material-icons text-base transition-transform duration-300"
                                     [class.rotate-180]="category.isCollapsed">expand_less</span>
                                 {{ category.name }}
@@ -99,67 +99,58 @@
                         </div>
 
                         <!-- CATEGORY CONTENT (Rows) -->
-                        <div *ngIf="!category.isCollapsed" class="animate-fadeIn space-y-2 relative">
+                        <div *ngIf="!category.isCollapsed" class="animate-fadeIn space-y-1 relative">
                             <!-- Optional Trunk line continuation for this category block -->
                             <div class="absolute left-1/2 top-0 bottom-0 w-[1px] bg-neutral-800 -translate-x-1/2 z-0">
                             </div>
 
                             <div *ngFor="let row of category.subCategories"
-                                class="relative z-10 grid grid-cols-[1fr_2px_1fr] gap-4 mb-4">
+                                class="relative z-10 grid grid-cols-[1fr_2px_1fr] gap-2 mb-1">
 
                                 <!-- LEFT COLUMN: ACTIVE ITINERARY (The "Trunk") -->
                                 <div class="relative group/row">
                                     <!-- Connector to center trunk -->
-                                    <div class="absolute right-0 top-6 w-4 h-[1px] bg-neutral-800"></div>
+                                    <div class="absolute right-0 top-3 w-4 h-[1px] bg-neutral-800"></div>
 
-                                    <!-- Date Header (Optional visual anchor) -->
-                                    <div class="absolute -right-3 top-[-10px] z-20"
-                                        *ngIf="row.activeConcepts.length > 0">
-                                        <span class="text-[11px] font-bold text-[#CCFF00] uppercase tracking-widest">{{
-                                            row.name }}</span>
-                                    </div>
-
-                                    <div class="min-h-[80px] rounded-xl bg-neutral-900/20 p-2">
+                                    <div class="min-h-[20px] rounded-xl bg-neutral-900/20 p-2">
                                         <!-- ACTIVE CONCEPTS LIST -->
-                                        <div class="space-y-2 min-h-[60px]">
+                                        <div class="space-y-1 min-h-[60px]">
 
                                             <div *ngFor="let conceptWrapper of row.activeConcepts">
 
                                                 <div
                                                     class="concept-card flex items-stretch bg-neutral-900/80 backdrop-blur-sm border border-[#CCFF00]/30 rounded shadow-lg overflow-hidden group hover:border-[#CCFF00] hover:shadow-[#CCFF00]/20 transition-all duration-300">
                                                     <!-- Vertical accent line -->
-                                                    <div class="w-1 bg-gradient-to-b from-[#CCFF00] to-lime-500"></div>
+                                                    <div class="w-0.5 bg-gradient-to-b from-[#CCFF00] to-lime-500">
+                                                    </div>
 
-                                                    <div class="p-3 flex-1 flex flex-col justify-between relative">
+                                                    <div class="p-1 flex-1 flex flex-col justify-between relative">
 
                                                         <div>
-                                                            <div class="flex justify-between items-start mb-1 pr-4">
+                                                            <div class="flex justify-between items-start mb-1 gap-1">
                                                                 <h4
-                                                                    class="font-bold text-sm text-lime-50 leading-tight">
+                                                                    class="font-bold text-sm text-lime-50 leading-tight flex-1">
                                                                     {{ conceptWrapper.concept.name }}
                                                                 </h4>
-                                                                <span
-                                                                    class="text-[10px] font-mono text-[#CCFF00] bg-[#CCFF00]/10 px-1.5 py-0.5 rounded border border-[#CCFF00]/30">
-                                                                    L{{ conceptWrapper.concept.developmentLevel }}
-                                                                </span>
+
+                                                                <div class="flex items-center gap-1">
+                                                                    <span
+                                                                        class="text-[9px] font-mono text-[#CCFF00] bg-[#CCFF00]/10 px-1.5 py-0.5 rounded border border-[#CCFF00]/30 whitespace-nowrap">
+                                                                        L{{ conceptWrapper.concept.developmentLevel }}
+                                                                    </span>
+                                                                    <button
+                                                                        class="text-neutral-500 hover:text-[#FF6B00] transition-colors p-0.5 hover:bg-neutral-800 rounded"
+                                                                        (click)="moveToContext(row, conceptWrapper)"
+                                                                        title="Quitar de Planificación">
+                                                                        <span
+                                                                            class="material-icons text-[14px]">arrow_forward</span>
+                                                                    </button>
+                                                                </div>
                                                             </div>
                                                             <p
-                                                                class="text-xs text-neutral-400 line-clamp-2 leading-relaxed mb-2">
+                                                                class="text-xs text-neutral-400 line-clamp-2 leading-relaxed">
                                                                 {{ conceptWrapper.concept.description }}
                                                             </p>
-                                                        </div>
-
-                                                        <!-- Quick Actions (Move Right) -->
-                                                        <div
-                                                            class="flex justify-end mt-1 pt-2 border-t border-neutral-700/30">
-                                                            <button
-                                                                class="flex items-center gap-1 text-[10px] uppercase font-bold text-neutral-500 hover:text-[#FF6B00] transition-colors px-2 py-1 rounded hover:bg-neutral-700/50"
-                                                                (click)="moveToContext(row, conceptWrapper)"
-                                                                title="Quitar de Planificación">
-                                                                <span>Quitar</span>
-                                                                <span
-                                                                    class="material-icons text-[14px]">chevron_right</span>
-                                                            </button>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -167,7 +158,7 @@
                                         </div>
                                         <!-- Empty State for Active -->
                                         <div *ngIf="row.activeConcepts.length === 0"
-                                            class="h-20 flex items-center justify-center border border-dashed border-neutral-800 rounded-lg">
+                                            class="h-8 flex items-center justify-center border border-dashed border-neutral-800 rounded-lg">
                                             <span class="text-xs text-neutral-600 italic">Sin conceptos activos</span>
                                         </div>
                                     </div>
@@ -178,13 +169,13 @@
 
                                 <!-- RIGHT COLUMN: CONTEXT (Ordered by Proximity: Prev -> Next -> Others) -->
                                 <div
-                                    class="context-column flex flex-col gap-3 relative pl-4 border-l border-neutral-800/50">
+                                    class="context-column flex flex-col gap-1 relative pl-2 border-l border-neutral-800/50">
 
                                     <!-- 1. IMMEDIATE PREVIOUS (Consolidation) -->
                                     <div *ngIf="row.immediatePrevConcepts.length > 0" class="prev-group">
                                         <!-- 1. IMMEDIATE PREVIOUS (Consolidated) -->
                                         <button
-                                            class="w-full flex items-center justify-between text-[10px] py-1.5 px-2 bg-neutral-900/40 hover:bg-neutral-800/80 rounded border border-neutral-800 hover:border-neutral-700 transition-all mb-1 group"
+                                            class="w-full flex items-center justify-between text-[10px] py-0.5 px-2 bg-neutral-900/40 hover:bg-neutral-800/80 rounded border border-neutral-800 hover:border-neutral-700 transition-all mb-0.5 group"
                                             (click)="togglePrev(row)">
                                             <div class="flex items-center gap-2">
                                                 <span
@@ -200,12 +191,12 @@
                                         </button>
 
                                         <div *ngIf="row.isPrevExpanded"
-                                            class="animate-fadeIn pl-2 border-l border-neutral-700/50 ml-1 mb-2">
+                                            class="animate-fadeIn pl-2 border-l border-neutral-700/50 ml-1 mb-0.5">
                                             <div>
 
                                                 <div *ngFor="let conceptWrapper of row.immediatePrevConcepts">
                                                     <div
-                                                        class="past-card flex items-start gap-3 p-2 mb-1 rounded opacity-70 hover:opacity-100 transition-opacity bg-neutral-900/40 border border-transparent hover:border-neutral-600 group">
+                                                        class="past-card flex items-start gap-1 p-1 mb-0.5 rounded opacity-70 hover:opacity-100 transition-opacity bg-neutral-900/40 border border-transparent hover:border-neutral-600 group">
 
                                                         <!-- Quick Add (Left) -->
                                                         <button
@@ -234,7 +225,7 @@
                                     <!-- 2. IMMEDIATE NEXT (Challenge) -->
                                     <div *ngIf="row.immediateNextConcepts.length > 0" class="next-group">
                                         <button
-                                            class="w-full flex items-center justify-between text-[10px] py-1.5 px-2 bg-[#FF6B00]/10 hover:bg-[#FF6B00]/20 rounded border border-[#FF6B00]/30 hover:border-[#FF6B00]/50 transition-all mb-1 group mt-2"
+                                            class="w-full flex items-center justify-between text-[10px] py-0.5 px-2 bg-[#FF6B00]/10 hover:bg-[#FF6B00]/20 rounded border border-[#FF6B00]/30 hover:border-[#FF6B00]/50 transition-all mb-0.5 group mt-1"
                                             (click)="toggleNext(row)">
                                             <div class="flex items-center gap-2">
                                                 <span
@@ -251,12 +242,12 @@
                                         </button>
 
                                         <div *ngIf="row.isNextExpanded"
-                                            class="animate-fadeIn pl-2 border-l border-[#FF6B00]/10 ml-1 mb-2">
+                                            class="animate-fadeIn pl-2 border-l border-[#FF6B00]/10 ml-1 mb-0.5">
                                             <div>
 
                                                 <div *ngFor="let conceptWrapper of row.immediateNextConcepts">
                                                     <div
-                                                        class="future-card flex items-start gap-3 p-3 mb-2 rounded border border-dashed border-[#FF6B00]/30 bg-[#FF6B00]/5 hover:bg-[#FF6B00]/10 group/future transition-colors group">
+                                                        class="future-card flex items-start gap-1 p-1 mb-0.5 rounded border border-dashed border-[#FF6B00]/30 bg-[#FF6B00]/5 hover:bg-[#FF6B00]/10 group/future transition-colors group">
 
                                                         <!-- Quick Add (Left) -->
                                                         <button
@@ -286,9 +277,9 @@
                                     </div>
 
                                     <!-- 3. EXTENDED CONTEXT (Distant Levels) -->
-                                    <div class="mt-4 pt-3 border-t border-neutral-800/50">
+                                    <div class="mt-1 pt-1 border-t border-neutral-800/50">
                                         <button
-                                            class="w-full py-2 text-[10px] uppercase font-bold tracking-widest text-neutral-500 hover:text-[#CCFF00] border border-neutral-800 hover:border-[#CCFF00]/50 rounded bg-neutral-900/40 hover:bg-neutral-900/80 transition-all flex items-center justify-center gap-2 mb-2"
+                                            class="w-full py-1 text-[10px] uppercase font-bold tracking-widest text-neutral-500 hover:text-[#CCFF00] border border-neutral-800 hover:border-[#CCFF00]/50 rounded bg-neutral-900/40 hover:bg-neutral-900/80 transition-all flex items-center justify-center gap-2 mb-2"
                                             (click)="toggleShowAllLevels(row)">
                                             <span>{{ row.showAllLevels ? 'Ocultar otros niveles' : 'Ver resto de
                                                 niveles' }}</span>
@@ -296,7 +287,7 @@
                                                 [class.rotate-180]="row.showAllLevels">expand_more</span>
                                         </button>
 
-                                        <div *ngIf="row.showAllLevels" class="animate-fadeIn space-y-4 px-1">
+                                        <div *ngIf="row.showAllLevels" class="animate-fadeIn space-y-1 px-1">
 
                                             <!-- Distant Future -->
                                             <div *ngIf="row.distantFutureConcepts.length > 0">
@@ -305,7 +296,7 @@
                                                 <div>
                                                     <div *ngFor="let conceptWrapper of row.distantFutureConcepts">
                                                         <div
-                                                            class="future-card opacity-60 flex items-start gap-3 p-2 mb-1 rounded border border-dashed border-[#FF6B00]/20 bg-[#FF6B00]/5 hover:bg-[#FF6B00]/10 group">
+                                                            class="future-card opacity-60 flex items-start gap-1 p-1 mb-0.5 rounded border border-dashed border-[#FF6B00]/20 bg-[#FF6B00]/5 hover:bg-[#FF6B00]/10 group">
 
                                                             <!-- Quick Add (Left) -->
                                                             <button
@@ -337,7 +328,7 @@
                                                 <div>
                                                     <div *ngFor="let conceptWrapper of row.distantPastConcepts">
                                                         <div
-                                                            class="past-card opacity-50 flex items-start gap-3 p-2 mb-1 rounded bg-neutral-800/20 border border-transparent hover:border-neutral-700 group">
+                                                            class="past-card opacity-50 flex items-start gap-1 p-1 mb-0.5 rounded bg-neutral-800/20 border border-transparent hover:border-neutral-700 group">
 
                                                             <!-- Quick Add (Left) -->
                                                             <button
