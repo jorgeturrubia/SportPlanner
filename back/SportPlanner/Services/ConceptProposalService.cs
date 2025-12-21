@@ -80,9 +80,9 @@ public class ConceptProposalService : IConceptProposalService
         // 4. Filter concepts by development level window
         var filteredConcepts = concepts.Where(c => 
         {
-            if (!int.TryParse(c.DevelopmentLevel, out int conceptLevel))
+            if (!c.DevelopmentLevel.HasValue)
                 return true; // Include concepts without level
-            return conceptLevel >= minLevel && conceptLevel <= maxLevel;
+            return c.DevelopmentLevel.Value >= minLevel && c.DevelopmentLevel.Value <= maxLevel;
         }).ToList();
 
         // 5. Score each concept
@@ -198,9 +198,9 @@ public class ConceptProposalService : IConceptProposalService
         score += tacticalScore * tacWeight;
 
         // Development level score: Compare concept level vs expected team level
-        if (int.TryParse(concept.DevelopmentLevel, out int conceptLevel))
+        if (concept.DevelopmentLevel.HasValue)
         {
-            decimal developmentScore = CalculateLevelMatchScore(conceptLevel, expectedDevelopmentLevel);
+            decimal developmentScore = CalculateLevelMatchScore(concept.DevelopmentLevel.Value, expectedDevelopmentLevel);
             score += developmentScore * DevelopmentLevelWeight;
         }
         else
@@ -375,9 +375,9 @@ public class ConceptProposalService : IConceptProposalService
             reasons.Add("tácticamente complejo");
 
         // Development level assessment
-        if (int.TryParse(concept.DevelopmentLevel, out int conceptLevel))
+        if (concept.DevelopmentLevel.HasValue)
         {
-            int devDiff = conceptLevel - expectedDevelopmentLevel;
+            int devDiff = concept.DevelopmentLevel.Value - expectedDevelopmentLevel;
             if (devDiff == 0)
                 reasons.Add("etapa de desarrollo ideal");
             else if (devDiff == 1)
@@ -397,7 +397,7 @@ public class ConceptProposalService : IConceptProposalService
         // Check if it's a base concept (level 1-2, low complexity)
         if (concept.TechnicalDifficulty <= 2 && concept.TacticalComplexity <= 2)
         {
-            if (int.TryParse(concept.DevelopmentLevel, out int level) && level <= expectedDevelopmentLevel)
+            if (concept.DevelopmentLevel.HasValue && concept.DevelopmentLevel.Value <= expectedDevelopmentLevel)
                 return ProposalPriority.Essential;
         }
 
@@ -423,12 +423,12 @@ public class ConceptProposalService : IConceptProposalService
     /// </summary>
     private ConceptTag DetermineConceptTag(SportConcept concept, int expectedDevelopmentLevel, Team team)
     {
-        if (!int.TryParse(concept.DevelopmentLevel, out int conceptLevel))
+        if (!concept.DevelopmentLevel.HasValue)
         {
             return ConceptTag.Own; // Default if no level specified
         }
         
-        int levelDiff = conceptLevel - expectedDevelopmentLevel;
+        int levelDiff = concept.DevelopmentLevel.Value - expectedDevelopmentLevel;
         
         // Calculate if team is "low level" based on coach evaluation
         decimal avgTeamLevel = (team.CurrentTechnicalLevel + team.CurrentTacticalLevel) / 2.0m;

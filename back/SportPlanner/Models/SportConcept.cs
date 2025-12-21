@@ -22,8 +22,8 @@ public class SportConcept
     public int TacticalComplexity { get; set; }
 
     // New fields
-    public string? TechnicalTacticalFocus { get; set; } // Enfoque Tecnico/Tactico
-    public string? DevelopmentLevel { get; set; } // Nivel (Escuela -> Junior)
+    public int? TechnicalTacticalFocus { get; set; } // Enfoque Tecnico/Tactico
+    public int? DevelopmentLevel { get; set; } // Nivel (Escuela -> Junior)
 
     // Methodological Itinerary Relationship
     public int? MethodologicalItineraryId { get; set; }

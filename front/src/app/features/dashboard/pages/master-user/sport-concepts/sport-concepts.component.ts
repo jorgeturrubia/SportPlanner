@@ -209,21 +209,6 @@ export class SportConceptsComponent implements OnInit {
         this.loadConcepts();
     }
 
-    onTemplateSelected(event: Event) {
-        const selectElement = event.target as HTMLSelectElement;
-        const templateId = selectElement.value ? parseInt(selectElement.value) : null;
-
-        if (templateId) {
-            const template = this.availableTemplates().find(t => t.id === templateId);
-            if (template) {
-                this.conceptForm.patchValue({
-                    technicalDifficulty: template.technicalComplexity,
-                    tacticalComplexity: template.tacticalComplexity,
-                    conceptCategoryId: template.conceptCategoryId || this.conceptForm.value.conceptCategoryId
-                });
-            }
-        }
-    }
 
     updateSearch(query: string) {
         this.searchQuery.set(query);
