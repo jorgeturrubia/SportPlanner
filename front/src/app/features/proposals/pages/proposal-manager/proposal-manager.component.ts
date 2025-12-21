@@ -11,23 +11,39 @@ import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptPropos
 interface SubCategoryRow {
     name: string;
     categoryId: number; // Unique ID for the subcategory bucket
-    activeConcepts: ScoredConceptDto[]; // Level X (Own)
-    futureConcepts: ScoredConceptDto[]; // Level > X (Aspirational)
-    pastConcepts: ScoredConceptDto[];   // Level < X (Inherited/Reinforcement)
 
-    // Drag & Drop List IDs
+    // The Active Reference
+    activeConcepts: ScoredConceptDto[]; // Level X (Own)
+
+    // Context Buckets
+    immediatePrevConcepts: ScoredConceptDto[]; // Level X-1 (Closest Past)
+    immediateNextConcepts: ScoredConceptDto[]; // Level X+1 (Closest Future)
+    distantPastConcepts: ScoredConceptDto[];   // Older levels (Deep Past)
+    distantFutureConcepts: ScoredConceptDto[]; // Higher levels (Far Future)
+
+    // UI State
+    isExpanded: boolean; // For "View More" (distant levels) logic
+    showAllLevels: boolean; // Toggle for distant levels
+    isPrevExpanded: boolean; // Toggle for Immediate Previous
+    isNextExpanded: boolean; // Toggle for Immediate Next
+
+    // Drag & Drop List IDs (need one for each visible bucket to allow drops)
     activeListId: string;
-    futureListId: string;
-    pastListId: string;
+    prevListId: string;
+    nextListId: string;
+    distantListId: string; // Maybe one shared list for distant? Or separate. Let's separate to be safe.
 }
 
 interface CategoryGroup {
     name: string;
+    isCollapsed: boolean; // For Category grouping
+    hasActiveContent: boolean; // If false, show "Nothing planned"
     subCategories: SubCategoryRow[];
 }
 
 interface MethodologicalSection {
     name: string; // "Ataque" | "Defensa"
+    isCollapsed: boolean; // Toggle for Section visibility
     categories: CategoryGroup[];
 }
 
@@ -52,6 +68,9 @@ export class ProposalManagerComponent implements OnChanges {
 
     // All connected drop lists for drag & drop
     allListIds: string[] = [];
+
+    // UI Constants
+    readonly INITIAL_VISIBLE_COUNT = 3;
 
     constructor(
         private proposalsService: ProposalsService,
@@ -114,6 +133,137 @@ export class ProposalManagerComponent implements OnChanges {
         this.generateProposals();
     }
 
+    toggleSection(section: MethodologicalSection) {
+        section.isCollapsed = !section.isCollapsed;
+    }
+
+    toggleCategory(category: CategoryGroup) {
+        category.isCollapsed = !category.isCollapsed;
+    }
+
+    toggleRow(row: SubCategoryRow) {
+        row.isExpanded = !row.isExpanded;
+    }
+
+    toggleShowAllLevels(row: SubCategoryRow) {
+        row.showAllLevels = !row.showAllLevels;
+    }
+
+    togglePrev(row: SubCategoryRow) {
+        row.isPrevExpanded = !row.isPrevExpanded;
+    }
+
+    toggleNext(row: SubCategoryRow) {
+        row.isNextExpanded = !row.isNextExpanded;
+    }
+
+    getVisibleFutureConcepts(row: SubCategoryRow): ScoredConceptDto[] {
+        // This method is now deprecated or needs re-evaluation based on new buckets
+        // For now, returning empty or adapting to new structure
+        return [];
+    }
+
+    getVisiblePastConcepts(row: SubCategoryRow): ScoredConceptDto[] {
+        // This method is now deprecated or needs re-evaluation based on new buckets
+        return [];
+    }
+
+    hasHiddenFutureConcepts(row: SubCategoryRow): boolean {
+        // This method is now deprecated or needs re-evaluation based on new buckets
+        return false;
+    }
+
+    hasHiddenPastConcepts(row: SubCategoryRow): boolean {
+        // This method is now deprecated or needs re-evaluation based on new buckets
+        return false;
+    }
+
+    // --- MOVEMENT LOGIC (Click-based) ---
+
+    moveToActive(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
+        // 1. Remove from source bucket
+        this.removeFromContext(row, conceptWrapper);
+
+        // 2. Update Tag
+        conceptWrapper.tag = ConceptTag.Own;
+
+        // 3. Add to Active
+        row.activeConcepts.push(conceptWrapper);
+    }
+
+    moveToContext(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
+        // 1. Remove from Active
+        const idx = row.activeConcepts.indexOf(conceptWrapper);
+        if (idx !== -1) {
+            row.activeConcepts.splice(idx, 1);
+        }
+
+        // 2. Determine Destination & Tag properties
+        // We use the first concept of immediate lists to guess the "window" levels
+        // But simpler logic: 
+        // If level > currentLevel -> Future (Aspirational)
+        // If level <= currentLevel -> Past (Reinforcement/Inherited)
+
+        // Note: Ideally we compare against the 'itinerary level', but strictly:
+        // Future = Tag.Aspirational
+        // Past = Tag.Inherited (or Reinforcement)
+
+        // Let's rely on the concept level vs "active" logic. 
+        // For simplicity, we can revert to original logic or just check level.
+
+        // Heuristic: If it was in "Next" before, it should go back to "Next".
+        // Generally, higher level = Future.
+
+        // We need to re-evaluate where it belongs.
+        // Let's use a helper to place it back.
+        this.placeInContext(row, conceptWrapper);
+    }
+
+    private removeFromContext(row: SubCategoryRow, concept: ScoredConceptDto) {
+        // Try removing from all possible context buckets
+        let idx = row.immediatePrevConcepts.indexOf(concept);
+        if (idx !== -1) { row.immediatePrevConcepts.splice(idx, 1); return; }
+
+        idx = row.immediateNextConcepts.indexOf(concept);
+        if (idx !== -1) { row.immediateNextConcepts.splice(idx, 1); return; }
+
+        idx = row.distantFutureConcepts.indexOf(concept);
+        if (idx !== -1) { row.distantFutureConcepts.splice(idx, 1); return; }
+
+        idx = row.distantPastConcepts.indexOf(concept);
+        if (idx !== -1) { row.distantPastConcepts.splice(idx, 1); return; }
+    }
+
+    private placeInContext(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
+        const level = conceptWrapper.concept.developmentLevel;
+
+        // Identify "Next Level" value from existing list if possible, or just assume higher level is 'Reto'
+        // Simpler approach: Re-run the split logic or just simple insertion?
+        // Let's try to match existing buckets first.
+
+        const prevLevel = row.immediatePrevConcepts.length > 0 ? row.immediatePrevConcepts[0].concept.developmentLevel : -1;
+        const nextLevel = row.immediateNextConcepts.length > 0 ? row.immediateNextConcepts[0].concept.developmentLevel : 999;
+
+        if (level === nextLevel) {
+            conceptWrapper.tag = ConceptTag.Aspirational;
+            row.immediateNextConcepts.push(conceptWrapper);
+            row.immediateNextConcepts.sort((a, b) => a.concept.developmentLevel - b.concept.developmentLevel);
+        } else if (level === prevLevel) {
+            conceptWrapper.tag = ConceptTag.Inherited; // or Reinforcement
+            row.immediatePrevConcepts.push(conceptWrapper);
+            row.immediatePrevConcepts.sort((a, b) => b.concept.developmentLevel - a.concept.developmentLevel);
+        } else if (level > nextLevel) {
+            conceptWrapper.tag = ConceptTag.Aspirational;
+            row.distantFutureConcepts.push(conceptWrapper);
+            row.distantFutureConcepts.sort((a, b) => a.concept.developmentLevel - b.concept.developmentLevel);
+        } else {
+            // level < prevLevel or fallback
+            conceptWrapper.tag = ConceptTag.Inherited;
+            row.distantPastConcepts.push(conceptWrapper);
+            row.distantPastConcepts.sort((a, b) => b.concept.developmentLevel - a.concept.developmentLevel);
+        }
+    }
+
     /**
      * Core logic: Transforms flat proposal groups into a distinct 
      * Section > Category > Subcategory hierarchy
@@ -155,30 +305,44 @@ export class ProposalManagerComponent implements OnChanges {
                     name: subCategoryName,
                     categoryId: group.categoryId,
                     activeConcepts: [],
-                    futureConcepts: [],
-                    pastConcepts: [],
+
+                    immediatePrevConcepts: [],
+                    immediateNextConcepts: [],
+                    distantPastConcepts: [],
+                    distantFutureConcepts: [],
+
+                    isExpanded: false, // Default collapsed view
+                    showAllLevels: false, // Default to not showing all distant levels
+                    isPrevExpanded: false,
+                    isNextExpanded: false,
+
                     activeListId: `active-${group.categoryId}`,
-                    futureListId: `future-${group.categoryId}`,
-                    pastListId: `past-${group.categoryId}` // Same numeric ID for the row, different prefix
+                    prevListId: `prev-${group.categoryId}`,
+                    nextListId: `next-${group.categoryId}`,
+                    distantListId: `dist-${group.categoryId}` // Shared for both distant past/future if needed, or just logically grouped
                 });
             }
 
             const row = sectionCategories.get(rowKey)!;
 
-            // --- Distribute Concepts by Tag ---
+            // --- Distribute Concepts by Tag Initial Sweep ---
+            // Temporarily store all future in distantFutureConcepts and all past in distantPastConcepts
+            // These will be split into immediate/distant later.
             group.concepts.forEach(concept => {
                 if (concept.tag === ConceptTag.Own) {
                     row.activeConcepts.push(concept);
                 } else if (concept.tag === ConceptTag.Aspirational) {
-                    row.futureConcepts.push(concept);
+                    // Temporarily store all future in distantFuture
+                    row.distantFutureConcepts.push(concept);
                 } else {
                     // Inherited (2) or Reinforcement (3)
-                    row.pastConcepts.push(concept);
+                    // Temporarily store all past in distantPast
+                    row.distantPastConcepts.push(concept);
                 }
             });
         });
 
-        // 2. Convert Map to Array Structure
+        // 2. Finalize Buckets (Split logic) & Convert to Array
         this.methodologicalSections = [];
         this.allListIds = [];
 
@@ -187,24 +351,64 @@ export class ProposalManagerComponent implements OnChanges {
             const categoriesMap = new Map<string, SubCategoryRow[]>();
 
             subCatsMap.forEach((row, rowKey) => {
+                // --- SPLIT LOGIC ---
+
+                // 1. Sort Future (Ascending Level)
+                row.distantFutureConcepts.sort((a, b) => a.concept.developmentLevel - b.concept.developmentLevel);
+                // 2. Identify "Next Level"
+                // It's the lowest level present in Future list.
+                if (row.distantFutureConcepts.length > 0) {
+                    const nextLevel = row.distantFutureConcepts[0].concept.developmentLevel;
+                    // Move all of this level to immediateNext
+                    const nextCs = row.distantFutureConcepts.filter(c => c.concept.developmentLevel === nextLevel);
+                    const distantCs = row.distantFutureConcepts.filter(c => c.concept.developmentLevel !== nextLevel);
+
+                    row.immediateNextConcepts = nextCs;
+                    row.distantFutureConcepts = distantCs;
+                }
+
+                // 3. Sort Past (Descending Level) - closest to current
+                row.distantPastConcepts.sort((a, b) => b.concept.developmentLevel - a.concept.developmentLevel);
+                // 4. Identify "Prev Level"
+                // It's the highest level present in Past list.
+                if (row.distantPastConcepts.length > 0) {
+                    const prevLevel = row.distantPastConcepts[0].concept.developmentLevel;
+                    // Move all of this level to immediatePrev
+                    const prevCs = row.distantPastConcepts.filter(c => c.concept.developmentLevel === prevLevel);
+                    const distantCs = row.distantPastConcepts.filter(c => c.concept.developmentLevel !== prevLevel);
+
+                    row.immediatePrevConcepts = prevCs;
+                    row.distantPastConcepts = distantCs;
+                }
+                // -------------------
+
                 const catName = rowKey.split('|')[0];
                 if (!categoriesMap.has(catName)) {
                     categoriesMap.set(catName, []);
                 }
 
                 // Only add row if it has content in at least one bucket
-                if (row.activeConcepts.length > 0 || row.futureConcepts.length > 0 || row.pastConcepts.length > 0) {
+                const hasContent = row.activeConcepts.length > 0
+                    || row.immediateNextConcepts.length > 0
+                    || row.immediatePrevConcepts.length > 0
+                    || row.distantFutureConcepts.length > 0
+                    || row.distantPastConcepts.length > 0;
+
+                if (hasContent) {
                     categoriesMap.get(catName)!.push(row);
                     // Collect IDs for drag & drop connections
-                    this.allListIds.push(row.activeListId, row.futureListId, row.pastListId);
+                    this.allListIds.push(row.activeListId, row.prevListId, row.nextListId, row.distantListId);
                 }
             });
 
             const categories: CategoryGroup[] = [];
             categoriesMap.forEach((rows, catName) => {
                 if (rows.length > 0) {
+                    const activeContent = rows.some(r => r.activeConcepts.length > 0);
                     categories.push({
                         name: catName,
+                        isCollapsed: !activeContent, // Collapse if no active content
+                        hasActiveContent: activeContent,
                         subCategories: rows.sort((a, b) => a.name.localeCompare(b.name))
                     });
                 }
@@ -213,7 +417,8 @@ export class ProposalManagerComponent implements OnChanges {
             if (categories.length > 0) {
                 this.methodologicalSections.push({
                     name: sectName,
-                    categories: categories.sort((a, b) => a.name.localeCompare(b.name))
+                    isCollapsed: false,
+                    categories: categories.sort((a, b) => a.name.localeCompare(b.name)) // Simple sort for now
                 });
             }
         });
@@ -237,8 +442,8 @@ export class ProposalManagerComponent implements OnChanges {
         if (event.previousContainer === event.container) {
             moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
         } else {
-            // --- Logic for moving between pools (Active / Future / Past) ---
-            const targetId = event.container.id;
+            // --- Logic for moving between pools (Active / Immediate / Distant) ---
+            const targetId = event.container.id; // active-101, prev-101, next-101, dist-101
             // Extract type from ID (e.g., "active-102" -> "active")
             const targetType = targetId.split('-')[0];
 
@@ -250,10 +455,24 @@ export class ProposalManagerComponent implements OnChanges {
             // Update tag immediately for UI feedback
             if (targetType === 'active') {
                 concept.tag = ConceptTag.Own;
-            } else if (targetType === 'future') {
+            } else if (targetType === 'next') {
                 concept.tag = ConceptTag.Aspirational;
-            } else if (targetType === 'past') {
+            } else if (targetType === 'prev') {
                 concept.tag = ConceptTag.Inherited; // Simplified
+            } else if (targetType === 'dist') {
+                // If conceptual level > current => Future, else Past?
+                // Ideally we drag to specific buckets. 
+                // For "distant", we need to know if it goes to distantFuture or distantPast?
+                // If the user drops in "Distant", we'll just assign based on level relative to what?
+                // Or simpler: Dropping to "Distant" isn't a primary action. 
+                // Primary is Active <-> Next/Prev.
+
+                // Logic:
+                if (concept.tag === ConceptTag.Own) {
+                    // Leaving Active -> determine based on bucket?
+                    // If dropped in "dist", maybe default to Inherited if level < current, else Aspirational?
+                    // Just rely on the container.
+                }
             }
 
             transferArrayItem(
