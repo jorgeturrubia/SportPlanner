@@ -7,54 +7,71 @@ import { CommonModule } from '@angular/common';
     standalone: true,
     imports: [CommonModule],
     template: `
-    <div class="bg-dark-surface border-b border-dark-border py-4 px-6 flex flex-col gap-4">
+    <div class="bg-dark-surface border-b border-dark-border py-4 px-6 flex items-center justify-between shadow-2xl z-20">
       
-      <!-- Top Row: Itinerary Name + Controls -->
-      <div class="flex items-center justify-between">
-        <h2 class="text-white font-bold text-lg flex items-center gap-2">
-            <span class="text-secondary tracking-widest uppercase text-xs font-black">Itinerario Metodológico</span>
-            <span class="text-gray-500">|</span>
-            <span class="tracking-tight">{{ getLevelName(currentLevel + offset) }}</span>
-        </h2>
+      <!-- Left: Itinerary Selection -->
+      <div class="flex items-center gap-6">
+        <div class="flex flex-col">
+            <span class="text-secondary tracking-[0.2em] uppercase text-[10px] font-black">Metodología SportPlanner</span>
+            <h2 class="text-white font-black text-2xl tracking-tighter">
+                {{ getLevelName(currentLevel + offset) }}
+            </h2>
+        </div>
 
-        <div class="flex items-center bg-dark-bg rounded-lg p-1 border border-dark-border">
-            <button (click)="changeOffset(-1)" [disabled]="(currentLevel + offset) <= 1"
-                class="w-10 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-dark-border/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                <span class="font-bold text-lg">−</span>
-            </button>
-            <div class="px-4 text-center min-w-[100px]">
-                <span class="block text-xs uppercase font-bold text-gray-500 tracking-wider">Enfoque</span>
-                <span class="block font-bold text-white text-sm" [ngClass]="getOffsetColor()">{{ getOffsetLabel() }}</span>
-            </div>
-            <button (click)="changeOffset(1)" [disabled]="(currentLevel + offset) >= 6"
-                class="w-10 h-8 flex items-center justify-center text-gray-400 hover:text-white hover:bg-dark-border/50 rounded transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
-                <span class="font-bold text-lg">+</span>
-            </button>
+        <div class="h-10 w-[2px] bg-dark-border mx-2"></div>
+
+        <div class="flex flex-col">
+            <span class="text-gray-500 uppercase text-[10px] font-bold tracking-widest">Enfoque Actual</span>
+            <span class="font-black text-sm uppercase tracking-tight" [ngClass]="getOffsetColor()">{{ getOffsetLabel() }}</span>
         </div>
       </div>
 
-      <!-- Bottom Row: Progress Indicator -->
-      <div class="relative pt-2">
-        <!-- Labels -->
-        <div class="flex justify-between text-[10px] uppercase font-bold tracking-wider text-gray-500 mb-1">
-            <span>Nivel Base</span>
-            <span [class.text-secondary]="offset === 0">Nivel Actual</span>
-            <span>Retos Expertos</span>
+      <!-- Center: The Tuner Bar -->
+      <div class="flex-1 max-w-xl px-12 relative group">
+        <div class="flex justify-between text-[9px] uppercase font-bold tracking-widest text-gray-600 mb-2 px-1">
+            <span>Iniciación</span>
+            <span>Avanzado</span>
         </div>
-        
-        <!-- Track -->
-        <div class="h-2 bg-dark-bg rounded-full overflow-hidden relative border border-dark-border">
-            <!-- Window Indicator -->
-             <div class="absolute h-full bg-secondary/20 border-x border-secondary/50 transition-all duration-300 ease-out"
-                  [style.left.%]="getWindowLeft()"
-                  [style.width.%]="getWindowWidth()">
-             </div>
+        <div class="h-1.5 bg-dark-bg rounded-full border border-dark-border overflow-hidden relative">
+            <!-- Window of influence -->
+            <div class="absolute h-full bg-primary/20 transition-all duration-500 ease-out"
+                [style.left.%]="getWindowLeft()"
+                [style.width.%]="getWindowWidth()">
+            </div>
+            <!-- Progress marker -->
+            <div class="absolute h-full bg-primary shadow-[0_0_10px_rgba(249,115,22,0.8)] transition-all duration-500 ease-out font-black"
+                [style.left.%]="0"
+                [style.width.%]="getMarkerPosition() + 1">
+            </div>
+        </div>
+        <!-- Markers -->
+        <div class="flex justify-between mt-2 px-1">
+            <div *ngFor="let i of [1,2,3,4,5,6]" 
+                 class="text-[9px] font-bold transition-colors duration-300"
+                 [class.text-primary]="(currentLevel + offset) === i"
+                 [class.text-gray-700]="(currentLevel + offset) !== i">
+                {{i}}
+            </div>
+        </div>
+      </div>
 
-             <!-- Center Marker -->
-             <div class="absolute h-4 w-1 bg-secondary top-1/2 -translate-y-1/2 rounded-full shadow-[0_0_10px_rgba(34,197,94,0.8)] z-10 transition-all duration-300 ease-out"
-                  [style.left.%]="getMarkerPosition()">
-             </div>
-        </div>
+      <!-- Right: Action Controls -->
+      <div class="flex items-center gap-3 bg-dark-bg border border-dark-border p-1 rounded-none">
+          <button (click)="changeOffset(-1)" [disabled]="(currentLevel + offset) <= 1"
+              title="Añadir conceptos anteriores (Refuerzo)"
+              class="group flex items-center gap-2 px-4 py-2 bg-dark-surface hover:bg-dark-border transition-all disabled:opacity-20 disabled:grayscale cursor-pointer">
+              <span class="text-lg font-black text-gray-400 group-hover:text-white">−</span>
+              <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-gray-300">Reiniciar</span>
+          </button>
+          
+          <div class="w-[1px] h-6 bg-dark-border"></div>
+
+          <button (click)="changeOffset(1)" [disabled]="(currentLevel + offset) >= 6"
+              title="Añadir retos de nivel superior"
+              class="group flex items-center gap-2 px-4 py-2 bg-dark-surface hover:bg-dark-border transition-all disabled:opacity-20 disabled:grayscale cursor-pointer">
+              <span class="text-[10px] font-black uppercase tracking-widest text-gray-500 group-hover:text-gray-300">Reto</span>
+              <span class="text-lg font-black text-primary group-hover:text-white">+</span>
+          </button>
       </div>
 
     </div>
@@ -90,9 +107,9 @@ export class ItineraryTunerComponent {
     }
 
     getOffsetLabel(): string {
-        if (this.offset === 0) return 'Consolidación';
-        if (this.offset < 0) return 'Refuerzo';
-        return 'Aspiracional';
+        if (this.offset === 0) return 'Itinerario Base';
+        if (this.offset < 0) return 'Refuerzo Metodológico';
+        return 'Enfoque Ambicioso';
     }
 
     getOffsetColor(): string {
