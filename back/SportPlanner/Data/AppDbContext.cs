@@ -27,7 +27,7 @@ public class AppDbContext : DbContext
     public DbSet<Court> Courts { get; set; } = null!;
     public DbSet<TeamCategory> TeamCategories { get; set; } = null!;
     public DbSet<TeamLevel> TeamLevels { get; set; } = null!;
-    public DbSet<ConceptTemplate> ConceptTemplates { get; set; } = null!;
+    public DbSet<MethodologicalItinerary> MethodologicalItineraries { get; set; } = null!;
 
 
 
@@ -156,27 +156,27 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<TeamLevel>().HasKey(tl => tl.Id);
 
-        // ConceptTemplate configuration
-        modelBuilder.Entity<ConceptTemplate>().HasKey(ct => ct.Id);
-        modelBuilder.Entity<ConceptTemplate>()
-            .HasIndex(ct => new { ct.Name, ct.SportId })
+
+        // MethodologicalItinerary configuration
+        modelBuilder.Entity<MethodologicalItinerary>().HasKey(mi => mi.Id);
+        modelBuilder.Entity<MethodologicalItinerary>()
+            .HasIndex(mi => mi.Code)
             .IsUnique();
-        modelBuilder.Entity<ConceptTemplate>()
-            .HasOne(ct => ct.Sport)
-            .WithMany()
-            .HasForeignKey(ct => ct.SportId)
+        modelBuilder.Entity<MethodologicalItinerary>()
+            .HasOne(mi => mi.ParentItinerary)
+            .WithMany(mi => mi.ChildItineraries)
+            .HasForeignKey(mi => mi.ParentItineraryId)
             .OnDelete(DeleteBehavior.Restrict);
-        modelBuilder.Entity<ConceptTemplate>()
-            .HasOne(ct => ct.ConceptCategory)
+        modelBuilder.Entity<MethodologicalItinerary>()
+            .HasOne(mi => mi.TeamCategory)
             .WithMany()
-            .HasForeignKey(ct => ct.ConceptCategoryId)
+            .HasForeignKey(mi => mi.TeamCategoryId)
             .OnDelete(DeleteBehavior.SetNull);
-        
-        // SportConcept - ConceptTemplate relationship
-        modelBuilder.Entity<SportConcept>()
-            .HasOne(sc => sc.ConceptTemplate)
-            .WithMany(ct => ct.Concepts)
-            .HasForeignKey(sc => sc.ConceptTemplateId)
+
+        modelBuilder.Entity<MethodologicalItinerary>()
+            .HasMany(mi => mi.Concepts)
+            .WithOne(c => c.MethodologicalItinerary)
+            .HasForeignKey(c => c.MethodologicalItineraryId)
             .OnDelete(DeleteBehavior.SetNull);
 
       

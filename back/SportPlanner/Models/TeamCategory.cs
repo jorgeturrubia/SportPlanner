@@ -11,4 +11,7 @@ public class TeamCategory
     public int? MaxAge { get; set; }
     public string? Description { get; set; }
     public bool IsActive { get; set; } = true;
+
+    public int SportId { get; set; }
+    public Sport Sport { get; set; } = null!;
 }

@@ -1,11 +1,11 @@
 import {
+  TranslateLoader
+} from "./chunk-VVS5KNA5.js";
+import {
   HttpBackend,
   HttpClient
 } from "./chunk-DQ3M7YXE.js";
 import "./chunk-APPCZKFW.js";
-import {
-  TranslateLoader
-} from "./chunk-VVS5KNA5.js";
 import {
   Injectable,
   InjectionToken,
@@ -13,8 +13,8 @@ import {
   setClassMetadata,
   ɵɵdefineInjectable
 } from "./chunk-QGSRDUGZ.js";
-import "./chunk-2ZUL6ZB7.js";
 import "./chunk-NCRFJUKR.js";
+import "./chunk-2ZUL6ZB7.js";
 import "./chunk-GXQ4CDRO.js";
 import "./chunk-4QEHXF2R.js";
 import {

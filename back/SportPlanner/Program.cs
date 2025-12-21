@@ -42,8 +42,8 @@ builder.Services.AddScoped<SportPlanner.Services.IUserService, SportPlanner.Serv
 builder.Services.AddScoped<SportPlanner.Services.IBillingService, SportPlanner.Services.BillingServiceStub>();
 builder.Services.AddScoped<SportPlanner.Services.ISportConceptService, SportPlanner.Services.SportConceptService>();
 builder.Services.AddScoped<SportPlanner.Services.IConceptCategoryService, SportPlanner.Services.ConceptCategoryService>();
-builder.Services.AddScoped<SportPlanner.Services.IConceptTemplateService, SportPlanner.Services.ConceptTemplateService>();
 builder.Services.AddScoped<SportPlanner.Services.IPlanningService, SportPlanner.Services.PlanningService>();
+builder.Services.AddScoped<SportPlanner.Services.IConceptProposalService, SportPlanner.Services.ConceptProposalService>();
 // Concept interpretation & team metadata
 
 // Configure authentication for Supabase tokens
@@ -142,7 +142,11 @@ using (var scope = app.Services.CreateScope())
     try
     {
         if (db != null && db.Database.IsNpgsql())
+        {
             db.Database.Migrate();
+            // Seed initial data (Itineraries)
+            await SportPlanner.Data.DbInitializer.SeedAsync(db);
+        }
     }
     catch (Exception ex)
     {

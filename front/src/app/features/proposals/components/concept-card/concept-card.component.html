@@ -1,0 +1,22 @@
+<div
+  class="bg-dark-surface border border-dark-border hover:border-gray-500 transition-all p-3 mb-2 flex justify-between items-center cursor-move group"
+  [ngClass]="priorityClass">
+  <div class="flex-1">
+    <div class="flex items-center gap-2 mb-1">
+      <span class="text-[10px] px-1.5 py-0.5 font-bold uppercase tracking-wider rounded-sm transition-all"
+        [ngClass]="tagClass">{{ tagLabel }}</span>
+      <h4 class="font-bold text-gray-200 text-sm m-0 group-hover:text-white transition-colors truncate">{{
+        scoredConcept.concept.name }}</h4>
+      <span *ngIf="priorityLabel"
+        class="text-[9px] px-1 py-0.5 border border-dark-border text-gray-500 rounded bg-dark-bg/50">{{ priorityLabel
+        }}</span>
+    </div>
+    <p class="text-xs text-gray-500 m-0 line-clamp-2 italic" title="{{ scoredConcept.scoreReason }}">{{
+      scoredConcept.scoreReason }}</p>
+  </div>
+
+  <div class="flex flex-col items-end min-w-[3rem] pl-2 border-l border-dark-border ml-2">
+    <span class="font-black text-sm" [ngClass]="scoreColor">{{ scorePercentage }}%</span>
+    <span class="text-[9px] text-gray-600 uppercase font-bold tracking-tighter">Match</span>
+  </div>
+</div>

@@ -1,0 +1,154 @@
+<div class="h-full flex flex-col bg-dark-bg text-white">
+
+    <!-- Header / Filters -->
+    <div
+        class="bg-dark-surface border-b border-dark-border px-6 py-4 flex flex-col gap-4 shadow-sm sticky top-0 z-10 transition-all duration-300">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <div class="flex flex-col">
+                    <h1 class="text-xl font-bold text-primary tracking-tight">PLANIFICADOR INTELIGENTE</h1>
+                    <p class="text-sm text-gray-400">Genera propuestas basadas en el nivel de tu equipo</p>
+                </div>
+
+                <div class="ml-8 border-l border-dark-border pl-6">
+                    <label
+                        class="block text-[10px] text-gray-500 font-bold uppercase tracking-wider mb-1">Equipo</label>
+                    <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()"
+                        class="block w-64 rounded-none border-2 border-dark-border shadow-sm focus:border-primary focus:ring-primary sm:text-sm px-4 py-2 bg-dark-bg text-white font-bold cursor-pointer hover:border-gray-500 transition-colors">
+                        <option [ngValue]="null">SELECCIONA EQUIPO...</option>
+                        <option *ngFor="let team of teams" [ngValue]="team.id">{{ team.name }}</option>
+                    </select>
+                </div>
+            </div>
+
+            <div *ngIf="response" class="flex items-center gap-6 text-sm">
+                <div class="flex flex-col items-center">
+                    <span class="font-black text-secondary text-lg">{{ response.metadata.averageTeamMatchScore * 100 |
+                        number:'1.0-0' }}%</span>
+                    <span class="text-gray-400 text-xs uppercase tracking-wide">Afinidad</span>
+                </div>
+                <div class="flex flex-col items-center">
+                    <span class="font-black text-white text-lg">{{ response.suggestedGroups.length +
+                        response.optionalGroups.length }}</span>
+                    <span class="text-gray-400 text-xs uppercase tracking-wide">Categorías</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Itinerary Tuner -->
+        <app-itinerary-tuner *ngIf="response" [currentLevel]="response.metadata.expectedDevelopmentLevel" [minLevel]="1"
+            [maxLevel]="6" [offset]="currentLevelOffset" (offsetChange)="onOffsetChange($event)">
+        </app-itinerary-tuner>
+    </div>
+
+    <!-- Content -->
+    <div class="flex-1 overflow-hidden relative">
+
+        <!-- Loading State -->
+        <div *ngIf="loading"
+            class="absolute inset-0 flex items-center justify-center bg-dark-bg/95 z-20 backdrop-blur-sm transition-opacity duration-300">
+            <div class="flex flex-col items-center">
+                <div
+                    class="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent mb-4 shadow-[0_0_15px_rgba(249,115,22,0.5)]">
+                </div>
+                <p class="text-primary font-bold animate-pulse tracking-widest text-sm">ANALIZANDO ITINERARIO...</p>
+            </div>
+        </div>
+
+        <!-- Empty State -->
+        <div *ngIf="!selectedTeamId && !loading" class="h-full flex flex-col items-center justify-center text-gray-600">
+            <div class="text-6xl mb-4 opacity-20 filter grayscale animate-bounce">🎯</div>
+            <p class="font-bold uppercase tracking-widest text-sm text-gray-500">Selecciona un equipo para configurar el
+                itinerario</p>
+        </div>
+
+        <!-- Main Grid -->
+        <div *ngIf="response" class="h-full grid grid-cols-2 divide-x-2 divide-dark-border">
+
+            <!-- Suggested Column -->
+            <div class="flex flex-col h-full overflow-hidden bg-dark-bg relative">
+                <div
+                    class="p-4 bg-dark-surface border-b-2 border-dark-border flex justify-between items-center sticky top-0 z-10 shadow-md">
+                    <h2 class="font-bold text-secondary flex items-center gap-2 uppercase tracking-wide text-sm">
+                        <span class="w-2 h-2 rounded-full bg-secondary shadow-[0_0_8px_rgba(34,197,94,0.6)]"></span>
+                        Recomendados
+                    </h2>
+                    <span
+                        class="bg-secondary/20 text-secondary text-xs font-bold px-2.5 py-0.5 rounded-none border border-secondary/30">
+                        {{ response.metadata.suggestedCount }} C
+                    </span>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4">
+                    <!-- Tree Loop -->
+                    <div *ngFor="let parent of suggestedTree"
+                        class="bg-dark-surface/30 rounded-none border border-dark-border overflow-hidden">
+                        <!-- Parent Header -->
+                        <div (click)="parent.isCollapsed = !parent.isCollapsed"
+                            class="px-3 py-2 bg-dark-surface flex justify-between items-center cursor-pointer hover:bg-dark-border/30 transition-colors select-none">
+                            <h3 class="font-black text-white text-sm uppercase tracking-wider flex items-center gap-2">
+                                <span class="transform transition-transform duration-200"
+                                    [class.rotate-180]="parent.isCollapsed">▼</span>
+                                {{ parent.parentName }}
+                            </h3>
+                            <span class="text-xs text-gray-400 font-mono">({{ parent.totalConcepts }})</span>
+                        </div>
+
+                        <!-- Subgroups (Collapsible) -->
+                        <div [class.hidden]="parent.isCollapsed" class="p-2 space-y-2">
+                            <app-proposal-group *ngFor="let group of parent.subGroups" [group]="group"
+                                [displayTitle]="group.displaySubCategoryName" idPrefix="suggested"
+                                [connectedTo]="allListIds">
+                            </app-proposal-group>
+                        </div>
+                    </div>
+
+                    <div *ngIf="suggestedTree.length === 0" class="text-center py-10 text-gray-500 font-medium">
+                        Sin sugerencias directas
+                    </div>
+                </div>
+            </div>
+
+            <!-- Optional Column -->
+            <div class="flex flex-col h-full overflow-hidden bg-dark-bg/50">
+                <div
+                    class="p-4 bg-dark-surface/50 border-b-2 border-dark-border flex justify-between items-center sticky top-0">
+                    <h2 class="font-bold text-gray-400 flex items-center gap-2 uppercase tracking-wide text-sm">
+                        <span class="w-2 h-2 rounded-full bg-gray-500"></span>
+                        Opciones Extra
+                    </h2>
+                    <span class="bg-dark-border text-gray-300 text-xs font-bold px-2.5 py-0.5 rounded-none">
+                        {{ response.metadata.optionalCount }} C
+                    </span>
+                </div>
+
+                <div class="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4">
+                    <!-- Tree Loop -->
+                    <div *ngFor="let parent of optionalTree"
+                        class="bg-dark-surface/20 rounded-none border border-dark-border overflow-hidden">
+                        <!-- Parent Header -->
+                        <div (click)="parent.isCollapsed = !parent.isCollapsed"
+                            class="px-3 py-2 bg-dark-surface/50 flex justify-between items-center cursor-pointer hover:bg-dark-border/30 transition-colors select-none">
+                            <h3
+                                class="font-bold text-gray-300 text-sm uppercase tracking-wider flex items-center gap-2">
+                                <span class="transform transition-transform duration-200"
+                                    [class.rotate-180]="parent.isCollapsed">▼</span>
+                                {{ parent.parentName }}
+                            </h3>
+                            <span class="text-xs text-gray-500 font-mono">({{ parent.totalConcepts }})</span>
+                        </div>
+
+                        <!-- Subgroups -->
+                        <div [class.hidden]="parent.isCollapsed" class="p-2 space-y-2">
+                            <app-proposal-group *ngFor="let group of parent.subGroups" [group]="group"
+                                [displayTitle]="group.displaySubCategoryName" idPrefix="optional"
+                                [connectedTo]="allListIds">
+                            </app-proposal-group>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

@@ -1,0 +1,4 @@
+/* Tailwind utilities used in template */
+:host {
+    display: block;
+}

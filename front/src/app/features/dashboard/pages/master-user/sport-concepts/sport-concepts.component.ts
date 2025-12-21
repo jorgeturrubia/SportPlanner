@@ -3,11 +3,9 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SportConceptsService } from '../../../../../services/sport-concepts.service';
-import { ConceptTemplatesService } from '../../../../../services/concept-templates.service';
 import { NotificationService } from '../../../../../services/notification.service';
 import { SubscriptionsService, Subscription } from '../../../../../services/subscriptions.service';
 import { LookupService } from '../../../../../services/lookup.service';
-import { ConceptTemplate } from '../../../../../core/models/concept-template.model';
 import { ConfirmDialogComponent } from '../../../../../shared/components/confirm-dialog/confirm-dialog.component';
 
 @Component({
@@ -32,7 +30,6 @@ export class SportConceptsComponent implements OnInit {
     activeSubscriptions = signal<Subscription[]>([]);
     selectedSportId = signal<number | null>(null);
     conceptCategories = signal<any[]>([]);
-    availableTemplates = signal<ConceptTemplate[]>([]);
 
     // Filters
     searchQuery = signal('');
@@ -104,7 +101,6 @@ export class SportConceptsComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private conceptsService: SportConceptsService,
-        private templatesService: ConceptTemplatesService,
         private notificationService: NotificationService,
         private subscriptionsService: SubscriptionsService,
         private lookupService: LookupService,
@@ -115,7 +111,6 @@ export class SportConceptsComponent implements OnInit {
             description: [''],
             sportId: [null, Validators.required],
             conceptCategoryId: [null],
-            conceptTemplateId: [null],
             technicalDifficulty: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
             tacticalComplexity: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
             progressWeight: [50, [Validators.required, Validators.min(0), Validators.max(100)]],
@@ -128,7 +123,6 @@ export class SportConceptsComponent implements OnInit {
     ngOnInit() {
         this.loadSubscriptions();
         this.loadLookups();
-        this.loadTemplates();
         this.loadConcepts();
     }
 
@@ -155,17 +149,6 @@ export class SportConceptsComponent implements OnInit {
         });
     }
 
-    loadTemplates() {
-        const sportId = this.selectedSportId();
-        if (sportId) {
-            this.templatesService.getTemplates(sportId).subscribe({
-                next: (data) => {
-                    this.availableTemplates.set(data);
-                },
-                error: (err) => console.error('Error loading templates', err)
-            });
-        }
-    }
 
     organizeCategories(categories: any[]): any[] {
         // Create a map for easy lookup
@@ -223,7 +206,6 @@ export class SportConceptsComponent implements OnInit {
 
     filterBySport(sportId: number | null) {
         this.selectedSportId.set(sportId);
-        this.loadTemplates();
         this.loadConcepts();
     }
 
@@ -262,7 +244,6 @@ export class SportConceptsComponent implements OnInit {
     resetForm() {
         this.conceptForm.reset({
             sportId: this.selectedSportId(),
-            conceptTemplateId: null,
             technicalDifficulty: 5,
             tacticalComplexity: 5,
             progressWeight: 50,
@@ -281,7 +262,6 @@ export class SportConceptsComponent implements OnInit {
             description: concept.description,
             sportId: concept.sportId,
             conceptCategoryId: concept.conceptCategoryId,
-            conceptTemplateId: concept.conceptTemplateId,
             technicalDifficulty: concept.technicalDifficulty || 5,
             tacticalComplexity: concept.tacticalComplexity || 5,
             progressWeight: concept.progressWeight,

@@ -25,9 +25,9 @@ public class SportConcept
     public string? TechnicalTacticalFocus { get; set; } // Enfoque Tecnico/Tactico
     public string? DevelopmentLevel { get; set; } // Nivel (Escuela -> Junior)
 
-    // Template relationship - optional template that defines complexity values
-    public int? ConceptTemplateId { get; set; }
-    public ConceptTemplate? ConceptTemplate { get; set; }
+    // Methodological Itinerary Relationship
+    public int? MethodologicalItineraryId { get; set; }
+    public MethodologicalItinerary? MethodologicalItinerary { get; set; }
 
     public int? SportId { get; set; }
     public Sport? Sport { get; set; }

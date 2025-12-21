@@ -69,48 +69,6 @@ namespace SportPlanner.Migrations
                     b.ToTable("ConceptCategories");
                 });
 
-            modelBuilder.Entity("SportPlanner.Models.ConceptTemplate", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int?>("ConceptCategoryId")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Description")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("IsActive")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("SportId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TacticalComplexity")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("TechnicalComplexity")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ConceptCategoryId");
-
-                    b.HasIndex("SportId");
-
-                    b.HasIndex("Name", "SportId")
-                        .IsUnique();
-
-                    b.ToTable("ConceptTemplates");
-                });
-
             modelBuilder.Entity("SportPlanner.Models.Court", b =>
                 {
                     b.Property<int>("Id")
@@ -155,6 +113,49 @@ namespace SportPlanner.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("DifficultyLevels");
+                });
+
+            modelBuilder.Entity("SportPlanner.Models.MethodologicalItinerary", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Code")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("text");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<int>("Level")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int?>("ParentItineraryId")
+                        .HasColumnType("integer");
+
+                    b.Property<int?>("TeamCategoryId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("Code")
+                        .IsUnique();
+
+                    b.HasIndex("ParentItineraryId");
+
+                    b.HasIndex("TeamCategoryId");
+
+                    b.ToTable("MethodologicalItineraries");
                 });
 
             modelBuilder.Entity("SportPlanner.Models.Organization", b =>
@@ -354,9 +355,6 @@ namespace SportPlanner.Migrations
                     b.Property<int?>("ConceptCategoryId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("ConceptTemplateId")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Description")
                         .HasColumnType("text");
 
@@ -365,6 +363,9 @@ namespace SportPlanner.Migrations
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("boolean");
+
+                    b.Property<int?>("MethodologicalItineraryId")
+                        .HasColumnType("integer");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -389,7 +390,7 @@ namespace SportPlanner.Migrations
 
                     b.HasIndex("ConceptCategoryId");
 
-                    b.HasIndex("ConceptTemplateId");
+                    b.HasIndex("MethodologicalItineraryId");
 
                     b.HasIndex("SportId");
 
@@ -637,7 +638,12 @@ namespace SportPlanner.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("SportId")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("SportId");
 
                     b.ToTable("TeamCategories");
                 });
@@ -707,22 +713,21 @@ namespace SportPlanner.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("SportPlanner.Models.ConceptTemplate", b =>
+            modelBuilder.Entity("SportPlanner.Models.MethodologicalItinerary", b =>
                 {
-                    b.HasOne("SportPlanner.Models.ConceptCategory", "ConceptCategory")
+                    b.HasOne("SportPlanner.Models.MethodologicalItinerary", "ParentItinerary")
+                        .WithMany("ChildItineraries")
+                        .HasForeignKey("ParentItineraryId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.HasOne("SportPlanner.Models.TeamCategory", "TeamCategory")
                         .WithMany()
-                        .HasForeignKey("ConceptCategoryId")
+                        .HasForeignKey("TeamCategoryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
-                    b.HasOne("SportPlanner.Models.Sport", "Sport")
-                        .WithMany()
-                        .HasForeignKey("SportId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                    b.Navigation("ParentItinerary");
 
-                    b.Navigation("ConceptCategory");
-
-                    b.Navigation("Sport");
+                    b.Navigation("TeamCategory");
                 });
 
             modelBuilder.Entity("SportPlanner.Models.OrganizationMembership", b =>
@@ -790,9 +795,9 @@ namespace SportPlanner.Migrations
                         .WithMany()
                         .HasForeignKey("ConceptCategoryId");
 
-                    b.HasOne("SportPlanner.Models.ConceptTemplate", "ConceptTemplate")
+                    b.HasOne("SportPlanner.Models.MethodologicalItinerary", "MethodologicalItinerary")
                         .WithMany("Concepts")
-                        .HasForeignKey("ConceptTemplateId")
+                        .HasForeignKey("MethodologicalItineraryId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("SportPlanner.Models.Sport", "Sport")
@@ -801,7 +806,7 @@ namespace SportPlanner.Migrations
 
                     b.Navigation("ConceptCategory");
 
-                    b.Navigation("ConceptTemplate");
+                    b.Navigation("MethodologicalItinerary");
 
                     b.Navigation("Sport");
                 });
@@ -883,6 +888,17 @@ namespace SportPlanner.Migrations
                     b.Navigation("TeamLevel");
                 });
 
+            modelBuilder.Entity("SportPlanner.Models.TeamCategory", b =>
+                {
+                    b.HasOne("SportPlanner.Models.Sport", "Sport")
+                        .WithMany()
+                        .HasForeignKey("SportId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Sport");
+                });
+
             modelBuilder.Entity("SportPlanner.Models.TeamMember", b =>
                 {
                     b.HasOne("SportPlanner.Models.Team", "Team")
@@ -899,8 +915,10 @@ namespace SportPlanner.Migrations
                     b.Navigation("SubCategories");
                 });
 
-            modelBuilder.Entity("SportPlanner.Models.ConceptTemplate", b =>
+            modelBuilder.Entity("SportPlanner.Models.MethodologicalItinerary", b =>
                 {
+                    b.Navigation("ChildItineraries");
+
                     b.Navigation("Concepts");
                 });
 
