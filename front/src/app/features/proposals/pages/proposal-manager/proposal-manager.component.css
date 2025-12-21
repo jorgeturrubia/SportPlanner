@@ -1,9 +1,17 @@
-/* Glassmorphism & Colors */
-:root {
-  --active-glass-bg: rgba(30, 41, 59, 0.7);
-  --active-border: rgba(59, 130, 246, 0.4);
-  --future-color: #f59e0b;
-  --past-color: #64748b;
+/* CSS Variables for Clean Theming */
+:host {
+  /* Brand Colors derived from styles.css */
+  --active-color: #CCFF00;
+  /* Secondary (Acid Green) for Active Itinerary */
+  --future-color: #FF6B00;
+  /* Primary (Orange) for Challenges */
+  --past-color: #525252;
+  /* Neutral Gray for Consolidated */
+
+  --connector-color: #404040;
+  /* Dark Border */
+  --bg-dark: #121212;
+  --bg-surface: #1A1A1A;
 }
 
 /* Custom Scrollbar */
@@ -24,47 +32,56 @@
   background: #475569;
 }
 
-/* Active Card (Left Column) */
-.active-card {
-  background: var(--active-glass-bg);
-  border: 1px solid var(--active-border);
-  backdrop-filter: blur(8px);
-  border-radius: 12px;
-  box-shadow:
-    0 4px 6px -1px rgba(0, 0, 0, 0.3),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+/* ACTIVE CARD (Greens) */
+.concept-card {
+  border-left: 3px solid var(--active-color);
+  background: linear-gradient(145deg, rgba(26, 26, 26, 0.95) 0%, rgba(204, 255, 0, 0.02) 100%);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
 }
 
-.active-card:hover {
-  background: rgba(30, 41, 59, 0.9);
-  border-color: #3b82f6;
-  box-shadow:
-    0 8px 15px -3px rgba(0, 0, 0, 0.4),
-    0 0 15px rgba(59, 130, 246, 0.2);
+.concept-card:hover {
+  box-shadow: 0 0 15px rgba(204, 255, 0, 0.1);
+  border-color: var(--active-color);
 }
 
-/* Text Glows */
-.shadow-blue-glow {
-  text-shadow: 0 0 20px rgba(59, 130, 246, 0.6);
+/* FUTURE CARD (Secondary/Orange) */
+.future-card {
+  border-left: 2px solid var(--future-color) !important;
+  background: rgba(255, 107, 0, 0.05);
 }
 
-/* Future/Past Cards (Right Column) handled by Tailwind utils mainly */
+.future-card:hover {
+  background: rgba(255, 107, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 107, 0, 0.1);
+  border-color: var(--future-color);
+}
 
-/* Drag & Drop Preview */
+/* PAST CARD (Grays/Dark) */
+.past-card {
+  border-left: 2px solid var(--past-color) !important;
+  background: rgba(26, 26, 26, 0.6);
+}
+
+.past-card:hover {
+  background: rgba(26, 26, 26, 0.9);
+  border-color: #737373;
+}
+
+/* Drag & Drop */
 .cdk-drag-preview {
   box-sizing: border-box;
   border-radius: 4px;
-  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.2),
-    0 8px 10px 1px rgba(0, 0, 0, 0.14),
-    0 3px 14px 2px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 5px 5px -3px rgba(0, 0, 0, 0.5),
+    0 8px 10px 1px rgba(0, 0, 0, 0.3);
   z-index: 1000 !important;
-  /* Ensure it floats above sticky headers */
+  background: #1A1A1A;
 }
 
 .cdk-drag-placeholder {
-  opacity: 0.3;
+  opacity: 0.2;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed #404040;
 }
-
 
 .cdk-drag-animating {
   transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
