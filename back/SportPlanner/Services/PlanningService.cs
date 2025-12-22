@@ -55,8 +55,10 @@ namespace SportPlanner.Services
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)
                         .ThenInclude(sc => sc.ConceptCategory)
-                            .ThenInclude(cc => cc.Parent)
                 .ToListAsync();
+
+            await ReconstructCategories(plannings.SelectMany(p => p.PlanConcepts).Select(pc => pc.SportConcept));
+
             return _mapper.Map<IEnumerable<PlanningDto>>(plannings);
         }
 
@@ -68,10 +70,36 @@ namespace SportPlanner.Services
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)
                         .ThenInclude(sc => sc.ConceptCategory)
-                            .ThenInclude(cc => cc.Parent)
                 .FirstOrDefaultAsync(p => p.Id == id);
-            
+
+            if (planning != null)
+            {
+                await ReconstructCategories(planning.PlanConcepts.Select(pc => pc.SportConcept));
+            }
+
             return _mapper.Map<PlanningDto>(planning);
+        }
+
+        private async Task ReconstructCategories(IEnumerable<SportConcept?> concepts)
+        {
+            var allCategories = await _context.ConceptCategories
+                .Where(c => c.IsActive)
+                .ToListAsync();
+
+            var categoryMap = allCategories.ToDictionary(c => c.Id);
+
+            foreach (var concept in concepts)
+            {
+                if (concept?.ConceptCategory != null && concept.ConceptCategory.ParentId.HasValue)
+                {
+                    var current = concept.ConceptCategory;
+                    while (current.ParentId.HasValue && categoryMap.ContainsKey(current.ParentId.Value))
+                    {
+                        current.Parent = categoryMap[current.ParentId.Value];
+                        current = current.Parent;
+                    }
+                }
+            }
         }
 
         public async Task<PlanningDto?> UpdateAsync(int id, UpdatePlanningDto updatePlanningDto)

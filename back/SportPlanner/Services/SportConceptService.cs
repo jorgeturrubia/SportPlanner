@@ -37,12 +37,36 @@ public class SportConceptService : ISportConceptService
 
     public async Task<List<SportConcept>> GetBySportAsync(int sportId)
     {
-        return await _db.SportConcepts
+        // 1. Fetch concepts
+        var concepts = await _db.SportConcepts
             .Include(sc => sc.ConceptCategory)
-                .ThenInclude(cc => cc!.Parent)
-
             .Where(sc => sc.SportId == sportId && sc.IsActive)
             .ToListAsync();
+
+        // 2. Fetch all categories to build the full hierarchy
+        // This is efficient enough as categories are usually < 1000
+        var allCategories = await _db.ConceptCategories
+            .Where(c => c.IsActive)
+            .ToListAsync();
+
+        var categoryMap = allCategories.ToDictionary(c => c.Id);
+
+        // 3. Reconstruct hierarchy for each concept's category
+        foreach (var concept in concepts)
+        {
+            if (concept.ConceptCategory != null && concept.ConceptCategory.ParentId.HasValue)
+            {
+                // Manually traverse up to ensure full chain is populated
+                var current = concept.ConceptCategory;
+                while (current.ParentId.HasValue && categoryMap.ContainsKey(current.ParentId.Value))
+                {
+                    current.Parent = categoryMap[current.ParentId.Value];
+                    current = current.Parent;
+                }
+            }
+        }
+
+        return concepts;
     }
 
     public async Task<List<SportConcept>> GetAllAsync(int? sportId = null)

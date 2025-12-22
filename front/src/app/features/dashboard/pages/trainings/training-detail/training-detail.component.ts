@@ -112,7 +112,44 @@ export class TrainingDetailComponent implements OnInit {
         }
 
         // Recursive check: Concept matches if its category path includes currentNode
-        return allConcepts.filter(c => this.isConceptInDescendants(c, currentNode.id));
+        const matches = allConcepts.filter(c => this.isConceptInDescendants(c, currentNode.id));
+
+        // Sort by Category Name (Grouping) then by Concept Name
+        return matches.sort((a, b) => {
+            const catA = a.conceptCategory?.name || '';
+            const catB = b.conceptCategory?.name || '';
+
+            if (catA !== catB) {
+                return catA.localeCompare(catB);
+            }
+            if (catA !== catB) {
+                return catA.localeCompare(catB);
+            }
+            return a.name.localeCompare(b.name);
+        });
+    });
+
+    // Compute grouped concepts for display
+    groupedConcepts = computed(() => {
+        const concepts = this.filteredConcepts();
+        const groups = new Map<string, SportConcept[]>();
+
+        concepts.forEach(c => {
+            const catName = c.conceptCategory?.name || 'Otros';
+            if (!groups.has(catName)) {
+                groups.set(catName, []);
+            }
+            groups.get(catName)!.push(c);
+        });
+
+        // Convert to array and sort by category name
+        return Array.from(groups.entries())
+            .map(([name, items]) => ({ name, items }))
+            .sort((a, b) => {
+                if (a.name === 'Otros') return 1; // Otros at bottom
+                if (b.name === 'Otros') return -1;
+                return a.name.localeCompare(b.name);
+            });
     });
 
     // Compute categories to display as "Buttons" (children of current node)
@@ -124,12 +161,12 @@ export class TrainingDetailComponent implements OnInit {
         // Set of reachable categories from current level
         const relevantCategories = new Map<number, ConceptCategory>();
 
+        console.log('Computing visible categories for node:', currentNode?.name);
+
         concepts.forEach(c => {
             if (!c.conceptCategory) return;
 
-            // If current is null, we want top-level categories (those with no parent, OR those whose parent is not in our set/is unknown?)
-            // Actually, better to traverse up from concept.category to find the *immediate child* of currentNode.
-
+            // Logic to find immediate child...
             const immediateChild = this.findImmediateChildOf(c.conceptCategory, currentNode ? currentNode.id : null);
             if (immediateChild) {
                 relevantCategories.set(immediateChild.id, immediateChild);
