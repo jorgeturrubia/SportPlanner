@@ -67,5 +67,17 @@ namespace SportPlanner.Controllers
 
             return NoContent();
         }
+        [HttpGet("{id}/monitor")]
+        public async Task<ActionResult<PlanMonitorDto>> GetPlanMonitor(int id)
+        {
+            var planMonitor = await _planningService.GetPlanMonitorAsync(id);
+
+            if (planMonitor == null)
+            {
+                return NotFound();
+            }
+
+            return Ok(planMonitor);
+        }
     }
 }

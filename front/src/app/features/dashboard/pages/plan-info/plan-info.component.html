@@ -1,0 +1,109 @@
+<div class="p-6 h-full overflow-hidden flex flex-col">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6 shrink-0">
+        <div>
+            <h1 class="text-2xl font-bold text-white mb-2">Información del Plan</h1>
+            <p class="text-gray-400" *ngIf="planMonitor">{{ planMonitor.planningName }}</p>
+        </div>
+        <button
+            class="px-4 py-2 bg-secondary text-black rounded-lg hover:bg-opacity-90 transition-colors pointer-events-none opacity-50">
+            Exportar (Próximamente)
+        </button>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading" class="flex-1 flex items-center justify-center">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+    </div>
+
+    <!-- Content -->
+    <div *ngIf="!loading && !planningId" class="flex-1 overflow-auto custom-scrollbar">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div *ngFor="let plan of plannings" (click)="selectPlanning(plan.id)"
+                class="bg-dark-surface p-4 rounded-lg border border-gray-700 hover:border-primary cursor-pointer transition-colors group">
+                <h3 class="text-white font-bold group-hover:text-primary transition-colors">{{ plan.name }}</h3>
+                <p class="text-gray-400 text-sm mt-1">{{ plan.team?.name }}</p>
+                <div class="text-xs text-gray-500 mt-2 flex justify-between">
+                    <span>{{ plan.startDate | date:'dd/MM/yy' }}</span>
+                    <span>-</span>
+                    <span>{{ plan.endDate | date:'dd/MM/yy' }}</span>
+                </div>
+            </div>
+            <div *ngIf="plannings.length === 0" class="col-span-full text-center text-gray-500 mt-10">
+                No hay planificaciones disponibles.
+            </div>
+        </div>
+    </div>
+
+    <!-- Monitor Content -->
+    <div *ngIf="!loading && planningId && planMonitor" class="flex-1 overflow-auto custom-scrollbar">
+
+        <div *ngIf="planMonitor.categories.length === 0" class="text-center text-gray-500 mt-10">
+            No hay datos disponibles para este plan.
+        </div>
+
+        <div *ngFor="let category of planMonitor.categories" class="mb-8">
+            <!-- Category Header -->
+            <div class="sticky top-0 z-10 bg-[#1a1b23]/95 backdrop-blur py-2 border-b border-gray-700/50 mb-4">
+                <h2 class="text-lg font-bold text-primary flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-primary"></span>
+                    {{ category.categoryName }}
+                </h2>
+            </div>
+
+            <!-- Matrix / Grid -->
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse">
+                    <thead>
+                        <tr>
+                            <th
+                                class="text-left p-3 text-sm text-gray-400 font-medium min-w-[250px] sticky left-0 bg-[#1e1f29] z-20 border-b border-gray-700">
+                                Concepto
+                            </th>
+                            <th *ngFor="let session of planMonitor.sessions"
+                                class="p-2 text-center text-xs text-gray-400 border-b border-gray-700 min-w-[80px]">
+                                <div class="font-bold text-white">{{ session.date | date:'dd/MM' }}</div>
+                                <div class="truncate max-w-[80px]" title="{{session.name}}">{{ session.name }}</div>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let concept of category.concepts"
+                            class="hover:bg-white/5 transition-colors border-b border-gray-800/50 group">
+                            <!-- Concept Name -->
+                            <td
+                                class="p-3 text-sm font-medium sticky left-0 bg-[#1e1f29] group-hover:bg-[#252630] transition-colors z-20 border-r border-gray-800">
+                                <div class="flex items-center justify-between">
+                                    <span [class.text-amber-400]="!concept.isPlanned"
+                                        [title]="!concept.isPlanned ? 'Concepto añadido manualmente (No planificado)' : ''">
+                                        {{ concept.conceptName }}
+                                    </span>
+                                    <span *ngIf="!concept.isPlanned"
+                                        class="text-[10px] bg-amber-400/10 text-amber-400 px-1.5 py-0.5 rounded ml-2">Extra</span>
+                                </div>
+                            </td>
+
+                            <!-- Executions -->
+                            <td *ngFor="let session of planMonitor.sessions"
+                                class="p-2 text-center border-r border-gray-800/30 last:border-r-0">
+                                <ng-container *ngIf="hasExecution(concept, session.id); else emptyCell">
+                                    <div class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-success/20 text-success font-bold text-xs ring-1 ring-success/30 transform hover:scale-110 transition-transform cursor-default"
+                                        title="{{ getExecutionCount(concept, session.id) }} ejecuciones">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
+                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+                                            stroke-linecap="round" stroke-linejoin="round">
+                                            <polyline points="20 6 9 17 4 12"></polyline>
+                                        </svg>
+                                    </div>
+                                </ng-container>
+                                <ng-template #emptyCell>
+                                    <span class="text-gray-700 text-xs">·</span>
+                                </ng-template>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>

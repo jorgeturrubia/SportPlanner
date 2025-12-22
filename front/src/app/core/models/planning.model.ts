@@ -75,3 +75,35 @@ export interface UpdatePlanning {
   scheduleDays?: PlaningScheduleDay[];
   planConcepts?: PlanConcept[];
 }
+
+export interface PlanMonitorExecution {
+  trainingSessionId: number;
+  count: number;
+  durationMinutes: number;
+}
+
+export interface PlanMonitorConcept {
+  conceptId: number;
+  conceptName: string;
+  isPlanned: boolean;
+  executions: PlanMonitorExecution[];
+}
+
+export interface PlanMonitorCategory {
+  categoryId: number;
+  categoryName: string;
+  concepts: PlanMonitorConcept[];
+}
+
+export interface PlanMonitorSession {
+  id: number;
+  date: string;
+  name: string;
+}
+
+export interface PlanMonitor {
+  planningId: number;
+  planningName: string;
+  sessions: PlanMonitorSession[];
+  categories: PlanMonitorCategory[];
+}

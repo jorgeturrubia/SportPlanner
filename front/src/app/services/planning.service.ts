@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Planning, CreatePlanning, UpdatePlanning } from '../core/models/planning.model';
+import { Planning, CreatePlanning, UpdatePlanning, PlanMonitor } from '../core/models/planning.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -30,5 +30,9 @@ export class PlanningService {
 
   deletePlanning(id: number): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
+  }
+
+  getPlanMonitor(id: number): Observable<PlanMonitor> {
+    return this.http.get<PlanMonitor>(`${this.apiUrl}/${id}/monitor`);
   }
 }

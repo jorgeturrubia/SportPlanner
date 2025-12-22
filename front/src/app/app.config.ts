@@ -59,6 +59,8 @@ export const appConfig: ApplicationConfig = {
           { path: 'master-user/sport-concepts', loadComponent: () => import('./features/dashboard/pages/master-user/sport-concepts/sport-concepts.component').then(m => m.SportConceptsComponent) },
           { path: 'master-user/concept-categories', loadComponent: () => import('./features/dashboard/pages/master-user/concept-categories/concept-categories.component').then(m => m.ConceptCategoriesComponent) },
           { path: 'core-masters/subscription-sports', loadComponent: () => import('./features/dashboard/pages/core-masters/subscription-sports/subscription-sports.component').then(m => m.SubscriptionSportsComponent) },
+          { path: 'plannings/info', loadComponent: () => import('./features/dashboard/pages/plan-info/plan-info.component').then(m => m.PlanInfoComponent) },
+          { path: 'plannings/info/:id', loadComponent: () => import('./features/dashboard/pages/plan-info/plan-info.component').then(m => m.PlanInfoComponent) },
           { path: 'proposals', loadChildren: () => import('./features/proposals/proposals.routes').then(m => m.PROPOSALS_ROUTES) },
           { path: 'trainings', loadChildren: () => import('./features/dashboard/pages/trainings/trainings.routes').then(m => m.TRAININGS_ROUTES) }
         ]

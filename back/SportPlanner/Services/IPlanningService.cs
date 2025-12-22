@@ -11,5 +11,6 @@ namespace SportPlanner.Services
         Task<PlanningDto> CreateAsync(CreatePlanningDto createPlanningDto);
         Task<PlanningDto?> UpdateAsync(int id, UpdatePlanningDto updatePlanningDto);
         Task<bool> DeleteAsync(int id);
+        Task<PlanMonitorDto?> GetPlanMonitorAsync(int planningId);
     }
 }
