@@ -1,0 +1,30 @@
+<div class="flex flex-col items-center justify-center w-full h-full p-8 relative z-10">
+
+    <!-- Progress Ring / Background can go here -->
+
+    <div class="timer-display mb-8 font-variant-numeric:tabular-nums">
+        {{ formattedTime }}
+    </div>
+
+    <div class="flex gap-6">
+        <button (click)="toggleTimer()"
+            class="btn btn-outline rounded-full w-16 h-16 flex items-center justify-center border-2 hover:bg-white hover:text-black transition-all">
+            <span class="material-icons text-3xl" *ngIf="!isRunning">play_arrow</span>
+            <span class="material-icons text-3xl" *ngIf="isRunning">pause</span>
+        </button>
+
+        <button (click)="finish()" class="btn btn-primary rounded-full px-8 flex items-center gap-2">
+            <span class="material-icons">check</span>
+            <span>TERMINAR</span>
+        </button>
+    </div>
+
+    <!-- Mode Indicator -->
+    <div class="mt-4 text-gray-500 text-sm font-bold tracking-widest uppercase">
+        {{ duration > 0 ? 'CUENTA ATRÁS' : 'CRONÓMETRO' }}
+    </div>
+</div>
+
+<!-- Progress Bar (Bottom) -->
+<div class="absolute bottom-0 left-0 h-2 bg-primary transition-all duration-1000 ease-linear"
+    [style.width.%]="progressPercentage"></div>

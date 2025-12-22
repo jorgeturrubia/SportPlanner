@@ -1,0 +1,92 @@
+<div class="live-container flex flex-col items-center justify-center p-6 gap-8">
+
+    <!-- Loading State -->
+    <div *ngIf="!session" class="text-2xl animate-pulse">
+        {{ 'Cargando sesión...' | translate }}
+    </div>
+
+    <!-- Start Screen -->
+    <div *ngIf="session && session.status === 'Planned' && !isSessionFinished" class="text-center space-y-8">
+        <h1 class="text-4xl md:text-6xl font-black text-white mb-4">{{ session.name }}</h1>
+        <div class="text-xl text-gray-400 mb-8">{{ session.date | date:'fullDate' }}</div>
+
+        <button (click)="startSession()"
+            class="btn btn-primary text-xl px-12 py-6 rounded-full shadow-[0_0_30px_rgba(255,107,0,0.5)] animate-bounce">
+            {{ 'INICIAR ENTRENAMIENTO' | translate }}
+        </button>
+    </div>
+
+    <!-- Global Timer (Sticky Top) -->
+    <div *ngIf="session && session.status === 'InProgress' && !isSessionFinished" class="fixed top-4 right-4 z-50">
+        <div
+            class="bg-dark-surface border border-primary/50 text-primary font-mono text-2xl font-black px-4 py-2 rounded-lg shadow-[0_0_15px_rgba(255,107,0,0.3)] tabular-nums">
+            {{ sessionDuration }}
+        </div>
+    </div>
+
+    <!-- Active Session -->
+    <div *ngIf="session && session.status === 'InProgress' && !isSessionFinished"
+        class="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-3 gap-6 h-full mt-8">
+
+        <!-- Left Col: Timer & Active Exercise -->
+        <div class="lg:col-span-2 flex flex-col gap-6">
+
+            <!-- Timer Component -->
+            <app-exercise-timer [duration]="activeExercise?.durationMinutes || 0"
+                (timerFinished)="completeCurrentExercise({duration: $event, notes: ''})"
+                class="flex-1 min-h-[300px] flex items-center justify-center bg-dark-surface rounded-3xl border border-dark-border shadow-2xl relative overflow-hidden">
+            </app-exercise-timer>
+
+            <!-- Active Exercise Card -->
+            <div *ngIf="activeExercise"
+                class="card-bold border-primary bg-dark-surface p-8 rounded-3xl relative overflow-hidden">
+                <div class="absolute top-0 right-0 bg-primary text-black font-black px-4 py-1 text-sm rounded-bl-xl">
+                    EN CURSO
+                </div>
+                <h2 class="text-3xl font-black text-white mb-2">{{ activeExercise.exerciseName ||
+                    activeExercise.customText }}</h2>
+                <p class="text-gray-400 text-lg mb-4" *ngIf="activeExercise.sportConceptName">
+                    <span class="text-secondary">✦</span> {{ activeExercise.sportConceptName }}
+                </p>
+
+                <!-- Controls -->
+                <div class="flex gap-4 mt-8">
+                    <button (click)="prevExercise()" [disabled]="currentExerciseIndex === 0"
+                        class="btn btn-outline btn-sm gap-2" [class.opacity-50]="currentExerciseIndex === 0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        ANTERIOR
+                    </button>
+
+                    <button (click)="nextExercise()" class="btn btn-outline btn-sm gap-2 ml-auto">
+                        SIGUIENTE
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Col: Flow -->
+        <div class="lg:col-span-1 h-full overflow-hidden flex flex-col">
+            <div class="bg-dark-surface rounded-3xl border border-dark-border flex-1 p-4 overflow-y-auto">
+                <h3 class="text-xl font-bold text-gray-500 mb-4 px-2 uppercase tracking-widest">Itinerario</h3>
+                <app-exercise-flow [exercises]="session.sessionExercises" [currentIndex]="currentExerciseIndex">
+                </app-exercise-flow>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Summary Screen -->
+    <div *ngIf="isSessionFinished" class="w-full max-w-2xl">
+        <app-session-summary [session]="session" (submitFeedback)="finishSession($event)">
+        </app-session-summary>
+    </div>
+
+</div>

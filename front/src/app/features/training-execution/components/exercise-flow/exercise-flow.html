@@ -1,0 +1,36 @@
+<div #scrollContainer class="flex flex-col gap-4 p-2 h-full">
+    <div *ngFor="let ex of exercises; let i = index"
+        class="relative p-4 rounded-xl border-2 transition-all duration-300" [ngClass]="{
+             'exercise-active scale-105 z-10': i === currentIndex,
+             'exercise-done': i < currentIndex || ex.isCompleted,
+             'exercise-pending': i > currentIndex && !ex.isCompleted
+         }">
+
+        <!-- Connector Line -->
+        <div *ngIf="i < exercises.length - 1" class="absolute left-6 bottom-[-20px] w-0.5 h-6 bg-dark-border z-0"></div>
+
+        <div class="flex items-start gap-4 z-10 relative">
+            <!-- Status Icon -->
+            <div class="w-8 h-8 rounded-full flex items-center justify-center border-2 shrink-0" [ngClass]="{
+                     'bg-primary border-primary text-black': i === currentIndex,
+                     'bg-secondary border-secondary text-black': i < currentIndex || ex.isCompleted,
+                     'border-gray-600 text-gray-600': i > currentIndex
+                 }">
+                <span class="font-bold text-sm" *ngIf="i > currentIndex">{{ i + 1 }}</span>
+                <span class="material-icons text-sm" *ngIf="i === currentIndex">play_arrow</span>
+                <span class="material-icons text-sm" *ngIf="i < currentIndex || ex.isCompleted">check</span>
+            </div>
+
+            <div class="flex-1">
+                <h4 class="font-bold text-white text-lg leading-tight">{{ ex.exerciseName || ex.customText }}</h4>
+                <div *ngIf="ex.sportConceptName" class="text-xs text-secondary mt-1 uppercase tracking-wide">
+                    {{ ex.sportConceptName }}
+                </div>
+                <div *ngIf="ex.durationMinutes" class="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                    <span class="material-icons text-xs">timer</span> {{ ex.durationMinutes }} min
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>

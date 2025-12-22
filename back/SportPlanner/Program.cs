@@ -46,6 +46,7 @@ builder.Services.AddScoped<SportPlanner.Services.IPlanningService, SportPlanner.
 builder.Services.AddScoped<SportPlanner.Services.IConceptProposalService, SportPlanner.Services.ConceptProposalService>();
 builder.Services.AddScoped<SportPlanner.Services.IExerciseService, SportPlanner.Services.ExerciseService>();
 builder.Services.AddScoped<SportPlanner.Services.ITrainingSessionService, SportPlanner.Services.TrainingSessionService>();
+builder.Services.AddScoped<SportPlanner.Services.ITrainingExecutionService, SportPlanner.Services.TrainingExecutionService>();
 // Concept interpretation & team metadata
 
 // Configure authentication for Supabase tokens
@@ -126,10 +127,10 @@ builder.Services.AddCors(options =>
     options.AddPolicy(name: "AllowLocalhostFrontend",
 policy =>
 {
-policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200", "https://localhost:4200")
-      .AllowAnyHeader()
-      .AllowAnyMethod()
-      .AllowCredentials();
+    policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200", "https://localhost:4200")
+          .AllowAnyHeader()
+          .AllowAnyMethod()
+          .AllowCredentials();
 });
 });
 

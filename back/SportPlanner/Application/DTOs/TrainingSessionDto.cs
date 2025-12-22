@@ -24,6 +24,10 @@ public class TrainingSessionExerciseDto
     public string? SportConceptName { get; set; }
     public int Order { get; set; }
     public int? DurationMinutes { get; set; }
+    // Execution Logic
+    public bool IsCompleted { get; set; }
+    public int? ActualDurationMinutes { get; set; }
+    public string? FeedbackNotes { get; set; }
 }
 
 public class TrainingSessionDto
@@ -35,6 +39,16 @@ public class TrainingSessionDto
     public TimeSpan? StartTime { get; set; }
     public TimeSpan? Duration { get; set; }
     public int? CourtId { get; set; }
+
+    // Live Execution Tracking
+    public string Status { get; set; } = "Planned"; // Enum as string
+    public DateTime? StartedAt { get; set; }
+    public DateTime? FinishedAt { get; set; }
+
+    // Feedback
+    public int? FeedbackRating { get; set; }
+    public string? FeedbackNotes { get; set; }
+
     public List<TrainingSessionConceptDto> SessionConcepts { get; set; } = new();
     public List<TrainingSessionExerciseDto> SessionExercises { get; set; } = new();
 }

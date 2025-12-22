@@ -1,0 +1,46 @@
+<div
+    class="bg-dark-surface border-2 border-primary rounded-3xl p-8 shadow-[0_0_40px_rgba(255,107,0,0.2)] text-center animate-fade-in-up">
+
+    <div class="inline-flex items-center justify-center w-20 h-20 bg-primary rounded-full mb-6">
+        <span class="material-icons text-5xl text-black">emoji_events</span>
+    </div>
+
+    <h2 class="text-3xl font-black text-white mb-2 uppercase">{{ '¡Entrenamiento Completado!' | translate }}</h2>
+    <p class="text-gray-400 mb-8">{{ session?.name }}</p>
+
+    <div class="grid grid-cols-2 gap-4 mb-8">
+        <div class="bg-dark-bg p-4 rounded-xl border border-dark-border">
+            <div class="text-3xl font-black text-white">{{ completedCount }} / {{ session?.sessionExercises?.length }}
+            </div>
+            <div class="text-xs text-gray-500 uppercase tracking-widest">{{ 'Ejercicios' | translate }}</div>
+        </div>
+        <div class="bg-dark-bg p-4 rounded-xl border border-dark-border">
+            <div class="text-3xl font-black text-white">{{ totalDuration }}</div>
+            <div class="text-xs text-gray-500 uppercase tracking-widest">{{ 'Minutos Totales' | translate }}</div>
+        </div>
+    </div>
+
+    <hr class="border-dark-border mb-8">
+
+    <h3 class="text-lg font-bold text-white mb-4 uppercase tracking-widest">{{ 'Feedback de la Sesión' | translate }}
+    </h3>
+
+    <div class="flex justify-center gap-2 mb-6">
+        <button *ngFor="let star of [1,2,3,4,5]" (click)="setRating(star)"
+            class="transition-transform hover:scale-125 focus:outline-none">
+            <span class="material-icons text-4xl" [class.text-secondary]="star <= rating"
+                [class.text-gray-700]="star > rating">
+                star
+            </span>
+        </button>
+    </div>
+
+    <textarea [(ngModel)]="notes" class="input-bold h-32 mb-8 resize-none"
+        placeholder="Notas sobre la sesión (rendimiento, incidencias...)"></textarea>
+
+    <button (click)="submit()" [disabled]="rating === 0"
+        class="btn btn-primary w-full text-lg rounded-xl opacity-100 disabled:opacity-50 disabled:cursor-not-allowed">
+        {{ 'GUARDAR Y SALIR' | translate }}
+    </button>
+
+</div>

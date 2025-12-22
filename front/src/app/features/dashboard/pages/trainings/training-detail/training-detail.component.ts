@@ -584,4 +584,10 @@ export class TrainingDetailComponent implements OnInit {
     cancel() {
         this.router.navigate(['/dashboard/trainings']);
     }
+
+    startSession() {
+        if (this.trainingId()) {
+            this.router.navigate(['/dashboard/trainings/execution', this.trainingId()]);
+        }
+    }
 }

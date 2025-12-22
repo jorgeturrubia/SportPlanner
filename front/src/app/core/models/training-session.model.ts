@@ -15,7 +15,13 @@ export interface TrainingSessionExercise {
     sportConceptName?: string;
     order: number;
     durationMinutes?: number;
+    // Execution Logic
+    isCompleted?: boolean;
+    actualDurationMinutes?: number;
+    feedbackNotes?: string;
 }
+
+export type TrainingSessionStatus = 'Planned' | 'InProgress' | 'Completed' | 'Canceled';
 
 export interface TrainingSession {
     id: number;
@@ -27,6 +33,15 @@ export interface TrainingSession {
     courtId?: number;
     sessionConcepts: TrainingSessionConcept[];
     sessionExercises: TrainingSessionExercise[];
+
+    // Live Execution Tracking
+    status: TrainingSessionStatus;
+    startedAt?: string;
+    finishedAt?: string;
+
+    // Feedback
+    feedbackRating?: number;
+    feedbackNotes?: string;
 }
 
 export interface CreateTrainingSessionDto {

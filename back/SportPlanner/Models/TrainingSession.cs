@@ -24,6 +24,15 @@ public class TrainingSession
     // Exercises included in this training
     public ICollection<TrainingSessionExercise> SessionExercises { get; set; } = new List<TrainingSessionExercise>();
 
+    // Live Execution Tracking
+    public TrainingSessionStatus Status { get; set; } = TrainingSessionStatus.Planned;
+    public DateTime? StartedAt { get; set; }
+    public DateTime? FinishedAt { get; set; }
+
+    // Feedback
+    public int? FeedbackRating { get; set; } // 1-5 or 1-10
+    public string? FeedbackNotes { get; set; }
+
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }
@@ -62,4 +71,9 @@ public class TrainingSessionExercise
 
     public int Order { get; set; }
     public int? DurationMinutes { get; set; }
+
+    // Execution Logic
+    public bool IsCompleted { get; set; }
+    public int? ActualDurationMinutes { get; set; }
+    public string? FeedbackNotes { get; set; }
 }
