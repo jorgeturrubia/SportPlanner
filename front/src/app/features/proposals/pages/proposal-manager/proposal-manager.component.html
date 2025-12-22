@@ -22,8 +22,9 @@
 
             <!-- Itinerary Tuner -->
             <div class="block" *ngIf="response">
-                <app-itinerary-tuner [teamName]="response.team.name" [categoryName]="response.team.teamCategory?.name"
-                    [currentOffset]="currentLevelOffset" (offsetChange)="onLevelOffsetChange($event)">
+                <app-itinerary-tuner [itineraries]="itineraries" [activeItineraryId]="selectedItineraryId"
+                    [teamCategoryName]="response.team.teamCategory?.name || ''"
+                    [defaultItineraryName]="defaultItineraryName" (itineraryChange)="onItineraryChange($event)">
                 </app-itinerary-tuner>
             </div>
 

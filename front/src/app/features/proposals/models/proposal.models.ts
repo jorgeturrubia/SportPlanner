@@ -5,6 +5,14 @@ export interface ConceptProposalRequestDto {
     excludeCategoryIds?: number[];
     sectionFocus?: 'Ataque' | 'Defensa';
     levelOffset?: number;
+    itineraryId?: number;
+}
+
+export interface MethodologicalItineraryDto {
+    id: number;
+    name: string;
+    code: string;
+    level: number;
 }
 
 export interface ConceptProposalResponseDto {

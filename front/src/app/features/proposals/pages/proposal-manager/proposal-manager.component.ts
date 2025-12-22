@@ -5,7 +5,8 @@ import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from 
 import { ItineraryTunerComponent } from '../../components/itinerary-tuner/itinerary-tuner.component';
 import { ProposalsService } from '../../services/proposals.service';
 import { TeamsService } from '../../../../services/teams.service';
-import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto } from '../../models/proposal.models';
+import { SportsService } from '../../../../services/sports.service';
+import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto, MethodologicalItineraryDto } from '../../models/proposal.models';
 
 // --- New Hierarchical Interfaces ---
 interface SubCategoryRow {
@@ -60,6 +61,9 @@ export class ProposalManagerComponent implements OnChanges {
 
     // Local state
     teams: any[] = [];
+    itineraries: MethodologicalItineraryDto[] = [];
+    selectedItineraryId: number | null = null;
+    defaultItineraryName: string = '';
     loading: boolean = false;
     currentLevelOffset: number = 0;
 
@@ -74,7 +78,8 @@ export class ProposalManagerComponent implements OnChanges {
 
     constructor(
         private proposalsService: ProposalsService,
-        private teamsService: TeamsService
+        private teamsService: TeamsService,
+        private sportsService: SportsService
     ) {
         this.loadTeams();
     }
@@ -96,12 +101,46 @@ export class ProposalManagerComponent implements OnChanges {
         this.currentLevelOffset = 0;
         this.methodologicalSections = [];
         this.allListIds = [];
+        this.selectedItineraryId = null;
+        this.itineraries = [];
+
         // If selectedTeamId changes, we expect the parent or a separate call to trigger generateProposals
         if (this.selectedTeamId) {
+            const team = this.teams.find(t => t.id === this.selectedTeamId);
+            if (team && team.teamCategory && team.teamCategory.sportId) {
+                this.sportsService.getItineraries(team.teamCategory.sportId).subscribe({
+                    next: (res) => {
+                        this.itineraries = res;
+                        // Determine default itinerary name
+                        const categoryName = team.teamCategory.name;
+                        const expectedLevel = this.calculateTargetLevel(categoryName);
+
+                        // Try to find exact match or partial match
+                        const match = this.itineraries.find(i => i.name === categoryName)
+                            || this.itineraries.find(i => i.level === expectedLevel);
+
+                        this.defaultItineraryName = match ? match.name : categoryName;
+                        if (match) {
+                            this.selectedItineraryId = match.id;
+                        }
+                    }
+                });
+            }
             this.generateProposals();
         } else {
             this.response = null;
         }
+    }
+
+    private calculateTargetLevel(categoryName: string): number {
+        const n = categoryName.toLowerCase();
+        if (n.includes('mini') || n.includes('escuela') || n.includes('u8') || n.includes('u6')) return 1;
+        if (n.includes('u10') || n.includes('pre')) return 2;
+        if (n.includes('u12') || n.includes('ale')) return 3;
+        if (n.includes('u14') || n.includes('inf')) return 4;
+        if (n.includes('u16') || n.includes('cad')) return 5;
+        if (n.includes('u18') || n.includes('jun') || n.includes('sen')) return 6;
+        return 3; // Default
     }
 
     generateProposals() {
@@ -114,7 +153,8 @@ export class ProposalManagerComponent implements OnChanges {
 
         this.proposalsService.generateProposals({
             teamId: this.selectedTeamId,
-            levelOffset: this.currentLevelOffset
+            levelOffset: this.currentLevelOffset,
+            itineraryId: this.selectedItineraryId ?? undefined
         }).subscribe({
             next: (res) => {
                 this.response = res;
@@ -130,6 +170,11 @@ export class ProposalManagerComponent implements OnChanges {
 
     onLevelOffsetChange(newOffset: number) {
         this.currentLevelOffset = newOffset;
+        this.generateProposals();
+    }
+
+    onItineraryChange(itineraryId: number) {
+        this.selectedItineraryId = itineraryId;
         this.generateProposals();
     }
 

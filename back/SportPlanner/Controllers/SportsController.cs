@@ -47,6 +47,26 @@ public class SportsController : ControllerBase
         return Ok(dto);
     }
 
+    // GET /api/sports/{id}/itineraries
+    [HttpGet("{id}/itineraries")]
+    public async Task<IActionResult> GetItineraries(int id)
+    {
+        var itineraries = await _db.MethodologicalItineraries
+            .Include(mi => mi.TeamCategory)
+            .Where(mi => mi.TeamCategoryId == null || mi.TeamCategory!.SportId == id)
+            .OrderBy(mi => mi.Level)
+            .Select(mi => new MethodologicalItinerarySimpleDto
+            {
+                Id = mi.Id,
+                Name = mi.Name,
+                Code = mi.Code,
+                Level = mi.Level
+            })
+            .ToListAsync();
+
+        return Ok(itineraries);
+    }
+
     // POST /api/sports
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateSportDto dto)

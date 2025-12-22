@@ -22,4 +22,7 @@ public class ConceptProposalRequestDto
 
     /// <summary>Offset to adjust the difficulty window (e.g., -1 for reinforcement, +1 for aspirational)</summary>
     public int LevelOffset { get; set; } = 0;
+
+    /// <summary>Specific Itinerary ID to use (overrides Team's default)</summary>
+    public int? ItineraryId { get; set; }
 }
