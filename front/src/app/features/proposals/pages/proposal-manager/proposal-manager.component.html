@@ -1,7 +1,7 @@
 <div class="h-full flex flex-col bg-[#121212] text-neutral-200 overflow-hidden font-sans">
 
     <!-- Top Bar: Tuner & Controls -->
-    <div class="bg-neutral-900 border-b border-neutral-800 p-4 shrink-0 shadow-lg z-30 relative">
+    <div *ngIf="!embedded" class="bg-neutral-900 border-b border-neutral-800 p-4 shrink-0 shadow-lg z-30 relative">
         <div class="max-w-[1600px] mx-auto w-full flex flex-col md:flex-row items-center justify-between gap-6">
 
             <!-- Team Selector -->

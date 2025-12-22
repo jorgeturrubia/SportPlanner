@@ -58,6 +58,8 @@ interface MethodologicalSection {
 export class ProposalManagerComponent implements OnChanges {
     @Input() response: ConceptProposalResponseDto | null = null;
     @Input() selectedTeamId: number | null = null;
+    @Input() embedded: boolean = false;
+    @Input() initialSelectedConceptIds: number[] = [];
 
     // Local state
     teams: any[] = [];
@@ -87,6 +89,9 @@ export class ProposalManagerComponent implements OnChanges {
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['response'] && this.response) {
             this.processResponseIntoHierarchy();
+        }
+        if (changes['selectedTeamId'] && this.selectedTeamId) {
+            this.onTeamChange();
         }
     }
 
@@ -374,6 +379,11 @@ export class ProposalManagerComponent implements OnChanges {
             // Temporarily store all future in distantFutureConcepts and all past in distantPastConcepts
             // These will be split into immediate/distant later.
             group.concepts.forEach(concept => {
+                // If it's in initialSelectedConceptIds, force it to Active/Own
+                if (this.initialSelectedConceptIds.includes(concept.concept.id)) {
+                    concept.tag = ConceptTag.Own;
+                }
+
                 if (concept.tag === ConceptTag.Own) {
                     row.activeConcepts.push(concept);
                 } else if (concept.tag === ConceptTag.Aspirational) {
@@ -527,5 +537,16 @@ export class ProposalManagerComponent implements OnChanges {
                 event.currentIndex,
             );
         }
+    }
+    getSelectedConceptIds(): number[] {
+        const ids: number[] = [];
+        this.methodologicalSections.forEach(section => {
+            section.categories.forEach(category => {
+                category.subCategories.forEach(sub => {
+                    sub.activeConcepts.forEach(c => ids.push(c.concept.id));
+                });
+            });
+        });
+        return ids;
     }
 }
