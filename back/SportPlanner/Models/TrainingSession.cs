@@ -39,6 +39,7 @@ public class TrainingSessionConcept
     public SportConcept? SportConcept { get; set; }
 
     public int Order { get; set; }
+    public int? DurationMinutes { get; set; }
 }
 
 public class TrainingSessionExercise

@@ -8,7 +8,10 @@ public class TrainingSessionConceptDto
     public int Id { get; set; }
     public int SportConceptId { get; set; }
     public string? ConceptName { get; set; }
+    public string? ConceptDescription { get; set; }
+    public string? ConceptCategoryName { get; set; }
     public int Order { get; set; }
+    public int? DurationMinutes { get; set; }
 }
 
 public class TrainingSessionExerciseDto
@@ -52,6 +55,7 @@ public class CreateTrainingSessionConceptDto
 {
     public int SportConceptId { get; set; }
     public int Order { get; set; }
+    public int? DurationMinutes { get; set; }
 }
 
 public class CreateTrainingSessionExerciseDto

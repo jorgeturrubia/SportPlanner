@@ -18,8 +18,13 @@ import { Planning, SportConcept, ConceptCategory } from '../../../../../core/mod
 interface TrainingConceptViewModel {
     id: number; // conceptId
     name: string;
+    description?: string;
+    categoryName?: string;
     exercises: TrainingExerciseViewModel[];
     isOpen: boolean; // For accordion
+    isEditing?: boolean;
+    editName?: string;
+    durationMinutes?: number;
 }
 
 interface TrainingExerciseViewModel {
@@ -56,6 +61,8 @@ export class TrainingDetailComponent implements OnInit {
     name = signal('');
     date = signal(new Date().toISOString().split('T')[0]);
     startTime = signal('18:00');
+    quickConceptName = signal('');
+
 
     // Concept-Centric Data
     trainingConcepts = signal<TrainingConceptViewModel[]>([]);
@@ -63,9 +70,10 @@ export class TrainingDetailComponent implements OnInit {
     totalDuration = computed(() => {
         let minutes = 0;
         this.trainingConcepts().forEach(tc => {
-            tc.exercises.forEach(e => minutes += e.durationMinutes);
-            // Maybe add default duration for concept itself if empty?
-            if (tc.exercises.length === 0) minutes += 10;
+            // If concept has explicit duration, use it. Otherwise use sum of exercises or default.
+            // Requirement says sum well even if customized.
+            // If user sets 8 mins for concept, that's what we count.
+            minutes += (tc.durationMinutes || 0);
         });
         const hours = Math.floor(minutes / 60);
         const mins = minutes % 60;
@@ -220,8 +228,11 @@ export class TrainingDetailComponent implements OnInit {
                 viewModels.push({
                     id: sc.sportConceptId,
                     name: sc.conceptName,
+                    description: (sc as any).conceptDescription,
+                    categoryName: (sc as any).conceptCategoryName,
                     exercises: [],
-                    isOpen: true
+                    isOpen: true,
+                    durationMinutes: (sc as any).durationMinutes || 8
                 });
             });
 
@@ -303,13 +314,100 @@ export class TrainingDetailComponent implements OnInit {
         this.categoryPath.set([]);
     }
 
+    // Quick Add Concept Logic
+    addQuickConcept() {
+        const name = this.quickConceptName().trim();
+        if (!name) return;
+
+        const dto = {
+            name: name,
+            description: 'Concepto Personal',
+            technicalDifficulty: 1,
+            tacticalComplexity: 1,
+            conceptCategoryId: null,
+            progressWeight: 50,
+            isProgressive: false,
+            // Assuming current planning sport or default. 
+            // We need sportId if required by backend, but let's try optional first or 1.
+            // Actually DTO says sportId is optional?
+            sportId: null
+        };
+
+        this.loading.set(true);
+        this.conceptService.createConcept(dto as any).subscribe({
+            next: (concept) => {
+                this.trainingConcepts.update(prev => [...prev, {
+                    id: concept.id,
+                    name: concept.name,
+                    description: concept.description || '',
+                    categoryName: 'Personal',
+                    exercises: [],
+                    isOpen: true,
+                    durationMinutes: 8
+                }]);
+                this.quickConceptName.set('');
+                this.loading.set(false);
+            },
+            error: () => this.loading.set(false)
+        });
+    }
+
+    // Concept Editing Logic
+    toggleEdit(concept: TrainingConceptViewModel) {
+        this.trainingConcepts.update(concepts => concepts.map(c => {
+            if (c.id === concept.id) {
+                return {
+                    ...c,
+                    isEditing: !c.isEditing,
+                    editName: c.name
+                };
+            }
+            return c;
+        }));
+    }
+
+    saveConceptName(concept: TrainingConceptViewModel) {
+        if (!concept.editName || !concept.editName.trim()) return;
+        const newName = concept.editName.trim();
+
+        this.loading.set(true);
+        this.conceptService.getConceptById(concept.id).subscribe({
+            next: (fullConcept) => {
+                fullConcept.name = newName;
+                this.conceptService.updateConcept(concept.id, fullConcept).subscribe({
+                    next: () => {
+                        this.trainingConcepts.update(concepts => concepts.map(c => {
+                            if (c.id === concept.id) {
+                                return { ...c, name: newName, isEditing: false };
+                            }
+                            return c;
+                        }));
+                        this.loading.set(false);
+                    },
+                    error: () => {
+                        alert("Error al actualizar el nombre");
+                        this.loading.set(false);
+                    }
+                });
+            },
+            error: () => this.loading.set(false)
+        });
+    }
+
+    updateDuration() {
+        this.trainingConcepts.update(prev => [...prev]);
+    }
+
     addConcept(concept: any) {
         if (!this.trainingConcepts().find(c => c.id === concept.id)) {
             this.trainingConcepts.update(prev => [...prev, {
                 id: concept.id,
                 name: concept.name,
+                description: concept.description,
+                categoryName: concept.category, // Mapped in earlier step (see loadTeamPlanning)
                 exercises: [],
-                isOpen: true
+                isOpen: true,
+                durationMinutes: 8
             }]);
         }
         this.closeConceptModal();
@@ -406,7 +504,8 @@ export class TrainingDetailComponent implements OnInit {
         const validConcepts = this.trainingConcepts();
         const sessionConcepts = validConcepts.map((c, i) => ({
             sportConceptId: c.id,
-            order: i
+            order: i,
+            durationMinutes: c.durationMinutes
         }));
 
         const sessionExercises: any[] = [];

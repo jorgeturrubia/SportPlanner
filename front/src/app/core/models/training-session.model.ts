@@ -3,6 +3,7 @@ export interface TrainingSessionConcept {
     sportConceptId: number;
     conceptName?: string;
     order: number;
+    durationMinutes?: number;
 }
 
 export interface TrainingSessionExercise {
@@ -42,6 +43,7 @@ export interface CreateTrainingSessionDto {
 export interface CreateTrainingSessionConceptDto {
     sportConceptId: number;
     order: number;
+    durationMinutes?: number;
 }
 
 export interface CreateTrainingSessionExerciseDto {

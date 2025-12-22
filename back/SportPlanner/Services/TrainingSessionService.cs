@@ -53,7 +53,8 @@ public class TrainingSessionService : ITrainingSessionService
                 session.SessionConcepts.Add(new TrainingSessionConcept
                 {
                     SportConceptId = c.SportConceptId,
-                    Order = c.Order
+                    Order = c.Order,
+                    DurationMinutes = c.DurationMinutes
                 });
             }
         }
@@ -104,7 +105,8 @@ public class TrainingSessionService : ITrainingSessionService
                 session.SessionConcepts.Add(new TrainingSessionConcept
                 {
                     SportConceptId = c.SportConceptId,
-                    Order = c.Order
+                    Order = c.Order,
+                    DurationMinutes = c.DurationMinutes
                 });
             }
         }

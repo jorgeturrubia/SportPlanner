@@ -23,7 +23,7 @@ public class SportConceptsController : ControllerBase
     {
         var concept = await _service.CreateAsync(dto);
         var result = _mapper.Map<SportConceptDto>(concept);
-        return CreatedAtAction(nameof(GetBySport), new { sportId = result.SportId }, result);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
     [HttpGet("by-sport/{sportId}")]
