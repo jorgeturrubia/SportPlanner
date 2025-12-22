@@ -17,7 +17,7 @@ public class SportConcept
     // Proficiency Requirements (1-10 scale)
     // Technical: How much skill with the ball/body is required?
     public int TechnicalDifficulty { get; set; }
-    
+
     // Tactical/Cognitive: How much thinking/understanding is required?
     public int TacticalComplexity { get; set; }
 
@@ -32,4 +32,7 @@ public class SportConcept
     public int? SportId { get; set; }
     public Sport? Sport { get; set; }
     public bool IsActive { get; set; } = true;
+
+    // Relationship with Exercise library
+    public ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
 }

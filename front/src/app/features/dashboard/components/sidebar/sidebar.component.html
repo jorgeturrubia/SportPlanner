@@ -55,6 +55,18 @@
             </span>
         </a>
 
+        <a routerLink="/dashboard/trainings" routerLinkActive="bg-primary text-black border-primary"
+            class="flex items-center px-4 py-3 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                <path d="M6 3L20 12L6 21V3Z" />
+            </svg>
+            <span class="ml-3 font-bold tracking-wide truncate transition-opacity duration-300"
+                [class.opacity-0]="collapsed" [class.w-0]="collapsed" [class.hidden]="collapsed">
+                {{ 'SIDEBAR.TRAININGS' | translate }}
+            </span>
+        </a>
+
         <a routerLink="/dashboard/proposals" routerLinkActive="bg-primary text-black border-primary"
             class="flex items-center px-4 py-3 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"

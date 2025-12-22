@@ -44,6 +44,8 @@ builder.Services.AddScoped<SportPlanner.Services.ISportConceptService, SportPlan
 builder.Services.AddScoped<SportPlanner.Services.IConceptCategoryService, SportPlanner.Services.ConceptCategoryService>();
 builder.Services.AddScoped<SportPlanner.Services.IPlanningService, SportPlanner.Services.PlanningService>();
 builder.Services.AddScoped<SportPlanner.Services.IConceptProposalService, SportPlanner.Services.ConceptProposalService>();
+builder.Services.AddScoped<SportPlanner.Services.IExerciseService, SportPlanner.Services.ExerciseService>();
+builder.Services.AddScoped<SportPlanner.Services.ITrainingSessionService, SportPlanner.Services.TrainingSessionService>();
 // Concept interpretation & team metadata
 
 // Configure authentication for Supabase tokens
@@ -51,14 +53,14 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
     .AddJwtBearer(options =>
     {
         options.RequireHttpsMetadata = true;
-            if (!string.IsNullOrEmpty(supabaseJwtSecret))
+        if (!string.IsNullOrEmpty(supabaseJwtSecret))
         {
             // Symmetric validation (dev/test). Value comes from Supabase project's JWT secret.
             var key = System.Text.Encoding.UTF8.GetBytes(supabaseJwtSecret);
-                options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+            options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuer = true,
-                    ValidIssuers = new[] { supabaseUrl, $"{supabaseUrl?.TrimEnd('/')}/auth/v1" },
+                ValidIssuers = new[] { supabaseUrl, $"{supabaseUrl?.TrimEnd('/')}/auth/v1" },
                 ValidateAudience = true,
                 ValidAudience = "authenticated",
                 ValidateIssuerSigningKey = true,
@@ -74,7 +76,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
             options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuer = true,
-                    ValidIssuers = new[] { supabaseUrl, $"{supabaseUrl.TrimEnd('/')}/auth/v1" },
+                ValidIssuers = new[] { supabaseUrl, $"{supabaseUrl.TrimEnd('/')}/auth/v1" },
                 ValidateAudience = true,
                 ValidAudience = "authenticated",
                 ValidateLifetime = true,
@@ -121,14 +123,14 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
 // CORS policy: allow the frontend dev server to call the API
 builder.Services.AddCors(options =>
 {
-                        options.AddPolicy(name: "AllowLocalhostFrontend",
-        policy =>
-        {
-                        policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200", "https://localhost:4200")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
+    options.AddPolicy(name: "AllowLocalhostFrontend",
+policy =>
+{
+policy.WithOrigins("http://localhost:4200", "http://127.0.0.1:4200", "https://localhost:4200")
+      .AllowAnyHeader()
+      .AllowAnyMethod()
+      .AllowCredentials();
+});
 });
 
 builder.Services.AddAuthorization();

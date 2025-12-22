@@ -28,6 +28,10 @@ public class AppDbContext : DbContext
     public DbSet<TeamCategory> TeamCategories { get; set; } = null!;
     public DbSet<TeamLevel> TeamLevels { get; set; } = null!;
     public DbSet<MethodologicalItinerary> MethodologicalItineraries { get; set; } = null!;
+    public DbSet<Exercise> Exercises { get; set; } = null!;
+    public DbSet<TrainingSession> TrainingSessions { get; set; } = null!;
+    public DbSet<TrainingSessionConcept> TrainingSessionConcepts { get; set; } = null!;
+    public DbSet<TrainingSessionExercise> TrainingSessionExercises { get; set; } = null!;
 
 
 
@@ -179,7 +183,42 @@ public class AppDbContext : DbContext
             .HasForeignKey(c => c.MethodologicalItineraryId)
             .OnDelete(DeleteBehavior.SetNull);
 
-      
-     
+        // Exercise and SportConcept Many-to-Many
+        modelBuilder.Entity<Exercise>()
+            .HasMany(e => e.Concepts)
+            .WithMany(sc => sc.Exercises)
+            .UsingEntity(j => j.ToTable("ExerciseConcepts"));
+
+        // TrainingSession configuration
+        modelBuilder.Entity<TrainingSession>().HasKey(ts => ts.Id);
+        modelBuilder.Entity<TrainingSession>()
+            .HasOne(ts => ts.Team)
+            .WithMany()
+            .HasForeignKey(ts => ts.TeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<TrainingSessionConcept>().HasKey(tsc => tsc.Id);
+        modelBuilder.Entity<TrainingSessionConcept>()
+            .HasOne(tsc => tsc.TrainingSession)
+            .WithMany(ts => ts.SessionConcepts)
+            .HasForeignKey(tsc => tsc.TrainingSessionId);
+        modelBuilder.Entity<TrainingSessionConcept>()
+            .HasOne(tsc => tsc.SportConcept)
+            .WithMany()
+            .HasForeignKey(tsc => tsc.SportConceptId);
+
+        modelBuilder.Entity<TrainingSessionExercise>().HasKey(tse => tse.Id);
+        modelBuilder.Entity<TrainingSessionExercise>()
+            .HasOne(tse => tse.TrainingSession)
+            .WithMany(ts => ts.SessionExercises)
+            .HasForeignKey(tse => tse.TrainingSessionId);
+        modelBuilder.Entity<TrainingSessionExercise>()
+            .HasOne(tse => tse.Exercise)
+            .WithMany()
+            .HasForeignKey(tse => tse.ExerciseId);
+        modelBuilder.Entity<TrainingSessionExercise>()
+            .HasOne(tse => tse.SportConcept)
+            .WithMany()
+            .HasForeignKey(tse => tse.SportConceptId);
     }
 }

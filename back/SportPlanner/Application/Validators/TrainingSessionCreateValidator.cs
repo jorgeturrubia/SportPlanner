@@ -3,24 +3,40 @@ using SportPlanner.Application.DTOs;
 
 namespace SportPlanner.Application.Validators;
 
-public class TrainingSessionCreateValidator : AbstractValidator<TrainingSessionCreateDto>
+public class CreateTrainingSessionValidator : AbstractValidator<CreateTrainingSessionDto>
 {
-    public TrainingSessionCreateValidator()
+    public CreateTrainingSessionValidator()
     {
-        RuleFor(x => x.StartAt).NotEmpty();
-        RuleFor(x => x.Duration).GreaterThan(TimeSpan.Zero);
-        When(x => x.SessionConcepts != null && x.SessionConcepts.Count > 0, () => {
-            RuleForEach(x => x.SessionConcepts).SetValidator(new SessionConceptDtoValidator());
+        RuleFor(x => x.TeamId).GreaterThan(0);
+        RuleFor(x => x.Date).NotEmpty();
+        RuleFor(x => x.Duration).GreaterThan(TimeSpan.Zero).When(x => x.Duration.HasValue);
+
+        When(x => x.SessionConcepts != null && x.SessionConcepts.Count > 0, () =>
+        {
+            RuleForEach(x => x.SessionConcepts).SetValidator(new CreateTrainingSessionConceptValidator());
+        });
+
+        When(x => x.SessionExercises != null && x.SessionExercises.Count > 0, () =>
+        {
+            RuleForEach(x => x.SessionExercises).SetValidator(new CreateTrainingSessionExerciseValidator());
         });
     }
 }
 
-public class SessionConceptDtoValidator : AbstractValidator<SessionConceptDto>
+public class CreateTrainingSessionConceptValidator : AbstractValidator<CreateTrainingSessionConceptDto>
 {
-    public SessionConceptDtoValidator()
+    public CreateTrainingSessionConceptValidator()
     {
         RuleFor(x => x.SportConceptId).GreaterThan(0);
-        RuleFor(x => x.Order).GreaterThan(0);
-        RuleFor(x => x.PlannedDurationMinutes).GreaterThan(0).When(x => x.PlannedDurationMinutes.HasValue);
+        RuleFor(x => x.Order).GreaterThanOrEqualTo(0);
+    }
+}
+
+public class CreateTrainingSessionExerciseValidator : AbstractValidator<CreateTrainingSessionExerciseDto>
+{
+    public CreateTrainingSessionExerciseValidator()
+    {
+        RuleFor(x => x.Order).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.DurationMinutes).GreaterThan(0).When(x => x.DurationMinutes.HasValue);
     }
 }
