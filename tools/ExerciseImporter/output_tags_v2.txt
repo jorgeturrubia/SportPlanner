@@ -1,0 +1,14 @@
+Starting Exercise Import...
+Loaded 263 mappings from CSV.
+Found 706 exercises in JSON.
+Loaded 260 sport concepts from DB.
+.................................................Warning: Tag '0' (Name: 0) not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+..........Warning: Tag '0' (Name: 0) not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '0' (Name: 0) not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '0' (Name: 0) not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '0' (Name: 0) not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '0' (Name: 0) not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '0' (Name: 0) not found in SportConcepts for exercise '2x2 en cruz'.
+..........Warning: Tag '0' (Name: 0) not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+.
+Import complete. Added: 706, Updated: 0, Skipped: 0

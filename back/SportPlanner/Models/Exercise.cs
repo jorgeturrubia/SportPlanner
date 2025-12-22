@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SportPlanner.Models;
 
@@ -17,5 +18,9 @@ public class Exercise
     public ICollection<SportConcept> Concepts { get; set; } = new List<SportConcept>();
 
     public bool IsActive { get; set; } = true;
+
+    [Column(TypeName = "timestamp with time zone")]
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
+    public List<string> Tags { get; set; } = new();
 }

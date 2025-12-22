@@ -1,0 +1,277 @@
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(129,23): warning CS8618: El elemento propiedad "Name" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(119,23): warning CS8618: El elemento propiedad "Id" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(120,23): warning CS8618: El elemento propiedad "Title" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(121,23): warning CS8618: El elemento propiedad "Description" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(122,29): warning CS8618: El elemento propiedad "Tags" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(123,23): warning CS8618: El elemento propiedad "VideoUrl" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+Starting Exercise Import...
+Found 706 exercises in JSON.
+Loaded 260 sport concepts from DB.
+....................Warning: Tag '7' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '16' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '15' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '12' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '5' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '9' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '18' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '11' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '10' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '13' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '14' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '21' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '20' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '19' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '4' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '8' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '17' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '6' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '2' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '22' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '3' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '1' not found in SportConcepts for exercise 'Minibasket. Pelotas movidas'.
+Warning: Tag '7' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '16' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '15' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '12' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '5' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '9' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '18' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '11' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '10' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '13' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '14' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '21' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '20' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '19' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '4' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '8' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '17' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '6' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '2' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '22' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '3' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '1' not found in SportConcepts for exercise 'Minibasket. La cuenta atr├ís.'.
+Warning: Tag '7' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '16' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '15' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '12' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '5' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '9' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '18' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '11' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '10' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '13' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '14' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '21' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '20' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '19' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '4' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '8' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '17' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '6' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '2' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '22' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '3' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+Warning: Tag '1' not found in SportConcepts for exercise '2x2. Trabajo linea balon'.
+.............................Warning: Tag '7' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '16' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '15' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '12' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '5' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '9' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '18' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '11' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '10' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '13' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '14' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '21' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '20' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '19' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '4' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '8' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '17' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '6' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '2' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '22' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '3' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '1' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '0' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '24' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+Warning: Tag '23' not found in SportConcepts for exercise '5x5 sin bote. 24"'.
+..........Warning: Tag '7' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '16' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '15' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '12' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '5' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '9' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '18' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '11' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '10' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '13' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '14' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '21' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '20' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '19' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '4' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '8' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '17' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '6' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '2' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '22' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '3' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '1' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '0' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '24' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '23' not found in SportConcepts for exercise '2x2 decido yo'.
+Warning: Tag '7' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '16' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '15' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '12' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '5' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '9' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '18' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '11' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '10' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '13' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '14' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '21' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '20' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '19' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '4' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '8' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '17' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '6' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '2' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '22' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '3' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '1' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '0' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '24' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '23' not found in SportConcepts for exercise '2x2 lectura, continuo.'.
+Warning: Tag '7' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '16' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '15' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '12' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '5' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '9' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '18' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '11' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '10' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '13' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '14' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '21' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '20' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '19' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '4' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '8' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '17' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '6' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '2' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '22' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '3' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '1' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '0' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '24' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '23' not found in SportConcepts for exercise '1x1 con pasador. Lectura de indirectos'.
+Warning: Tag '7' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '16' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '15' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '12' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '5' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '9' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '18' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '11' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '10' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '13' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '14' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '21' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '20' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '19' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '4' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '8' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '17' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '6' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '2' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '22' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '3' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '1' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '0' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '24' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '23' not found in SportConcepts for exercise '2x2 en media pista exteriores'.
+Warning: Tag '7' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '16' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '15' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '12' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '5' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '9' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '18' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '11' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '10' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '13' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '14' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '21' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '20' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '19' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '4' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '8' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '17' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '6' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '2' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '22' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '3' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '1' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '0' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '24' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '23' not found in SportConcepts for exercise '2x2 en cuadrado'.
+Warning: Tag '7' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '16' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '15' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '12' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '5' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '9' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '18' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '11' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '10' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '13' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '14' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '21' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '20' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '19' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '4' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '8' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '17' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '6' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '2' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '22' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '3' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '1' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '0' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '24' not found in SportConcepts for exercise '2x2 en cruz'.
+Warning: Tag '23' not found in SportConcepts for exercise '2x2 en cruz'.
+..........Warning: Tag '7' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '16' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '15' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '12' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '5' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '9' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '18' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '11' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '10' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '13' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '14' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '21' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '20' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '19' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '4' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '8' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '17' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '6' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '2' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '22' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '3' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '1' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '0' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '24' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+Warning: Tag '23' not found in SportConcepts for exercise '1x1 cerrar rebote 5"'.
+.
+Import complete. Added: 706, Skipped: 0

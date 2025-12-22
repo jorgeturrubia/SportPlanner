@@ -1,0 +1,811 @@
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(191,23): warning CS8618: El elemento propiedad "Name" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(181,23): warning CS8618: El elemento propiedad "Id" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(182,23): warning CS8618: El elemento propiedad "Title" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(183,23): warning CS8618: El elemento propiedad "Description" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(184,29): warning CS8618: El elemento propiedad "Tags" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+C:\Proyectos\SportPlanner\tools\ExerciseImporter\Program.cs(185,23): warning CS8618: El elemento propiedad "VideoUrl" que no acepta valores NULL debe contener un valor distinto de NULL al salir del constructor. Considere la posibilidad de agregar el modificador "required'"o declarar el propiedad como un valor que acepta valores NULL. [C:\Proyectos\SportPlanner\tools\ExerciseImporter\ExerciseImporter.csproj]
+Starting Exercise Import...
+Loaded 263 mappings from CSV.
+Found 706 exercises in JSON.
+Loaded 260 sport concepts from DB.
+Error inserting 'Tiro trios. Mismos tiradores': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3x3 doble defensa': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. 3x3 caos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 rebote con extra pass por equipos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x0 ritmos de bote + cambios direcci├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 limpiar la zona': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 Iowa': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. cambio y salida desde bote': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Tula vs pases': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3+1': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x2 + 5x3': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 recibir atacando': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 sobre la linea. Finalizaciones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Estrella de tiro': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Bal├│n al aire': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Triple al limite': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 con pasador. Parada + salida': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda 3 filas. Salida en movimiento': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 repick.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. entrar y salir. Bote escapatoria': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1 pase al corte. Progresi├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda 2x0. Mano a mano + tiro': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Atr├ípame si puedes': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 continuo media pista': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda 3x0 spacing + rebote': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. closeout + ayuda': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Puertas y guardianes': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1+1 defensivo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4x4 balance': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4 con c├│digos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3. 4x3. 4x4': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3 defensa + 3x2 superioridad': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '5x3+2': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x0 + 1x1 closeout': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x0 cambios de direcci├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Finalizaciones agarre': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3x3x3': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Rueda 6': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Cuadrado Biosca defensivo. 3x3 o 4x4': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. La liga en media pista': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 cat & mouse': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4 en carrera': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rebote animal': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. El ultimo paga': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Cambiar balones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro y al otro lado': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Shell drill. 4x4. 4x3+1': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rebote. 3x3 Naturil': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Manejo. Rueda dos balones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 fosters': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3 en carrera': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4 ventaja cortes': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 pasar y cortar. ventaja corte lateral': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1+1 backpedal': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro trios. Tiro vs Closeout': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Rondo de tiro': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda. Tiro vs closeout': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. 7up': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x0 spacing + 2x1 closeout': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda de tiro. Croacia': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '5x5. Tiro libre + salida': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4x4 mismos roles': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x0. Spacing y cortes': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Curl o flare': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro libre. Reto por equipo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda. 4x0. Atacar y pasar': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1 media pista cada uno': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. 5x3. 3 balones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Manejo de bal├│n. Carrera de conos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda continua puerta atr├ís': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda de tiro. Un pase m├ís': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 pasar y cortar. Finalizaci├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Fake shoot rebote': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4 din├ímico': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x2. salida bloqueo indirecto': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro libre. Golf': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda de tiro. 2 balones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x2+1. linea de bal├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 linea bal├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. El gusano': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Bote retirada competici├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Cuadrado de conos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rebote + 2x1 contrataque': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3 rey de la pista': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda de tiro por equipos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro extra pass. UCA': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. El circulo del caos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Wake up 4x4': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Wake Up. 3x3 por equipos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 colapso + closeout': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Proteger la reina': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 rueda con activaci├│n.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Bal├│n vivo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. 1x1 sandwich': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. El laberinto': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda pin down + flare': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda conceptos. 4 filas': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro sobre flare': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Rey de la pista': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1 pase de salida por banda': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. El tridente': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x0 ida+ 4x2 vuelta': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 bote escapatoria': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda 2x0. JSB 1x1 ext': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3 boxout': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Grupos de 4 competici├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. 1x1 silla. cambios direccion': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x2. Defensa por pista': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rebote. Pase + 1x1': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 saltar al balon.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. Def linea de pase + 1x1': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tren+3x3': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 spanish': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. 3 pases 2 tiros': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 patata caliente': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro perseguido': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 doble closeout': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Te pillo seguro': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. La botella': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Robaconos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x2 rebote ofensivo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 finalizaci├│n desde el taco': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 con pasador. Defensa de Last + Cross Step def.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'rueda de penetracion doblar y corta': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Ara├▒a de pases': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. El cartero siempre llama 3 veces': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'La bomba contrarreloj. 1x1 con pasador': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Las islas': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Dalt├│nico finalizaciones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x2+1 por equipos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 con toma de decision': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. 3 adelante, 2 atras': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 la sombra': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rondo. Dentro y fuera': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2. Actividad defensiva + last con globos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda pases. 4 posiciones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda tiro. Balibrea': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Pelota vasca botando': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Burguer drill. Juego interior': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Lanza chinos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Muerte subita': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Horse por parejas': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. 20 pases seguidos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 doble en espacio reducido': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. 3x1 conquistar circulos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 tocar cono. Minibasket': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3. 5x0. 3x2': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. Tiro libre y rebote': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Chaos shooting': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x2 Puertas minibasket': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Coordinacion escalera velocidad': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3 posesi├│n + 3x2+1': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 poste bajo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1+1. Saque de fondo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Manejo bal├│n. 1 o 2 balones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Apoyos y finalizacion': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Zancadas + Finalizacion': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 Minibasket. Sillas y ventaja': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Velocidad reacci├│n conos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Pase, anticipar y escapar.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Circulo pillador': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 vueltas. Superioridades': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. La bomba': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Finalizacion. Hacia el lado libre': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Manejo balon con globos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Defiende el cono. 2x2.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Finalizacion. 1x1 zig zag': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1 media pista': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. El mejor defensor': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1 ida y vuelta en media pista.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. 3x3 + 3x3 touchdown': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 atacar la puerta': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. La frontera': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Encontrando el pase': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro con ventaja. Los dos pies fuera': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Persecuci├│n por equipos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2 Rebote Emmert': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Sobre bote tras lectura': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3 media pista. Cambio de chip': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Pelota bomba en circulo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 Zig zag y escapa': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Mueve la ficha': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. La ara├▒a por equipos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Pillar. Piedra, papel, tijera.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Par o impar': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Tiro punteado': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. El cruce': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Manejo balon con pelota de tenis': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Tumbaconos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda 2x0. Penetrar y pasar': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Finalizaci├│n. 2x1. Dos balones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x3+1 balance defensivo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1 continuado': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4. Yunque o martillo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. 1x1. autolanzamiento catch & shot': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Basket tenis 2. Pase tras bote': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Pase y voy': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 encadenado': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. Finalizaciones por equipos.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4. 4x3+1 def con balon': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. Dos seguidos. Ataque + salida': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 puertas y ventajas': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Bingo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Campo minado': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda. Tiro. Parada con incertidumbre': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda 3x0 jsb. +1x1 closeout': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda cognitva 3x0. Bloqueo directo.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. Pelotas movidas': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Minibasket. La cuenta atr├ís.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2. Trabajo linea balon': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x0. bote escapatoria': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x0. Finalizaciones interior': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Bote y picas.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda 2x0. 2 filas.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Palmeos. 5x0 - 3x2': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda tiro. Extra pass': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1+1. finalizaciones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda de tiro. 3 tiros desde mano a mano central': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Tras bote + espacios': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda de tiro. Cascada': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x4. 4x0. Tres equipos 2 balones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x0. 3 Equipos 2 balones': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda bloqueo directo. 4 filas': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro por puntos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3 Palmeos + balance': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 por banda en carrera': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro. Dos carretones seguidos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. Las colas': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. El sombrero': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. La bolera': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. 4 campos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego Minibasket. El sem├íforo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. pie con pie. Trabajo finalizaci├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x0 trenza + rebote': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Laker Break. Superioridades. 2x1/ 3x2/4x3/5x4/5x5': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1. Pase interior. Atacar la espalda. Donut': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '4x2 salida de contraataque.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2. Juego interior. Lectura juego sin bal├│n.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1. Pase interior + atacar a la espalda. Close-out': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Pase apertura. 1x1 / 2x1': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1. A pillar en espacio reducido': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Bal├│n-beisbol': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Pilla - pilla ambivalente': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Finalizaci├│n. 1x1 elige defensa': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda 3x0. Close-out + mano a mano': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x2+1 / 3x3 por tr├¡os': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x0 / 2x1 media pista': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Progresi├│n de serpientes': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Todos menos uno': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x1 pase': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Tiro equipos. Penetrar y pasar. Pocket pass': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x3 media pista. Close-out + lado ayuda': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1. visi├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. El espejo': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda defensa bd': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '3x2. Esquinas- extrapass': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '2x2. Trabajo defensivo. Last': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Pilla o escapa': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 bote escapatoria + finalizaci├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x2 desde jsb. Close-out + lectura': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 entrada + salida.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 interior. Cono + ganar posici├│n': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 exterior. Cono + Close-out': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting '1x1 equipos. Balance + chocar manos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Rueda de entradas. 4x0.': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. Basket tenis': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
+Error inserting 'Juego. 3 en raya. Tiro equipos': 42703: column "Tags" of relation "Exercises" does not exist
+
+POSITION: 108
