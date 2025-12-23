@@ -191,6 +191,7 @@ public class TeamsController : ControllerBase
         var query = _db.Teams
             .Include(t => t.TeamCategory)
             .Include(t => t.TeamLevel)
+            .Include(t => t.Sport)
             .Where(t => t.OwnerUserSupabaseId == user.Id || (t.OrganizationId.HasValue && userOrgIds.Contains(t.OrganizationId.Value)));
 
         if (seasonId.HasValue)

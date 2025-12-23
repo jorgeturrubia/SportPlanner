@@ -97,7 +97,12 @@ export class ProposalManagerComponent implements OnChanges {
 
     loadTeams() {
         this.teamsService.getMyTeams().subscribe({
-            next: (res) => this.teams = res,
+            next: (res) => {
+                this.teams = res;
+                if (this.selectedTeamId) {
+                    this.onTeamChange();
+                }
+            },
             error: (err) => console.error('Error loading teams', err)
         });
     }
@@ -112,8 +117,18 @@ export class ProposalManagerComponent implements OnChanges {
         // If selectedTeamId changes, we expect the parent or a separate call to trigger generateProposals
         if (this.selectedTeamId) {
             const team = this.teams.find(t => t.id === this.selectedTeamId);
-            if (team && team.teamCategory && team.teamCategory.sportId) {
-                this.sportsService.getItineraries(team.teamCategory.sportId).subscribe({
+
+            if (!team) {
+                console.warn('ProposalManager: Team not found in loaded teams', this.selectedTeamId);
+                return;
+            }
+
+            // Fallback: Use direct sportId or nested category sportId
+            const sportId = team.sportId || team.teamCategory?.sportId;
+            console.log('ProposalManager: Team Selected', team, 'SportId:', sportId);
+
+            if (team && sportId) {
+                this.sportsService.getItineraries(sportId).subscribe({
                     next: (res) => {
                         this.itineraries = res;
                         // Determine default itinerary name
@@ -462,7 +477,7 @@ export class ProposalManagerComponent implements OnChanges {
                     const activeContent = rows.some(r => r.activeConcepts.length > 0);
                     categories.push({
                         name: catName,
-                        isCollapsed: !activeContent, // Collapse if no active content
+                        isCollapsed: true, // Default collapsed
                         hasActiveContent: activeContent,
                         subCategories: rows.sort((a, b) => a.name.localeCompare(b.name))
                     });
@@ -472,7 +487,7 @@ export class ProposalManagerComponent implements OnChanges {
             if (categories.length > 0) {
                 this.methodologicalSections.push({
                     name: sectName,
-                    isCollapsed: false,
+                    isCollapsed: true,
                     categories: categories.sort((a, b) => a.name.localeCompare(b.name)) // Simple sort for now
                 });
             }

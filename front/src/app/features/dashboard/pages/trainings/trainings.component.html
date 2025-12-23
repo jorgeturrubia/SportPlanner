@@ -2,11 +2,12 @@
     <!-- Header -->
     <div class="mb-4 flex justify-between items-center border-b border-dark-border pb-2">
         <div class="flex items-center gap-3">
-            <h1 class="text-xl font-black text-white tracking-tight uppercase">
+            <h1 *ngIf="!isEmbedded()" class="text-xl font-black text-white tracking-tight uppercase">
                 {{ selectedTeamId() ? 'ENTRENAMIENTOS: ' + selectedTeamName() : 'ENTRENAMIENTOS' }}
             </h1>
-            <span class="text-gray-600 text-sm hidden sm:inline-block">|</span>
-            <p class="text-gray-500 text-xs sm:text-sm hidden sm:block">Gestiona las sesiones de entrenamiento de tus
+            <span *ngIf="!isEmbedded()" class="text-gray-600 text-sm hidden sm:inline-block">|</span>
+            <p *ngIf="!isEmbedded()" class="text-gray-500 text-xs sm:text-sm hidden sm:block">Gestiona las sesiones de
+                entrenamiento de tus
                 equipos</p>
         </div>
 

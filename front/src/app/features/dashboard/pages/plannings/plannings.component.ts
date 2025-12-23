@@ -23,6 +23,7 @@ export class PlanningsComponent implements OnInit {
     showDeleteDialog = signal(false);
     isDeleting = signal(false);
     planningToDelete = signal<Planning | null>(null);
+    isEmbedded = signal(false);
 
     currentTeamId = signal<number | null>(null);
     currentTeamName = signal<string>('');
@@ -44,6 +45,7 @@ export class PlanningsComponent implements OnInit {
     }
 
     ngOnInit() {
+        this.isEmbedded.set(this.router.url.includes('/management/'));
         this.route.queryParams.subscribe(params => {
             if (params['teamId']) {
                 this.currentTeamId.set(+params['teamId']);
@@ -68,9 +70,27 @@ export class PlanningsComponent implements OnInit {
         this.planningService.getPlannings().subscribe({
             next: (data) => {
                 let filteredData = data;
+
+                // Filter by Team
                 if (this.currentTeamId()) {
-                    filteredData = data.filter(p => p.team?.id === this.currentTeamId());
+                    filteredData = filteredData.filter(p => p.team?.id === this.currentTeamId());
                 }
+
+                // Filter by Season (Date Range)
+                const currentSeason = this.seasonService.currentSeason();
+                if (currentSeason) {
+                    const seasonStart = new Date(currentSeason.startDate).getTime();
+                    const seasonEnd = new Date(currentSeason.endDate).getTime();
+
+                    filteredData = filteredData.filter(p => {
+                        const planningStart = new Date(p.startDate).getTime();
+                        // Check if planning starts within the season
+                        // (We use a lenient check: planning must start within the season or generally overlap. 
+                        //  Strictly speaking, plannings are usually created FOR a season, so start date check is standard.)
+                        return planningStart >= seasonStart && planningStart <= seasonEnd;
+                    });
+                }
+
                 this.plannings.set(filteredData);
                 this.isLoading.set(false);
             },

@@ -147,35 +147,22 @@
                         {{ team.name }}
                     </h3>
                     <div class="text-xs text-secondary font-bold uppercase tracking-widest mt-0.5">
-                        {{ team.activeSubscriptions?.[0]?.sport?.name || 'FÚTBOL' }}
+                        {{ team.sport?.name || 'DEPORTE' }}
                     </div>
                 </div>
 
                 <!-- Direct Actions Row -->
                 <div class="flex items-center gap-1">
-                    <!-- Planning -->
-                    <button (click)="managePlanning(team); $event.stopPropagation()" title="Planificaciones"
-                        class="w-8 h-8 rounded bg-dark-bg/50 border border-dark-border text-violet-400 hover:text-white hover:bg-violet-600 hover:border-violet-500 transition-all flex items-center justify-center">
+                    <!-- Management -->
+                    <button (click)="manageTeam(team); $event.stopPropagation()" title="Gestión del Equipo"
+                        class="px-3 py-1.5 rounded bg-primary/10 border border-primary/50 text-primary hover:bg-primary hover:text-black transition-all flex items-center gap-1.5 group/btn">
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M7 7h10v10H7z" />
-                            <path d="M7 3v4h10V3" />
-                            <path d="M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+                            <rect x="7" y="7" width="3" height="9" />
+                            <rect x="14" y="7" width="3" height="5" />
                         </svg>
-                    </button>
-
-                    <!-- Trainings -->
-                    <button (click)="viewTrainings(team); $event.stopPropagation()" title="Entrenamientos"
-                        class="w-8 h-8 rounded bg-dark-bg/50 border border-dark-border text-cyan-400 hover:text-white hover:bg-cyan-600 hover:border-cyan-500 transition-all flex items-center justify-center">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="m5 8 6 6" />
-                            <path d="m4 14 6-6 2-3" />
-                            <path d="M2 5h12" />
-                            <path d="M7 2h1" />
-                            <path d="m22 22-5-10-5 10" />
-                            <path d="M14 18h6" />
-                        </svg>
+                        <span class="text-[10px] font-black uppercase tracking-wider">GESTIÓN</span>
                     </button>
 
                     <!-- Menu Toggle -->

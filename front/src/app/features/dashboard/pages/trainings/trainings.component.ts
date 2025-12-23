@@ -24,8 +24,10 @@ export class TrainingsComponent implements OnInit {
     selectedTeamId = signal<number | null>(null);
     selectedTeamName = signal<string>('');
     loading = signal(false);
+    isEmbedded = signal(false);
 
     ngOnInit() {
+        this.isEmbedded.set(this.router.url.includes('/management/'));
         this.loading.set(true);
         this.teamsService.getMyTeams().subscribe({
             next: (teams) => {

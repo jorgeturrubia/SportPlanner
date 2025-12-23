@@ -1,0 +1,137 @@
+<div class="h-full flex flex-col">
+    <!-- Header Section -->
+    <div class="bg-dark-surface border-b border-dark-border p-4 mb-0">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+
+            <!-- Loading State -->
+            <div *ngIf="isLoading()" class="flex items-center gap-3">
+                <div class="w-12 h-12 rounded bg-dark-bg animate-pulse"></div>
+                <div class="space-y-2">
+                    <div class="h-5 w-40 bg-dark-bg animate-pulse rounded"></div>
+                    <div class="h-3 w-24 bg-dark-bg animate-pulse rounded"></div>
+                </div>
+            </div>
+
+            <!-- Team Info -->
+            <div *ngIf="!isLoading() && team()" class="flex items-center gap-4 animate-in fade-in duration-300">
+                <!-- Sport Icon / Avatar -->
+                <div
+                    class="w-12 h-12 rounded-lg bg-gradient-to-br from-primary/20 to-secondary/20 border border-dark-border flex items-center justify-center shrink-0">
+                    <span class="text-xl font-black text-white uppercase">{{ team()?.name?.substring(0, 2) }}</span>
+                </div>
+
+                <div>
+                    <h1 class="text-2xl font-black text-white tracking-tight uppercase leading-none mb-1">
+                        {{ team()?.name }}
+                    </h1>
+                    <div class="flex items-center gap-2 text-xs font-bold tracking-wider text-gray-400">
+                        <span class="uppercase text-primary">{{ team()?.sport?.name }}</span>
+                        <span>•</span>
+                        <span class="uppercase">{{ team()?.teamCategory?.name || 'SIN CATEGORÍA' }}</span>
+                        <span>•</span>
+                        <span class="bg-dark-bg px-1.5 py-0.5 rounded border border-dark-border text-[10px]">
+                            {{ team()?.teamLevel?.name || 'NIVEL GENERAL' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats Mini -->
+            <div *ngIf="!isLoading() && team()"
+                class="hidden md:flex gap-3 animate-in fade-in duration-300 slide-in-from-right-4">
+                <div class="bg-dark-bg/50 px-3 py-1.5 rounded border border-dark-border/50 text-right">
+                    <div class="text-[9px] font-black text-primary uppercase tracking-widest">TÉCNICA</div>
+                    <div class="text-white font-bold">{{ team()?.currentTechnicalLevel || 0 }}<span
+                            class="text-[10px] text-gray-500 font-normal">/10</span></div>
+                </div>
+                <div class="bg-dark-bg/50 px-3 py-1.5 rounded border border-dark-border/50 text-right">
+                    <div class="text-[9px] font-black text-secondary uppercase tracking-widest">TÁCTICA</div>
+                    <div class="text-white font-bold">{{ team()?.currentTacticalLevel || 0 }}<span
+                            class="text-[10px] text-gray-500 font-normal">/10</span></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div *ngIf="teamId()" class="flex items-center gap-1 mt-6 -mb-4 overflow-x-auto no-scrollbar">
+
+            <a [routerLink]="['plannings']" [queryParams]="{ teamId: teamId() }" queryParamsHandling="merge"
+                class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap flex items-center gap-2"
+                [ngClass]="activeTab() === 'plannings' 
+                ? 'border-primary text-white bg-dark-bg/50 rounded-t-lg' 
+                : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M7 7h10v10H7z" />
+                    <path d="M7 3v4h10V3" />
+                    <path d="M5 21h14a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2z" />
+                </svg>
+                Planificaciones
+            </a>
+
+            <a [routerLink]="['sessions']" [queryParams]="{ teamId: teamId() }" queryParamsHandling="merge"
+                class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap flex items-center gap-2"
+                [ngClass]="activeTab() === 'sessions' 
+                ? 'border-secondary text-white bg-dark-bg/50 rounded-t-lg' 
+                : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="m5 8 6 6" />
+                    <path d="m4 14 6-6 2-3" />
+                    <path d="M2 5h12" />
+                    <path d="M7 2h1" />
+                    <path d="m22 22-5-10-5 10" />
+                    <path d="M14 18h6" />
+                </svg>
+                Sesiones
+            </a>
+
+            <a [routerLink]="['calendar']" [queryParams]="{ teamId: teamId() }" queryParamsHandling="merge"
+                class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap flex items-center gap-2"
+                [ngClass]="activeTab() === 'calendar' 
+                ? 'border-violet-500 text-white bg-dark-bg/50 rounded-t-lg' 
+                : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                </svg>
+                Calendario
+            </a>
+
+            <a [routerLink]="['players']" [queryParams]="{ teamId: teamId() }" queryParamsHandling="merge"
+                class="px-4 py-3 text-xs font-bold uppercase tracking-wider border-b-2 transition-all whitespace-nowrap flex items-center gap-2"
+                [ngClass]="activeTab() === 'players' 
+                ? 'border-emerald-500 text-white bg-dark-bg/50 rounded-t-lg' 
+                : 'border-transparent text-gray-500 hover:text-gray-300 hover:border-gray-700'">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+                    <circle cx="9" cy="7" r="4" />
+                    <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+                    <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+                </svg>
+                Jugadores
+            </a>
+
+        </div>
+    </div>
+
+    <!-- Content Area -->
+    <div class="flex-1 p-4 overflow-y-auto bg-dark-bg/20">
+        <router-outlet></router-outlet>
+
+        <!-- Placeholder for Empty/Initial State -->
+        <div *ngIf="router.url.endsWith('/management/' + teamId())"
+            class="flex flex-col items-center justify-center h-full text-gray-500 opacity-50">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="mb-4">
+                <path d="M12 20h9" />
+                <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+            </svg>
+            <p class="text-sm font-bold uppercase tracking-widest">Selecciona una pestaña para comenzar</p>
+        </div>
+    </div>
+</div>

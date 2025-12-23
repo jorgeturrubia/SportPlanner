@@ -1,10 +1,10 @@
 <div class="mb-4 flex justify-between items-center border-b border-dark-border pb-2">
     <div class="flex items-center gap-3">
-        <h2 class="text-xl font-black text-white tracking-tight uppercase">
+        <h2 *ngIf="!isEmbedded()" class="text-xl font-black text-white tracking-tight uppercase">
             {{ currentTeamId() ? 'PLANIFICACIONES: ' + currentTeamName() : 'MIS PLANIFICACIONES' }}
         </h2>
-        <span class="text-gray-600 text-sm hidden sm:inline-block">|</span>
-        <p class="text-gray-500 text-xs sm:text-sm hidden sm:block">
+        <span *ngIf="!isEmbedded()" class="text-gray-600 text-sm hidden sm:inline-block">|</span>
+        <p *ngIf="!isEmbedded()" class="text-gray-500 text-xs sm:text-sm hidden sm:block">
             {{ currentTeamId() ? 'Gestiona las planificaciones del equipo.' : 'Gestiona las planificaciones de
             entrenamiento de tus equipos.' }}
         </p>
