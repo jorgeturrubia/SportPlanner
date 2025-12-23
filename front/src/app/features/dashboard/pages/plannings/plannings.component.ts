@@ -5,6 +5,8 @@ import { PlanningService } from '../../../../services/planning.service';
 import { NotificationService } from '../../../../services/notification.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { Planning } from '../../../../core/models/planning.model';
+import { TeamsService } from '../../../../services/teams.service';
+import { ActivatedRoute } from '@angular/router';
 
 @Component({
     selector: 'app-plannings',
@@ -21,21 +23,46 @@ export class PlanningsComponent implements OnInit {
     isDeleting = signal(false);
     planningToDelete = signal<Planning | null>(null);
 
+    currentTeamId = signal<number | null>(null);
+    currentTeamName = signal<string>('');
+
     constructor(
         private planningService: PlanningService,
         private router: Router,
-        private notificationService: NotificationService
+        private notificationService: NotificationService,
+        private route: ActivatedRoute,
+        private teamsService: TeamsService
     ) { }
 
     ngOnInit() {
-        this.loadPlannings();
+        this.route.queryParams.subscribe(params => {
+            if (params['teamId']) {
+                this.currentTeamId.set(+params['teamId']);
+                this.loadTeamDetails(this.currentTeamId()!);
+            } else {
+                this.currentTeamId.set(null);
+                this.currentTeamName.set('');
+            }
+            this.loadPlannings();
+        });
+    }
+
+    loadTeamDetails(teamId: number) {
+        this.teamsService.getTeam(teamId).subscribe({
+            next: (team) => this.currentTeamName.set(team.name),
+            error: (err) => console.error('Error loading team details', err)
+        });
     }
 
     loadPlannings() {
         this.isLoading.set(true);
         this.planningService.getPlannings().subscribe({
             next: (data) => {
-                this.plannings.set(data);
+                let filteredData = data;
+                if (this.currentTeamId()) {
+                    filteredData = data.filter(p => p.team?.id === this.currentTeamId());
+                }
+                this.plannings.set(filteredData);
                 this.isLoading.set(false);
             },
             error: (err) => {
@@ -43,6 +70,12 @@ export class PlanningsComponent implements OnInit {
                 this.isLoading.set(false);
             }
         });
+    }
+
+    createPlanning() {
+        if (this.currentTeamId()) {
+            this.router.navigate(['/dashboard/teams/planning', this.currentTeamId()]);
+        }
     }
 
     editPlanning(planning: Planning) {

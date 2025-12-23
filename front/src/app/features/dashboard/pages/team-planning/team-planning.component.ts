@@ -40,9 +40,9 @@ export class TeamPlanningComponent implements OnInit {
         private teamsService: TeamsService
     ) {
         this.planForm = this.fb.group({
-            name: [''],
-            startDate: ['', Validators.required],
-            endDate: ['', Validators.required],
+            name: ['', [Validators.required]],
+            startDate: ['', [Validators.required]],
+            endDate: ['', [Validators.required]],
             days: this.fb.array([])
         });
 

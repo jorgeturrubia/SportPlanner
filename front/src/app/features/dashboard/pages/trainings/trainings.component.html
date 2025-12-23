@@ -1,14 +1,18 @@
-<div class="space-y-6">
+<div class="space-y-4">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-            <h1 class="text-3xl font-black tracking-tight text-white uppercase">{{ 'SIDEBAR.TRAININGS' | translate }}
+    <div class="mb-4 flex justify-between items-center border-b border-dark-border pb-2">
+        <div class="flex items-center gap-3">
+            <h1 class="text-xl font-black text-white tracking-tight uppercase">
+                {{ selectedTeamId() ? 'ENTRENAMIENTOS: ' + selectedTeamName() : 'ENTRENAMIENTOS' }}
             </h1>
-            <p class="text-gray-400 font-medium">Gestiona las sesiones de entrenamiento de tus equipos</p>
+            <span class="text-gray-600 text-sm hidden sm:inline-block">|</span>
+            <p class="text-gray-500 text-xs sm:text-sm hidden sm:block">Gestiona las sesiones de entrenamiento de tus
+                equipos</p>
         </div>
 
-        <button (click)="addTraining()" class="btn btn-primary">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+        <button (click)="addTraining()"
+            class="px-3 py-1.5 bg-primary text-black font-bold uppercase text-[10px] tracking-wider hover:bg-white transition-colors flex items-center gap-1 rounded-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19"></line>
                 <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -17,69 +21,58 @@
         </button>
     </div>
 
-    <!-- Team Selector -->
-    <div class="flex flex-wrap gap-2">
-        @for (team of teams(); track team.id) {
-        <button (click)="loadTrainings(team.id)" [class.bg-secondary]="selectedTeamId() === team.id"
-            [class.text-black]="selectedTeamId() === team.id" [class.border-secondary]="selectedTeamId() === team.id"
-            [class.bg-dark-surface]="selectedTeamId() !== team.id" [class.text-gray-400]="selectedTeamId() !== team.id"
-            [class.border-dark-border]="selectedTeamId() !== team.id"
-            class="px-4 py-2 border-2 font-bold transition-all hover:border-white">
-            {{ team.name }}
-        </button>
-        }
-    </div>
-
     @if (loading()) {
-    <div class="flex justify-center py-12">
-        <div class="w-12 h-12 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
+    <div class="flex justify-center py-8">
+        <div class="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin"></div>
     </div>
     } @else {
     @if (trainings().length === 0) {
-    <div class="bg-dark-surface border-2 border-dashed border-dark-border p-12 text-center">
-        <p class="text-gray-500 font-bold mb-4">No hay entrenamientos registrados para este equipo.</p>
-        <button (click)="addTraining()" class="text-primary font-black hover:underline">CREAR PRIMER
+    <div class="bg-dark-surface border-2 border-dashed border-dark-border p-8 text-center">
+        <p class="text-gray-500 font-bold mb-2 text-sm">No hay entrenamientos registrados para este equipo.</p>
+        <button (click)="addTraining()" class="text-primary font-black hover:underline text-sm">CREAR PRIMER
             ENTRENAMIENTO</button>
     </div>
     } @else {
     <!-- Training Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @for (training of trainings(); track training.id) {
         <div (click)="editTraining(training.id)"
-            class="group bg-dark-surface border-2 border-dark-border p-6 cursor-pointer hover:border-primary transition-all relative overflow-hidden">
+            class="group bg-dark-surface border border-dark-border p-4 cursor-pointer hover:border-primary transition-all relative overflow-hidden rounded-lg">
 
             <!-- Background Accent -->
             <div
-                class="absolute top-0 right-0 w-16 h-16 bg-primary opacity-5 -mr-8 -mt-8 rotate-45 transition-all group-hover:opacity-20">
+                class="absolute top-0 right-0 w-12 h-12 bg-primary opacity-5 -mr-6 -mt-6 rotate-45 transition-all group-hover:opacity-20">
             </div>
 
-            <div class="flex justify-between items-start mb-4">
+            <div class="flex justify-between items-start mb-2">
                 <div>
-                    <h3 class="text-xl font-bold text-white group-hover:text-primary transition-colors">{{ training.name
+                    <h3 class="text-base font-bold text-white group-hover:text-primary transition-colors line-clamp-1">
+                        {{ training.name
                         || 'Sesión de Entrenamiento' }}</h3>
-                    <div class="flex items-center gap-2 text-gray-400 text-sm font-medium mt-1">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                    <div class="flex items-center gap-1.5 text-gray-400 text-xs font-medium mt-0.5">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
                             <line x1="16" y1="2" x2="16" y2="6"></line>
                             <line x1="8" y1="2" x2="8" y2="6"></line>
                             <line x1="3" y1="10" x2="21" y2="10"></line>
                         </svg>
-                        {{ training.date | date:'fullDate' }}
+                        {{ training.date | date:'dd/MM/yyyy' }}
                     </div>
                 </div>
                 @if (training.startTime) {
-                <div class="bg-dark-bg px-2 py-1 border border-dark-border text-xs font-black text-gray-300">
+                <div class="bg-dark-bg px-1.5 py-0.5 border border-dark-border text-[10px] font-black text-gray-300">
                     {{ training.startTime }}
                 </div>
                 }
             </div>
 
-            <div class="space-y-2 mb-6">
-                <div class="text-xs font-black text-gray-500 uppercase tracking-widest">Objetivos</div>
+            <div class="space-y-1.5 mb-3">
+                <div class="text-[10px] font-black text-gray-500 uppercase tracking-widest">Objetivos</div>
                 <div class="flex flex-wrap gap-1">
                     @for (concept of training.sessionConcepts.slice(0, 3); track concept.id) {
-                    <span class="bg-dark-bg text-gray-300 text-[10px] font-bold px-2 py-0.5 border border-dark-border">
+                    <span
+                        class="bg-dark-bg text-gray-300 text-[10px] font-bold px-1.5 py-0.5 border border-dark-border">
                         {{ concept.conceptName }}
                     </span>
                     }
@@ -89,9 +82,9 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-between pt-4 border-t border-dark-border">
-                <div class="flex items-center gap-1 text-xs font-bold text-gray-400">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+            <div class="flex items-center justify-between pt-3 border-t border-dark-border">
+                <div class="flex items-center gap-1 text-[10px] font-bold text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 10v6M2 10v6M6 12h12M12 4v16" />
                     </svg>
@@ -99,7 +92,7 @@
                 </div>
                 <span
                     class="text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
                         <line x1="5" y1="12" x21="19"></line>
                         <polyline points="12 5 19 12 12 19"></polyline>

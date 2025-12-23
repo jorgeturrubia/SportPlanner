@@ -206,7 +206,7 @@ export class TeamsComponent implements OnInit {
 
     managePlanning(team: any) {
         this.closeMenu();
-        this.router.navigate(['/dashboard/teams/planning', team.id]);
+        this.router.navigate(['/dashboard/plannings'], { queryParams: { teamId: team.id } });
     }
 
     onSubmit() {
