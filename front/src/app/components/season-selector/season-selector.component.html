@@ -1,0 +1,13 @@
+<div class="season-selector flex items-center gap-2">
+  <span class="text-xs text-white/70 font-medium">Temporada:</span>
+  <select 
+    [ngModel]="selectedSeasonId()" 
+    (ngModelChange)="onSeasonChange($event)"
+    class="bg-white/10 text-white text-sm rounded-lg border border-white/10 px-3 py-1.5 focus:outline-none focus:ring-2 focus:ring-sport-orange hover:bg-white/20 transition-colors cursor-pointer appearance-none min-w-[120px]"
+  >
+    <option [ngValue]="null" class="text-gray-900">Todas / Histórico</option>
+    @for (season of availableSeasons(); track season.id) {
+      <option [ngValue]="season.id" class="text-gray-900">{{ season.name }}</option>
+    }
+  </select>
+</div>

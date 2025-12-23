@@ -15,7 +15,8 @@ import { ViewChild } from '@angular/core';
     selector: 'app-team-planning',
     standalone: true,
     imports: [CommonModule, ReactiveFormsModule, ProposalManagerComponent],
-    templateUrl: './team-planning.component.html'
+    templateUrl: './team-planning.component.html',
+    styleUrls: ['./team-planning.component.scss']
 })
 export class TeamPlanningComponent implements OnInit {
     teamId: number = 0;

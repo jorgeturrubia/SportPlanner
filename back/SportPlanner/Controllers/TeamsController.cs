@@ -80,6 +80,7 @@ public class TeamsController : ControllerBase
             TeamLevelId = dto.TeamLevelId,
             CurrentTechnicalLevel = dto.CurrentTechnicalLevel,
             CurrentTacticalLevel = dto.CurrentTacticalLevel,
+            SeasonId = dto.SeasonId,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
@@ -98,7 +99,7 @@ public class TeamsController : ControllerBase
         return Ok(team);
     }
 
- 
+
     [HttpPut("{id}")]
     [Authorize]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateTeamDto dto)
@@ -110,7 +111,7 @@ public class TeamsController : ControllerBase
         if (user == null) return Forbid();
 
         // Check ownership
-        if (team.OwnerUserSupabaseId != user.Id && 
+        if (team.OwnerUserSupabaseId != user.Id &&
             (!team.OrganizationId.HasValue || !await _db.OrganizationMemberships.AnyAsync(m => m.OrganizationId == team.OrganizationId && m.UserSupabaseId == user.Id)))
         {
             return Forbid();
@@ -121,6 +122,7 @@ public class TeamsController : ControllerBase
         team.TeamLevelId = dto.TeamLevelId;
         team.CurrentTechnicalLevel = dto.CurrentTechnicalLevel;
         team.CurrentTacticalLevel = dto.CurrentTacticalLevel;
+        // SeasonId update could be added here if needed, but usually teams don't change season.
         team.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();
@@ -138,7 +140,7 @@ public class TeamsController : ControllerBase
         if (user == null) return Forbid();
 
         // Check ownership
-        if (team.OwnerUserSupabaseId != user.Id && 
+        if (team.OwnerUserSupabaseId != user.Id &&
             (!team.OrganizationId.HasValue || !await _db.OrganizationMemberships.AnyAsync(m => m.OrganizationId == team.OrganizationId && m.UserSupabaseId == user.Id)))
         {
             return Forbid();
@@ -160,7 +162,7 @@ public class TeamsController : ControllerBase
         if (user == null) return Forbid();
 
         // Check ownership
-        if (team.OwnerUserSupabaseId != user.Id && 
+        if (team.OwnerUserSupabaseId != user.Id &&
             (!team.OrganizationId.HasValue || !await _db.OrganizationMemberships.AnyAsync(m => m.OrganizationId == team.OrganizationId && m.UserSupabaseId == user.Id)))
         {
             return Forbid();
@@ -175,7 +177,7 @@ public class TeamsController : ControllerBase
 
     [HttpGet("my-teams")]
     [Authorize]
-    public async Task<IActionResult> GetMyTeams()
+    public async Task<IActionResult> GetMyTeams([FromQuery] int? seasonId)
     {
         var user = await _userService.GetOrCreateUserFromClaimsAsync(User);
         if (user == null) return Forbid();
@@ -186,11 +188,24 @@ public class TeamsController : ControllerBase
             .Select(om => om.OrganizationId)
             .ToListAsync();
 
-        var teams = await _db.Teams
+        var query = _db.Teams
             .Include(t => t.TeamCategory)
             .Include(t => t.TeamLevel)
-            .Where(t => t.OwnerUserSupabaseId == user.Id || (t.OrganizationId.HasValue && userOrgIds.Contains(t.OrganizationId.Value)))
-            .ToListAsync();
+            .Where(t => t.OwnerUserSupabaseId == user.Id || (t.OrganizationId.HasValue && userOrgIds.Contains(t.OrganizationId.Value)));
+
+        if (seasonId.HasValue)
+        {
+            query = query.Where(t => t.SeasonId == seasonId.Value);
+        }
+        else
+        {
+            // Optional: if no season specified, simple logic could be "show everything" or "show active"
+            // For now, allow everything if null.
+            // Or, if filtering "No Season" is desired, value -1 could be used?
+            // Let's stick to standard filter: null = all.
+        }
+
+        var teams = await query.ToListAsync();
 
         return Ok(teams);
     }

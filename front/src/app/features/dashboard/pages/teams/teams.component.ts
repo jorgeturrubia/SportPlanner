@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -7,6 +7,7 @@ import { NotificationService } from '../../../../services/notification.service';
 import { SubscriptionsService, Subscription } from '../../../../services/subscriptions.service';
 import { LookupService, TeamCategory, TeamLevel } from '../../../../services/lookup.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
+import { SeasonService } from '../../../../services/season.service';
 
 @Component({
     selector: 'app-teams',
@@ -23,6 +24,8 @@ export class TeamsComponent implements OnInit {
     hasActiveSubscription = signal(false);
     teamCategories = signal<TeamCategory[]>([]);
     teamLevels = signal<TeamLevel[]>([]);
+
+    private seasonService = inject(SeasonService);
 
     // Confirm dialog properties
     showDeleteDialog = signal(false);
@@ -45,11 +48,26 @@ export class TeamsComponent implements OnInit {
             currentTechnicalLevel: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
             currentTacticalLevel: [5, [Validators.required, Validators.min(1), Validators.max(10)]]
         });
+
+        effect(() => {
+            // This reads the signal, creating a dependency.
+            // Whenever currentSeason changes, this block runs.
+            const season = this.seasonService.currentSeason();
+            // We call loadTeams. Since this effect runs initially too, it covers the startup load.
+            // However, we want to avoid double loading if ngOnInit also calls it?
+            // Actually, ngOnInit calls loadTeams(), let's remove it from ngOnInit to avoid duplication
+            // or let untracked handle it. But simple solution: rely on effect for all loads.
+
+            // To be safe against "ExpressionChangedAfterItHasChecked" or signal writes in effect:
+            // loadTeams sets signals. Angular allows setting signals in effects if allowSignalWrites is true
+            // or if it's async (subscribe response). Http subscribe is async, so it's fine.
+            this.loadTeams();
+        });
     }
 
     ngOnInit() {
         this.loadSubscriptions();
-        this.loadTeams();
+        // this.loadTeams(); // Removed, handled by effect
         this.loadLookups();
     }
 
@@ -227,7 +245,11 @@ export class TeamsComponent implements OnInit {
                     }
                 });
             } else {
-                this.teamsService.createTeam(this.teamForm.value).subscribe({
+                const formValue = this.teamForm.value;
+                const currentSeason = this.seasonService.currentSeason();
+                const payload = { ...formValue, seasonId: currentSeason?.id || null };
+
+                this.teamsService.createTeam(payload).subscribe({
                     next: (res) => {
                         this.loadTeams();
                         this.resetForm();

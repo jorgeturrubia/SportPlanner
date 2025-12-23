@@ -1,4 +1,4 @@
-import { Component, OnInit, signal } from '@angular/core';
+import { Component, OnInit, signal, effect, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PlanningService } from '../../../../services/planning.service';
@@ -7,6 +7,7 @@ import { ConfirmDialogComponent } from '../../../../shared/components/confirm-di
 import { Planning } from '../../../../core/models/planning.model';
 import { TeamsService } from '../../../../services/teams.service';
 import { ActivatedRoute } from '@angular/router';
+import { SeasonService } from '../../../../services/season.service';
 
 @Component({
     selector: 'app-plannings',
@@ -26,13 +27,21 @@ export class PlanningsComponent implements OnInit {
     currentTeamId = signal<number | null>(null);
     currentTeamName = signal<string>('');
 
+    private seasonService = inject(SeasonService);
+
     constructor(
         private planningService: PlanningService,
         private router: Router,
         private notificationService: NotificationService,
         private route: ActivatedRoute,
         private teamsService: TeamsService
-    ) { }
+    ) {
+        effect(() => {
+            const season = this.seasonService.currentSeason();
+            // Trigger load when season changes
+            this.loadPlannings();
+        });
+    }
 
     ngOnInit() {
         this.route.queryParams.subscribe(params => {

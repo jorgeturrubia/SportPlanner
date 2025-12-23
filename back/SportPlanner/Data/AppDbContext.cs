@@ -20,6 +20,7 @@ public class AppDbContext : DbContext
     public DbSet<TeamMember> TeamMembers { get; set; } = null!;
     public DbSet<ConceptCategory> ConceptCategories { get; set; } = null!;
     public DbSet<DifficultyLevel> DifficultyLevels { get; set; } = null!;
+    public DbSet<Season> Seasons { get; set; } = null!;
     public DbSet<SportConcept> SportConcepts { get; set; } = null!;
     public DbSet<PlanConcept> PlanConcepts { get; set; } = null!;
     public DbSet<Planning> Plannings { get; set; } = null!;
