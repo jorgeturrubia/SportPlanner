@@ -1,0 +1,29 @@
+<div class="calendar-container">
+    <div class="calendar-header">
+        <button class="btn btn-secondary" (click)="prevWeek()">
+            <i class="pi pi-chevron-left"></i> Anterior
+        </button>
+        <h2>{{ weekStart | date:'mediumDate' }} - {{ weekEnd | date:'mediumDate' }}</h2>
+        <button class="btn btn-secondary" (click)="nextWeek()">
+            Siguiente <i class="pi pi-chevron-right"></i>
+        </button>
+    </div>
+
+    <div class="calendar-grid">
+        <div *ngFor="let day of days" class="calendar-day" [class.planned]="day.isPlanned">
+            <div class="day-header" [class.today]="isToday(day.date)">
+                <div>{{ day.date | date:'EEEE' }}</div>
+                <div>{{ day.date | date:'dd/MM' }}</div>
+            </div>
+
+            <div *ngFor="let session of day.sessions" class="training-card" (click)="viewSession(session)">
+                <div class="font-bold">{{ session.name || 'Entrenamiento' }}</div>
+                <div class="text-sm">{{ session.startTime | slice:0:5 }}</div>
+            </div>
+
+            <div class="add-training-btn" (click)="addTraining(day)">
+                <i class="pi pi-plus"></i> Añadir
+            </div>
+        </div>
+    </div>
+</div>

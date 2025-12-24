@@ -24,6 +24,7 @@ interface TrainingConceptViewModel {
     isOpen: boolean; // For accordion
     isEditing?: boolean;
     editName?: string;
+    editDescription?: string;
     durationMinutes?: number;
 }
 
@@ -56,6 +57,7 @@ export class TrainingDetailComponent implements OnInit {
     saving = signal(false);
     trainingId = signal<number | null>(null);
     teamId = signal<number | null>(null);
+    planningId = signal<number | null>(null);
 
     // Form Data
     name = signal('');
@@ -246,6 +248,14 @@ export class TrainingDetailComponent implements OnInit {
             this.loadTraining(+id);
         } else if (teamIdParam) {
             this.teamId.set(+teamIdParam);
+            const dateParam = this.route.snapshot.queryParamMap.get('date');
+            if (dateParam) {
+                this.date.set(dateParam.split('T')[0]);
+            }
+            const planningIdParam = this.route.snapshot.queryParamMap.get('planningId');
+            if (planningIdParam) {
+                this.planningId.set(+planningIdParam);
+            }
             this.loadTeamPlanning(+teamIdParam);
         }
     }
@@ -358,7 +368,7 @@ export class TrainingDetailComponent implements OnInit {
 
         const dto = {
             name: name,
-            description: 'Concepto Personal',
+            description: 'Edita la descripción para detallar el objetivo.',
             technicalDifficulty: 1,
             tacticalComplexity: 1,
             conceptCategoryId: null,
@@ -396,7 +406,8 @@ export class TrainingDetailComponent implements OnInit {
                 return {
                     ...c,
                     isEditing: !c.isEditing,
-                    editName: c.name
+                    editName: c.name,
+                    editDescription: c.description
                 };
             }
             return c;
@@ -405,30 +416,19 @@ export class TrainingDetailComponent implements OnInit {
 
     saveConceptName(concept: TrainingConceptViewModel) {
         if (!concept.editName || !concept.editName.trim()) return;
-        const newName = concept.editName.trim();
 
-        this.loading.set(true);
-        this.conceptService.getConceptById(concept.id).subscribe({
-            next: (fullConcept) => {
-                fullConcept.name = newName;
-                this.conceptService.updateConcept(concept.id, fullConcept).subscribe({
-                    next: () => {
-                        this.trainingConcepts.update(concepts => concepts.map(c => {
-                            if (c.id === concept.id) {
-                                return { ...c, name: newName, isEditing: false };
-                            }
-                            return c;
-                        }));
-                        this.loading.set(false);
-                    },
-                    error: () => {
-                        alert("Error al actualizar el nombre");
-                        this.loading.set(false);
-                    }
-                });
-            },
-            error: () => this.loading.set(false)
-        });
+        // Update local state only
+        this.trainingConcepts.update(concepts => concepts.map(c => {
+            if (c.id === concept.id) {
+                return {
+                    ...c,
+                    name: concept.editName!.trim(),
+                    description: concept.editDescription,
+                    isEditing: false
+                };
+            }
+            return c;
+        }));
     }
 
     updateDuration() {
@@ -542,7 +542,8 @@ export class TrainingDetailComponent implements OnInit {
         const sessionConcepts = validConcepts.map((c, i) => ({
             sportConceptId: c.id,
             order: i,
-            durationMinutes: c.durationMinutes
+            durationMinutes: c.durationMinutes,
+            overrideDescription: c.description
         }));
 
         const sessionExercises: any[] = [];
@@ -564,6 +565,7 @@ export class TrainingDetailComponent implements OnInit {
             date: this.date(),
             startTime: this.startTime() + ':00',
             duration: this.totalDuration(), // Use computed duration
+            planningId: this.planningId() || undefined,
             sessionConcepts: sessionConcepts,
             sessionExercises: sessionExercises
         };

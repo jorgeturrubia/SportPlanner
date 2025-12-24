@@ -39,6 +39,7 @@ public class TrainingSessionDto
     public TimeSpan? StartTime { get; set; }
     public TimeSpan? Duration { get; set; }
     public int? CourtId { get; set; }
+    public int? PlanningId { get; set; }
 
     // Live Execution Tracking
     public string Status { get; set; } = "Planned"; // Enum as string
@@ -61,6 +62,7 @@ public class CreateTrainingSessionDto
     public TimeSpan? StartTime { get; set; }
     public TimeSpan? Duration { get; set; }
     public int? CourtId { get; set; }
+    public int? PlanningId { get; set; }
     public List<CreateTrainingSessionConceptDto>? SessionConcepts { get; set; }
     public List<CreateTrainingSessionExerciseDto>? SessionExercises { get; set; }
 }
@@ -70,6 +72,7 @@ public class CreateTrainingSessionConceptDto
     public int SportConceptId { get; set; }
     public int Order { get; set; }
     public int? DurationMinutes { get; set; }
+    public string? OverrideDescription { get; set; }
 }
 
 public class CreateTrainingSessionExerciseDto

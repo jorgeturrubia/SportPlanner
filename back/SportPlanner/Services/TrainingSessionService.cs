@@ -22,6 +22,16 @@ public class TrainingSessionService : ITrainingSessionService
             .ToListAsync();
     }
 
+    public async Task<List<TrainingSession>> GetByDateRangeAsync(int teamId, DateTime start, DateTime end)
+    {
+        return await _db.TrainingSessions
+            .Where(ts => ts.TeamId == teamId && ts.Date >= start && ts.Date <= end)
+            .OrderBy(ts => ts.Date)
+            .Include(ts => ts.SessionConcepts).ThenInclude(sc => sc.SportConcept) // Optional: for display
+            .Include(ts => ts.SessionExercises).ThenInclude(se => se.Exercise)   // Optional
+            .ToListAsync();
+    }
+
     public async Task<TrainingSession?> GetByIdAsync(int id)
     {
         return await _db.TrainingSessions
@@ -43,8 +53,11 @@ public class TrainingSessionService : ITrainingSessionService
             Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc),
             StartTime = dto.StartTime,
             Duration = dto.Duration,
-            CourtId = dto.CourtId
+            CourtId = dto.CourtId,
+            PlanningId = dto.PlanningId
         };
+
+        // ... (rest of CreateAsync)
 
         if (dto.SessionConcepts != null)
         {
@@ -54,10 +67,13 @@ public class TrainingSessionService : ITrainingSessionService
                 {
                     SportConceptId = c.SportConceptId,
                     Order = c.Order,
-                    DurationMinutes = c.DurationMinutes
+                    DurationMinutes = c.DurationMinutes,
+                    OverrideDescription = c.OverrideDescription
                 });
             }
         }
+
+        // ...
 
         if (dto.SessionExercises != null)
         {
@@ -76,6 +92,7 @@ public class TrainingSessionService : ITrainingSessionService
 
         _db.TrainingSessions.Add(session);
         await _db.SaveChangesAsync();
+
         return session;
     }
 
@@ -90,10 +107,11 @@ public class TrainingSessionService : ITrainingSessionService
             throw new ArgumentException("Session not found");
 
         session.Name = dto.Name;
-        session.Date = dto.Date;
+        session.Date = DateTime.SpecifyKind(dto.Date, DateTimeKind.Utc);
         session.StartTime = dto.StartTime;
         session.Duration = dto.Duration;
         session.CourtId = dto.CourtId;
+        session.PlanningId = dto.PlanningId;
         session.UpdatedAt = DateTime.UtcNow;
 
         // Sync Concepts
@@ -106,7 +124,8 @@ public class TrainingSessionService : ITrainingSessionService
                 {
                     SportConceptId = c.SportConceptId,
                     Order = c.Order,
-                    DurationMinutes = c.DurationMinutes
+                    DurationMinutes = c.DurationMinutes,
+                    OverrideDescription = c.OverrideDescription
                 });
             }
         }

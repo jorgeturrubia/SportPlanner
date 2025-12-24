@@ -64,7 +64,7 @@ export const appConfig: ApplicationConfig = {
               { path: 'plannings', loadComponent: () => import('./features/dashboard/pages/plannings/plannings.component').then(m => m.PlanningsComponent) },
               { path: 'sessions', loadComponent: () => import('./features/dashboard/pages/trainings/trainings.component').then(m => m.TrainingsComponent) },
               // Placeholders for now, can be replaced with real components later or point to "Coming Soon"
-              { path: 'calendar', loadComponent: () => import('./features/dashboard/pages/plannings/plannings.component').then(m => m.PlanningsComponent) }, // Using plannings as temporary placeholder
+              { path: 'calendar', loadComponent: () => import('./features/dashboard/pages/calendar/calendar.component').then(m => m.CalendarComponent) },
               { path: 'players', loadComponent: () => import('./features/dashboard/pages/plannings/plannings.component').then(m => m.PlanningsComponent) }  // Using plannings as temporary placeholder
             ]
           },

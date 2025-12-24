@@ -25,6 +25,13 @@ public class TrainingSessionsController : ControllerBase
         return Ok(_mapper.Map<List<TrainingSessionDto>>(sessions));
     }
 
+    [HttpGet("schedule")]
+    public async Task<ActionResult<List<TrainingSessionDto>>> GetSchedule(int teamId, DateTime start, DateTime end)
+    {
+        var sessions = await _sessionService.GetByDateRangeAsync(teamId, start, end);
+        return Ok(_mapper.Map<List<TrainingSessionDto>>(sessions));
+    }
+
     [HttpGet("{id}")]
     public async Task<ActionResult<TrainingSessionDto>> GetById(int id)
     {

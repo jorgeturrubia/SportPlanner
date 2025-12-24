@@ -31,6 +31,7 @@ export interface TrainingSession {
     startTime?: string;
     duration?: string;
     courtId?: number;
+    planningId?: number;
     sessionConcepts: TrainingSessionConcept[];
     sessionExercises: TrainingSessionExercise[];
 
@@ -51,6 +52,7 @@ export interface CreateTrainingSessionDto {
     startTime?: string;
     duration?: string;
     courtId?: number;
+    planningId?: number;
     sessionConcepts: CreateTrainingSessionConceptDto[];
     sessionExercises: CreateTrainingSessionExerciseDto[];
 }
@@ -59,6 +61,7 @@ export interface CreateTrainingSessionConceptDto {
     sportConceptId: number;
     order: number;
     durationMinutes?: number;
+    overrideDescription?: string;
 }
 
 export interface CreateTrainingSessionExerciseDto {

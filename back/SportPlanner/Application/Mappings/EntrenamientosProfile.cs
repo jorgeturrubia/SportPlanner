@@ -16,7 +16,7 @@ public class EntrenamientosProfile : Profile
 
         CreateMap<TrainingSessionConcept, TrainingSessionConceptDto>()
             .ForMember(dest => dest.ConceptName, opt => opt.MapFrom(src => src.SportConcept != null ? src.SportConcept.Name : null))
-            .ForMember(dest => dest.ConceptDescription, opt => opt.MapFrom(src => src.SportConcept != null ? src.SportConcept.Description : null))
+            .ForMember(dest => dest.ConceptDescription, opt => opt.MapFrom(src => src.OverrideDescription ?? (src.SportConcept != null ? src.SportConcept.Description : null)))
             .ForMember(dest => dest.ConceptCategoryName, opt => opt.MapFrom(src => src.SportConcept != null && src.SportConcept.ConceptCategory != null ? src.SportConcept.ConceptCategory.Name : null));
 
         CreateMap<TrainingSessionExercise, TrainingSessionExerciseDto>()

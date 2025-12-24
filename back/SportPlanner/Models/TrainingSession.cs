@@ -18,6 +18,9 @@ public class TrainingSession
     public int? CourtId { get; set; }
     public Court? Court { get; set; }
 
+    public int? PlanningId { get; set; }
+    public Planning? Planning { get; set; }
+
     // Objectives selected for this training (from the planning)
     public ICollection<TrainingSessionConcept> SessionConcepts { get; set; } = new List<TrainingSessionConcept>();
 
@@ -49,6 +52,7 @@ public class TrainingSessionConcept
 
     public int Order { get; set; }
     public int? DurationMinutes { get; set; }
+    public string? OverrideDescription { get; set; }
 }
 
 public class TrainingSessionExercise

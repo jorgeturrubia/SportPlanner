@@ -1,0 +1,80 @@
+.calendar-container {
+    padding: 1rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 0.5rem;
+    flex: 1;
+    overflow-y: auto;
+}
+
+.calendar-day {
+    background-color: var(--surface-card);
+    border-radius: 8px;
+    padding: 0.5rem;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid transparent;
+}
+
+.calendar-day.planned {
+    /* Subtle indication for planned days using theme primary color */
+    border-top: 3px solid var(--color-primary);
+    /* Gradient: Orange #FF6B00 at 15% opacity to transparent */
+    background: linear-gradient(to bottom, rgba(255, 107, 0, 0.15) 0%, transparent 25%);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+}
+
+.day-header {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid var(--surface-border);
+}
+
+.day-header.today {
+    color: var(--primary-500);
+}
+
+.training-card {
+    background-color: var(--surface-ground);
+    padding: 0.5rem;
+    margin-bottom: 0.5rem;
+    border-radius: 4px;
+    cursor: pointer;
+    border-left: 3px solid var(--primary-500);
+}
+
+.training-card:hover {
+    background-color: var(--surface-hover);
+}
+
+.add-training-btn {
+    margin-top: auto;
+    width: 100%;
+    padding: 0.5rem;
+    text-align: center;
+    border: 1px dashed var(--surface-border);
+    border-radius: 4px;
+    cursor: pointer;
+    color: var(--text-color-secondary);
+}
+
+.add-training-btn:hover {
+    background-color: var(--surface-hover);
+    color: var(--text-color);
+}

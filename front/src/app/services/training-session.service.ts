@@ -14,6 +14,10 @@ export class TrainingSessionService {
         return this.http.get<TrainingSession[]>(`${this.apiUrl}/team/${teamId}`);
     }
 
+    getSchedule(teamId: number, start: string, end: string): Observable<TrainingSession[]> {
+        return this.http.get<TrainingSession[]>(`${this.apiUrl}/schedule`, { params: { teamId, start, end } });
+    }
+
     getById(id: number): Observable<TrainingSession> {
         return this.http.get<TrainingSession>(`${this.apiUrl}/${id}`);
     }
