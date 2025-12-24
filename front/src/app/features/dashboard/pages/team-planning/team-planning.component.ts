@@ -95,6 +95,12 @@ export class TeamPlanningComponent implements OnInit {
                     endDate: planning.endDate.split('T')[0]
                 });
 
+                // Ensure teamId is set when editing
+                if (planning.team?.id) {
+                    this.teamId = planning.team.id;
+                    this.loadTeam(this.teamId);
+                }
+
                 // Populate days
                 if (planning.scheduleDays) {
                     planning.scheduleDays.forEach((day: PlaningScheduleDay) => {

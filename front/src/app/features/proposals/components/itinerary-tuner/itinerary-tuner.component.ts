@@ -1,5 +1,5 @@
 
-import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { Component, EventEmitter, Input, Output, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MethodologicalItineraryDto } from '../../models/proposal.models';
@@ -44,13 +44,22 @@ import { MethodologicalItineraryDto } from '../../models/proposal.models';
   `,
     styles: []
 })
-export class ItineraryTunerComponent {
+export class ItineraryTunerComponent implements OnChanges {
     @Input() itineraries: MethodologicalItineraryDto[] = [];
     @Input() activeItineraryId: number | null = null;
     @Input() teamCategoryName: string = ''; // Fallback for auto mode
     @Input() defaultItineraryName: string = '';
 
     @Output() itineraryChange = new EventEmitter<number>();
+
+    ngOnChanges(changes: SimpleChanges): void {
+        if (changes['itineraries']) {
+            console.log('ItineraryTuner: Itineraries updated (Input):', this.itineraries);
+        }
+        if (changes['activeItineraryId']) {
+            console.log('ItineraryTuner: activeItineraryId updated (Input):', this.activeItineraryId);
+        }
+    }
 
     onItineraryChange(newId: number) {
         this.itineraryChange.emit(newId);

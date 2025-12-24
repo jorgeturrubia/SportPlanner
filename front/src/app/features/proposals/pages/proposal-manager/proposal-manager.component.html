@@ -49,14 +49,18 @@
                     <button type="button"
                         class="w-full flex items-center justify-between py-1 text-left hover:bg-neutral-800/30 transition-colors group"
                         (click)="toggleSection(section)">
-                        <h2
-                            class="text-lg font-black italic text-white uppercase tracking-tighter flex items-center gap-4">
-                            <span
-                                class="w-1 h-5 bg-[#CCFF00] rounded-full shadow-[0_0_15px_rgba(204,255,0,0.5)]"></span>
-                            {{ section.name }}
-                            <span
-                                class="text-[10px] font-medium text-neutral-500 border border-neutral-700 rounded px-2 py-0.5 not-italic tracking-widest">SECCIÓN</span>
-                        </h2>
+                        <div class="flex items-center gap-4">
+                            <h2
+                                class="text-lg font-black italic text-white uppercase tracking-tighter flex items-center gap-4">
+                                <span
+                                    class="w-1 h-5 bg-[#CCFF00] rounded-full shadow-[0_0_15px_rgba(204,255,0,0.5)]"></span>
+                                {{ section.name }}
+                            </h2>
+                            <span *ngIf="!sectionHasActive(section)"
+                                class="px-2 py-1 rounded bg-[#FF6B00]/10 text-[#FF9933] text-[9px] uppercase tracking-tighter font-bold border border-[#FF6B00]/30 italic animate-pulse">
+                                Sin propuestas activas
+                            </span>
+                        </div>
 
                         <span
                             class="material-icons text-neutral-400 text-lg group-hover:text-[#CCFF00] transition-all duration-300 mr-2"
@@ -89,8 +93,8 @@
                             </h3>
                             <!-- Empty State Badge (if collapsed and empty) -->
                             <span *ngIf="!category.hasActiveContent && category.isCollapsed"
-                                class="text-[10px] text-neutral-500 italic ml-2">
-                                (Sin planificación)
+                                class="px-2 py-0.5 rounded bg-[#FF6B00]/10 text-[#FF9933] text-[9px] uppercase tracking-tighter border border-[#FF6B00]/20 ml-2">
+                                Sin planificación
                             </span>
 
                             <!-- Right Line (Fills space) -->

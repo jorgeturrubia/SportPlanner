@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
@@ -7,6 +7,7 @@ import { ProposalsService } from '../../services/proposals.service';
 import { TeamsService } from '../../../../services/teams.service';
 import { SportsService } from '../../../../services/sports.service';
 import { SeasonService } from '../../../../services/season.service';
+import { SubscriptionsService } from '../../../../services/subscriptions.service';
 import { inject } from '@angular/core';
 import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto, MethodologicalItineraryDto } from '../../models/proposal.models';
 
@@ -57,7 +58,7 @@ interface MethodologicalSection {
     templateUrl: './proposal-manager.component.html',
     styleUrls: ['./proposal-manager.component.css']
 })
-export class ProposalManagerComponent implements OnChanges {
+export class ProposalManagerComponent implements OnInit, OnChanges {
     @Input() response: ConceptProposalResponseDto | null = null;
     @Input() selectedTeamId: number | null = null;
     @Input() embedded: boolean = false;
@@ -85,46 +86,126 @@ export class ProposalManagerComponent implements OnChanges {
     constructor(
         private proposalsService: ProposalsService,
         private teamsService: TeamsService,
-        private sportsService: SportsService
+        private sportsService: SportsService,
+        private subscriptionsService: SubscriptionsService
     ) { } // Modified
+
+    ngOnInit(): void {
+        this.loadTeams();
+    }
+
+    private loadTeams() {
+        this.teamsService.getMyTeams().subscribe({
+            next: (res) => {
+                this.teams = res;
+                // If we have a selectedTeamId but it wasn't processed in ngOnChanges because teams were empty
+                if (this.selectedTeamId) {
+                    this.processSelectedTeam();
+                }
+            },
+            error: (err) => console.error('Error loading teams', err)
+        });
+    }
+
+    processSelectedTeam() {
+        const team = this.teams.find(t => t.id === this.selectedTeamId);
+
+        if (!team) {
+            this.teamsService.getTeam(this.selectedTeamId!).subscribe({
+                next: (t) => {
+                    // Temporarily add to list and process
+                    if (!this.teams.find(existing => existing.id === t.id)) {
+                        this.teams.push(t);
+                    }
+                    this.setupItineraryForTeam(t);
+                },
+                error: (err) => console.error('ProposalManager: Error fetching team context', err)
+            });
+            return;
+        }
+
+        this.setupItineraryForTeam(team);
+    }
+
+    private setupItineraryForTeam(team: any) {
+        // Broad search for sportId in the team object
+        let sportId = team.sportId ||
+            team.sport?.id ||
+            team.teamCategory?.sportId ||
+            team.teamCategory?.sport?.id;
+
+        if (!sportId) {
+            this.subscriptionsService.getMySubscriptions().subscribe({
+                next: (subs) => {
+                    const activeSub = subs.find(s => s.isActive);
+                    if (activeSub) {
+                        this.fetchItineraries(activeSub.sportId, team);
+                    } else if (subs.length > 0) {
+                        this.fetchItineraries(subs[0].sportId, team);
+                    } else {
+                        console.error('ProposalManager: No subscriptions found to determine sportId');
+                        this.generateProposals();
+                    }
+                },
+                error: (err) => {
+                    console.error('ProposalManager: Error fetching subscriptions', err);
+                    this.generateProposals();
+                }
+            });
+        } else {
+            this.fetchItineraries(sportId, team);
+        }
+    }
+
+    private fetchItineraries(sportId: number, team: any) {
+        this.sportsService.getItineraries(sportId).subscribe({
+            next: (res) => {
+                this.itineraries = res;
+                // Determine default itinerary name
+                const categoryName = team.teamCategory?.name || '';
+                const expectedLevel = this.calculateTargetLevel(categoryName);
+
+                // Try to find exact match or partial match
+                const match = this.itineraries.find(i => i.name === categoryName)
+                    || this.itineraries.find(i => i.level === expectedLevel);
+
+                this.defaultItineraryName = match ? match.name : categoryName;
+
+                // Only set selectedItineraryId if not already set (to preserve user selection or edit mode)
+                if (!this.selectedItineraryId && match) {
+                    this.selectedItineraryId = match.id;
+                }
+
+                this.generateProposals();
+            },
+            error: (err) => {
+                console.error('ProposalManager: Error loading itineraries', err);
+                this.generateProposals();
+            }
+        });
+    }
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['response'] && this.response) {
             this.processResponseIntoHierarchy();
         }
-        // If selectedTeamId changes, we expect the parent or a separate call to trigger generateProposals
+
+        // If initialSelectedConceptIds changes and we already have a response, re-process to update "Own" tags
+        if (changes['initialSelectedConceptIds'] && !changes['initialSelectedConceptIds'].firstChange && this.response) {
+            this.processResponseIntoHierarchy();
+        }
+
+        if (changes['selectedTeamId'] && this.selectedTeamId) {
+            // We call processSelectedTeam directly. It will fetch the team if not in the list.
+            this.processSelectedTeam();
+        } else if (changes['selectedTeamId'] && !this.selectedTeamId) {
+            this.response = null;
+        }
+    }
+
+    onTeamChange() {
         if (this.selectedTeamId) {
-            const team = this.teams.find(t => t.id === this.selectedTeamId);
-
-            if (!team) {
-                console.warn('ProposalManager: Team not found in loaded teams', this.selectedTeamId);
-                return;
-            }
-
-            // Fallback: Use direct sportId or nested category sportId
-            const sportId = team.sportId || team.teamCategory?.sportId;
-            console.log('ProposalManager: Team Selected', team, 'SportId:', sportId);
-
-            if (team && sportId) {
-                this.sportsService.getItineraries(sportId).subscribe({
-                    next: (res) => {
-                        this.itineraries = res;
-                        // Determine default itinerary name
-                        const categoryName = team.teamCategory.name;
-                        const expectedLevel = this.calculateTargetLevel(categoryName);
-
-                        // Try to find exact match or partial match
-                        const match = this.itineraries.find(i => i.name === categoryName)
-                            || this.itineraries.find(i => i.level === expectedLevel);
-
-                        this.defaultItineraryName = match ? match.name : categoryName;
-                        if (match) {
-                            this.selectedItineraryId = match.id;
-                        }
-                    }
-                });
-            }
-            this.generateProposals();
+            this.processSelectedTeam();
         } else {
             this.response = null;
         }
@@ -142,7 +223,9 @@ export class ProposalManagerComponent implements OnChanges {
     }
 
     generateProposals() {
-        if (!this.selectedTeamId) return;
+        if (!this.selectedTeamId) {
+            return;
+        }
 
         this.loading = true;
         this.response = null;
@@ -174,6 +257,10 @@ export class ProposalManagerComponent implements OnChanges {
     onItineraryChange(itineraryId: number) {
         this.selectedItineraryId = itineraryId;
         this.generateProposals();
+    }
+
+    sectionHasActive(section: MethodologicalSection): boolean {
+        return section.categories.some(c => c.hasActiveContent);
     }
 
     toggleSection(section: MethodologicalSection) {
@@ -455,7 +542,7 @@ export class ProposalManagerComponent implements OnChanges {
                     const activeContent = rows.some(r => r.activeConcepts.length > 0);
                     categories.push({
                         name: catName,
-                        isCollapsed: true, // Default collapsed
+                        isCollapsed: !activeContent, // Auto-expand if has active content
                         hasActiveContent: activeContent,
                         subCategories: rows.sort((a, b) => a.name.localeCompare(b.name))
                     });

@@ -143,6 +143,10 @@ export class PlanningsComponent implements OnInit {
         this.router.navigate(['/dashboard/plannings/view', planning.id]);
     }
 
+    viewPlanInfo(planning: Planning) {
+        this.router.navigate(['/dashboard/plannings/info', planning.id]);
+    }
+
     goToSessions(planning: Planning) {
         this.router.navigate(['/dashboard/trainings'], {
             queryParams: {

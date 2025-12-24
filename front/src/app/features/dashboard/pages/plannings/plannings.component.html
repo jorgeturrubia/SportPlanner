@@ -53,6 +53,17 @@
                     </td>
                     <td class="p-2 text-right">
                         <div class="flex items-center justify-end gap-1 transition-opacity">
+                            <button (click)="viewPlanInfo(planning)"
+                                class="p-1.5 text-blue-500 hover:bg-blue-500/10 rounded transition-colors"
+                                title="Información Plan (Monitor)">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                                    fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round">
+                                    <line x1="18" y1="20" x2="18" y2="10"></line>
+                                    <line x1="12" y1="20" x2="12" y2="4"></line>
+                                    <line x1="6" y1="20" x2="6" y2="14"></line>
+                                </svg>
+                            </button>
                             <button (click)="goToSessions(planning)"
                                 class="p-1.5 text-purple-500 hover:bg-purple-500/10 rounded transition-colors"
                                 title="Ver Sesiones">

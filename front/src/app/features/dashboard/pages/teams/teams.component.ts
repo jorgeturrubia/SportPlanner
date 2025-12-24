@@ -8,6 +8,7 @@ import { SubscriptionsService, Subscription } from '../../../../services/subscri
 import { LookupService, TeamCategory, TeamLevel } from '../../../../services/lookup.service';
 import { ConfirmDialogComponent } from '../../../../shared/components/confirm-dialog/confirm-dialog.component';
 import { SeasonService } from '../../../../services/season.service';
+import { SportsService, Sport } from '../../../../services/sports.service';
 
 @Component({
     selector: 'app-teams',
@@ -24,6 +25,7 @@ export class TeamsComponent implements OnInit {
     hasActiveSubscription = signal(false);
     teamCategories = signal<TeamCategory[]>([]);
     teamLevels = signal<TeamLevel[]>([]);
+    sports = signal<Sport[]>([]);
 
     private seasonService = inject(SeasonService);
 
@@ -38,7 +40,8 @@ export class TeamsComponent implements OnInit {
         private router: Router,
         private notificationService: NotificationService,
         private subscriptionsService: SubscriptionsService,
-        private lookupService: LookupService
+        private lookupService: LookupService,
+        private sportsService: SportsService
     ) {
         this.teamForm = this.fb.group({
             name: ['', Validators.required],
@@ -58,8 +61,42 @@ export class TeamsComponent implements OnInit {
 
     ngOnInit() {
         this.loadSubscriptions();
-        // this.loadTeams(); // Removed, handled by effect
         this.loadLookups();
+        this.loadSports();
+    }
+
+    loadSports() {
+        this.sportsService.getAll().subscribe({
+            next: (sports) => this.sports.set(sports),
+            error: (err) => console.error('Error loading sports', err)
+        });
+    }
+
+    getSportName(team: any): string {
+        // 1. If the team object already has the sport name populated
+        if (team.sport?.name) return team.sport.name;
+
+        // 2. Try to find by ID in our loaded sports list
+        const sportId = team.sportId || team.teamCategory?.sportId;
+        if (sportId) {
+            const sport = this.sports().find(s => s.id == sportId);
+            if (sport) return sport.name;
+        }
+
+        // 3. Fallback to active subscriptions
+        const activeSubs = this.activeSubscriptions();
+        if (activeSubs.length > 0) {
+            // If we have a sportId but it's not in the 'sports' list, it might be in the subscriptions
+            if (sportId) {
+                const subMatch = activeSubs.find(s => s.sportId == sportId);
+                if (subMatch?.sport?.name) return subMatch.sport.name;
+            }
+
+            // If we can't find a match but have active subscriptions, use the first one's sport name
+            if (activeSubs[0].sport?.name) return activeSubs[0].sport.name;
+        }
+
+        return this.sports().length > 0 ? 'DEPORTE' : 'CARGANDO...';
     }
 
     loadLookups() {

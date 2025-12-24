@@ -238,71 +238,102 @@ namespace SportPlanner.Services
                 .GroupBy(c => c.ConceptCategoryId) // This groups by leaf category
                 .ToList();
 
-            // We need to return a hierarchical structure or a flattened one?
-            // User requested "perfecta organizacion por las categorias".
-            // Let's group by the "Main" category or keep the leaf structure.
-            // Ideally backend returns DTOs grouped by what makes sense.
-            // Let's start with grouping by ConceptCategory (leaf) and maybe frontend handles parent display, 
-            // OR let's just group by the immediate category for now.
-            // If we have parent categories, it gets complex. 
-            // Let's create a Category DTO for each distinct Category found.
+            // 1. Get all unique categories from the concepts involved
+            var categoriesList = conceptMap.Values
+                .Where(c => c.ConceptCategory != null)
+                .Select(c => c.ConceptCategory!)
+                .GroupBy(c => c.Id)
+                .Select(g => g.First())
+                .ToList();
 
-            // Strategy: distinct categories from the concepts.
-            var categories = conceptMap.Values.Select(c => c.ConceptCategory).DistinctBy(c => c.Id).ToList();
-
-            // Sort categories? Alphabetical or by Parent?
-            // Simple sort by Name for now.
-
-            foreach (var cat in categories.OrderBy(c => c.Name))
+            // 2. Process Categorized Concepts
+            foreach (var cat in categoriesList.OrderBy(c => GetFullCategoryName(c)))
             {
                 var catDto = new PlanMonitorCategoryDto
                 {
                     CategoryId = cat.Id,
-                    CategoryName = cat.Name
+                    CategoryName = GetFullCategoryName(cat)
                 };
 
-                // Find concepts in this category
-                var conceptsInCat = conceptMap.Values.Where(c => c.ConceptCategoryId == cat.Id).OrderBy(c => c.Name);
+                // Find concepts in this EXACT leaf category
+                var conceptsInCat = conceptMap.Values
+                    .Where(c => c.ConceptCategoryId == cat.Id)
+                    .OrderBy(c => c.Name);
 
                 foreach (var c in conceptsInCat)
                 {
-                    var cDto = new PlanMonitorConceptDto
-                    {
-                        ConceptId = c.Id,
-                        ConceptName = c.Name,
-                        IsPlanned = plannedConceptIds.Contains(c.Id),
-                        Executions = new List<PlanMonitorExecutionDto>()
-                    };
-
-                    // Calculate executions
-                    foreach (var s in sessions)
-                    {
-                        // Check usage in this session
-                        // From SessionConcepts
-                        var fromConcepts = s.SessionConcepts.Where(sc => sc.SportConceptId == c.Id).ToList();
-                        // From SessionExercises
-                        var fromExercises = s.SessionExercises.Where(se => se.SportConceptId == c.Id).ToList();
-
-                        if (fromConcepts.Any() || fromExercises.Any())
-                        {
-                            var count = fromConcepts.Count + fromExercises.Count;
-                            var duration = fromConcepts.Sum(x => x.DurationMinutes ?? 0) + fromExercises.Sum(x => x.DurationMinutes ?? 0);
-
-                            cDto.Executions.Add(new PlanMonitorExecutionDto
-                            {
-                                TrainingSessionId = s.Id,
-                                Count = count,
-                                DurationMinutes = duration
-                            });
-                        }
-                    }
-                    catDto.Concepts.Add(cDto);
+                    catDto.Concepts.Add(CreateConceptDto(c, plannedConceptIds, sessions));
                 }
 
-                resp.Categories.Add(catDto);
+                if (catDto.Concepts.Any())
+                {
+                    resp.Categories.Add(catDto);
+                }
+            }
+
+            // 3. Handle concepts with no category
+            var uncategorizedConcepts = conceptMap.Values
+                .Where(c => c.ConceptCategoryId == null)
+                .OrderBy(c => c.Name)
+                .ToList();
+
+            if (uncategorizedConcepts.Any())
+            {
+                var uncategorizedDto = new PlanMonitorCategoryDto
+                {
+                    CategoryId = 0,
+                    CategoryName = "Sin Categoría"
+                };
+
+                foreach (var c in uncategorizedConcepts)
+                {
+                    uncategorizedDto.Concepts.Add(CreateConceptDto(c, plannedConceptIds, sessions));
+                }
+                resp.Categories.Add(uncategorizedDto);
             }
 
             return resp;
+        }
+
+        private string GetFullCategoryName(ConceptCategory? category)
+        {
+            if (category == null) return "Sin Categoría";
+            var names = new List<string>();
+            var current = category;
+            while (current != null)
+            {
+                names.Insert(0, current.Name);
+                current = current.Parent;
+            }
+            return string.Join(" > ", names);
+        }
+
+        private PlanMonitorConceptDto CreateConceptDto(SportConcept c, HashSet<int> plannedConceptIds, List<TrainingSession> sessions)
+        {
+            var cDto = new PlanMonitorConceptDto
+            {
+                ConceptId = c.Id,
+                ConceptName = c.Name,
+                IsPlanned = plannedConceptIds.Contains(c.Id),
+                Executions = new List<PlanMonitorExecutionDto>()
+            };
+
+            foreach (var s in sessions)
+            {
+                var fromConcepts = s.SessionConcepts.Where(sc => sc.SportConceptId == c.Id).ToList();
+                var fromExercises = s.SessionExercises.Where(se => se.SportConceptId == c.Id).ToList();
+
+                if (fromConcepts.Any() || fromExercises.Any())
+                {
+                    cDto.Executions.Add(new PlanMonitorExecutionDto
+                    {
+                        TrainingSessionId = s.Id,
+                        Count = fromConcepts.Count + fromExercises.Count,
+                        DurationMinutes = fromConcepts.Sum(x => x.DurationMinutes ?? 0) + fromExercises.Sum(x => x.DurationMinutes ?? 0)
+                    });
+                }
+            }
+            return cDto;
         }
     }
 }
