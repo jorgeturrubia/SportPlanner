@@ -85,8 +85,13 @@
                 </div>
             </div>
 
-            <div class="flex justify-end">
-                <button type="button" (click)="nextStep()" [disabled]="!isStep1Valid()"
+            <!-- Navigation Step 1 -->
+            <div class="flex justify-between pt-3 border-t border-dark-border">
+                <button type="button" (click)="cancel()"
+                    class="px-5 py-2 bg-transparent border border-dark-border text-white font-bold uppercase text-xs tracking-wider hover:bg-dark-bg hover:border-gray-400 transition-colors rounded">
+                    CANCELAR
+                </button>
+                <button type="button" (click)="step.set(2)" [disabled]="!isStep1Valid()"
                     class="px-5 py-2 bg-primary text-black font-bold uppercase text-xs tracking-wider hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed rounded shadow-lg shadow-primary/20">
                     SIGUIENTE
                 </button>

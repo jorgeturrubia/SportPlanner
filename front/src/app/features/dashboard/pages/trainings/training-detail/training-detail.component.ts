@@ -534,7 +534,7 @@ export class TrainingDetailComponent implements OnInit {
 
 
 
-    async save() {
+    save() {
         if (!this.teamId()) return;
         this.saving.set(true);
 
@@ -577,14 +577,25 @@ export class TrainingDetailComponent implements OnInit {
         action.subscribe({
             next: () => {
                 this.saving.set(false);
-                this.router.navigate(['/dashboard/trainings']);
+                this.navigateBack();
             },
             error: () => this.saving.set(false)
         });
     }
 
     cancel() {
-        this.router.navigate(['/dashboard/trainings']);
+        this.navigateBack();
+    }
+
+    private navigateBack() {
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+        } else if (this.teamId()) {
+            this.router.navigate(['/dashboard/teams/management', this.teamId(), 'trainings']);
+        } else {
+            this.router.navigate(['/dashboard/trainings']);
+        }
     }
 
     startSession() {

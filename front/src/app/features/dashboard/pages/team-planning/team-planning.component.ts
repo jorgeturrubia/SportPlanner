@@ -204,7 +204,7 @@ export class TeamPlanningComponent implements OnInit {
                 this.planningService.updatePlanning(this.planningId, payload).subscribe({
                     next: () => {
                         this.notificationService.success('Planificación actualizada', 'Se ha actualizado la planificación correctamente.');
-                        this.router.navigate(['/dashboard/plannings']);
+                        this.navigateBack();
                     },
                     error: (err) => {
                         console.error('Error updating planning', err);
@@ -226,7 +226,7 @@ export class TeamPlanningComponent implements OnInit {
                 this.planningService.createPlanning(payload).subscribe({
                     next: () => {
                         this.notificationService.success('Planificación creada', 'Se ha generado la planificación correctamente.');
-                        this.router.navigate(['/dashboard/plannings']);
+                        this.navigateBack();
                     },
                     error: (err) => {
                         console.error('Error creating planning', err);
@@ -235,6 +235,19 @@ export class TeamPlanningComponent implements OnInit {
                     }
                 });
             }
+        }
+    }
+
+    cancel() {
+        this.navigateBack();
+    }
+
+    private navigateBack() {
+        const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+        if (returnUrl) {
+            this.router.navigateByUrl(returnUrl);
+        } else {
+            this.router.navigate(['/dashboard/teams/management', this.teamId]);
         }
     }
 }

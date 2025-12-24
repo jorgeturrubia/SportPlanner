@@ -96,12 +96,16 @@ export class PlanningsComponent implements OnInit {
 
     createPlanning() {
         if (this.currentTeamId()) {
-            this.router.navigate(['/dashboard/teams/planning', this.currentTeamId()]);
+            this.router.navigate(['/dashboard/teams/planning', this.currentTeamId()], {
+                queryParams: { returnUrl: this.router.url }
+            });
         }
     }
 
     editPlanning(planning: Planning) {
-        this.router.navigate(['/dashboard/teams/planning', planning.team.id, 'edit', planning.id]);
+        this.router.navigate(['/dashboard/teams/planning', planning.team.id, 'edit', planning.id], {
+            queryParams: { returnUrl: this.router.url }
+        });
     }
 
     deletePlanning(planning: Planning) {

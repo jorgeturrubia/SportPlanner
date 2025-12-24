@@ -117,13 +117,29 @@ export class CalendarComponent implements OnInit {
         this.trainingService.getSchedule(this.teamId, this.weekStart.toISOString(), endOfWeek.toISOString())
             .subscribe(sessions => {
                 sessions.forEach(session => {
-                    const sDate = new Date(session.date);
-                    const day = this.days.find(d => this.isSameDay(d.date, sDate));
+                    // Use string comparison (YYYY-MM-DD) to avoid timezone shifts
+                    // session.date is ISO format (UTC), we take the date part literally
+                    const sessionDateStr = session.date.split('T')[0];
+
+                    const day = this.days.find(d => {
+                        // Compare with day's local YYYY-MM-DD
+                        const dayDateStr = this.toLocalISODate(d.date);
+                        return dayDateStr === sessionDateStr;
+                    });
+
                     if (day) {
                         day.sessions.push(session);
                     }
                 });
             });
+    }
+
+    // Helper to get YYYY-MM-DD from local date
+    private toLocalISODate(date: Date): string {
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const d = date.getDate().toString().padStart(2, '0');
+        return `${year}-${month}-${d}`;
     }
 
     prevWeek() {
@@ -142,13 +158,20 @@ export class CalendarComponent implements OnInit {
 
     viewSession(session: TrainingSession) {
         // Navigate to edit/view session
-        this.router.navigate(['/dashboard/trainings/edit', session.id], { queryParams: { teamId: this.teamId } });
+        this.router.navigate(['/dashboard/trainings/edit', session.id], {
+            queryParams: {
+                teamId: this.teamId,
+                returnUrl: this.router.url
+            }
+        });
     }
 
     addTraining(day: CalendarDay) {
+        // Use local date string to preserve the day selected by user
+        // toISOString() converts to UTC which can shift day for users in +TimeZones
         const queryParams: any = {
             teamId: this.teamId,
-            date: day.date.toISOString(),
+            date: this.toLocalISODate(day.date),
             returnUrl: this.router.url
         };
         if (day.planningId) {

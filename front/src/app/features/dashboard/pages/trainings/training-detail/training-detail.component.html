@@ -14,7 +14,8 @@
             <div class="flex flex-col min-w-0 flex-1">
                 <span class="text-xs font-bold text-primary uppercase tracking-wider truncate">Sesión de
                     Entrenamiento</span>
-                <input [(ngModel)]="name" type="text" placeholder="Nombre de la sesión (e.g. Equipo U16 - Semana 4)"
+                <input [ngModel]="name()" (ngModelChange)="name.set($event)" type="text"
+                    placeholder="Nombre de la sesión (e.g. Equipo U16 - Semana 4)"
                     class="bg-transparent border-none p-0 text-xl font-black text-white focus:ring-0 placeholder-gray-600 w-full max-w-lg truncate">
             </div>
         </div>
@@ -28,7 +29,7 @@
                     <line x1="8" y1="2" x2="8" y2="6" />
                     <line x1="3" y1="10" x2="21" y2="10" />
                 </svg>
-                <input [(ngModel)]="date" type="date"
+                <input [ngModel]="date()" (ngModelChange)="date.set($event)" type="date"
                     class="bg-transparent border-none p-0 text-sm font-bold text-white focus:ring-0 w-28">
             </div>
             <div class="flex items-center gap-2 bg-dark-bg p-1.5 rounded border border-dark-border">
@@ -37,7 +38,7 @@
                     <circle cx="12" cy="12" r="10" />
                     <polyline points="12 6 12 12 16 14" />
                 </svg>
-                <input [(ngModel)]="startTime" type="time"
+                <input [ngModel]="startTime()" (ngModelChange)="startTime.set($event)" type="time"
                     class="bg-transparent border-none p-0 text-sm font-bold text-white focus:ring-0 w-20">
             </div>
 
