@@ -22,6 +22,8 @@ public class TrainingProfile : Profile
             .ForMember(dest => dest.PlanConcepts, opt => opt.Ignore())
             .ForMember(dest => dest.ScheduleDays, opt => opt.Ignore());
         CreateMap<Planning, TrainingScheduleDto>();
+        CreateMap<TrainingSession, TrainingSessionDto>()
+            .ForMember(dest => dest.PlanningName, opt => opt.MapFrom(src => src.Planning != null ? src.Planning.Name : null));
         CreateMap<PlanConcept, PlanConceptDto>();
         CreateMap<PlaningScheduleDay, TrainingScheduleDayDto>()
             .ForMember(dest => dest.StartTime, opt => opt.MapFrom(src => src.StartTime.ToString()))

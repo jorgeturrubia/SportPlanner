@@ -6,16 +6,20 @@ import { TrainingSession } from '../../../../core/models/training-session.model'
 import { TranslateModule } from '@ngx-translate/core';
 import { TeamsService } from '../../../../services/teams.service';
 import { Team } from '../../../../core/models/team.model';
+import { PlanningService } from '../../../../services/planning.service';
+import { Planning } from '../../../../core/models/planning.model';
+import { FormsModule } from '@angular/forms';
 
 @Component({
     selector: 'app-trainings',
     standalone: true,
-    imports: [CommonModule, RouterModule, TranslateModule],
+    imports: [CommonModule, RouterModule, TranslateModule, FormsModule],
     templateUrl: './trainings.component.html'
 })
 export class TrainingsComponent implements OnInit {
     private trainingService = inject(TrainingSessionService);
     private teamsService = inject(TeamsService);
+    private planningService = inject(PlanningService);
     private router = inject(Router);
     private route = inject(ActivatedRoute);
 
@@ -26,6 +30,11 @@ export class TrainingsComponent implements OnInit {
     loading = signal(false);
     isEmbedded = signal(false);
 
+    // Filtering
+    planningIdFilter = signal<number | null | 'none'>(null);
+    allPlannings = signal<Planning[]>([]);
+    allTrainings = signal<TrainingSession[]>([]);
+
     ngOnInit() {
         this.isEmbedded.set(this.router.url.includes('/management/'));
         this.loading.set(true);
@@ -35,6 +44,11 @@ export class TrainingsComponent implements OnInit {
 
                 this.route.queryParams.subscribe(params => {
                     let queryTeamId = params['teamId'] ? +params['teamId'] : null;
+                    const queryPlanningId = params['planningId'] ? +params['planningId'] : null;
+
+                    if (queryPlanningId) {
+                        this.planningIdFilter.set(queryPlanningId);
+                    }
 
                     if (!queryTeamId && this.isEmbedded()) {
                         const parentId = this.route.parent?.snapshot.paramMap.get('id');
@@ -78,15 +92,42 @@ export class TrainingsComponent implements OnInit {
         if (team) this.selectedTeamName.set(team.name);
 
         this.loading.set(true);
+
+        // Load plannings for filter
+        this.planningService.getPlannings(teamId).subscribe(plannings => {
+            this.allPlannings.set(plannings);
+        });
+
         try {
             this.trainingService.getByTeam(teamId).subscribe(data => {
-                this.trainings.set(data);
+                this.allTrainings.set(data);
+                this.applyFilter();
                 this.loading.set(false);
             });
         } catch (e) {
             this.loading.set(false);
         }
     }
+
+    applyFilter() {
+        const filter = this.planningIdFilter();
+        const all = this.allTrainings();
+
+        if (filter === null) {
+            this.trainings.set(all);
+        } else if (filter === 'none') {
+            this.trainings.set(all.filter(t => !t.planningId));
+        } else {
+            this.trainings.set(all.filter(t => t.planningId === filter));
+        }
+    }
+
+    onFilterChange(value: any) {
+        const val = value === 'null' ? null : (value === 'none' ? 'none' : +value);
+        this.planningIdFilter.set(val as any);
+        this.applyFilter();
+    }
+
 
     addTraining() {
         if (this.selectedTeamId()) {

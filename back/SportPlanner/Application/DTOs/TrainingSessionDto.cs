@@ -40,6 +40,8 @@ public class TrainingSessionDto
     public TimeSpan? Duration { get; set; }
     public int? CourtId { get; set; }
     public int? PlanningId { get; set; }
+    public string? PlanningName { get; set; }
+
 
     // Live Execution Tracking
     public string Status { get; set; } = "Planned"; // Enum as string

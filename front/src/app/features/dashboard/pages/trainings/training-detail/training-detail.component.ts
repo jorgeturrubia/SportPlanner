@@ -58,6 +58,8 @@ export class TrainingDetailComponent implements OnInit {
     trainingId = signal<number | null>(null);
     teamId = signal<number | null>(null);
     planningId = signal<number | null>(null);
+    allPlannings = signal<Planning[]>([]);
+
 
     // Form Data
     name = signal('');
@@ -305,14 +307,36 @@ export class TrainingDetailComponent implements OnInit {
     async loadTeamPlanning(teamId: number) {
         this.planningService.getPlannings().subscribe(all => {
             const teamPlannings = all.filter(p => p.team?.id === teamId);
+            this.allPlannings.set(teamPlannings);
+
             if (teamPlannings.length > 0) {
-                const current = teamPlannings[0];
-                this.activePlanning.set(current);
-                // Map full concept structure for filtering
-                this.availableConcepts.set(current.planConcepts.map(pc => pc.sportConcept).filter(c => c !== null) as SportConcept[]);
+                const currentId = this.planningId();
+                const active = currentId ? teamPlannings.find(p => p.id === currentId) : teamPlannings[0];
+
+                if (active) {
+                    if (!currentId) this.planningId.set(active.id);
+                    this.activePlanning.set(active);
+                    this.availableConcepts.set(active.planConcepts.map(pc => pc.sportConcept).filter(c => c !== null) as SportConcept[]);
+                }
             }
         });
     }
+
+    onPlanningChange(newPlanningId: any) {
+        const id = newPlanningId === 'null' || !newPlanningId ? null : +newPlanningId;
+        this.planningId.set(id);
+        if (id) {
+            const planning = this.allPlannings().find(p => p.id === id);
+            if (planning) {
+                this.activePlanning.set(planning);
+                this.availableConcepts.set(planning.planConcepts.map(pc => pc.sportConcept).filter(c => c !== null) as SportConcept[]);
+            }
+        } else {
+            this.activePlanning.set(null);
+            this.availableConcepts.set([]);
+        }
+    }
+
 
     drop(event: CdkDragDrop<string[]>) {
         const current = this.trainingConcepts();

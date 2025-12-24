@@ -1,29 +1,100 @@
-<div class="calendar-container">
-    <div class="calendar-header">
-        <button class="btn btn-secondary" (click)="prevWeek()">
-            <i class="pi pi-chevron-left"></i> Anterior
-        </button>
-        <h2>{{ weekStart | date:'mediumDate' }} - {{ weekEnd | date:'mediumDate' }}</h2>
-        <button class="btn btn-secondary" (click)="nextWeek()">
-            Siguiente <i class="pi pi-chevron-right"></i>
-        </button>
+<div class="h-full flex flex-col bg-dark-bg p-6 select-none cursor-default">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-3xl font-black text-white tracking-tighter uppercase italic">
+            Calendario <span class="text-primary">Semanal</span>
+        </h2>
+
+        <div class="flex items-center gap-4 bg-dark-surface p-1 rounded-lg border border-dark-border shadow-lg">
+            <button (click)="prevWeek()"
+                class="w-10 h-10 flex items-center justify-center bg-dark-bg border border-dark-border text-white hover:text-primary hover:border-primary rounded transition-all group shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                    class="group-hover:-translate-x-0.5 transition-transform">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+            <div class="px-4 text-center min-w-[200px]">
+                <span class="block text-xs font-bold text-gray-500 uppercase tracking-widest">{{ weekStart | date:'yyyy'
+                    }}</span>
+                <span class="text-lg font-black text-white tracking-tight">{{ weekStart | date:'MMM d' }} - {{ weekEnd |
+                    date:'MMM d' }}</span>
+            </div>
+            <button (click)="nextWeek()"
+                class="w-10 h-10 flex items-center justify-center bg-dark-bg border border-dark-border text-white hover:text-primary hover:border-primary rounded transition-all group shadow-sm">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
+                    class="group-hover:translate-x-0.5 transition-transform">
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                </svg>
+            </button>
+        </div>
     </div>
 
-    <div class="calendar-grid">
-        <div *ngFor="let day of days" class="calendar-day" [class.planned]="day.isPlanned">
-            <div class="day-header" [class.today]="isToday(day.date)">
-                <div>{{ day.date | date:'EEEE' }}</div>
-                <div>{{ day.date | date:'dd/MM' }}</div>
+    <!-- Calendar Grid -->
+    <div class="flex-1 grid grid-cols-7 gap-4 min-h-0 overflow-hidden select-none">
+        @for (day of days; track day.date) {
+        <div class="flex flex-col h-full min-h-0 group/day relative bg-dark-surface rounded-xl border transition-all duration-300 cursor-default"
+            [class.border-primary]="isToday(day.date)" [class.border-dark-border]="!isToday(day.date)"
+            [class.hover:border-gray-500]="!isToday(day.date)">
+
+            <!-- Weekday Header -->
+            <div class="p-3 text-center border-b border-dark-border" [class.bg-primary/10]="isToday(day.date)">
+                <div class="text-[10px] font-black tracking-widest uppercase mb-1"
+                    [class.text-primary]="isToday(day.date)" [class.text-gray-500]="!isToday(day.date)">
+                    {{ day.date | date:'EEEE' }}
+                </div>
+                <div class="text-xl font-black leading-none" [class.text-white]="isToday(day.date)"
+                    [class.text-gray-400]="!isToday(day.date)">
+                    {{ day.date | date:'d' }}
+                </div>
             </div>
 
-            <div *ngFor="let session of day.sessions" class="training-card" (click)="viewSession(session)">
-                <div class="font-bold">{{ session.name || 'Entrenamiento' }}</div>
-                <div class="text-sm">{{ session.startTime | slice:0:5 }}</div>
+            <!-- Planning Indicator Strip -->
+            @if (day.isPlanned) {
+            <div
+                class="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-primary to-secondary rounded-t-xl opacity-80">
+            </div>
+            }
+
+            <!-- Sessions Content -->
+            <div class="flex-1 overflow-y-auto p-2 space-y-2 scrollbar-thin">
+                @for (session of day.sessions; track session.id) {
+                <div (click)="viewSession(session)"
+                    class="group/session cursor-pointer bg-dark-bg border border-dark-border hover:border-primary p-3 rounded-lg transition-all hover:translate-y-[-2px] hover:shadow-lg shadow-black/50 relative overflow-hidden">
+
+                    <!-- Hover Glow -->
+                    <div
+                        class="absolute inset-0 bg-primary/5 opacity-0 group-hover/session:opacity-100 transition-opacity">
+                    </div>
+
+                    <div class="relative flex flex-col gap-1">
+                        <span
+                            class="text-[10px] font-mono text-gray-500 bg-dark-surface px-1.5 py-0.5 rounded w-fit group-hover/session:text-white transition-colors">
+                            {{ session.startTime | slice:0:5 }}
+                        </span>
+                        <span
+                            class="font-bold text-gray-200 text-sm leading-tight group-hover/session:text-primary transition-colors">
+                            {{ session.name || 'Entrenamiento' }}
+                        </span>
+                    </div>
+                </div>
+                }
             </div>
 
-            <div class="add-training-btn" (click)="addTraining(day)">
-                <i class="pi pi-plus"></i> Añadir
+            <!-- Add Button (Always Visible) -->
+            <div class="p-2 mt-auto border-t border-dark-border">
+                <button (click)="addTraining(day)"
+                    class="w-full py-2 flex flex-col items-center justify-center gap-1 text-xs font-bold uppercase tracking-wider text-gray-400 hover:text-white hover:bg-primary/10 rounded transition-all">
+                    <div class="flex items-center gap-2">
+                        <i class="pi pi-plus text-xs text-primary"></i>
+                        <span>Añadir</span>
+                    </div>
+                    <span
+                        class="text-[9px] text-gray-600 font-normal normal-case group-hover:text-gray-400">Entrenamiento</span>
+                </button>
             </div>
         </div>
+        }
     </div>
 </div>

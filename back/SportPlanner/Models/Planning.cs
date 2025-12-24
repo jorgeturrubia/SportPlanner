@@ -17,6 +17,7 @@ public class Planning
 
     public ICollection<PlaningScheduleDay> ScheduleDays { get; set; } = new List<PlaningScheduleDay>();
     public ICollection<PlanConcept> PlanConcepts { get; set; } = new List<PlanConcept>();
+    public virtual ICollection<TrainingSession> TrainingSessions { get; set; } = new List<TrainingSession>();
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 }

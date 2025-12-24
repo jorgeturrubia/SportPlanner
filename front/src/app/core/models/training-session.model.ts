@@ -32,7 +32,9 @@ export interface TrainingSession {
     duration?: string;
     courtId?: number;
     planningId?: number;
+    planningName?: string;
     sessionConcepts: TrainingSessionConcept[];
+
     sessionExercises: TrainingSessionExercise[];
 
     // Live Execution Tracking
