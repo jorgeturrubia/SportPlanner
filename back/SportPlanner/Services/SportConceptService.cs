@@ -85,32 +85,51 @@ public class SportConceptService : ISportConceptService
         return await query.OrderBy(sc => sc.Name).ToListAsync();
     }
 
-    public async Task<List<SportConceptWithSuggestionDto>> GetConceptsWithSuggestionsAsync(int teamId)
+    public async Task<List<SportConceptWithSuggestionDto>> GetConceptsWithSuggestionsAsync(int teamId, int seasonId)
     {
+        // 1. Get team with season details
         var team = await _db.Teams
-            .Include(t => t.TeamCategory)
+            .Include(t => t.TeamSeasons)
             .FirstOrDefaultAsync(t => t.Id == teamId);
 
-        if (team == null || team.SportId == null) return new List<SportConceptWithSuggestionDto>();
+        if (team == null) return new List<SportConceptWithSuggestionDto>();
 
-        var concepts = await GetBySportAsync(team.SportId.Value);
-        var dtos = _mapper.Map<List<SportConceptWithSuggestionDto>>(concepts);
+        var teamSeason = team.TeamSeasons.FirstOrDefault(ts => ts.SeasonId == seasonId);
+        // Default to 0 levels if no season data found (or maybe throw exception?)
+        // For robustness, default to 0.
+        int technicalLevel = teamSeason?.TechnicalLevel ?? 0;
+        int tacticalLevel = teamSeason?.TacticalLevel ?? 0;
 
-        foreach (var dto in dtos)
+        // 2. Get all concepts
+        var concepts = await _db.SportConcepts
+            .Include(c => c.ConceptCategory)
+                .ThenInclude(cc => cc!.Parent)
+            .Where(c => c.IsActive && c.SportId == team.SportId) // Ensure sport matches
+            .ToListAsync();
+
+        var dtos = new List<SportConceptWithSuggestionDto>();
+
+        foreach (var c in concepts)
         {
+            var dto = _mapper.Map<SportConceptWithSuggestionDto>(c);
+
+            // Suggestion Logic
             bool isSuggested = true;
 
-            // 1. Check Technical Level (Concept Difficulty vs Team Level)
-            // Suggested if concept difficulty is close to team level (within range)
-            // We suggest concepts that are reachable: e.g., difficulty <= teamLevel + 2
-            // And not too easy? e.g., difficulty >= teamLevel - 2
-            if (Math.Abs(dto.TechnicalDifficulty - team.CurrentTechnicalLevel) > 2)
+            // 1. Check Difficulty/Complexity vs Team Level
+            // Concept Technical Difficulty should be within range of Team Technical Level (+/- 2?)
+            // If concept difficulty is much higher than team level, it might be too hard.
+            // If much lower, it might be too easy (but still useful for warmup/review).
+            // Let's filter out "Too Hard" only.
+
+            if (Math.Abs(dto.TechnicalDifficulty - technicalLevel) > 2)
             {
                 isSuggested = false;
             }
 
-            // 2. Check Tactical Level
-            if (isSuggested && Math.Abs(dto.TacticalComplexity - team.CurrentTacticalLevel) > 2)
+            // 2. Check Usefulness (Tactical Complexity)
+            // Similar logic
+            if (isSuggested && Math.Abs(dto.TacticalComplexity - tacticalLevel) > 2)
             {
                 isSuggested = false;
             }

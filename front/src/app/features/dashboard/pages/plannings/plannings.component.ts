@@ -47,9 +47,20 @@ export class PlanningsComponent implements OnInit {
     ngOnInit() {
         this.isEmbedded.set(this.router.url.includes('/management/'));
         this.route.queryParams.subscribe(params => {
-            if (params['teamId']) {
-                this.currentTeamId.set(+params['teamId']);
-                this.loadTeamDetails(this.currentTeamId()!);
+            let tId = params['teamId'] ? +params['teamId'] : null;
+
+            if (!tId && this.isEmbedded()) {
+                // If embedded and no query param, check parent route (management/:id)
+                // We use snapshot because the parent param is unlikely to change without a full reload or navigation
+                const parentId = this.route.parent?.snapshot.paramMap.get('id');
+                if (parentId) {
+                    tId = +parentId;
+                }
+            }
+
+            if (tId) {
+                this.currentTeamId.set(tId);
+                this.loadTeamDetails(tId);
             } else {
                 this.currentTeamId.set(null);
                 this.currentTeamName.set('');
@@ -67,31 +78,13 @@ export class PlanningsComponent implements OnInit {
 
     loadPlannings() {
         this.isLoading.set(true);
-        this.planningService.getPlannings().subscribe({
+        const currentSeason = this.seasonService.currentSeason();
+        const teamId = this.currentTeamId() || undefined;
+        const seasonId = currentSeason?.id || undefined;
+
+        this.planningService.getPlannings(teamId, seasonId).subscribe({
             next: (data) => {
-                let filteredData = data;
-
-                // Filter by Team
-                if (this.currentTeamId()) {
-                    filteredData = filteredData.filter(p => p.team?.id === this.currentTeamId());
-                }
-
-                // Filter by Season (Date Range)
-                const currentSeason = this.seasonService.currentSeason();
-                if (currentSeason) {
-                    const seasonStart = new Date(currentSeason.startDate).getTime();
-                    const seasonEnd = new Date(currentSeason.endDate).getTime();
-
-                    filteredData = filteredData.filter(p => {
-                        const planningStart = new Date(p.startDate).getTime();
-                        // Check if planning starts within the season
-                        // (We use a lenient check: planning must start within the season or generally overlap. 
-                        //  Strictly speaking, plannings are usually created FOR a season, so start date check is standard.)
-                        return planningStart >= seasonStart && planningStart <= seasonEnd;
-                    });
-                }
-
-                this.plannings.set(filteredData);
+                this.plannings.set(data);
                 this.isLoading.set(false);
             },
             error: (err) => {

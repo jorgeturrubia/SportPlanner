@@ -16,10 +16,13 @@ export class ProposalsService {
         return this.http.post<ConceptProposalResponseDto>(`${this.apiUrl}/generate`, request);
     }
 
-    getProposalsForTeam(teamId: number, durationDays?: number): Observable<ConceptProposalResponseDto> {
-        let url = `${this.apiUrl}/team/${teamId}`;
+    getProposalsForTeam(teamId: number, durationDays?: number, seasonId?: number): Observable<ConceptProposalResponseDto> {
+        let url = `${this.apiUrl}/team/${teamId}?`;
         if (durationDays) {
-            url += `?durationDays=${durationDays}`;
+            url += `durationDays=${durationDays}&`;
+        }
+        if (seasonId) {
+            url += `seasonId=${seasonId}&`;
         }
         return this.http.get<ConceptProposalResponseDto>(url);
     }

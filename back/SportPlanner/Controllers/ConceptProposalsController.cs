@@ -46,16 +46,17 @@ public class ConceptProposalsController : ControllerBase
     /// <returns>Suggested and optional concept groups</returns>
     [HttpGet("team/{teamId}")]
     public async Task<ActionResult<ConceptProposalResponseDto>> GetForTeam(
-        int teamId, 
+        int teamId,
+        [FromQuery] int seasonId,
         [FromQuery] int? durationDays = null)
     {
-        var result = await _proposalService.GetProposalsForTeamAsync(teamId, durationDays);
-        
+        var result = await _proposalService.GetProposalsForTeamAsync(teamId, seasonId, durationDays);
+
         if (result == null)
         {
             return NotFound(new { message = $"Team with ID {teamId} not found" });
         }
-        
+
         return Ok(result);
     }
 }

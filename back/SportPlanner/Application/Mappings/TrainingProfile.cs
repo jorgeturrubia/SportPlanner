@@ -1,5 +1,6 @@
 using AutoMapper;
 using SportPlanner.Application.DTOs;
+using SportPlanner.Application.DTOs.Team;
 using SportPlanner.Models;
 
 namespace SportPlanner.Application.Mappings;

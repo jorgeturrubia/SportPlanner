@@ -47,15 +47,27 @@ namespace SportPlanner.Services
             return true;
         }
 
-        public async Task<IEnumerable<PlanningDto>> GetAllAsync()
+        public async Task<IEnumerable<PlanningDto>> GetAllAsync(int? teamId = null, int? seasonId = null)
         {
-            var plannings = await _context.Plannings
-                .Include(p => p.Team).ThenInclude(t => t.TeamCategory)
+            var query = _context.Plannings
+                .Include(p => p.Team).ThenInclude(t => t.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
                 .Include(p => p.ScheduleDays)
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)
                         .ThenInclude(sc => sc.ConceptCategory)
-                .ToListAsync();
+                .AsQueryable();
+
+            if (teamId.HasValue)
+            {
+                query = query.Where(p => p.TeamId == teamId.Value);
+            }
+
+            if (seasonId.HasValue)
+            {
+                query = query.Where(p => p.SeasonId == seasonId.Value);
+            }
+
+            var plannings = await query.ToListAsync();
 
             await ReconstructCategories(plannings.SelectMany(p => p.PlanConcepts).Select(pc => pc.SportConcept));
 
@@ -65,7 +77,7 @@ namespace SportPlanner.Services
         public async Task<PlanningDto?> GetByIdAsync(int id)
         {
             var planning = await _context.Plannings
-                .Include(p => p.Team).ThenInclude(t => t.TeamCategory)
+                .Include(p => p.Team).ThenInclude(t => t.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
                 .Include(p => p.ScheduleDays)
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)

@@ -18,6 +18,7 @@ public class AppDbContext : DbContext
     public DbSet<OrganizationMembership> OrganizationMemberships { get; set; } = null!;
     public DbSet<Team> Teams { get; set; } = null!;
     public DbSet<TeamMember> TeamMembers { get; set; } = null!;
+    public DbSet<TeamSeason> TeamSeasons { get; set; } = null!;
     public DbSet<ConceptCategory> ConceptCategories { get; set; } = null!;
     public DbSet<DifficultyLevel> DifficultyLevels { get; set; } = null!;
     public DbSet<Season> Seasons { get; set; } = null!;
@@ -101,6 +102,21 @@ public class AppDbContext : DbContext
             .HasIndex(tm => new { tm.TeamId, tm.UserSupabaseId })
             .IsUnique();
 
+        modelBuilder.Entity<TeamSeason>().HasKey(ts => ts.Id);
+        modelBuilder.Entity<TeamSeason>()
+            .HasIndex(ts => new { ts.TeamId, ts.SeasonId })
+            .IsUnique();
+        modelBuilder.Entity<TeamSeason>()
+            .HasOne(ts => ts.Team)
+            .WithMany(t => t.TeamSeasons)
+            .HasForeignKey(ts => ts.TeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<TeamSeason>()
+            .HasOne(ts => ts.Season)
+            .WithMany(s => s.TeamSeasons)
+            .HasForeignKey(ts => ts.SeasonId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<ConceptCategory>().HasKey(c => c.Id);
         modelBuilder.Entity<ConceptCategory>()
             .HasOne(c => c.Parent)
@@ -172,10 +188,10 @@ public class AppDbContext : DbContext
             .WithMany(mi => mi.ChildItineraries)
             .HasForeignKey(mi => mi.ParentItineraryId)
             .OnDelete(DeleteBehavior.Restrict);
-        modelBuilder.Entity<MethodologicalItinerary>()
-            .HasOne(mi => mi.TeamCategory)
+        modelBuilder.Entity<TeamSeason>()
+            .HasOne(ts => ts.TeamCategory)
             .WithMany()
-            .HasForeignKey(mi => mi.TeamCategoryId)
+            .HasForeignKey(ts => ts.TeamCategoryId)
             .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<MethodologicalItinerary>()

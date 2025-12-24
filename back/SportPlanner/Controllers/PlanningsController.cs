@@ -18,9 +18,9 @@ namespace SportPlanner.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<PlanningDto>>> GetPlannings()
+        public async Task<ActionResult<IEnumerable<PlanningDto>>> GetPlannings([FromQuery] int? teamId, [FromQuery] int? seasonId)
         {
-            return Ok(await _planningService.GetAllAsync());
+            return Ok(await _planningService.GetAllAsync(teamId, seasonId));
         }
 
         [HttpGet("{id}")]

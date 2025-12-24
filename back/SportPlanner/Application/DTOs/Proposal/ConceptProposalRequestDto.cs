@@ -7,16 +7,19 @@ public class ConceptProposalRequestDto
 {
     /// <summary>ID of the team to generate proposals for</summary>
     public int TeamId { get; set; }
-    
+
+    /// <summary>ID of the season (required to determine team level)</summary>
+    public int SeasonId { get; set; }
+
     /// <summary>Duration of the planning in days (optional, affects number of concepts)</summary>
     public int? DurationDays { get; set; }
-    
+
     /// <summary>Maximum number of concepts to propose (optional)</summary>
     public int? MaxConcepts { get; set; }
-    
+
     /// <summary>Category IDs to exclude from proposals (optional)</summary>
     public List<int>? ExcludeCategoryIds { get; set; }
-    
+
     /// <summary>Focus on specific sections: "Ataque", "Defensa", or null for both</summary>
     public string? SectionFocus { get; set; }
 

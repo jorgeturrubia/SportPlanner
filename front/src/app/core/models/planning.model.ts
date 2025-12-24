@@ -50,6 +50,7 @@ export interface PlaningScheduleDay {
 export interface Planning {
   id: number;
   name: string;
+  seasonId?: number;
   team: Team | null;
   startDate: string; // ISO 8601 date string
   endDate: string; // ISO 8601 date string
@@ -62,6 +63,7 @@ export interface Planning {
 export interface CreatePlanning {
   name: string;
   teamId: number;
+  seasonId: number;
   startDate: string;
   endDate: string;
   scheduleDays?: PlaningScheduleDay[];

@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SportPlanner.Application.DTOs;
+using SportPlanner.Application.DTOs.Team;
 using SportPlanner.Application.Validators;
 using SportPlanner.Data;
 using SportPlanner.Models;
@@ -76,27 +77,87 @@ public class TeamsController : ControllerBase
             OrganizationId = dto.OrganizationId,
             SubscriptionId = sub.Id,
             SportId = dto.SportId,
-            TeamCategoryId = dto.TeamCategoryId,
-            TeamLevelId = dto.TeamLevelId,
-            CurrentTechnicalLevel = dto.CurrentTechnicalLevel,
-            CurrentTacticalLevel = dto.CurrentTacticalLevel,
-            SeasonId = dto.SeasonId,
             IsActive = true,
             CreatedAt = DateTime.UtcNow,
             UpdatedAt = DateTime.UtcNow
         };
+
         _db.Teams.Add(team);
-        await _db.SaveChangesAsync();
-        return CreatedAtAction(nameof(Get), new { id = team.Id }, team);
+        await _db.SaveChangesAsync(); // Save team first to get its ID
+
+        // Create the initial TeamSeason link
+        if (dto.SeasonId.HasValue)
+        {
+            var teamSeason = new TeamSeason
+            {
+                TeamId = team.Id,
+                SeasonId = dto.SeasonId.Value,
+                TeamLevelId = dto.TeamLevelId,
+                TeamCategoryId = dto.TeamCategoryId,
+                TechnicalLevel = dto.CurrentTechnicalLevel,
+                TacticalLevel = dto.CurrentTacticalLevel,
+                PhotoUrl = null // Initial photo url is null
+            };
+            _db.TeamSeasons.Add(teamSeason);
+            await _db.SaveChangesAsync();
+
+            // Load relations for response
+            await _db.Entry(teamSeason).Reference(ts => ts.TeamLevel).LoadAsync();
+            await _db.Entry(teamSeason).Reference(ts => ts.TeamCategory).LoadAsync();
+
+            // Construct result manually to safeguard against missing map configs
+            var resultDto = _mapper.Map<TeamDto>(team);
+            // Overwrite season specific fields
+            resultDto.TeamLevelId = teamSeason.TeamLevelId;
+            resultDto.TeamLevel = _mapper.Map<TeamLevelDto>(teamSeason.TeamLevel);
+            resultDto.TeamCategory = _mapper.Map<TeamCategoryDto>(teamSeason.TeamCategory);
+            resultDto.CurrentTechnicalLevel = teamSeason.TechnicalLevel;
+            resultDto.CurrentTacticalLevel = teamSeason.TacticalLevel;
+            resultDto.PhotoUrl = teamSeason.PhotoUrl;
+
+            return CreatedAtAction(nameof(Get), new { id = team.Id }, resultDto);
+        }
+
+        // If no season data, return basic team info
+        return CreatedAtAction(nameof(Get), new { id = team.Id }, _mapper.Map<TeamDto>(team));
     }
 
     [HttpGet("{id}")]
     [Authorize]
-    public async Task<IActionResult> Get(int id)
+    public async Task<IActionResult> Get(int id, [FromQuery] int? seasonId)
     {
-        var team = await _db.Teams.FindAsync(id);
+        var team = await _db.Teams
+            .Include(t => t.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
+            .Include(t => t.TeamSeasons).ThenInclude(ts => ts.TeamLevel)
+            .Include(t => t.Sport)
+            .FirstOrDefaultAsync(t => t.Id == id);
+
         if (team == null) return NotFound();
-        return Ok(team);
+
+        // Map to DTO
+        TeamSeason? seasonData = null;
+        if (seasonId.HasValue)
+        {
+            seasonData = team.TeamSeasons.FirstOrDefault(ts => ts.SeasonId == seasonId.Value);
+        }
+        else
+        {
+            seasonData = team.TeamSeasons.FirstOrDefault();
+        }
+
+        var dto = new TeamDto
+        {
+            Id = team.Id,
+            Name = team.Name,
+            TeamCategory = seasonData?.TeamCategory != null ? _mapper.Map<TeamCategoryDto>(seasonData.TeamCategory) : null,
+            TeamLevelId = seasonData?.TeamLevelId,
+            TeamLevel = seasonData?.TeamLevel != null ? _mapper.Map<TeamLevelDto>(seasonData.TeamLevel) : null,
+            CurrentTechnicalLevel = seasonData?.TechnicalLevel ?? 0,
+            CurrentTacticalLevel = seasonData?.TacticalLevel ?? 0,
+            PhotoUrl = seasonData?.PhotoUrl
+        };
+
+        return Ok(dto);
     }
 
 
@@ -118,15 +179,40 @@ public class TeamsController : ControllerBase
         }
 
         team.Name = dto.Name;
-        team.TeamCategoryId = dto.TeamCategoryId;
-        team.TeamLevelId = dto.TeamLevelId;
-        team.CurrentTechnicalLevel = dto.CurrentTechnicalLevel;
-        team.CurrentTacticalLevel = dto.CurrentTacticalLevel;
-        // SeasonId update could be added here if needed, but usually teams don't change season.
         team.UpdatedAt = DateTime.UtcNow;
 
+        if (dto.SeasonId.HasValue)
+        {
+            // Update specific season data
+            var teamSeason = await _db.TeamSeasons.FirstOrDefaultAsync(ts => ts.TeamId == team.Id && ts.SeasonId == dto.SeasonId.Value);
+            if (teamSeason != null)
+            {
+                if (dto.TeamCategoryId.HasValue) teamSeason.TeamCategoryId = dto.TeamCategoryId.Value;
+                if (dto.TeamLevelId.HasValue) teamSeason.TeamLevelId = dto.TeamLevelId;
+                teamSeason.TechnicalLevel = dto.CurrentTechnicalLevel;
+                teamSeason.TacticalLevel = dto.CurrentTacticalLevel;
+                if (dto.PhotoUrl != null) teamSeason.PhotoUrl = dto.PhotoUrl;
+            }
+            else
+            {
+                // Create new season entry if it doesn't exist for this team/season pair?
+                // The task description implies we preserve history, but also user expects continuity.
+                // If user "edits" a team in a season where it doesn't formally exist yet (edge case), create it?
+                // For now, let's assume it should exist. If not, creating it is safer than crashing.
+                teamSeason = new TeamSeason
+                {
+                    TeamId = team.Id,
+                    SeasonId = dto.SeasonId.Value,
+                    TeamLevelId = dto.TeamLevelId,
+                    TechnicalLevel = dto.CurrentTechnicalLevel,
+                    TacticalLevel = dto.CurrentTacticalLevel
+                };
+                _db.TeamSeasons.Add(teamSeason);
+            }
+        }
+
         await _db.SaveChangesAsync();
-        return Ok(team);
+        return Ok(_mapper.Map<TeamDto>(team));
     }
 
     [HttpDelete("{id}")]
@@ -189,25 +275,50 @@ public class TeamsController : ControllerBase
             .ToListAsync();
 
         var query = _db.Teams
-            .Include(t => t.TeamCategory)
-            .Include(t => t.TeamLevel)
+            .Include(t => t.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
+            .Include(t => t.TeamSeasons).ThenInclude(ts => ts.TeamLevel)
             .Include(t => t.Sport)
             .Where(t => t.OwnerUserSupabaseId == user.Id || (t.OrganizationId.HasValue && userOrgIds.Contains(t.OrganizationId.Value)));
 
         if (seasonId.HasValue)
         {
-            query = query.Where(t => t.SeasonId == seasonId.Value);
-        }
-        else
-        {
-            // Optional: if no season specified, simple logic could be "show everything" or "show active"
-            // For now, allow everything if null.
-            // Or, if filtering "No Season" is desired, value -1 could be used?
-            // Let's stick to standard filter: null = all.
+            query = query.Where(t => t.TeamSeasons.Any(ts => ts.SeasonId == seasonId.Value));
         }
 
         var teams = await query.ToListAsync();
 
-        return Ok(teams);
+        // Map to DTOs manually or via mapper if configured
+        var teamDtos = teams.Select(t =>
+        {
+            // Try to find the specific season data if seasonId provided, 
+            // OR find the latest/active one if not?
+            // For now, if seasonId is provided, use that.
+            // If not, maybe use the first one or leave empty?
+
+            TeamSeason? seasonData = null;
+            if (seasonId.HasValue)
+            {
+                seasonData = t.TeamSeasons.FirstOrDefault(ts => ts.SeasonId == seasonId.Value);
+            }
+            else
+            {
+                // Fallback: order by something? For now just take first or null
+                seasonData = t.TeamSeasons.FirstOrDefault();
+            }
+
+            return new TeamDto
+            {
+                Id = t.Id,
+                Name = t.Name,
+                TeamCategory = seasonData?.TeamCategory != null ? _mapper.Map<TeamCategoryDto>(seasonData.TeamCategory) : null,
+                TeamLevelId = seasonData?.TeamLevelId,
+                TeamLevel = seasonData?.TeamLevel != null ? _mapper.Map<TeamLevelDto>(seasonData.TeamLevel) : null,
+                CurrentTechnicalLevel = seasonData?.TechnicalLevel ?? 0,
+                CurrentTacticalLevel = seasonData?.TacticalLevel ?? 0,
+                PhotoUrl = seasonData?.PhotoUrl
+            };
+        }).ToList();
+
+        return Ok(teamDtos);
     }
 }

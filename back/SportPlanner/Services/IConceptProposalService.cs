@@ -13,12 +13,12 @@ public interface IConceptProposalService
     /// <param name="request">Request containing team ID and optional filters</param>
     /// <returns>Response with suggested and optional concept groups</returns>
     Task<ConceptProposalResponseDto> GenerateProposalsAsync(ConceptProposalRequestDto request);
-    
+
     /// <summary>
     /// Get concept proposals for a team with default parameters
     /// </summary>
     /// <param name="teamId">ID of the team</param>
     /// <param name="durationDays">Optional duration in days</param>
     /// <returns>Response with suggested and optional concept groups</returns>
-    Task<ConceptProposalResponseDto?> GetProposalsForTeamAsync(int teamId, int? durationDays = null);
+    Task<ConceptProposalResponseDto?> GetProposalsForTeamAsync(int teamId, int seasonId, int? durationDays = null);
 }

@@ -7,9 +7,10 @@ import { NotificationService } from '../../../../services/notification.service';
 import { Planning, PlanConcept, PlaningScheduleDay } from '../../../../core/models/planning.model';
 import { SportConcept } from '../../../../core/models/sport-concept.model';
 import { SportConceptService } from '../../../../services/sport-concept.service';
+import { SeasonService } from '../../../../services/season.service';
 import { TeamsService } from '../../../../services/teams.service';
 import { ProposalManagerComponent } from '../../../proposals/pages/proposal-manager/proposal-manager.component';
-import { ViewChild } from '@angular/core';
+import { ViewChild, inject } from '@angular/core';
 
 @Component({
     selector: 'app-team-planning',
@@ -30,6 +31,8 @@ export class TeamPlanningComponent implements OnInit {
     @ViewChild(ProposalManagerComponent) proposalManager!: ProposalManagerComponent;
 
     weekDays = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+
+    private seasonService: SeasonService = inject(SeasonService);
 
     constructor(
         private fb: FormBuilder,
@@ -210,9 +213,11 @@ export class TeamPlanningComponent implements OnInit {
                     }
                 });
             } else {
+                const currentSeason = this.seasonService.currentSeason();
                 const payload = {
                     name: formVal.name,
                     teamId: this.teamId,
+                    seasonId: currentSeason?.id || 0,
                     startDate: formVal.startDate,
                     endDate: formVal.endDate,
                     scheduleDays: scheduleDays,

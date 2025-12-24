@@ -19,5 +19,5 @@ public class Season
     public int? OrganizationId { get; set; }
     public Organization? Organization { get; set; }
 
-    public ICollection<Team> Teams { get; set; } = new List<Team>();
+    public ICollection<TeamSeason> TeamSeasons { get; set; } = new List<TeamSeason>();
 }

@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using SportPlanner.Application.DTOs;
+using SportPlanner.Application.DTOs.Team;
 using SportPlanner.Data;
 
 namespace SportPlanner.Controllers;

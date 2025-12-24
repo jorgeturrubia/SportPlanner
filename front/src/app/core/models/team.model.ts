@@ -19,6 +19,7 @@ export interface Team {
     teamLevel: TeamLevel | null;
     currentTechnicalLevel: number;
     currentTacticalLevel: number;
+    photoUrl?: string | null;
     sportId: number;
     sport?: { id: number; name: string };
     isActive: boolean;

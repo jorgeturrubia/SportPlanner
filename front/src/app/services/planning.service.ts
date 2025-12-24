@@ -12,8 +12,13 @@ export class PlanningService {
 
   constructor(private http: HttpClient) { }
 
-  getPlannings(): Observable<Planning[]> {
-    return this.http.get<Planning[]>(this.apiUrl);
+  getPlannings(teamId?: number, seasonId?: number): Observable<Planning[]> {
+    let params = [];
+    if (teamId) params.push(`teamId=${teamId}`);
+    if (seasonId) params.push(`seasonId=${seasonId}`);
+
+    const queryString = params.length ? `?${params.join('&')}` : '';
+    return this.http.get<Planning[]>(`${this.apiUrl}${queryString}`);
   }
 
   getPlanning(id: number): Observable<Planning> {

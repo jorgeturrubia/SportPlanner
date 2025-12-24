@@ -12,6 +12,8 @@ namespace SportPlanner.Application.DTOs.Planning
         [Required]
         public int TeamId { get; set; }
         [Required]
+        public int SeasonId { get; set; }
+        [Required]
         public DateTime StartDate { get; set; }
         [Required]
         public DateTime EndDate { get; set; }

@@ -6,7 +6,7 @@ namespace SportPlanner.Services
 {
     public interface IPlanningService
     {
-        Task<IEnumerable<PlanningDto>> GetAllAsync();
+        Task<IEnumerable<PlanningDto>> GetAllAsync(int? teamId = null, int? seasonId = null);
         Task<PlanningDto?> GetByIdAsync(int id);
         Task<PlanningDto> CreateAsync(CreatePlanningDto createPlanningDto);
         Task<PlanningDto?> UpdateAsync(int id, UpdatePlanningDto updatePlanningDto);

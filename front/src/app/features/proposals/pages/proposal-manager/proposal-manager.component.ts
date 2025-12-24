@@ -6,6 +6,8 @@ import { ItineraryTunerComponent } from '../../components/itinerary-tuner/itiner
 import { ProposalsService } from '../../services/proposals.service';
 import { TeamsService } from '../../../../services/teams.service';
 import { SportsService } from '../../../../services/sports.service';
+import { SeasonService } from '../../../../services/season.service';
+import { inject } from '@angular/core';
 import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto, MethodologicalItineraryDto } from '../../models/proposal.models';
 
 // --- New Hierarchical Interfaces ---
@@ -78,42 +80,18 @@ export class ProposalManagerComponent implements OnChanges {
     // UI Constants
     readonly INITIAL_VISIBLE_COUNT = 3;
 
+    private seasonService: SeasonService = inject(SeasonService); // Added
+
     constructor(
         private proposalsService: ProposalsService,
         private teamsService: TeamsService,
         private sportsService: SportsService
-    ) {
-        this.loadTeams();
-    }
+    ) { } // Modified
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['response'] && this.response) {
             this.processResponseIntoHierarchy();
         }
-        if (changes['selectedTeamId'] && this.selectedTeamId) {
-            this.onTeamChange();
-        }
-    }
-
-    loadTeams() {
-        this.teamsService.getMyTeams().subscribe({
-            next: (res) => {
-                this.teams = res;
-                if (this.selectedTeamId) {
-                    this.onTeamChange();
-                }
-            },
-            error: (err) => console.error('Error loading teams', err)
-        });
-    }
-
-    onTeamChange() {
-        this.currentLevelOffset = 0;
-        this.methodologicalSections = [];
-        this.allListIds = [];
-        this.selectedItineraryId = null;
-        this.itineraries = [];
-
         // If selectedTeamId changes, we expect the parent or a separate call to trigger generateProposals
         if (this.selectedTeamId) {
             const team = this.teams.find(t => t.id === this.selectedTeamId);

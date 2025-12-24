@@ -42,25 +42,16 @@ export class TeamsComponent implements OnInit {
     ) {
         this.teamForm = this.fb.group({
             name: ['', Validators.required],
-            sportId: [null, Validators.required],
+            sportId: [1, Validators.required], // Default to 1 (Football) for now
             teamCategoryId: [null],
             teamLevelId: [null],
-            currentTechnicalLevel: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
-            currentTacticalLevel: [5, [Validators.required, Validators.min(1), Validators.max(10)]]
+            currentTechnicalLevel: [50, [Validators.min(0), Validators.max(100)]],
+            currentTacticalLevel: [50, [Validators.min(0), Validators.max(100)]]
         });
 
+        // Effect to reload teams when season changes
         effect(() => {
-            // This reads the signal, creating a dependency.
-            // Whenever currentSeason changes, this block runs.
             const season = this.seasonService.currentSeason();
-            // We call loadTeams. Since this effect runs initially too, it covers the startup load.
-            // However, we want to avoid double loading if ngOnInit also calls it?
-            // Actually, ngOnInit calls loadTeams(), let's remove it from ngOnInit to avoid duplication
-            // or let untracked handle it. But simple solution: rely on effect for all loads.
-
-            // To be safe against "ExpressionChangedAfterItHasChecked" or signal writes in effect:
-            // loadTeams sets signals. Angular allows setting signals in effects if allowSignalWrites is true
-            // or if it's async (subscribe response). Http subscribe is async, so it's fine.
             this.loadTeams();
         });
     }
@@ -112,7 +103,8 @@ export class TeamsComponent implements OnInit {
 
     loadTeams() {
         this.isLoading.set(true);
-        this.teamsService.getMyTeams().subscribe({
+        const seasonId = this.seasonService.currentSeason()?.id;
+        this.teamsService.getMyTeams(seasonId).subscribe({
             next: (data) => {
                 console.log('Teams loaded:', data);
                 this.teams.set(data);

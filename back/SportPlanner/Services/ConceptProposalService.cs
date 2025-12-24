@@ -1,6 +1,7 @@
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using SportPlanner.Application.DTOs;
+using SportPlanner.Application.DTOs.Team;
 using SportPlanner.Application.DTOs.Proposal;
 using SportPlanner.Data;
 using SportPlanner.Enums;
@@ -37,14 +38,18 @@ public class ConceptProposalService : IConceptProposalService
     {
         // 1. Get team with related data
         var team = await _context.Teams
-            .Include(t => t.TeamCategory)
-            .Include(t => t.TeamLevel)
+            .Include(t => t.TeamSeasons).ThenInclude(ts => ts.TeamLevel)
+            .Include(t => t.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
             .FirstOrDefaultAsync(t => t.Id == request.TeamId);
 
         if (team == null)
         {
             throw new ArgumentException($"Team with ID {request.TeamId} not found");
         }
+
+        var teamSeason = team.TeamSeasons.FirstOrDefault(ts => ts.SeasonId == request.SeasonId);
+        int technicalLevel = teamSeason?.TechnicalLevel ?? 0;
+        int tacticalLevel = teamSeason?.TacticalLevel ?? 0;
 
         // 2. Get all active concepts with categories
         var conceptsQuery = _context.SportConcepts
@@ -78,14 +83,14 @@ public class ConceptProposalService : IConceptProposalService
         if (request.ItineraryId.HasValue)
         {
             var itinerary = await _context.MethodologicalItineraries.FindAsync(request.ItineraryId.Value);
-            expectedDevelopmentLevel = itinerary?.Level ?? CalculateExpectedDevelopmentLevel(team.TeamCategory);
+            expectedDevelopmentLevel = itinerary?.Level ?? CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory);
         }
         else
         {
-            expectedDevelopmentLevel = CalculateExpectedDevelopmentLevel(team.TeamCategory);
+            expectedDevelopmentLevel = CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory);
         }
 
-        var (minLevel, maxLevel) = CalculateLevelWindow(team, expectedDevelopmentLevel, request.LevelOffset);
+        var (minLevel, maxLevel) = CalculateLevelWindow(team, expectedDevelopmentLevel, technicalLevel, tacticalLevel, request.LevelOffset);
 
         // 4. Filter concepts by development level window
         var filteredConcepts = concepts.Where(c =>
@@ -99,8 +104,8 @@ public class ConceptProposalService : IConceptProposalService
         var scoredConcepts = filteredConcepts.Select(concept => new
         {
             Concept = concept,
-            Score = CalculateConceptScore(concept, team, expectedDevelopmentLevel),
-            Reason = GenerateScoreReason(concept, team, expectedDevelopmentLevel)
+            Score = CalculateConceptScore(concept, team, request, technicalLevel, tacticalLevel, teamSeason),
+            Reason = GenerateScoreReason(concept, technicalLevel, tacticalLevel, expectedDevelopmentLevel)
         }).ToList();
 
         // 5. Separate into suggested and optional
@@ -126,8 +131,8 @@ public class ConceptProposalService : IConceptProposalService
             Concept = _mapper.Map<SportConceptDto>(s.Concept),
             Score = s.Score,
             ScoreReason = s.Reason,
-            Priority = DeterminePriority(s.Score, s.Concept, team, expectedDevelopmentLevel),
-            Tag = DetermineConceptTag(s.Concept, expectedDevelopmentLevel, team)
+            Priority = DeterminePriority(s.Score, s.Concept, technicalLevel, tacticalLevel, expectedDevelopmentLevel),
+            Tag = DetermineConceptTag(s.Concept, expectedDevelopmentLevel, technicalLevel, tacticalLevel)
         }).ToList());
 
         var optionalGroups = GroupConceptsByCategory(optional.Select(s => new ScoredConceptDto
@@ -136,7 +141,7 @@ public class ConceptProposalService : IConceptProposalService
             Score = s.Score,
             ScoreReason = s.Reason,
             Priority = ProposalPriority.Optional,
-            Tag = DetermineConceptTag(s.Concept, expectedDevelopmentLevel, team)
+            Tag = DetermineConceptTag(s.Concept, expectedDevelopmentLevel, technicalLevel, tacticalLevel)
         }).ToList());
 
         // 9. Build response
@@ -161,7 +166,7 @@ public class ConceptProposalService : IConceptProposalService
         };
     }
 
-    public async Task<ConceptProposalResponseDto?> GetProposalsForTeamAsync(int teamId, int? durationDays = null)
+    public async Task<ConceptProposalResponseDto?> GetProposalsForTeamAsync(int teamId, int seasonId, int? durationDays = null)
     {
         var team = await _context.Teams.FindAsync(teamId);
         if (team == null) return null;
@@ -169,6 +174,7 @@ public class ConceptProposalService : IConceptProposalService
         var request = new ConceptProposalRequestDto
         {
             TeamId = teamId,
+            SeasonId = seasonId,
             DurationDays = durationDays
         };
 
@@ -178,17 +184,20 @@ public class ConceptProposalService : IConceptProposalService
     /// <summary>
     /// Calculate a match score (0.0 - 1.0) for a concept based on team characteristics
     /// </summary>
-    private decimal CalculateConceptScore(SportConcept concept, Team team, int expectedDevelopmentLevel)
+    /// <summary>
+    /// Calculate a match score (0.0 - 1.0) for a concept based on team characteristics
+    /// </summary>
+    private decimal CalculateConceptScore(SportConcept concept, Team team, ConceptProposalRequestDto request, int technicalLevel, int tacticalLevel, TeamSeason? teamSeason)
     {
         decimal score = 0;
 
         // Get dynamic weights based on team age (methodological progression)
-        var (techWeight, tacWeight) = GetWeightsByAge(team.TeamCategory?.MinAge);
+        var (techWeight, tacWeight) = GetWeightsByAge(teamSeason?.TeamCategory?.MinAge);
 
         // Technical score: Compare concept difficulty vs team technical level
         decimal technicalScore = CalculateLevelMatchScore(
             concept.TechnicalDifficulty,
-            team.CurrentTechnicalLevel);
+            technicalLevel);
         score += technicalScore * techWeight;
 
         // Tactical score: Compare concept complexity vs team tactical level
@@ -203,14 +212,14 @@ public class ConceptProposalService : IConceptProposalService
         {
             tacticalScore = CalculateLevelMatchScore(
                 concept.TacticalComplexity,
-                team.CurrentTacticalLevel);
+                tacticalLevel);
         }
         score += tacticalScore * tacWeight;
 
         // Development level score: Compare concept level vs expected team level
         if (concept.DevelopmentLevel.HasValue)
         {
-            decimal developmentScore = CalculateLevelMatchScore(concept.DevelopmentLevel.Value, expectedDevelopmentLevel);
+            decimal developmentScore = CalculateLevelMatchScore(concept.DevelopmentLevel.Value, request.ItineraryId.HasValue ? request.ItineraryId.Value : CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory));
             score += developmentScore * DevelopmentLevelWeight;
         }
         else
@@ -220,9 +229,10 @@ public class ConceptProposalService : IConceptProposalService
         }
 
         // Team level bonus (higher ranked teams can handle slightly harder concepts)
-        if (team.TeamLevel != null)
+        // Team level bonus (higher ranked teams can handle slightly harder concepts)
+        if (teamSeason?.TeamLevel != null)
         {
-            decimal levelBonus = (team.TeamLevel.Rank - 1) * 0.02m; // 2% bonus per rank above 1
+            decimal levelBonus = (teamSeason.TeamLevel.Rank - 1) * 0.02m; // 2% bonus per rank above 1
             score += Math.Min(levelBonus, TeamLevelWeight);
         }
         else
@@ -231,7 +241,7 @@ public class ConceptProposalService : IConceptProposalService
         }
 
         // Bonus for pure technical concepts for young teams (≤12 years)
-        if (team.TeamCategory?.MinAge <= 12 && concept.TacticalComplexity == 0)
+        if (teamSeason?.TeamCategory?.MinAge <= 12 && concept.TacticalComplexity == 0)
         {
             score += PureTechnicalBonus;
         }
@@ -261,10 +271,10 @@ public class ConceptProposalService : IConceptProposalService
     /// Calculate the window of development levels to include based on team age and coach evaluation.
     /// Uses the coach's CurrentTechnicalLevel and CurrentTacticalLevel to adjust the window.
     /// </summary>
-    private (int minLevel, int maxLevel) CalculateLevelWindow(Team team, int baseLevel, int offset = 0)
+    private (int minLevel, int maxLevel) CalculateLevelWindow(Team team, int baseLevel, int technicalLevel, int tacticalLevel, int offset = 0)
     {
         // Calculate average team proficiency level (1-10 scale)
-        decimal avgTeamLevel = (team.CurrentTechnicalLevel + team.CurrentTacticalLevel) / 2.0m;
+        decimal avgTeamLevel = (technicalLevel + tacticalLevel) / 2.0m;
 
         // Adjustment: each 2.5 points above/below neutral (5) shifts the window by 1 level
         decimal adjustment = ((avgTeamLevel - 5) / 2.5m) + offset;
@@ -357,10 +367,17 @@ public class ConceptProposalService : IConceptProposalService
     /// <summary>
     /// Generate human-readable reason for the score
     /// </summary>
-    private string GenerateScoreReason(SportConcept concept, Team team, int expectedDevelopmentLevel)
+    private string GenerateScoreReason(SportConcept concept, int technicalLevel, int tacticalLevel, int expectedDevelopmentLevel)
     {
-        int techDiff = concept.TechnicalDifficulty - team.CurrentTechnicalLevel;
-        int tacDiff = concept.TacticalComplexity - team.CurrentTacticalLevel;
+        // Technical check
+        // if (Math.Abs(concept.TechnicalDifficulty - technicalLevel) > 3) return "Dificultad técnica excesiva";
+        // Tactical check
+        // if (Math.Abs(concept.TacticalComplexity - tacticalLevel) > 3) return "Complejidad táctica excesiva";
+
+        // Technical match
+        int techDiff = concept.TechnicalDifficulty - technicalLevel;
+        // Tactical match
+        int tacDiff = concept.TacticalComplexity - tacticalLevel;
 
         var reasons = new List<string>();
 
@@ -402,7 +419,7 @@ public class ConceptProposalService : IConceptProposalService
     /// <summary>
     /// Determine priority based on score and characteristics
     /// </summary>
-    private ProposalPriority DeterminePriority(decimal score, SportConcept concept, Team team, int expectedDevelopmentLevel)
+    private ProposalPriority DeterminePriority(decimal score, SportConcept concept, int technicalLevel, int tacticalLevel, int expectedDevelopmentLevel)
     {
         // Check if it's a base concept (level 1-2, low complexity)
         if (concept.TechnicalDifficulty <= 2 && concept.TacticalComplexity <= 2)
@@ -415,8 +432,8 @@ public class ConceptProposalService : IConceptProposalService
             return ProposalPriority.Recommended;
 
         // Check if it's a progressive challenge (slightly above level)
-        int techDiff = concept.TechnicalDifficulty - team.CurrentTechnicalLevel;
-        int tacDiff = concept.TacticalComplexity - team.CurrentTacticalLevel;
+        int techDiff = concept.TechnicalDifficulty - technicalLevel;
+        int tacDiff = concept.TacticalComplexity - tacticalLevel;
 
         if ((techDiff == 1 || techDiff == 2) || (tacDiff == 1 || tacDiff == 2))
             return ProposalPriority.Progressive;
@@ -431,7 +448,7 @@ public class ConceptProposalService : IConceptProposalService
     /// Reinforcement = inherited but team needs extra work (low level team)
     /// Aspirational = concept is from a higher stage (for advanced teams)
     /// </summary>
-    private ConceptTag DetermineConceptTag(SportConcept concept, int expectedDevelopmentLevel, Team team)
+    private ConceptTag DetermineConceptTag(SportConcept concept, int expectedDevelopmentLevel, int technicalLevel, int tacticalLevel)
     {
         if (!concept.DevelopmentLevel.HasValue)
         {
@@ -441,7 +458,11 @@ public class ConceptProposalService : IConceptProposalService
         int levelDiff = concept.DevelopmentLevel.Value - expectedDevelopmentLevel;
 
         // Calculate if team is "low level" based on coach evaluation
-        decimal avgTeamLevel = (team.CurrentTechnicalLevel + team.CurrentTacticalLevel) / 2.0m;
+        // Uses the coach's TechnicalLevel and TacticalLevel to adjust the window.
+        // Calculate average team level
+        // (This is a simplification, could be weighted)
+        // Using local variables instead of team properties
+        decimal avgTeamLevel = (technicalLevel + tacticalLevel) / 2.0m;
         bool isLowLevelTeam = avgTeamLevel < 4;
 
         return levelDiff switch

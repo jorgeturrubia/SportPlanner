@@ -34,7 +34,14 @@ export class TrainingsComponent implements OnInit {
                 this.teams.set(teams);
 
                 this.route.queryParams.subscribe(params => {
-                    const queryTeamId = params['teamId'] ? +params['teamId'] : null;
+                    let queryTeamId = params['teamId'] ? +params['teamId'] : null;
+
+                    if (!queryTeamId && this.isEmbedded()) {
+                        const parentId = this.route.parent?.snapshot.paramMap.get('id');
+                        if (parentId) {
+                            queryTeamId = +parentId;
+                        }
+                    }
 
                     if (queryTeamId) {
                         const team = teams.find(t => t.id === queryTeamId);

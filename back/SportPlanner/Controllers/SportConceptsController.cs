@@ -35,9 +35,9 @@ public class SportConceptsController : ControllerBase
     }
 
     [HttpGet("suggestions/{teamId}")]
-    public async Task<IActionResult> GetSuggestions(int teamId)
+    public async Task<IActionResult> GetSuggestions(int teamId, [FromQuery] int seasonId)
     {
-        var result = await _service.GetConceptsWithSuggestionsAsync(teamId);
+        var result = await _service.GetConceptsWithSuggestionsAsync(teamId, seasonId);
         return Ok(result);
     }
 

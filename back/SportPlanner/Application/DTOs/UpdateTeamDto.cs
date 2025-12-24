@@ -9,4 +9,6 @@ public class UpdateTeamDto
     public int? TeamLevelId { get; set; }
     public int CurrentTechnicalLevel { get; set; }
     public int CurrentTacticalLevel { get; set; }
+    public string? PhotoUrl { get; set; }
+    public int? SeasonId { get; set; }
 }

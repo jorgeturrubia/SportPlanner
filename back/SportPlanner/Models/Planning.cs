@@ -9,6 +9,9 @@ public class Planning
     public int TeamId { get; set; }
     public Team? Team { get; set; }
 
+    public int? SeasonId { get; set; }
+    public Season? Season { get; set; }
+
     public DateTime StartDate { get; set; }
     public DateTime EndDate { get; set; }
 

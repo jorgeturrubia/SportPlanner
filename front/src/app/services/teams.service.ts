@@ -9,13 +9,11 @@ export class TeamsService {
     private http = inject(HttpClient);
     private seasonService = inject(SeasonService);
 
-    getMyTeams(): Observable<any[]> {
-        const currentSeason = this.seasonService.currentSeason();
+    getMyTeams(seasonId?: number): Observable<any[]> {
+        const id = seasonId ?? this.seasonService.currentSeason()?.id;
         let url = `${environment.apiUrl}/teams/my-teams`;
-        // If there is a selected season, filter by it. If not, maybe show all or nothing (depending on business rule).
-        // For now, if season is selected, we send it.
-        if (currentSeason) {
-            url += `?seasonId=${currentSeason.id}`;
+        if (id) {
+            url += `?seasonId=${id}`;
         }
         return this.http.get<any[]>(url);
     }
