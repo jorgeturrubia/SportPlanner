@@ -94,7 +94,7 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
     if (this.session?.status === 'Planned') {
       this.executionService.startSession(this.sessionId).subscribe(updated => {
         this.session = updated;
-        this.startGlobalTimer();
+        this.initializeSessionState(); // Sync active exercise and state
       });
     }
   }
