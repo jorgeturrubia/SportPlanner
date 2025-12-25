@@ -61,7 +61,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
             options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuers = new[] { supabaseUrl, $"{supabaseUrl?.TrimEnd('/')}/auth/v1" },
+                ValidIssuers = [supabaseUrl, $"{supabaseUrl?.TrimEnd('/')}/auth/v1"],
                 ValidateAudience = true,
                 ValidAudience = "authenticated",
                 ValidateIssuerSigningKey = true,
@@ -77,7 +77,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
             options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
             {
                 ValidateIssuer = true,
-                ValidIssuers = new[] { supabaseUrl, $"{supabaseUrl.TrimEnd('/')}/auth/v1" },
+                ValidIssuers = [supabaseUrl, $"{supabaseUrl.TrimEnd('/')}/auth/v1"],
                 ValidateAudience = true,
                 ValidAudience = "authenticated",
                 ValidateLifetime = true,
@@ -101,7 +101,7 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
             OnMessageReceived = ctx =>
             {
                 var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                var token = ctx.Request.Headers["Authorization"].FirstOrDefault();
+                var token = ctx.Request.Headers.Authorization.FirstOrDefault();
                 logger.LogInformation("OnMessageReceived - Raw Authorization header: {AuthHeader}", token);
                 return Task.CompletedTask;
             },
@@ -114,8 +114,10 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
             OnTokenValidated = ctx =>
             {
                 var logger = ctx.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
-                var claims = ctx.Principal?.Claims?.Select(c => new { c.Type, c.Value }).ToArray();
-                logger.LogInformation("Token validated. Claims: {@Claims}", claims);
+                if (ctx.Principal?.Claims != null)
+                {
+                    logger.LogInformation("Token validated. Claims: {@Claims}", ctx.Principal.Claims.Select(c => new { c.Type, c.Value }).ToArray());
+                }
                 return Task.CompletedTask;
             }
         };

@@ -1,0 +1,24 @@
+/* Live Session Specific Styles */
+
+/* Neon Pulse Animation for Active State */
+@keyframes neon-pulse {
+    0% {
+        box-shadow: 0 0 5px rgba(255, 107, 0, 0.2), 0 0 10px rgba(255, 107, 0, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(255, 107, 0, 0.5), 0 0 30px rgba(255, 107, 0, 0.3);
+    }
+    100% {
+        box-shadow: 0 0 5px rgba(255, 107, 0, 0.2), 0 0 10px rgba(255, 107, 0, 0.2);
+    }
+}
+
+.animate-neon-pulse {
+    animation: neon-pulse 2s infinite ease-in-out;
+}
+
+/* Digital/Monospace numbers that look "LCD" like if fonts aren't perfectly mono */
+.font-lcd {
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.05em;
+}

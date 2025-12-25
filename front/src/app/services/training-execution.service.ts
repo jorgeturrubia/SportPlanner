@@ -6,10 +6,10 @@ import { TrainingSession, TrainingSessionExercise } from '../core/models/trainin
 import { TimerLogic } from './timer-logic';
 
 export enum SessionExecutionState {
-  Idle = 'Idle',
-  Running = 'Running',
-  Paused = 'Paused',
-  Completed = 'Completed'
+    Idle = 'Idle',
+    Running = 'Running',
+    Paused = 'Paused',
+    Completed = 'Completed'
 }
 
 @Injectable({
@@ -23,7 +23,7 @@ export class TrainingExecutionService {
     readonly state: WritableSignal<SessionExecutionState> = signal(SessionExecutionState.Idle);
     readonly session: WritableSignal<TrainingSession | null> = signal(null);
     readonly currentExerciseIndex: WritableSignal<number> = signal(0);
-    
+
     // Timer Signals (Exposed for UI, but managed via tick)
     readonly generalTime: WritableSignal<number> = signal(0);
     readonly exerciseTime: WritableSignal<number> = signal(0);
@@ -100,16 +100,17 @@ export class TrainingExecutionService {
         this.state.set(newState);
     }
 
-    loadSession(sessionId: number): Observable<TrainingSession> {
+    initializeSession(sessionId: number): Observable<TrainingSession> {
         return this.http.get<TrainingSession>(`${environment.apiUrl}/trainingSessions/${sessionId}`).pipe(
             tap(session => {
-                this.session.set(session);
-                this.initializeSession(session);
+                const normalizedSession = this.normalizeSessionData(session);
+                this.session.set(normalizedSession);
+                this.setupSessionState(normalizedSession);
             })
         );
     }
 
-    private initializeSession(session: TrainingSession) {
+    private setupSessionState(session: TrainingSession) {
         const firstIncomplete = session.sessionExercises.findIndex(e => !e.isCompleted);
         this.currentExerciseIndex.set(firstIncomplete >= 0 ? firstIncomplete : 0);
         this.resetExerciseTimer();
@@ -127,11 +128,33 @@ export class TrainingExecutionService {
     startSession(sessionId: number): Observable<TrainingSession> {
         return this.http.post<TrainingSession>(`${this.apiUrl}/start/${sessionId}`, {}).pipe(
             tap(updatedSession => {
-                this.session.set(updatedSession);
-                this.initializeSession(updatedSession);
+                const normalizedSession = this.normalizeSessionData(updatedSession);
+                this.session.set(normalizedSession);
+                this.setupSessionState(normalizedSession);
                 this.updateState(SessionExecutionState.Running);
             })
         );
+    }
+
+    private normalizeSessionData(session: TrainingSession): TrainingSession {
+        // Fallback: If no exercises, map from Concepts
+        if ((!session.sessionExercises || session.sessionExercises.length === 0) &&
+            session.sessionConcepts && session.sessionConcepts.length > 0) {
+
+            session.sessionExercises = session.sessionConcepts.map(c => ({
+                id: c.id,
+                order: c.order,
+                durationMinutes: c.durationMinutes,
+                // Synthesize the structure expected by the template (ex.exercise.name)
+                // Note: We cast to any because the frontend model interface might be incomplete 
+                // vs what the template expects.
+                exercise: {
+                    name: c.conceptName || 'Concepto sin nombre',
+                    description: c.conceptDescription || ''
+                }
+            } as any));
+        }
+        return session;
     }
 
     pauseSession() {
@@ -162,7 +185,7 @@ export class TrainingExecutionService {
 
     finishSession(sessionId: number, rating?: number, notes?: string): Observable<TrainingSession> {
         return this.http.post<TrainingSession>(`${this.apiUrl}/finish/${sessionId}`, { rating, notes }).pipe(
-             tap(() => this.updateState(SessionExecutionState.Completed))
+            tap(() => this.updateState(SessionExecutionState.Completed))
         );
     }
 
@@ -174,7 +197,7 @@ export class TrainingExecutionService {
                     const idx = s.sessionExercises.findIndex(e => e.id === updatedEx.id);
                     if (idx >= 0) {
                         s.sessionExercises[idx] = updatedEx;
-                        this.session.set({...s});
+                        this.session.set({ ...s });
                     }
                 }
             })

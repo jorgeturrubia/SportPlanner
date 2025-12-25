@@ -1,0 +1,124 @@
+<div class="h-screen flex flex-col bg-dark-bg text-white overflow-hidden font-sans">
+
+    <!-- Top Bar: Header & Global Timer -->
+    <header class="flex items-center justify-between px-6 py-4 bg-dark-surface border-b border-dark-border shadow-md z-10">
+        <div class="flex items-center gap-4">
+            <button class="btn btn-ghost btn-circle text-gray-400 hover:text-white" routerLink="/dashboard/trainings">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M19 12H5M12 19l-7-7 7-7" />
+                </svg>
+            </button>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white truncate max-w-md">
+                    {{ session?.sessionDate | date:'mediumDate' }}
+                </h1>
+                <div class="flex items-center gap-2 text-sm text-gray-400">
+                    <span class="badge badge-sm badge-success gap-1">
+                        Running
+                    </span>
+                    <span>•</span>
+                    <span>{{ session?.teamName }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Timer (Small) -->
+        <div class="flex flex-col items-end">
+            <div class="text-xs text-gray-500 uppercase tracking-widest font-semibold">T. Total</div>
+            <div class="text-2xl font-mono font-bold text-primary-400 tabular-nums tracking-wide">
+                {{ sessionDuration }}
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 grid grid-cols-1 lg:grid-cols-3 gap-6 p-6 overflow-hidden max-w-7xl mx-auto w-full">
+
+        <!-- Left Col: Active Exercise (Focus) -->
+        <div class="lg:col-span-2 flex flex-col h-full gap-6">
+            
+            <!-- Context: Current Exercise Card -->
+            <div *ngIf="activeExercise" class="bg-dark-surface rounded-3xl p-8 border border-dark-border shadow-2xl relative overflow-hidden flex-1 flex flex-col justify-center items-center">
+                <!-- Background Blur Effect (Optional) -->
+                <div class="absolute inset-0 bg-gradient-to-br from-primary-900/10 to-transparent pointer-events-none"></div>
+
+                <!-- Exercise Header -->
+                <div class="text-center z-10 mb-8">
+                    <h2 class="text-4xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-white to-gray-400 mb-2">
+                        {{ activeExercise.exercise.name }}
+                    </h2>
+                    <p class="text-lg text-gray-400 max-w-2xl mx-auto line-clamp-2">
+                        {{ activeExercise.exercise.description }}
+                    </p>
+                </div>
+
+                <!-- BIG TIMER -->
+                <div class="relative z-10 mb-10">
+                    <app-exercise-timer 
+                        [duration]="activeExercise.durationMinutes"
+                        [state]="isSessionFinished ? 'finished' : 'running'">
+                    </app-exercise-timer>
+                </div>
+
+                <!-- Main Controls (Play/Pause) -->
+                <div class="flex items-center gap-6 z-10">
+                    <button class="btn btn-circle btn-lg glass hover:bg-white/10 border-none w-20 h-20">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="text-white">
+                             <rect x="6" y="4" width="4" height="16"></rect>
+                             <rect x="14" y="4" width="4" height="16"></rect>
+                        </svg>
+                        <!-- Play Icon (Swap with ngIf) -->
+                        <!-- <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="currentColor" class="text-white ml-1">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg> -->
+                    </button>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full max-w-xl bg-gray-800 h-2 rounded-full mt-10 overflow-hidden">
+                    <div class="bg-primary-500 h-full rounded-full transition-all duration-1000 ease-linear" style="width: 45%"></div>
+                </div>
+                 <p class="mt-2 text-sm text-gray-500 font-mono">Exercise 3 of 8</p>
+
+                <!-- Controls -->
+                <div class="flex gap-4 mt-8">
+                    <button (click)="prevExercise()" [disabled]="currentExerciseIndex === 0"
+                        class="btn btn-outline btn-sm gap-2" [class.opacity-50]="currentExerciseIndex === 0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                        ANTERIOR
+                    </button>
+
+                    <button (click)="nextExercise()" class="btn btn-outline btn-sm gap-2 ml-auto">
+                        SIGUIENTE
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Right Col: Flow -->
+        <div class="lg:col-span-1 h-full overflow-hidden flex flex-col">
+            <div class="bg-dark-surface rounded-3xl border border-dark-border flex-1 p-4 overflow-y-auto">
+                <h3 class="text-xl font-bold text-gray-500 mb-4 px-2 uppercase tracking-widest">Itinerario</h3>
+                <app-exercise-flow [exercises]="session.sessionExercises" [currentIndex]="currentExerciseIndex">
+                </app-exercise-flow>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Summary Screen -->
+    <div *ngIf="isSessionFinished" class="w-full max-w-2xl">
+        <app-session-summary [session]="session" (submitFeedback)="finishSession($event)">
+        </app-session-summary>
+    </div>
+
+</div>

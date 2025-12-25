@@ -2,6 +2,7 @@ export interface TrainingSessionConcept {
     id: number;
     sportConceptId: number;
     conceptName?: string;
+    conceptDescription?: string;
     order: number;
     durationMinutes?: number;
 }

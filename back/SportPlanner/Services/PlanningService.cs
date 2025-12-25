@@ -9,16 +9,10 @@ using System.Threading.Tasks;
 
 namespace SportPlanner.Services
 {
-    public class PlanningService : IPlanningService
+    public class PlanningService(AppDbContext context, IMapper mapper) : IPlanningService
     {
-        private readonly AppDbContext _context;
-        private readonly IMapper _mapper;
-
-        public PlanningService(AppDbContext context, IMapper mapper)
-        {
-            _context = context;
-            _mapper = mapper;
-        }
+        private readonly AppDbContext _context = context;
+        private readonly IMapper _mapper = mapper;
 
         public async Task<PlanningDto> CreateAsync(CreatePlanningDto createPlanningDto)
         {
@@ -50,11 +44,11 @@ namespace SportPlanner.Services
         public async Task<IEnumerable<PlanningDto>> GetAllAsync(int? teamId = null, int? seasonId = null)
         {
             var query = _context.Plannings
-                .Include(p => p.Team).ThenInclude(t => t.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
+                .Include(p => p.Team).ThenInclude(t => t!.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
                 .Include(p => p.ScheduleDays)
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)
-                        .ThenInclude(sc => sc.ConceptCategory)
+                        .ThenInclude(sc => sc!.ConceptCategory)
                 .AsQueryable();
 
             if (teamId.HasValue)
@@ -77,11 +71,11 @@ namespace SportPlanner.Services
         public async Task<PlanningDto?> GetByIdAsync(int id)
         {
             var planning = await _context.Plannings
-                .Include(p => p.Team).ThenInclude(t => t.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
+                .Include(p => p.Team).ThenInclude(t => t!.TeamSeasons).ThenInclude(ts => ts.TeamCategory)
                 .Include(p => p.ScheduleDays)
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)
-                        .ThenInclude(sc => sc.ConceptCategory)
+                        .ThenInclude(sc => sc!.ConceptCategory)
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (planning != null)
@@ -164,7 +158,7 @@ namespace SportPlanner.Services
                 .Include(p => p.Team)
                 .Include(p => p.PlanConcepts)
                     .ThenInclude(pc => pc.SportConcept)
-                        .ThenInclude(sc => sc.ConceptCategory)
+                        .ThenInclude(sc => sc!.ConceptCategory)
                 .FirstOrDefaultAsync(p => p.Id == planningId);
 
             if (planning == null) return null;
@@ -177,23 +171,23 @@ namespace SportPlanner.Services
                 .Where(t => t.TeamId == planning.TeamId && t.Date >= planning.StartDate && t.Date <= planning.EndDate)
                 .Include(t => t.SessionConcepts)
                     .ThenInclude(sc => sc.SportConcept)
-                        .ThenInclude(c => c.ConceptCategory)
+                        .ThenInclude(c => c!.ConceptCategory)
                 .Include(t => t.SessionExercises)
                     .ThenInclude(se => se.SportConcept)
-                        .ThenInclude(c => c.ConceptCategory)
+                        .ThenInclude(c => c!.ConceptCategory)
                 .OrderBy(t => t.Date)
                 .ToListAsync();
 
             var resp = new PlanMonitorDto
             {
                 PlanningId = planning.Id,
-                PlanningName = planning.Name,
-                Sessions = sessions.Select(s => new PlanMonitorSessionDto
+                PlanningName = planning.Name ?? "Sin Nombre",
+                Sessions = [.. sessions.Select(s => new PlanMonitorSessionDto
                 {
                     Id = s.Id,
                     Date = s.Date,
                     Name = s.Name ?? "Entrenamiento"
-                }).ToList()
+                })]
             };
 
             // Gather all Unique Concepts (Planned + Used)
@@ -265,7 +259,7 @@ namespace SportPlanner.Services
                     catDto.Concepts.Add(CreateConceptDto(c, plannedConceptIds, sessions));
                 }
 
-                if (catDto.Concepts.Any())
+                if (catDto.Concepts.Count > 0)
                 {
                     resp.Categories.Add(catDto);
                 }
@@ -277,7 +271,7 @@ namespace SportPlanner.Services
                 .OrderBy(c => c.Name)
                 .ToList();
 
-            if (uncategorizedConcepts.Any())
+            if (uncategorizedConcepts.Count > 0)
             {
                 var uncategorizedDto = new PlanMonitorCategoryDto
                 {
@@ -295,7 +289,7 @@ namespace SportPlanner.Services
             return resp;
         }
 
-        private string GetFullCategoryName(ConceptCategory? category)
+        private static string GetFullCategoryName(ConceptCategory? category)
         {
             if (category == null) return "Sin Categoría";
             var names = new List<string>();
@@ -308,14 +302,14 @@ namespace SportPlanner.Services
             return string.Join(" > ", names);
         }
 
-        private PlanMonitorConceptDto CreateConceptDto(SportConcept c, HashSet<int> plannedConceptIds, List<TrainingSession> sessions)
+        private static PlanMonitorConceptDto CreateConceptDto(SportConcept c, HashSet<int> plannedConceptIds, List<TrainingSession> sessions)
         {
             var cDto = new PlanMonitorConceptDto
             {
                 ConceptId = c.Id,
                 ConceptName = c.Name,
                 IsPlanned = plannedConceptIds.Contains(c.Id),
-                Executions = new List<PlanMonitorExecutionDto>()
+                Executions = []
             };
 
             foreach (var s in sessions)
@@ -323,7 +317,7 @@ namespace SportPlanner.Services
                 var fromConcepts = s.SessionConcepts.Where(sc => sc.SportConceptId == c.Id).ToList();
                 var fromExercises = s.SessionExercises.Where(se => se.SportConceptId == c.Id).ToList();
 
-                if (fromConcepts.Any() || fromExercises.Any())
+                if (fromConcepts.Count > 0 || fromExercises.Count > 0)
                 {
                     cDto.Executions.Add(new PlanMonitorExecutionDto
                     {
