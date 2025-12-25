@@ -1,15 +1,46 @@
 {
   "mcpServers": {
-    "supabase": {
+    "supabase-mcp-server": {
       "command": "npx",
       "args": [
         "-y",
-        "@modelcontextprotocol/server-supabase"
+        "@supabase/mcp-server-supabase@latest",
+        "--access-token",
+        "sbp_8935ac91007a5966c1622ceeec14ad6b52d0713d"
       ],
-      "env": {
-        "SUPABASE_URL": "https://uyvcgsjrqgzpsbptmqxp.supabase.co",
-        "SUPABASE_KEY": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV5dmNnc2pycWd6cHNicHRtcXhwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDkyNTY3MTcsImV4cCI6MjA2NDgzMjcxN30.kTqCBlrvOrfeWu9e57DDLiToSPr_ZABUsKrlo5p-Nv8"
-      }
+      "env": {}
+    },
+    "sequential-thinking": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-sequential-thinking"
+      ]
+    },
+    "filesystem": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "C:\\Proyectos",
+        "C:\\Users\\Alejandro.Ruiz"
+      ]
+    },
+    "angular-cli": {
+      "command": "npx",
+      "args": [
+        "@angular/cli",
+        "mcp"
+      ],
+      "env": {}
+    },
+    "fetch": {
+      "command": "python",
+      "args": [
+        "-m",
+        "mcp_server_fetch"
+      ],
+      "env": {}
     }
   }
 }
