@@ -1,16 +1,16 @@
 # Plan: Training Execution Component Refactor
 
 ## Phase 1: Investigation and Preparation
-- [~] Task: Locate and analyze existing components related to Training Execution.
+- [x] Task: Locate and analyze existing components related to Training Execution.
 - [x] Task: Audit the current `TrainingExecutionController` and frontend services.
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Investigation and Preparation' (Protocol in workflow.md) [checkpoint: a4d8abb]
 
 ## Phase 2: Core Logic (Service Layer)
-- [ ] Task: Create or refactor `TrainingExecutionService` using Angular Signals to manage session state (Idle, Running, Paused, Completed).
-- [ ] Task: Implement the General Timer (Count UP) logic within the service.
-- [ ] Task: Implement the Exercise Timer (Count DOWN) and auto-transition logic.
-- [ ] Task: Write unit tests for `TrainingExecutionService` state transitions and timer accuracy.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Core Logic (Service Layer)' (Protocol in workflow.md)
+- [x] Task: Create or refactor `TrainingExecutionService` using Angular Signals to manage session state (Idle, Running, Paused, Completed).
+- [x] Task: Implement the General Timer (Count UP) logic within the service.
+- [x] Task: Implement the Exercise Timer (Count DOWN) and auto-transition logic.
+- [x] Task: Write unit tests for `TrainingExecutionService` state transitions and timer accuracy.
+- [~] Task: Conductor - User Manual Verification 'Phase 2: Core Logic (Service Layer)' (Protocol in workflow.md)
 
 ## Phase 3: Component UI Refactor
 - [ ] Task: Refactor the Training Execution component template for a professional layout (Large timer, active exercise focus).
