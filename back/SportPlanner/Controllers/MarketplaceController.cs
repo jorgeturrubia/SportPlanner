@@ -38,11 +38,26 @@ public class MarketplaceController : ControllerBase
                             ?? throw new UnauthorizedAccessException();
 
     [HttpGet]
-    public async Task<ActionResult<IEnumerable<MethodologicalItineraryDto>>> Search([FromQuery] MarketplaceFilterDto filter)
+    public async Task<ActionResult<IEnumerable<MarketplaceItemDto>>> Search([FromQuery] MarketplaceFilterDto filter)
     {
-        var results = await _marketplaceService.SearchItinerariesAsync(filter);
-        var dtos = _mapper.Map<List<MethodologicalItineraryDto>>(results);
-        return Ok(dtos);
+        var results = await _marketplaceService.SearchAsync(filter);
+        return Ok(results);
+    }
+
+    [HttpGet("{id}")]
+    public async Task<ActionResult<ItineraryDetailDto>> GetDetail(int id)
+    {
+        var detail = await _marketplaceService.GetItineraryDetailAsync(id);
+        if (detail == null) return NotFound();
+        return Ok(detail);
+    }
+
+    [HttpGet("template/{id}")]
+    public async Task<ActionResult<TemplateDetailDto>> GetTemplateDetail(int id)
+    {
+        var detail = await _marketplaceService.GetTemplateDetailAsync(id);
+        if (detail == null) return NotFound();
+        return Ok(detail);
     }
 
     [HttpPost("download/{id}")]

@@ -31,6 +31,7 @@ public class SportConcept
 
     public int? SportId { get; set; }
     public Sport? Sport { get; set; }
+    public bool IsSystem { get; set; } = true;
     public bool IsActive { get; set; } = true;
 
     // Relationship with Exercise library

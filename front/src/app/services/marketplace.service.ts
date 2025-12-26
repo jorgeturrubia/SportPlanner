@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { MethodologicalItinerary, MarketplaceFilter, RateItineraryRequest, PlanningTemplateSimple } from '../core/models/planning-template.model';
+import { MarketplaceItem, MarketplaceFilter, RateItineraryRequest, PlanningTemplateSimple, ItineraryDetail, TemplateDetail } from '../core/models/planning-template.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -12,13 +12,23 @@ export class MarketplaceService {
 
   constructor(private http: HttpClient) { }
 
-  search(filter: MarketplaceFilter): Observable<MethodologicalItinerary[]> {
+  search(filter: MarketplaceFilter): Observable<MarketplaceItem[]> {
     let params = new HttpParams();
     if (filter.searchTerm) params = params.set('searchTerm', filter.searchTerm);
     if (filter.minRating) params = params.set('minRating', filter.minRating.toString());
     if (filter.teamCategoryId) params = params.set('teamCategoryId', filter.teamCategoryId.toString());
+    if (filter.sportId) params = params.set('sportId', filter.sportId.toString());
+    if (filter.itemType) params = params.set('itemType', filter.itemType);
 
-    return this.http.get<MethodologicalItinerary[]>(this.apiUrl, { params });
+    return this.http.get<MarketplaceItem[]>(this.apiUrl, { params });
+  }
+
+  getDetail(id: number): Observable<ItineraryDetail> {
+    return this.http.get<ItineraryDetail>(`${this.apiUrl}/${id}`);
+  }
+
+  getTemplateDetail(id: number): Observable<TemplateDetail> {
+    return this.http.get<TemplateDetail>(`${this.apiUrl}/template/${id}`);
   }
 
   download(id: number): Observable<PlanningTemplateSimple[]> {

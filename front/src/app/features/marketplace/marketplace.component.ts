@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MarketplaceService } from '../../services/marketplace.service';
 import { LookupService, TeamCategory } from '../../services/lookup.service';
-import { MethodologicalItinerary, MarketplaceFilter } from '../../core/models/planning-template.model';
+import { MarketplaceItem, MarketplaceFilter, ItineraryDetail, TemplateDetail } from '../../core/models/planning-template.model';
 import { NotificationService } from '../../services/notification.service';
 import { TranslateModule } from '@ngx-translate/core';
 import { RatingStarsComponent } from '../../shared/components/rating-stars/rating-stars.component';
@@ -16,14 +16,28 @@ import { RatingStarsComponent } from '../../shared/components/rating-stars/ratin
   styleUrl: './marketplace.component.css'
 })
 export class MarketplaceComponent implements OnInit {
-  itineraries = signal<MethodologicalItinerary[]>([]);
+  items = signal<MarketplaceItem[]>([]);
   categories = signal<TeamCategory[]>([]);
   loading = signal<boolean>(false);
   
+  // Viewer state
+  selectedItem = signal<MarketplaceItem | null>(null);
+  detail = signal<ItineraryDetail | TemplateDetail | null>(null);
+  showViewer = signal<boolean>(false);
+  loadingDetail = signal<boolean>(false);
+  
   filter: MarketplaceFilter = {
     searchTerm: '',
-    teamCategoryId: undefined
+    teamCategoryId: undefined,
+    itemType: 'itinerary'
   };
+
+  itemTypes = [
+    { value: 'itinerary', label: 'Itinerarios' },
+    { value: 'template', label: 'Templates' },
+    { value: 'concept', label: 'Conceptos' },
+    { value: 'exercise', label: 'Ejercicios' }
+  ];
 
   constructor(
     private marketplaceService: MarketplaceService,
@@ -46,7 +60,7 @@ export class MarketplaceComponent implements OnInit {
     this.loading.set(true);
     this.marketplaceService.search(this.filter).subscribe({
       next: (results) => {
-        this.itineraries.set(results);
+        this.items.set(results);
         this.loading.set(false);
       },
       error: (err) => {
@@ -56,13 +70,18 @@ export class MarketplaceComponent implements OnInit {
     });
   }
 
-  download(itinerary: MethodologicalItinerary): void {
-    this.marketplaceService.download(itinerary.id).subscribe({
+  onTypeChange(type: any): void {
+    this.filter.itemType = type;
+    this.search();
+  }
+
+  download(item: MarketplaceItem): void {
+    this.marketplaceService.download(item.id).subscribe({
       next: () => {
-        this.notificationService.success('Completado', `Itinerario "${itinerary.name}" y sus plantillas añadido a tus plantillas`);
+        this.notificationService.success('Completado', `"${item.name}" añadido a tus recursos`);
       },
       error: (err) => {
-        this.notificationService.error('Error', 'No se pudo añadir el itinerario');
+        this.notificationService.error('Error', 'No se pudo descargar el recurso');
       }
     });
   }
@@ -77,5 +96,46 @@ export class MarketplaceComponent implements OnInit {
         this.notificationService.error('Error', 'No se pudo registrar tu valoración');
       }
     });
+  }
+
+  viewDetail(item: MarketplaceItem): void {
+    this.selectedItem.set(item);
+    this.showViewer.set(true);
+    this.detail.set(null);
+    this.loadingDetail.set(true);
+    
+    if (item.itemType === 'itinerary') {
+        this.marketplaceService.getDetail(item.id).subscribe({
+            next: (detail) => {
+                this.detail.set(detail);
+                this.loadingDetail.set(false);
+            },
+            error: () => {
+                this.notificationService.error('Error', 'No se pudieron cargar los detalles del itinerario');
+                this.loadingDetail.set(false);
+                this.showViewer.set(false);
+            }
+        });
+    } else if (item.itemType === 'template') {
+        this.marketplaceService.getTemplateDetail(item.id).subscribe({
+            next: (detail) => {
+                this.detail.set(detail);
+                this.loadingDetail.set(false);
+            },
+            error: () => {
+                this.notificationService.error('Error', 'No se pudieron cargar los detalles del template');
+                this.loadingDetail.set(false);
+                this.showViewer.set(false);
+            }
+        });
+    }
+  }
+
+  closeViewer(): void {
+    this.showViewer.set(false);
+  }
+
+  hasConcept(template: any, conceptName: string): boolean {
+    return template.concepts.includes(conceptName);
   }
 }

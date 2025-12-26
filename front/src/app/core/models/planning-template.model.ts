@@ -46,6 +46,41 @@ export interface MethodologicalItinerary {
     version: number;
 }
 
+export interface MarketplaceItem {
+    id: number;
+    name: string;
+    description?: string;
+    itemType: 'itinerary' | 'template' | 'concept' | 'exercise';
+    authorName?: string;
+    averageRating: number;
+    ratingCount: number;
+    version: number;
+    sportName?: string;
+    categoryName?: string;
+    elementCount?: number;
+}
+
+export interface ItineraryDetail {
+    id: number;
+    name: string;
+    description?: string;
+    sportName?: string;
+    authorName?: string;
+    averageRating: number;
+    ratingCount: number;
+    version: number;
+    uniqueConcepts: string[];
+    templates: TemplateDetail[];
+}
+
+export interface TemplateDetail {
+    id: number;
+    name: string;
+    description?: string;
+    categoryName?: string;
+    concepts: string[];
+}
+
 export interface PlanningTemplateConcept {
     id: number;
     planningTemplateId: number;
@@ -59,6 +94,8 @@ export interface MarketplaceFilter {
     searchTerm?: string;
     minRating?: number;
     teamCategoryId?: number;
+    sportId?: number;
+    itemType?: 'itinerary' | 'template' | 'concept' | 'exercise';
 }
 
 export interface RateItineraryRequest {

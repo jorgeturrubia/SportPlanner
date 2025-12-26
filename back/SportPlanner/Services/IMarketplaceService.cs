@@ -11,11 +11,21 @@ namespace SportPlanner.Services;
 public interface IMarketplaceService
 {
     /// <summary>
-    /// Searches for system itineraries based on a set of filters.
+    /// Searches for system items (itineraries, templates, concepts, exercises) based on a set of filters.
     /// </summary>
     /// <param name="filter">The filtering criteria.</param>
-    /// <returns>A list of matching itineraries.</returns>
-    Task<List<MethodologicalItinerary>> SearchItinerariesAsync(MarketplaceFilterDto filter);
+    /// <returns>A list of matching marketplace items.</returns>
+    Task<List<MarketplaceItemDto>> SearchAsync(MarketplaceFilterDto filter);
+
+    /// <summary>
+    /// Gets the full details of an itinerary, including its templates and concepts.
+    /// </summary>
+    Task<ItineraryDetailDto?> GetItineraryDetailAsync(int id);
+
+    /// <summary>
+    /// Gets the full details of a single template, including its concepts.
+    /// </summary>
+    Task<TemplateDetailDto?> GetTemplateDetailAsync(int id);
 
     /// <summary>
     /// Deletes a system itinerary from the marketplace.
