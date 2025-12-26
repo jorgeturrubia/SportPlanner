@@ -34,6 +34,7 @@ public class AppDbContext : DbContext
     public DbSet<TrainingSession> TrainingSessions { get; set; } = null!;
     public DbSet<TrainingSessionConcept> TrainingSessionConcepts { get; set; } = null!;
     public DbSet<TrainingSessionExercise> TrainingSessionExercises { get; set; } = null!;
+    public DbSet<ItineraryRating> ItineraryRatings { get; set; } = null!;
 
 
 
@@ -188,6 +189,12 @@ public class AppDbContext : DbContext
             .WithMany(mi => mi.ChildItineraries)
             .HasForeignKey(mi => mi.ParentItineraryId)
             .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<MethodologicalItinerary>()
+            .HasOne(mi => mi.SystemSource)
+            .WithMany()
+            .HasForeignKey(mi => mi.SystemSourceId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         modelBuilder.Entity<TeamSeason>()
             .HasOne(ts => ts.TeamCategory)
             .WithMany()
@@ -199,6 +206,17 @@ public class AppDbContext : DbContext
             .WithOne(c => c.MethodologicalItinerary)
             .HasForeignKey(c => c.MethodologicalItineraryId)
             .OnDelete(DeleteBehavior.SetNull);
+        
+        // ItineraryRatings configuration
+        modelBuilder.Entity<ItineraryRating>().HasKey(ir => ir.Id);
+        modelBuilder.Entity<ItineraryRating>()
+            .HasIndex(ir => new { ir.ItineraryId, ir.UserId })
+            .IsUnique();
+        modelBuilder.Entity<ItineraryRating>()
+            .HasOne(ir => ir.Itinerary)
+            .WithMany()
+            .HasForeignKey(ir => ir.ItineraryId)
+            .OnDelete(DeleteBehavior.Cascade);
 
         // Exercise and SportConcept Many-to-Many
         modelBuilder.Entity<Exercise>()
