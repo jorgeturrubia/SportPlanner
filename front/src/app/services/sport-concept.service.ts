@@ -19,4 +19,12 @@ export class SportConceptService {
   getSuggestions(teamId: number): Observable<SportConcept[]> {
     return this.http.get<SportConcept[]>(`${this.apiUrl}/suggestions/${teamId}`);
   }
+
+  create(concept: any): Observable<SportConcept> {
+    return this.http.post<SportConcept>(this.apiUrl, concept);
+  }
+
+  getCategories(): Observable<any[]> {
+    return this.http.get<any[]>(`${environment.apiUrl}/conceptcategories`);
+  }
 }

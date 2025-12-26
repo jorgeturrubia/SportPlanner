@@ -57,12 +57,38 @@
                 <path d="M12 2a5 5 0 0 0-5 5v2a5 5 0 0 0 10 0V7a5 5 0 0 0-5-5z"></path>
                 <path d="M12 14c-4.4 0-8 2.5-8 6v2h16v-2c0-3.5-3.6-6-8-6z" opacity="0.3"></path>
                 <circle cx="12" cy="12" r="3" fill="currentColor" fill-opacity="0.2"></circle>
-                <!-- Custom icon for proposals -->
                 <path d="M9 11l3 3L22 4" />
             </svg>
             <span class="ml-3 font-bold tracking-wide truncate transition-opacity duration-300"
                 [class.opacity-0]="collapsed" [class.w-0]="collapsed" [class.hidden]="collapsed">
                 {{ 'SIDEBAR.PROPOSALS' | translate }}
+            </span>
+        </a>
+
+        <a routerLink="/dashboard/marketplace" routerLinkActive="bg-primary text-black border-primary"
+            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                <circle cx="8" cy="21" r="1" />
+                <circle cx="19" cy="21" r="1" />
+                <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12" />
+            </svg>
+            <span class="ml-3 font-bold tracking-wide truncate transition-opacity duration-300"
+                [class.opacity-0]="collapsed" [class.w-0]="collapsed" [class.hidden]="collapsed">
+                {{ 'SIDEBAR.MARKETPLACE' | translate }}
+            </span>
+        </a>
+
+        <a routerLink="/dashboard/my-itineraries" routerLinkActive="bg-primary text-black border-primary"
+            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
+                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+            <span class="ml-3 font-bold tracking-wide truncate transition-opacity duration-300"
+                [class.opacity-0]="collapsed" [class.w-0]="collapsed" [class.hidden]="collapsed">
+                {{ 'SIDEBAR.MY_ITINERARIES' | translate }}
             </span>
         </a>
 

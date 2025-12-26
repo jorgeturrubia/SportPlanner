@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -51,11 +52,11 @@ public class SportsController : ControllerBase
     [HttpGet("{id}/itineraries")]
     public async Task<IActionResult> GetItineraries(int id)
     {
-        var itineraries = await _db.MethodologicalItineraries
+        var itineraries = await _db.PlanningTemplates
             .Include(mi => mi.TeamCategory)
-            .Where(mi => mi.TeamCategoryId == null || mi.TeamCategory!.SportId == id)
+            .Where(mi => mi.IsSystem && (mi.TeamCategoryId == null || mi.TeamCategory!.SportId == id))
             .OrderBy(mi => mi.Level)
-            .Select(mi => new MethodologicalItinerarySimpleDto
+            .Select(mi => new PlanningTemplateSimpleDto
             {
                 Id = mi.Id,
                 Name = mi.Name,

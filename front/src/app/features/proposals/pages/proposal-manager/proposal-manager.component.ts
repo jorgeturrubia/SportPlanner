@@ -1,60 +1,53 @@
-import { Component, Input, OnChanges, SimpleChanges, OnInit } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
-import { ItineraryTunerComponent } from '../../components/itinerary-tuner/itinerary-tuner.component';
+import { TemplateTunerComponent } from '../../components/template-tuner/template-tuner.component';
 import { ProposalsService } from '../../services/proposals.service';
 import { TeamsService } from '../../../../services/teams.service';
 import { SportsService } from '../../../../services/sports.service';
 import { SeasonService } from '../../../../services/season.service';
 import { SubscriptionsService } from '../../../../services/subscriptions.service';
-import { inject } from '@angular/core';
-import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto, MethodologicalItineraryDto } from '../../models/proposal.models';
+import { PlanningTemplateService } from '../../../../services/planning-template.service';
+import { SportConceptService } from '../../../../services/sport-concept.service';
+import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto, PlanningTemplateDto } from '../../models/proposal.models';
 
 // --- New Hierarchical Interfaces ---
 interface SubCategoryRow {
     name: string;
-    categoryId: number; // Unique ID for the subcategory bucket
-
-    // The Active Reference
-    activeConcepts: ScoredConceptDto[]; // Level X (Own)
-
-    // Context Buckets
-    immediatePrevConcepts: ScoredConceptDto[]; // Level X-1 (Closest Past)
-    immediateNextConcepts: ScoredConceptDto[]; // Level X+1 (Closest Future)
-    distantPastConcepts: ScoredConceptDto[];   // Older levels (Deep Past)
-    distantFutureConcepts: ScoredConceptDto[]; // Higher levels (Far Future)
-
-    // UI State
-    isExpanded: boolean; // For "View More" (distant levels) logic
-    showAllLevels: boolean; // Toggle for distant levels
-    isPrevExpanded: boolean; // Toggle for Immediate Previous
-    isNextExpanded: boolean; // Toggle for Immediate Next
-
-    // Drag & Drop List IDs (need one for each visible bucket to allow drops)
+    categoryId: number;
+    activeConcepts: ScoredConceptDto[];
+    immediatePrevConcepts: ScoredConceptDto[];
+    immediateNextConcepts: ScoredConceptDto[];
+    distantPastConcepts: ScoredConceptDto[];
+    distantFutureConcepts: ScoredConceptDto[];
+    isExpanded: boolean;
+    showAllLevels: boolean;
+    isPrevExpanded: boolean;
+    isNextExpanded: boolean;
     activeListId: string;
     prevListId: string;
     nextListId: string;
-    distantListId: string; // Maybe one shared list for distant? Or separate. Let's separate to be safe.
+    distantListId: string;
 }
 
 interface CategoryGroup {
     name: string;
-    isCollapsed: boolean; // For Category grouping
-    hasActiveContent: boolean; // If false, show "Nothing planned"
+    isCollapsed: boolean;
+    hasActiveContent: boolean;
     subCategories: SubCategoryRow[];
 }
 
 interface MethodologicalSection {
-    name: string; // "Ataque" | "Defensa"
-    isCollapsed: boolean; // Toggle for Section visibility
+    name: string;
+    isCollapsed: boolean;
     categories: CategoryGroup[];
 }
 
 @Component({
     selector: 'app-proposal-manager',
     standalone: true,
-    imports: [CommonModule, FormsModule, DragDropModule, ItineraryTunerComponent],
+    imports: [CommonModule, FormsModule, DragDropModule, TemplateTunerComponent],
     templateUrl: './proposal-manager.component.html',
     styleUrls: ['./proposal-manager.component.css']
 })
@@ -66,33 +59,111 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
 
     // Local state
     teams: any[] = [];
-    itineraries: MethodologicalItineraryDto[] = [];
-    selectedItineraryId: number | null = null;
-    defaultItineraryName: string = '';
+    templates: PlanningTemplateDto[] = [];
+    selectedTemplateId: number | null = null;
+    defaultTemplateName: string = '';
     loading: boolean = false;
     currentLevelOffset: number = 0;
-
-    // The main data structure for the view
     methodologicalSections: MethodologicalSection[] = [];
-
-    // All connected drop lists for drag & drop
     allListIds: string[] = [];
-
-    // UI Constants
     readonly INITIAL_VISIBLE_COUNT = 3;
 
-    private seasonService: SeasonService = inject(SeasonService); // Added
+    private seasonService: SeasonService = inject(SeasonService);
+
+    // Modal State
+    showCreateModal: boolean = false;
+    newConceptName: string = '';
+    newConceptCategoryId: number | null = null;
+    conceptCategories: any[] = [];
+    flattenedCategories: any[] = [];
+    isCreating: boolean = false;
 
     constructor(
         private proposalsService: ProposalsService,
         private teamsService: TeamsService,
         private sportsService: SportsService,
-        private subscriptionsService: SubscriptionsService
-    ) { } // Modified
+        private subscriptionsService: SubscriptionsService,
+        private planningTemplateService: PlanningTemplateService,
+        private sportConceptService: SportConceptService
+    ) { }
+
+    openCreateConceptModal() {
+        this.showCreateModal = true;
+        this.newConceptName = '';
+        this.newConceptCategoryId = null;
+        if (this.conceptCategories.length === 0) {
+            this.loadCategories();
+        }
+    }
+
+    closeCreateConceptModal() {
+        this.showCreateModal = false;
+    }
+
+    loadCategories() {
+        this.sportConceptService.getCategories().subscribe({
+            next: (cats) => {
+                this.conceptCategories = cats;
+                this.flattenedCategories = [];
+                this.flattenCategoriesRecursive(cats);
+            },
+            error: (err) => console.error('Error loading categories', err)
+        });
+    }
+
+    flattenCategoriesRecursive(cats: any[]) {
+        cats.forEach(c => {
+            if (!c.parentId) {
+                this.flattenedCategories.push({ id: c.id, name: c.name, level: 0 });
+            }
+            if (c.subCategories && c.subCategories.length > 0) {
+                 this.processChildren(c.subCategories, 1);
+            }
+        });
+    }
+
+    processChildren(cats: any[], level: number) {
+        cats.forEach(c => {
+            this.flattenedCategories.push({ id: c.id, name: '- '.repeat(level) + c.name, level: level });
+             if (c.subCategories && c.subCategories.length > 0) {
+                 this.processChildren(c.subCategories, level + 1);
+            }
+        });
+    }
+
+    saveNewConcept() {
+        if (!this.newConceptName || !this.newConceptCategoryId) return;
+
+        this.isCreating = true;
+        const newConceptPayload = {
+            name: this.newConceptName,
+            conceptCategoryId: this.newConceptCategoryId,
+            technicalDifficulty: 1,
+            tacticalComplexity: 1
+        };
+
+        this.sportConceptService.create(newConceptPayload).subscribe({
+            next: (concept) => {
+                this.isCreating = false;
+                this.closeCreateConceptModal();
+                
+                if (this.response) {
+                    this.initialSelectedConceptIds.push(concept.id);
+                    this.generateProposals(); 
+                }
+            },
+            error: (err) => {
+                console.error('Error creating concept', err);
+                this.isCreating = false;
+            }
+        });
+    }
 
     ngOnInit(): void {
         this.loadTeams();
     }
+
+
 
     private loadTeams() {
         this.teamsService.getMyTeams().subscribe({
@@ -117,17 +188,17 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                     if (!this.teams.find(existing => existing.id === t.id)) {
                         this.teams.push(t);
                     }
-                    this.setupItineraryForTeam(t);
+                    this.setupTemplateForTeam(t);
                 },
                 error: (err) => console.error('ProposalManager: Error fetching team context', err)
             });
             return;
         }
 
-        this.setupItineraryForTeam(team);
+        this.setupTemplateForTeam(team);
     }
 
-    private setupItineraryForTeam(team: any) {
+    private setupTemplateForTeam(team: any) {
         // Broad search for sportId in the team object
         let sportId = team.sportId ||
             team.sport?.id ||
@@ -139,9 +210,9 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 next: (subs) => {
                     const activeSub = subs.find(s => s.isActive);
                     if (activeSub) {
-                        this.fetchItineraries(activeSub.sportId, team);
+                        this.fetchTemplates(activeSub.sportId, team);
                     } else if (subs.length > 0) {
-                        this.fetchItineraries(subs[0].sportId, team);
+                        this.fetchTemplates(subs[0].sportId, team);
                     } else {
                         console.error('ProposalManager: No subscriptions found to determine sportId');
                         this.generateProposals();
@@ -153,33 +224,33 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 }
             });
         } else {
-            this.fetchItineraries(sportId, team);
+            this.fetchTemplates(sportId, team);
         }
     }
 
-    private fetchItineraries(sportId: number, team: any) {
-        this.sportsService.getItineraries(sportId).subscribe({
+    private fetchTemplates(sportId: number, team: any) {
+        this.planningTemplateService.getMyTemplates(sportId).subscribe({
             next: (res) => {
-                this.itineraries = res;
-                // Determine default itinerary name
+                this.templates = res as unknown as PlanningTemplateDto[];
+                // Determine default template name
                 const categoryName = team.teamCategory?.name || '';
                 const expectedLevel = this.calculateTargetLevel(categoryName);
 
                 // Try to find exact match or partial match
-                const match = this.itineraries.find(i => i.name === categoryName)
-                    || this.itineraries.find(i => i.level === expectedLevel);
+                const match = this.templates.find(i => i.name === categoryName)
+                    || this.templates.find(i => i.level === expectedLevel);
 
-                this.defaultItineraryName = match ? match.name : categoryName;
+                this.defaultTemplateName = match ? match.name : categoryName;
 
-                // Only set selectedItineraryId if not already set (to preserve user selection or edit mode)
-                if (!this.selectedItineraryId && match) {
-                    this.selectedItineraryId = match.id;
+                // Only set selectedTemplateId if not already set (to preserve user selection or edit mode)
+                if (!this.selectedTemplateId && match) {
+                    this.selectedTemplateId = match.id;
                 }
 
                 this.generateProposals();
             },
             error: (err) => {
-                console.error('ProposalManager: Error loading itineraries', err);
+                console.error('ProposalManager: Error loading templates', err);
                 this.generateProposals();
             }
         });
@@ -232,13 +303,28 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         this.methodologicalSections = [];
         this.allListIds = [];
 
+        // If -1 (Manual), we send undefined to get defaults, then clear suggestions locally
+        // Or send active template ID if standard
+        const templateIdToSend = (this.selectedTemplateId === -1) ? undefined : (this.selectedTemplateId ?? undefined);
+
         this.proposalsService.generateProposals({
             teamId: this.selectedTeamId,
             levelOffset: this.currentLevelOffset,
-            itineraryId: this.selectedItineraryId ?? undefined
+            planningTemplateId: templateIdToSend
         }).subscribe({
             next: (res) => {
                 this.response = res;
+
+                // Handle "Sin plantilla" (Manual Mode)
+                if (this.selectedTemplateId === -1 && this.response) {
+                    // Move all suggested groups to optional groups to make them available but not "suggested"
+                    this.response.optionalGroups = [
+                        ...this.response.optionalGroups,
+                        ...this.response.suggestedGroups
+                    ];
+                    this.response.suggestedGroups = [];
+                }
+
                 this.processResponseIntoHierarchy();
                 this.loading = false;
             },
@@ -254,8 +340,8 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         this.generateProposals();
     }
 
-    onItineraryChange(itineraryId: number) {
-        this.selectedItineraryId = itineraryId;
+    onTemplateChange(templateId: number) {
+        this.selectedTemplateId = templateId;
         this.generateProposals();
     }
 
@@ -334,7 +420,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         // If level > currentLevel -> Future (Aspirational)
         // If level <= currentLevel -> Past (Reinforcement/Inherited)
 
-        // Note: Ideally we compare against the 'itinerary level', but strictly:
+        // Note: Ideally we compare against the 'template level', but strictly:
         // Future = Tag.Aspirational
         // Past = Tag.Inherited (or Reinforcement)
 

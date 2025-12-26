@@ -25,9 +25,9 @@ public class SportConcept
     public int? TechnicalTacticalFocus { get; set; } // Enfoque Tecnico/Tactico
     public int? DevelopmentLevel { get; set; } // Nivel (Escuela -> Junior)
 
-    // Methodological Itinerary Relationship
-    public int? MethodologicalItineraryId { get; set; }
-    public MethodologicalItinerary? MethodologicalItinerary { get; set; }
+    // Planning Template Relationship
+    public int? PlanningTemplateId { get; set; }
+    public PlanningTemplate? PlanningTemplate { get; set; }
 
     public int? SportId { get; set; }
     public Sport? Sport { get; set; }

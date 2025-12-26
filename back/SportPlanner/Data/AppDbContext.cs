@@ -29,12 +29,13 @@ public class AppDbContext : DbContext
     public DbSet<Court> Courts { get; set; } = null!;
     public DbSet<TeamCategory> TeamCategories { get; set; } = null!;
     public DbSet<TeamLevel> TeamLevels { get; set; } = null!;
+    public DbSet<PlanningTemplate> PlanningTemplates { get; set; } = null!;
     public DbSet<MethodologicalItinerary> MethodologicalItineraries { get; set; } = null!;
     public DbSet<Exercise> Exercises { get; set; } = null!;
     public DbSet<TrainingSession> TrainingSessions { get; set; } = null!;
     public DbSet<TrainingSessionConcept> TrainingSessionConcepts { get; set; } = null!;
     public DbSet<TrainingSessionExercise> TrainingSessionExercises { get; set; } = null!;
-    public DbSet<ItineraryRating> ItineraryRatings { get; set; } = null!;
+    public DbSet<MethodologicalItineraryRating> MethodologicalItineraryRatings { get; set; } = null!;
 
 
 
@@ -182,18 +183,36 @@ public class AppDbContext : DbContext
         // MethodologicalItinerary configuration
         modelBuilder.Entity<MethodologicalItinerary>().HasKey(mi => mi.Id);
         modelBuilder.Entity<MethodologicalItinerary>()
-            .HasIndex(mi => mi.Code)
-            .IsUnique();
-        modelBuilder.Entity<MethodologicalItinerary>()
-            .HasOne(mi => mi.ParentItinerary)
-            .WithMany(mi => mi.ChildItineraries)
-            .HasForeignKey(mi => mi.ParentItineraryId)
+            .HasOne(mi => mi.Sport)
+            .WithMany()
+            .HasForeignKey(mi => mi.SportId)
             .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<MethodologicalItinerary>()
             .HasOne(mi => mi.SystemSource)
             .WithMany()
             .HasForeignKey(mi => mi.SystemSourceId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        // PlanningTemplate configuration
+        modelBuilder.Entity<PlanningTemplate>().HasKey(mi => mi.Id);
+        modelBuilder.Entity<PlanningTemplate>()
+            .HasIndex(mi => mi.Code)
+            .IsUnique();
+        modelBuilder.Entity<PlanningTemplate>()
+            .HasOne(mi => mi.ParentTemplate)
+            .WithMany(mi => mi.ChildTemplates)
+            .HasForeignKey(mi => mi.ParentTemplateId)
             .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<PlanningTemplate>()
+            .HasOne(mi => mi.SystemSource)
+            .WithMany()
+            .HasForeignKey(mi => mi.SystemSourceId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<PlanningTemplate>()
+            .HasOne(mi => mi.MethodologicalItinerary)
+            .WithMany(mi => mi.PlanningTemplates)
+            .HasForeignKey(mi => mi.MethodologicalItineraryId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<TeamSeason>()
             .HasOne(ts => ts.TeamCategory)
@@ -201,28 +220,28 @@ public class AppDbContext : DbContext
             .HasForeignKey(ts => ts.TeamCategoryId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // ItineraryConcept configuration (M:N)
-        modelBuilder.Entity<ItineraryConcept>()
-            .HasOne(ic => ic.Itinerary)
-            .WithMany(mi => mi.ItineraryConcepts)
-            .HasForeignKey(ic => ic.ItineraryId)
+        // PlanningTemplateConcept configuration (M:N)
+        modelBuilder.Entity<PlanningTemplateConcept>()
+            .HasOne(ic => ic.PlanningTemplate)
+            .WithMany(mi => mi.TemplateConcepts)
+            .HasForeignKey(ic => ic.PlanningTemplateId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        modelBuilder.Entity<ItineraryConcept>()
+        modelBuilder.Entity<PlanningTemplateConcept>()
             .HasOne(ic => ic.SportConcept)
             .WithMany()
             .HasForeignKey(ic => ic.SportConceptId)
             .OnDelete(DeleteBehavior.Cascade);
         
-        // ItineraryRatings configuration
-        modelBuilder.Entity<ItineraryRating>().HasKey(ir => ir.Id);
-        modelBuilder.Entity<ItineraryRating>()
-            .HasIndex(ir => new { ir.ItineraryId, ir.UserId })
+        // MethodologicalItineraryRatings configuration
+        modelBuilder.Entity<MethodologicalItineraryRating>().HasKey(ir => ir.Id);
+        modelBuilder.Entity<MethodologicalItineraryRating>()
+            .HasIndex(ir => new { ir.MethodologicalItineraryId, ir.UserId })
             .IsUnique();
-        modelBuilder.Entity<ItineraryRating>()
-            .HasOne(ir => ir.Itinerary)
+        modelBuilder.Entity<MethodologicalItineraryRating>()
+            .HasOne(ir => ir.MethodologicalItinerary)
             .WithMany()
-            .HasForeignKey(ir => ir.ItineraryId)
+            .HasForeignKey(ir => ir.MethodologicalItineraryId)
             .OnDelete(DeleteBehavior.Cascade);
 
         // Exercise and SportConcept Many-to-Many

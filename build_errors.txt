@@ -1,0 +1,11 @@
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos est├ín actualizados para la restauraci├│n.
+C:\Proyectos\SportPlanner\back\SportPlanner\Application\Mappings\PlanningProfile.cs(15,36): error CS0104: 'PlanConceptDto' es una referencia ambigua entre 'SportPlanner.Application.DTOs.PlanConceptDto' y 'SportPlanner.Application.DTOs.Planning.PlanConceptDto' [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+
+ERROR al compilar.
+
+C:\Proyectos\SportPlanner\back\SportPlanner\Application\Mappings\PlanningProfile.cs(15,36): error CS0104: 'PlanConceptDto' es una referencia ambigua entre 'SportPlanner.Application.DTOs.PlanConceptDto' y 'SportPlanner.Application.DTOs.Planning.PlanConceptDto' [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+    0 Advertencia(s)
+    1 Errores
+
+Tiempo transcurrido 00:00:05.39

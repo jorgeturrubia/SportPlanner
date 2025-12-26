@@ -4,16 +4,16 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace SportPlanner.Models;
 
-public class ItineraryRating
+public class PlanningTemplateRating
 {
     [Key]
     public int Id { get; set; }
 
     [Required]
-    public int ItineraryId { get; set; }
+    public int PlanningTemplateId { get; set; }
     
-    [ForeignKey(nameof(ItineraryId))]
-    public MethodologicalItinerary Itinerary { get; set; } = null!;
+    [ForeignKey(nameof(PlanningTemplateId))]
+    public PlanningTemplate PlanningTemplate { get; set; } = null!;
 
     [Required]
     public string UserId { get; set; } = null!;
