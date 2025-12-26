@@ -42,4 +42,38 @@ public class MethodologicalItinerary
     public string? Description { get; set; }
     
     public bool IsActive { get; set; } = true;
+
+    // Marketplace & Shadowing Properties
+
+    /// <summary>
+    /// Indicates if this itinerary is a system/professional template available in the Marketplace.
+    /// </summary>
+    public bool IsSystem { get; set; }
+
+    /// <summary>
+    /// The creator/owner of the itinerary (FK to User System).
+    /// For System itineraries, this is the author. For User itineraries, this is the user who downloaded it.
+    /// </summary>
+    public string? OwnerId { get; set; }
+
+    /// <summary>
+    /// Version number for strict versioning of system itineraries.
+    /// </summary>
+    public int Version { get; set; } = 1;
+
+    /// <summary>
+    /// If this is a user copy (shadow), this links to the original system itinerary.
+    /// </summary>
+    public int? SystemSourceId { get; set; }
+    public MethodologicalItinerary? SystemSource { get; set; }
+
+    /// <summary>
+    /// Average rating (1-5) from user votes.
+    /// </summary>
+    public double AverageRating { get; set; }
+
+    /// <summary>
+    /// Total number of ratings received.
+    /// </summary>
+    public int RatingCount { get; set; }
 }
