@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { Observable } from 'rxjs';
-import { MethodologicalItineraryDto } from '../features/proposals/models/proposal.models';
+import { PlanningTemplateDto } from '../features/proposals/models/proposal.models';
 
 export interface Sport {
     id: number;
@@ -48,7 +48,7 @@ export class SportsService {
         return this.http.delete<void>(`${environment.apiUrl}/sports/${id}`);
     }
 
-    getItineraries(id: number): Observable<MethodologicalItineraryDto[]> {
-        return this.http.get<MethodologicalItineraryDto[]>(`${environment.apiUrl}/sports/${id}/itineraries`);
+    getTemplates(id: number): Observable<PlanningTemplateDto[]> {
+        return this.http.get<PlanningTemplateDto[]>(`${environment.apiUrl}/sports/${id}/itineraries`);
     }
 }

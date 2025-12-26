@@ -20,12 +20,12 @@
                 </div>
             </div>
 
-            <!-- Itinerary Tuner -->
+            <!-- Planning Template Tuner -->
             <div class="flex-1 w-full" *ngIf="response">
-                <app-itinerary-tuner [itineraries]="itineraries" [activeItineraryId]="selectedItineraryId"
+                <app-template-tuner [templates]="templates" [activeTemplateId]="selectedTemplateId"
                     [teamCategoryName]="response.team.teamCategory?.name || ''"
-                    [defaultItineraryName]="defaultItineraryName" (itineraryChange)="onItineraryChange($event)">
-                </app-itinerary-tuner>
+                    [defaultTemplateName]="defaultTemplateName" (templateChange)="onTemplateChange($event)">
+                </app-template-tuner>
             </div>
 
         </div>
@@ -383,3 +383,43 @@
             </div>
         </div>
     </div>
+
+    <!-- CREATE CONCEPT MODAL -->
+    <div *ngIf="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn">
+        <div class="bg-neutral-900 border border-neutral-700 rounded-lg shadow-2xl w-full max-w-md p-6 relative">
+            <h3 class="text-xl font-bold text-[#CCFF00] mb-4 uppercase tracking-wider">Crear Nuevo Concepto</h3>
+            
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-xs uppercase text-neutral-400 mb-1">Nombre del Concepto</label>
+                    <input type="text" [(ngModel)]="newConceptName" 
+                           class="w-full bg-neutral-800 text-white border border-neutral-700 rounded p-2 focus:border-[#CCFF00] outline-none"
+                           placeholder="Ej. Salida de balón...">
+                </div>
+
+                <div>
+                    <label class="block text-xs uppercase text-neutral-400 mb-1">Categoría</label>
+                    <select [(ngModel)]="newConceptCategoryId" 
+                            class="w-full bg-neutral-800 text-white border border-neutral-700 rounded p-2 focus:border-[#CCFF00] outline-none appearance-none">
+                        <option [ngValue]="null">Seleccionar Categoría...</option>
+                        <option *ngFor="let cat of flattenedCategories" [ngValue]="cat.id">
+                            {{ cat.name }}
+                        </option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 mt-6">
+                <button (click)="closeCreateConceptModal()" 
+                        class="px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors">
+                    Cancelar
+                </button>
+                <button (click)="saveNewConcept()" [disabled]="!newConceptName || !newConceptCategoryId || isCreating"
+                        class="px-4 py-2 bg-[#CCFF00] text-black font-bold rounded hover:bg-lime-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                    <span *ngIf="isCreating" class="codicon codicon-loading animate-spin"></span>
+                    Crear y Añadir
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

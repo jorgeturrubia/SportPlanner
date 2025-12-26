@@ -5,10 +5,10 @@ export interface ConceptProposalRequestDto {
     excludeCategoryIds?: number[];
     sectionFocus?: 'Ataque' | 'Defensa';
     levelOffset?: number;
-    itineraryId?: number;
+    planningTemplateId?: number;
 }
 
-export interface MethodologicalItineraryDto {
+export interface PlanningTemplateDto {
     id: number;
     name: string;
     code: string;

@@ -1,0 +1,82 @@
+<div class="h-full flex flex-col p-6 space-y-6 overflow-hidden bg-dark-bg text-white">
+    <!-- Header -->
+    <header class="flex justify-between items-end">
+        <div>
+            <h1 class="text-3xl font-black tracking-tighter text-primary uppercase italic">Mis Itinerarios</h1>
+            <p class="text-gray-400 text-sm font-bold tracking-widest">GESTIONA TUS METODOLOGÍAS Y CONTENIDO VINCULADO</p>
+        </div>
+        <a routerLink="/dashboard/marketplace" 
+           class="bg-dark-surface border-2 border-dark-border px-6 py-2 text-xs font-black uppercase tracking-widest hover:border-primary hover:text-primary transition-all flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+            </svg>
+            Explorar Marketplace
+        </a>
+    </header>
+
+    <!-- List -->
+    <div class="p-8">
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-3xl font-black text-white tracking-tight uppercase">Mis Plantillas Metodológicas</h1>
+            <p class="text-gray-400 mt-1">Gestiona las plantillas que has creado o importado</p>
+        </div>
+        <a routerLink="/marketplace" class="bg-primary text-black font-bold py-3 px-6 rounded hover:scale-105 transition-transform uppercase tracking-widest text-sm flex items-center gap-2">
+            <span class="material-icons text-base">storefront</span>
+            Explorar Marketplace
+        </a>
+    </div>
+
+    @if (loading()) {
+        <div class="flex justify-center py-20">
+            <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+        </div>
+    } @else {
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            @for (template of templates(); track template.id) {
+                <div class="bg-dark-surface p-6 rounded-xl border border-dark-border hover:border-primary transition-colors group relative">
+                    <div class="absolute top-4 right-4 flex items-center gap-2">
+                        @if (template.isSystem) {
+                            <span class="bg-blue-900/50 text-blue-400 text-xs px-2 py-1 rounded border border-blue-900 font-bold uppercase tracking-wider">Sistema</span>
+                        }
+                        @if (template.averageRating > 0) {
+                            <app-rating-stars [rating]="template.averageRating" [count]="template.ratingCount" [readonly]="true" size="sm"></app-rating-stars>
+                        }
+                    </div>
+
+                    <div class="mb-4 mt-2">
+                        <h3 class="text-xl font-bold text-white mb-1">{{ template.name }}</h3>
+                        <p class="text-sm text-gray-400">{{ template.code }}</p>
+                    </div>
+
+                    <div class="flex items-center gap-4 text-sm text-gray-400 mb-6">
+                        <div class="flex items-center gap-1">
+                            <span class="material-icons text-base text-primary">bar_chart</span>
+                            <span>Nivel {{ template.level }}</span>
+                        </div>
+                        @if (template.teamCategory) {
+                            <div class="flex items-center gap-1">
+                                <span class="material-icons text-base text-primary">group</span>
+                                <span>{{ template.teamCategory.name }}</span>
+                            </div>
+                        }
+                    </div>
+
+                    <div class="flex gap-2">
+                        <!-- Actions can go here -->
+                        <button (click)="deleteTemplate(template)" class="p-2 text-red-400 hover:text-red-300 hover:bg-red-900/20 rounded transition-colors" title="Eliminar">
+                            <span class="material-icons">delete</span>
+                        </button>
+                    </div>
+                </div>
+            }
+            @empty {
+                <div class="col-span-full text-center py-20 text-gray-500">
+                    <span class="material-icons text-6xl mb-4 text-gray-600">content_paste_off</span>
+                    <p class="text-xl">No tienes plantillas guardadas</p>
+                    <p class="mt-2 text-sm">Visita el marketplace para encontrar metodologías de expertos</p>
+                </div>
+            }
+        </div>
+    }
+</div>

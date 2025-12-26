@@ -80,10 +80,10 @@ public class ConceptProposalService : IConceptProposalService
 
         // 3. Calculate expected development level and level window
         int expectedDevelopmentLevel;
-        if (request.ItineraryId.HasValue)
+        if (request.PlanningTemplateId.HasValue)
         {
-            var itinerary = await _context.MethodologicalItineraries.FindAsync(request.ItineraryId.Value);
-            expectedDevelopmentLevel = itinerary?.Level ?? CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory);
+            var template = await _context.PlanningTemplates.FindAsync(request.PlanningTemplateId.Value);
+            expectedDevelopmentLevel = template?.Level ?? CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory);
         }
         else
         {
@@ -219,7 +219,7 @@ public class ConceptProposalService : IConceptProposalService
         // Development level score: Compare concept level vs expected team level
         if (concept.DevelopmentLevel.HasValue)
         {
-            decimal developmentScore = CalculateLevelMatchScore(concept.DevelopmentLevel.Value, request.ItineraryId.HasValue ? request.ItineraryId.Value : CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory));
+            decimal developmentScore = CalculateLevelMatchScore(concept.DevelopmentLevel.Value, request.PlanningTemplateId.HasValue ? request.PlanningTemplateId.Value : CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory));
             score += developmentScore * DevelopmentLevelWeight;
         }
         else

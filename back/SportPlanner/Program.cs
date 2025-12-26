@@ -47,6 +47,9 @@ builder.Services.AddScoped<SportPlanner.Services.IConceptProposalService, SportP
 builder.Services.AddScoped<SportPlanner.Services.IExerciseService, SportPlanner.Services.ExerciseService>();
 builder.Services.AddScoped<SportPlanner.Services.ITrainingSessionService, SportPlanner.Services.TrainingSessionService>();
 builder.Services.AddScoped<SportPlanner.Services.ITrainingExecutionService, SportPlanner.Services.TrainingExecutionService>();
+// builder.Services.AddScoped<SportPlanner.Services.IMarketplaceService, SportPlanner.Services.MarketplaceService>();
+builder.Services.AddScoped<SportPlanner.Services.IPlanningTemplateService, SportPlanner.Services.PlanningTemplateService>();
+builder.Services.AddScoped<SportPlanner.Services.IRatingService, SportPlanner.Services.RatingService>();
 // Concept interpretation & team metadata
 
 // Configure authentication for Supabase tokens

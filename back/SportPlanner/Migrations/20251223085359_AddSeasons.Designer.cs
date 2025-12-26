@@ -167,7 +167,7 @@ namespace SportPlanner.Migrations
                     b.ToTable("Exercises");
                 });
 
-            modelBuilder.Entity("SportPlanner.Models.MethodologicalItinerary", b =>
+            modelBuilder.Entity("SportPlanner.Models.PlanningTemplate", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -947,9 +947,9 @@ namespace SportPlanner.Migrations
                     b.Navigation("Parent");
                 });
 
-            modelBuilder.Entity("SportPlanner.Models.MethodologicalItinerary", b =>
+            modelBuilder.Entity("SportPlanner.Models.PlanningTemplate", b =>
                 {
-                    b.HasOne("SportPlanner.Models.MethodologicalItinerary", "ParentItinerary")
+                    b.HasOne("SportPlanner.Models.PlanningTemplate", "ParentItinerary")
                         .WithMany("ChildItineraries")
                         .HasForeignKey("ParentItineraryId")
                         .OnDelete(DeleteBehavior.Restrict);
@@ -1038,7 +1038,7 @@ namespace SportPlanner.Migrations
                         .WithMany()
                         .HasForeignKey("ConceptCategoryId");
 
-                    b.HasOne("SportPlanner.Models.MethodologicalItinerary", "MethodologicalItinerary")
+                    b.HasOne("SportPlanner.Models.PlanningTemplate", "MethodologicalItinerary")
                         .WithMany("Concepts")
                         .HasForeignKey("MethodologicalItineraryId")
                         .OnDelete(DeleteBehavior.SetNull);
@@ -1223,7 +1223,7 @@ namespace SportPlanner.Migrations
                     b.Navigation("SubCategories");
                 });
 
-            modelBuilder.Entity("SportPlanner.Models.MethodologicalItinerary", b =>
+            modelBuilder.Entity("SportPlanner.Models.PlanningTemplate", b =>
                 {
                     b.Navigation("ChildItineraries");
 

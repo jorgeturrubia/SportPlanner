@@ -74,6 +74,8 @@ export const appConfig: ApplicationConfig = {
           { path: 'core-masters/subscription-sports', loadComponent: () => import('./features/dashboard/pages/core-masters/subscription-sports/subscription-sports.component').then(m => m.SubscriptionSportsComponent) },
           { path: 'plannings/info', loadComponent: () => import('./features/dashboard/pages/plan-info/plan-info.component').then(m => m.PlanInfoComponent) },
           { path: 'plannings/info/:id', loadComponent: () => import('./features/dashboard/pages/plan-info/plan-info.component').then(m => m.PlanInfoComponent) },
+          { path: 'marketplace', loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent) },
+          { path: 'my-templates', loadComponent: () => import('./features/planning-templates/template-list/template-list.component').then(m => m.PlanningTemplateListComponent) },
           { path: 'proposals', loadChildren: () => import('./features/proposals/proposals.routes').then(m => m.PROPOSALS_ROUTES) },
           { path: 'trainings', loadChildren: () => import('./features/dashboard/pages/trainings/trainings.routes').then(m => m.TRAININGS_ROUTES) }
         ]
