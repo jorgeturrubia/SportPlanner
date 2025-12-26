@@ -1,24 +1,533 @@
-/* Live Session Specific Styles */
+:host {
+    display: block;
+    height: calc(100vh - 135px);
+    /* Fallback */
+    height: calc(100dvh - 135px);
+    /* Header + Padding + Margin offset */
+    background-color: #0d0d0d;
+    color: #e0e0e0;
+    font-family: 'Inter', system-ui, sans-serif;
+    overflow: hidden;
+    /* Prevent host scroll */
+    border-radius: 8px;
+    /* Optional: Rounded corners to match dashboard card style */
+}
 
-/* Neon Pulse Animation for Active State */
-@keyframes neon-pulse {
-    0% {
-        box-shadow: 0 0 5px rgba(255, 107, 0, 0.2), 0 0 10px rgba(255, 107, 0, 0.2);
-    }
-    50% {
-        box-shadow: 0 0 20px rgba(255, 107, 0, 0.5), 0 0 30px rgba(255, 107, 0, 0.3);
-    }
-    100% {
-        box-shadow: 0 0 5px rgba(255, 107, 0, 0.2), 0 0 10px rgba(255, 107, 0, 0.2);
+.live-session-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* --- HEADER --- */
+.session-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    height: 50px;
+    /* Reduced specific height */
+    padding: 0 15px;
+    background: #1a1a1a;
+    border-bottom: 1px solid #333;
+    flex-shrink: 0;
+}
+
+.header-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-width: 150px;
+}
+
+.session-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.team-name {
+    font-size: 0.7rem;
+    color: #888;
+}
+
+.header-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    justify-content: center;
+}
+
+.mini-control {
+    background: #111;
+    border: 1px solid #333;
+    color: #888;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+}
+
+.mini-control:hover {
+    background: #333;
+    color: #fff;
+}
+
+.play-control {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border: none;
+    background: #FF5722;
+    color: #fff;
+    font-size: 1rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.play-control:hover {
+    transform: scale(1.05);
+    background: #F4511E;
+}
+
+.play-control.running {
+    background: #222;
+    border: 2px solid #FF5722;
+    color: #FF5722;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    min-width: 150px;
+    justify-content: flex-end;
+}
+
+.global-timer-display .time {
+    font-family: 'Courier New', monospace;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: #00E676;
+}
+
+.finish-btn-mini {
+    background: transparent;
+    border: 1px solid #D32F2F;
+    color: #D32F2F;
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.finish-btn-mini:hover {
+    background: #D32F2F;
+    color: #fff;
+}
+
+.progress-bar-container {
+    height: 2px;
+    background: #222;
+    width: 100%;
+}
+
+.progress-bar {
+    height: 100%;
+    background: #FF5722;
+    transition: width 0.3s;
+}
+
+/* --- DASHBOARD GRID --- */
+/* --- DASHBOARD GRID --- */
+.dashboard-grid {
+    display: grid;
+    /* Reduced sidebar widths for better fit on tablets (approx 1024px) */
+    grid-template-columns: 200px 1fr 240px;
+    flex: 1;
+    overflow: hidden;
+    height: 100%;
+    min-height: 0;
+    /* Critical for grid scroll */
+}
+
+/* COL 1: OVERVIEW */
+.session-overview {
+    background: #121212;
+    border-right: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+}
+
+.panel-title {
+    margin: 0;
+    padding: 10px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    color: #666;
+    letter-spacing: 1px;
+    background: #151515;
+}
+
+.exercise-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.mini-exercise-card {
+    display: flex;
+    gap: 8px;
+    padding: 8px;
+    background: #1a1a1a;
+    border-radius: 4px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    border: 1px solid transparent;
+}
+
+.mini-exercise-card.active {
+    background: #252525;
+    border-color: #FF5722;
+}
+
+.mini-exercise-card.completed {
+    opacity: 0.4;
+}
+
+.mini-order {
+    font-size: 0.7rem;
+    color: #666;
+    font-weight: 700;
+}
+
+.mini-name {
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #ccc;
+    line-height: 1.2;
+}
+
+/* COL 2: STAGE (REFACTORED - ULTRA COMPACT HEADER) */
+.stage-area {
+    background: radial-gradient(circle at center, #1e1e1e 0%, #0d0d0d 100%);
+    position: relative;
+    padding: 10px;
+    /* Reduced padding */
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.stage-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 10px;
+    /* Tight gap */
+    max-width: 100%;
+    margin: 0 auto;
+    width: 100%;
+}
+
+/* ULTRA COMPACT TOP ROW */
+.stage-top-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    min-height: auto;
+    padding: 5px 10px;
+    background: rgba(30, 30, 30, 0.5);
+    /* Subtle background to separate it */
+    border-radius: 6px;
+    border: 1px solid #222;
+}
+
+.stage-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.info-badges {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 2px;
+}
+
+.badge {
+    background: rgba(255, 87, 34, 0.1);
+    color: #FF5722;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.badge.counter {
+    color: #666;
+    background: #222;
+}
+
+.stage-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.stage-desc {
+    font-size: 0.75rem;
+    color: #999;
+    line-height: 1.3;
+    margin-top: 2px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    /* Limit to 2 lines max */
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.stage-timer-wrapper {
+    flex-shrink: 0;
+}
+
+/* Small Compact Timer */
+.exercise-timer-ring.medium {
+    width: 60px;
+    /* Very small */
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid #333;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: #101010;
+}
+
+.exercise-timer-ring.medium .timer-value {
+    font-size: 1.1rem;
+    font-weight: 700;
+    font-family: 'Courier New', monospace;
+    color: #fff;
+    line-height: 1;
+}
+
+.exercise-timer-ring.urgent {
+    border-color: #D32F2F;
+}
+
+.exercise-timer-ring.urgent .timer-value {
+    color: #D32F2F;
+}
+
+/* MEDIA PREVIEW (Takes all remaining space) */
+.stage-media-container {
+    flex: 1;
+    background: #000;
+    border-radius: 6px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid #222;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.media-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: #000;
+}
+
+.no-preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #444;
+}
+
+.no-preview-icon {
+    font-size: 2rem;
+    margin-bottom: 8px;
+    opacity: 0.5;
+}
+
+/* Empty Stage */
+.empty-stage {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    opacity: 0.3;
+}
+
+.placeholder-icon {
+    font-size: 4rem;
+    margin-bottom: 10px;
+}
+
+
+/* COL 3: LOG */
+.session-log-panel {
+    background: #111;
+    border-left: 1px solid #222;
+    display: flex;
+    flex-direction: column;
+}
+
+.log-header {
+    background: #151515;
+    padding: 10px;
+    border-bottom: 1px solid #222;
+}
+
+.log-header h3 {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #666;
+    text-transform: uppercase;
+}
+
+.quick-comment-box-top {
+    padding: 10px;
+    border-bottom: 1px solid #222;
+    background: #181818;
+    display: flex;
+    gap: 8px;
+}
+
+.comment-input {
+    flex: 1;
+    background: #252525;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 6px 10px;
+    border-radius: 4px;
+    outline: none;
+    font-size: 0.85rem;
+}
+
+.comment-input:focus {
+    border-color: #FF5722;
+}
+
+.send-btn {
+    background: #333;
+    border: none;
+    color: #fff;
+    width: 32px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.send-btn:hover {
+    background: #444;
+}
+
+.log-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.log-entry {
+    font-size: 0.8rem;
+    line-height: 1.3;
+}
+
+.entry-meta {
+    margin-bottom: 1px;
+}
+
+.timestamp {
+    font-size: 0.65rem;
+    color: #555;
+    font-weight: 700;
+}
+
+.message {
+    color: #bbb;
+    display: block;
+}
+
+.log-entry.info .message {
+    color: #888;
+    font-style: italic;
+}
+
+.log-entry.comment .message {
+    color: #FF9100;
+}
+
+.loading-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.95);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #333;
+    border-top-color: #FF5722;
+    border-radius: 50%;
+    animation: spin 1s infinite linear;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 
-.animate-neon-pulse {
-    animation: neon-pulse 2s infinite ease-in-out;
+/* Tablet (Portrait/Small Landscape) */
+@media (max-width: 1024px) {
+    .dashboard-grid {
+        grid-template-columns: 180px 1fr 220px;
+    }
 }
 
-/* Digital/Monospace numbers that look "LCD" like if fonts aren't perfectly mono */
-.font-lcd {
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.05em;
+/* Mobile */
+@media (max-width: 768px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .session-overview,
+    .session-log-panel {
+        display: none;
+    }
 }

@@ -37,7 +37,7 @@ public class TrainingExecutionController : ControllerBase
     {
         try
         {
-            var session = await _executionService.FinishSessionAsync(sessionId, request.Rating, request.Notes);
+            var session = await _executionService.FinishSessionAsync(sessionId, request.Rating, request.Notes, request.Comments);
             return Ok(_mapper.Map<TrainingSessionDto>(session));
         }
         catch (ArgumentException ex)
@@ -65,6 +65,7 @@ public class FinishSessionRequest
 {
     public int? Rating { get; set; }
     public string? Notes { get; set; }
+    public List<string>? Comments { get; set; }
 }
 
 public class CompleteExerciseRequest

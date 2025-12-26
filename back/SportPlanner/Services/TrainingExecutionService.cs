@@ -16,6 +16,8 @@ public class TrainingExecutionService : ITrainingExecutionService
     public async Task<TrainingSession> GetExecutionStateAsync(int sessionId)
     {
         var session = await _context.TrainingSessions
+            .Include(s => s.SessionConcepts)
+                .ThenInclude(sc => sc.SportConcept)
             .Include(s => s.SessionExercises)
                 .ThenInclude(se => se.Exercise)
             .Include(s => s.SessionExercises)
@@ -29,6 +31,8 @@ public class TrainingExecutionService : ITrainingExecutionService
     public async Task<TrainingSession> StartSessionAsync(int sessionId)
     {
         var session = await _context.TrainingSessions
+            .Include(s => s.SessionConcepts)
+                .ThenInclude(sc => sc.SportConcept)
             .Include(s => s.SessionExercises)
                 .ThenInclude(se => se.Exercise)
             .Include(s => s.SessionExercises)
@@ -47,9 +51,11 @@ public class TrainingExecutionService : ITrainingExecutionService
         return session;
     }
 
-    public async Task<TrainingSession> FinishSessionAsync(int sessionId, int? rating, string? notes)
+    public async Task<TrainingSession> FinishSessionAsync(int sessionId, int? rating, string? notes, List<string>? comments)
     {
         var session = await _context.TrainingSessions
+            .Include(s => s.SessionConcepts)
+                .ThenInclude(sc => sc.SportConcept)
             .Include(s => s.SessionExercises)
                 .ThenInclude(se => se.Exercise)
             .Include(s => s.SessionExercises)
@@ -62,6 +68,10 @@ public class TrainingExecutionService : ITrainingExecutionService
         session.FinishedAt = DateTime.UtcNow;
         session.FeedbackRating = rating;
         session.FeedbackNotes = notes;
+        if (comments != null)
+        {
+            session.Comments = comments;
+        }
 
         await _context.SaveChangesAsync();
         return session;

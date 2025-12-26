@@ -6,7 +6,7 @@ namespace SportPlanner.Services;
 public interface ITrainingExecutionService
 {
     Task<TrainingSession> StartSessionAsync(int sessionId);
-    Task<TrainingSession> FinishSessionAsync(int sessionId, int? rating, string? notes);
+    Task<TrainingSession> FinishSessionAsync(int sessionId, int? rating, string? notes, List<string>? comments);
     Task<TrainingSessionExercise> CompleteExerciseAsync(int sessionExerciseId, int durationMinutes, string? notes);
     Task<TrainingSession> GetExecutionStateAsync(int sessionId);
 }

@@ -103,12 +103,15 @@ export class TrainingExecutionService {
     initializeSession(sessionId: number): Observable<TrainingSession> {
         return this.http.get<TrainingSession>(`${environment.apiUrl}/trainingSessions/${sessionId}`).pipe(
             tap(session => {
+                console.log('API Fetch Session:', session);
                 const normalizedSession = this.normalizeSessionData(session);
+                console.log('Normalized Session:', normalizedSession);
                 this.session.set(normalizedSession);
                 this.setupSessionState(normalizedSession);
             })
         );
     }
+
 
     private setupSessionState(session: TrainingSession) {
         const firstIncomplete = session.sessionExercises.findIndex(e => !e.isCompleted);
@@ -137,22 +140,34 @@ export class TrainingExecutionService {
     }
 
     private normalizeSessionData(session: TrainingSession): TrainingSession {
-        // Fallback: If no exercises, map from Concepts
-        if ((!session.sessionExercises || session.sessionExercises.length === 0) &&
-            session.sessionConcepts && session.sessionConcepts.length > 0) {
+        // Safe check for arrays
+        const exercises = session.sessionExercises || [];
+        const concepts = session.sessionConcepts || [];
 
-            session.sessionExercises = session.sessionConcepts.map(c => ({
+        console.log('Normalizing:', { exCount: exercises.length, conceptCount: concepts.length });
+
+        // Fallback: If no exercises, map from Concepts
+        if (exercises.length === 0 && concepts.length > 0) {
+            console.log('Mapping concepts to exercises...');
+            session.sessionExercises = concepts.map(c => ({
                 id: c.id,
                 order: c.order,
                 durationMinutes: c.durationMinutes,
-                // Synthesize the structure expected by the template (ex.exercise.name)
-                // Note: We cast to any because the frontend model interface might be incomplete 
-                // vs what the template expects.
                 exercise: {
                     name: c.conceptName || 'Concepto sin nombre',
                     description: c.conceptDescription || ''
                 }
             } as any));
+        } else if (exercises.length > 0) {
+            // Ensure UI helper is populated for existing exercises
+            exercises.forEach(e => {
+                if (!e.exercise) {
+                    e.exercise = {
+                        name: e.exerciseName || e.customText || e.sportConceptName || 'Ejercicio sin nombre',
+                        description: ''
+                    };
+                }
+            });
         }
         return session;
     }
@@ -183,8 +198,8 @@ export class TrainingExecutionService {
         }
     }
 
-    finishSession(sessionId: number, rating?: number, notes?: string): Observable<TrainingSession> {
-        return this.http.post<TrainingSession>(`${this.apiUrl}/finish/${sessionId}`, { rating, notes }).pipe(
+    finishSession(sessionId: number, rating?: number, notes?: string, comments?: string[]): Observable<TrainingSession> {
+        return this.http.post<TrainingSession>(`${this.apiUrl}/finish/${sessionId}`, { rating, notes, comments }).pipe(
             tap(() => this.updateState(SessionExecutionState.Completed))
         );
     }

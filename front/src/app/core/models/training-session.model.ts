@@ -20,6 +20,12 @@ export interface TrainingSessionExercise {
     isCompleted?: boolean;
     actualDurationMinutes?: number;
     feedbackNotes?: string;
+    // UI Helpers
+    exercise?: {
+        name: string;
+        description?: string;
+        imageUrl?: string;
+    };
 }
 
 export type TrainingSessionStatus = 'Planned' | 'InProgress' | 'Completed' | 'Canceled';
@@ -42,6 +48,7 @@ export interface TrainingSession {
     status: TrainingSessionStatus;
     startedAt?: string;
     finishedAt?: string;
+    comments?: string[];
 
     // Feedback
     feedbackRating?: number;

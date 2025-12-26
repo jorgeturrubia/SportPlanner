@@ -35,6 +35,7 @@ public class TrainingSession
     // Feedback
     public int? FeedbackRating { get; set; } // 1-5 or 1-10
     public string? FeedbackNotes { get; set; }
+    public List<string> Comments { get; set; } = new List<string>();
 
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
