@@ -164,7 +164,8 @@ export class LiveSessionComponent implements OnInit, OnDestroy {
 
     this.executionService.finishSession(session.id, 5, "Sesión finalizada", this.comments()).subscribe({
       next: () => {
-        this.router.navigate(['/training-execution']);
+        // Redirect to team details (tabs)
+        this.router.navigate(['/dashboard/teams', session.teamId]);
       },
       error: (err) => console.error(err)
     });
