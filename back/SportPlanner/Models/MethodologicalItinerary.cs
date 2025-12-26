@@ -31,8 +31,8 @@ public class MethodologicalItinerary
     /// <summary>Child itineraries that inherit from this one</summary>
     public ICollection<MethodologicalItinerary> ChildItineraries { get; set; } = new List<MethodologicalItinerary>();
     
-    /// <summary>Concepts that belong directly to this itinerary level</summary>
-    public ICollection<SportConcept> Concepts { get; set; } = new List<SportConcept>();
+    /// <summary>Concepts that belong to this itinerary (M:N with customizations)</summary>
+    public ICollection<ItineraryConcept> ItineraryConcepts { get; set; } = new List<ItineraryConcept>();
     
     /// <summary>Associated TeamCategory (e.g., U12 for Alevín)</summary>
     public int? TeamCategoryId { get; set; }

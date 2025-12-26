@@ -201,11 +201,18 @@ public class AppDbContext : DbContext
             .HasForeignKey(ts => ts.TeamCategoryId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        modelBuilder.Entity<MethodologicalItinerary>()
-            .HasMany(mi => mi.Concepts)
-            .WithOne(c => c.MethodologicalItinerary)
-            .HasForeignKey(c => c.MethodologicalItineraryId)
-            .OnDelete(DeleteBehavior.SetNull);
+        // ItineraryConcept configuration (M:N)
+        modelBuilder.Entity<ItineraryConcept>()
+            .HasOne(ic => ic.Itinerary)
+            .WithMany(mi => mi.ItineraryConcepts)
+            .HasForeignKey(ic => ic.ItineraryId)
+            .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<ItineraryConcept>()
+            .HasOne(ic => ic.SportConcept)
+            .WithMany()
+            .HasForeignKey(ic => ic.SportConceptId)
+            .OnDelete(DeleteBehavior.Cascade);
         
         // ItineraryRatings configuration
         modelBuilder.Entity<ItineraryRating>().HasKey(ir => ir.Id);
