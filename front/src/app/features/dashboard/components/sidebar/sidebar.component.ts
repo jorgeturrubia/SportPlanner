@@ -16,7 +16,8 @@ export class SidebarComponent implements OnInit {
     userEmail = signal<string>('');
     currentLang = signal<string>('es');
     coreMastersExpanded = signal<boolean>(false);
-    masterUserExpanded = signal<boolean>(false);
+    planConfigExpanded = signal<boolean>(false);
+    systemConfigExpanded = signal<boolean>(false);
 
     constructor(
         private authService: AuthService,
@@ -57,7 +58,11 @@ export class SidebarComponent implements OnInit {
         this.coreMastersExpanded.set(!this.coreMastersExpanded());
     }
 
-    toggleMasterUser() {
-        this.masterUserExpanded.set(!this.masterUserExpanded());
+    togglePlanConfig() {
+        this.planConfigExpanded.set(!this.planConfigExpanded());
+    }
+
+    toggleSystemConfig() {
+        this.systemConfigExpanded.set(!this.systemConfigExpanded());
     }
 }

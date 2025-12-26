@@ -177,11 +177,30 @@ public class SportConceptService : ISportConceptService
 
     public async Task DeleteAsync(int id)
     {
-        var concept = await _db.SportConcepts.FindAsync(id);
-        if (concept != null)
+        var concept = await _db.SportConcepts
+            .Include(sc => sc.Exercises)
+            .FirstOrDefaultAsync(sc => sc.Id == id);
+
+        if (concept == null) return;
+
+        // Check for associations in Templates, Plans and Training Sessions
+        bool hasAssociations = await _db.Set<PlanningTemplateConcept>().AnyAsync(ptc => ptc.SportConceptId == id) ||
+                               await _db.Set<PlanConcept>().AnyAsync(pc => pc.SportConceptId == id) ||
+                               await _db.Set<TrainingSessionConcept>().AnyAsync(tsc => tsc.SportConceptId == id) ||
+                               await _db.Set<TrainingSessionExercise>().AnyAsync(tse => tse.SportConceptId == id) ||
+                               concept.Exercises.Any();
+
+        if (hasAssociations)
         {
+            // Soft Delete: Just deactivate
             concept.IsActive = false;
-            await _db.SaveChangesAsync();
         }
+        else
+        {
+            // Hard Delete: Remove from DB
+            _db.SportConcepts.Remove(concept);
+        }
+
+        await _db.SaveChangesAsync();
     }
 }

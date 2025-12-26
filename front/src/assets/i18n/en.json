@@ -7,11 +7,8 @@
         "PROPOSALS": "Proposals",
         "MARKETPLACE": "Marketplace",
         "MY_ITINERARIES": "My Itineraries",
-        "LOGOUT": "Logout",
-        "PROFILE": "Profile",
-        "CORE_MASTERS": "Core Masters",
-        "SUBSCRIPTION_SPORTS": "Subscription Sports",
-        "MASTER_USER": "Master User",
+        "PLAN_CONFIG": "Plan Config",
+        "SYSTEM_CONFIG": "System Config",
         "SPORT_CONCEPTS": "Sport Concepts",
         "CATEGORIES": "Categories"
     },

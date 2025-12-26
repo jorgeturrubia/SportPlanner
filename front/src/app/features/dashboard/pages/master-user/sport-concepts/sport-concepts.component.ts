@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { SportConceptsService } from '../../../../../services/sport-concepts.service';
+import { ConceptCategoriesService } from '../../../../../services/concept-categories.service';
 import { NotificationService } from '../../../../../services/notification.service';
 import { SubscriptionsService, Subscription } from '../../../../../services/subscriptions.service';
 import { LookupService } from '../../../../../services/lookup.service';
@@ -16,6 +17,7 @@ import { ConfirmDialogComponent } from '../../../../../shared/components/confirm
 })
 export class SportConceptsComponent implements OnInit {
     concepts = signal<any[]>([]);
+    rootCategories = signal<any[]>([]);
     isLoading = signal(false);
     showForm = signal(false);
     conceptForm: FormGroup;
@@ -28,79 +30,13 @@ export class SportConceptsComponent implements OnInit {
 
     // Lookups
     activeSubscriptions = signal<Subscription[]>([]);
-    selectedSportId = signal<number | null>(null);
     conceptCategories = signal<any[]>([]);
-
-    // Filters
-    searchQuery = signal('');
-    selectedCategoryFilter = signal<number | null>(null);
-
-    rootCategories = computed(() => this.conceptCategories().filter(c => !c.parentId));
-
-    groupedConcepts = computed(() => {
-        let allConcepts = this.concepts();
-        const categories = this.conceptCategories();
-        const query = this.searchQuery().toLowerCase();
-        const categoryFilter = this.selectedCategoryFilter();
-
-        // 1. Filter by Search Query and Category Chip
-        if (query) {
-            allConcepts = allConcepts.filter(c =>
-                c.name.toLowerCase().includes(query) ||
-                (c.description && c.description.toLowerCase().includes(query))
-            );
-        }
-
-        if (categoryFilter) {
-            // Find all subcategory IDs for the selected parent
-            const getDescendantIds = (parentId: number): number[] => {
-                const children = categories.filter(c => c.parentId === parentId);
-                let ids = children.map(c => c.id);
-                children.forEach(child => {
-                    ids = [...ids, ...getDescendantIds(child.id)];
-                });
-                return ids;
-            };
-
-            const allowedCategoryIds = [categoryFilter, ...getDescendantIds(categoryFilter)];
-            allConcepts = allConcepts.filter(c => allowedCategoryIds.includes(c.conceptCategoryId));
-        }
-
-        if (categories.length === 0) {
-            // If no categories, show all in one group or uncategorized
-            return [{ category: { name: 'Todos los conceptos', displayName: 'Todos los conceptos', fullPath: 'Todos los conceptos' }, concepts: allConcepts }];
-        }
-
-        const groups: any[] = [];
-        const processedConceptIds = new Set<number>();
-
-        // Create groups for each category that has concepts
-        categories.forEach(cat => {
-            const catConcepts = allConcepts.filter(c => c.conceptCategoryId === cat.id);
-            if (catConcepts.length > 0) {
-                groups.push({
-                    category: cat,
-                    concepts: catConcepts
-                });
-                catConcepts.forEach(c => processedConceptIds.add(c.id));
-            }
-        });
-
-        // Handle uncategorized concepts
-        const uncategorized = allConcepts.filter(c => !processedConceptIds.has(c.id));
-        if (uncategorized.length > 0) {
-            groups.push({
-                category: { name: 'Sin Categoría', displayName: 'Sin Categoría', fullPath: 'Sin Categoría' },
-                concepts: uncategorized
-            });
-        }
-
-        return groups;
-    });
+    activeDescriptionId = signal<number | null>(null);
 
     constructor(
         private fb: FormBuilder,
         private conceptsService: SportConceptsService,
+        private categoriesService: ConceptCategoriesService,
         private notificationService: NotificationService,
         private subscriptionsService: SubscriptionsService,
         private lookupService: LookupService,
@@ -109,55 +45,58 @@ export class SportConceptsComponent implements OnInit {
         this.conceptForm = this.fb.group({
             name: ['', Validators.required],
             description: [''],
+            conceptCategoryId: [null, Validators.required],
             sportId: [null, Validators.required],
-            conceptCategoryId: [null],
-            technicalDifficulty: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
-            tacticalComplexity: [5, [Validators.required, Validators.min(1), Validators.max(10)]],
-            progressWeight: [50, [Validators.required, Validators.min(0), Validators.max(100)]],
-            isProgressive: [true],
-            technicalTacticalFocus: [''],
-            developmentLevel: ['']
+            difficulty: [1],
+            tacticalComplexity: [1],
+            isDraft: [false]
         });
     }
 
     ngOnInit() {
-        this.loadSubscriptions();
-        this.loadLookups();
-        this.loadConcepts();
+        this.loadInitialData();
     }
 
-    loadSubscriptions() {
+    loadInitialData() {
+        this.isLoading.set(true);
         this.subscriptionsService.getMySubscriptions().subscribe({
             next: (subs) => {
-                const active = subs.filter(s => s.isActive);
-                this.activeSubscriptions.set(active);
-                if (active.length > 0 && active[0].sportId) {
-                    this.selectedSportId.set(active[0].sportId);
-                    this.conceptForm.patchValue({ sportId: active[0].sportId });
+                this.activeSubscriptions.set(subs.filter(s => s.isActive));
+                if (this.activeSubscriptions().length > 0) {
+                    this.conceptForm.patchValue({ sportId: this.activeSubscriptions()[0].sportId });
                 }
+                this.loadCategories();
             },
-            error: (err) => console.error('Error loading subscriptions', err)
+            error: () => this.isLoading.set(false)
         });
     }
 
-    loadLookups() {
-        this.lookupService.getConceptCategories().subscribe({
+    loadCategories() {
+        this.categoriesService.getAll(false).subscribe({
             next: (data) => {
-                this.conceptCategories.set(this.organizeCategories(data));
+                this.conceptCategories.set(data);
+                this.rootCategories.set(this.organizeCategories(data));
+                this.loadConcepts();
             },
-            error: (err) => console.error('Error loading categories', err)
+            error: () => this.isLoading.set(false)
         });
     }
 
+    loadConcepts() {
+        this.isLoading.set(true);
+        this.conceptsService.getConcepts().subscribe({
+            next: (data) => {
+                this.concepts.set(data);
+                this.isLoading.set(false);
+            },
+            error: () => this.isLoading.set(false)
+        });
+    }
 
     organizeCategories(categories: any[]): any[] {
-        // Create a map for easy lookup
         const map = new Map();
-        categories.forEach(c => map.set(c.id, { ...c, children: [] }));
-
+        categories.forEach(c => map.set(c.id, { ...c, children: [], expanded: true }));
         const roots: any[] = [];
-
-        // Build the tree
         categories.forEach(c => {
             const node = map.get(c.id);
             if (c.parentId && map.has(c.parentId)) {
@@ -166,75 +105,47 @@ export class SportConceptsComponent implements OnInit {
                 roots.push(node);
             }
         });
-
-        // Flatten the tree with indentation and full path
-        const flatten = (nodes: any[], level: number = 0, parentPath: string = ''): any[] => {
-            let result: any[] = [];
-            nodes.forEach(node => {
-                // Add indentation to the name for display (dropdowns)
-                node.displayName = (level > 0 ? '\u00A0\u00A0'.repeat(level) + '└─ ' : '') + node.name;
-
-                // Add full path for headers
-                const currentPath = parentPath ? `${parentPath} > ${node.name}` : node.name;
-                node.fullPath = currentPath;
-
-                result.push(node);
-                if (node.children && node.children.length > 0) {
-                    result = result.concat(flatten(node.children, level + 1, currentPath));
-                }
-            });
-            return result;
-        };
-
-        return flatten(roots);
+        return roots;
     }
 
-    loadConcepts() {
-        this.isLoading.set(true);
-        const sportId = this.selectedSportId();
-        this.conceptsService.getConcepts(sportId || undefined).subscribe({
-            next: (data) => {
-                this.concepts.set(data);
-                this.isLoading.set(false);
-            },
-            error: (err) => {
-                console.error('Error loading concepts', err);
-                this.isLoading.set(false);
-            }
-        });
+    getConceptsByCategory(categoryId: number): any[] {
+        return this.concepts().filter(c => c.conceptCategoryId === categoryId);
     }
 
-    filterBySport(sportId: number | null) {
-        this.selectedSportId.set(sportId);
-        this.loadConcepts();
+    toggleDescription(id: number) {
+        if (this.activeDescriptionId() === id) {
+            this.activeDescriptionId.set(null);
+        } else {
+            this.activeDescriptionId.set(id);
+        }
     }
 
-
-    updateSearch(query: string) {
-        this.searchQuery.set(query);
+    toggleNode(node: any) {
+        node.expanded = !node.expanded;
     }
 
-    filterByCategory(categoryId: number | null) {
-        this.selectedCategoryFilter.set(categoryId);
-    }
-
-    toggleForm() {
+    toggleForm(categoryId?: number) {
         if (this.showForm()) {
             this.resetForm();
         } else {
+            this.resetForm();
+            if (categoryId) {
+                this.conceptForm.patchValue({ conceptCategoryId: categoryId });
+            }
             this.showForm.set(true);
         }
     }
 
     resetForm() {
+        const activeSportId = this.activeSubscriptions().length > 0 ? this.activeSubscriptions()[0].sportId : null;
         this.conceptForm.reset({
-            sportId: this.selectedSportId(),
-            technicalDifficulty: 5,
-            tacticalComplexity: 5,
-            progressWeight: 50,
-            isProgressive: true,
-            technicalTacticalFocus: '',
-            developmentLevel: ''
+            name: '',
+            description: '',
+            conceptCategoryId: null,
+            sportId: activeSportId,
+            difficulty: 1,
+            tacticalComplexity: 1,
+            isDraft: false
         });
         this.editingConceptId.set(null);
         this.showForm.set(false);
@@ -245,14 +156,11 @@ export class SportConceptsComponent implements OnInit {
         this.conceptForm.patchValue({
             name: concept.name,
             description: concept.description,
-            sportId: concept.sportId,
             conceptCategoryId: concept.conceptCategoryId,
-            technicalDifficulty: concept.technicalDifficulty || 5,
-            tacticalComplexity: concept.tacticalComplexity || 5,
-            progressWeight: concept.progressWeight,
-            isProgressive: concept.isProgressive,
-            technicalTacticalFocus: concept.technicalTacticalFocus,
-            developmentLevel: concept.developmentLevel
+            sportId: concept.sportId,
+            difficulty: concept.difficulty,
+            tacticalComplexity: concept.tacticalComplexity,
+            isDraft: concept.isDraft
         });
         this.showForm.set(true);
     }

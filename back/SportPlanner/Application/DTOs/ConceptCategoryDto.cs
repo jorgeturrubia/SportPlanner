@@ -9,5 +9,6 @@ public class ConceptCategoryDto
     public string? Description { get; set; }
     public int? ParentId { get; set; }
     public ConceptCategoryDto? Parent { get; set; }
+    public bool IsActive { get; set; }
     public List<ConceptCategoryDto> SubCategories { get; set; } = new List<ConceptCategoryDto>();
 }

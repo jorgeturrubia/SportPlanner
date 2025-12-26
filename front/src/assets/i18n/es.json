@@ -13,9 +13,8 @@
         "PROPOSALS": "Propuestas",
         "MARKETPLACE": "Marketplace",
         "MY_ITINERARIES": "Mis Itinerarios",
-        "CORE_MASTERS": "Masters Core",
-        "SUBSCRIPTION_SPORTS": "Deportes de Suscripción",
-        "MASTER_USER": "Master User",
+        "PLAN_CONFIG": "Configuración Plan",
+        "SYSTEM_CONFIG": "Configuración Sistema",
         "SPORT_CONCEPTS": "Conceptos Deportivos",
         "CATEGORIES": "Categorias"
     },

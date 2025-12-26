@@ -19,9 +19,9 @@ public class ConceptCategoriesController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<IActionResult> GetAll()
+    public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
     {
-        var categories = await _service.GetAllAsync();
+        var categories = await _service.GetAllAsync(includeInactive);
         var result = _mapper.Map<List<ConceptCategoryDto>>(categories);
         return Ok(result);
     }

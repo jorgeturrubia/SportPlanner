@@ -11,8 +11,8 @@ export class ConceptCategoriesService {
 
     constructor(private http: HttpClient) { }
 
-    getAll(): Observable<any[]> {
-        return this.http.get<any[]>(this.apiUrl);
+    getAll(includeInactive: boolean = false): Observable<any[]> {
+        return this.http.get<any[]>(`${this.apiUrl}?includeInactive=${includeInactive}`);
     }
 
     getById(id: number): Observable<any> {
