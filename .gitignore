@@ -15,3 +15,20 @@ node_modules/
 .env
 
 .claude/
+
+# Angular
+.angular/
+dist/
+/front/dist/
+/front/.angular/
+.tsbuildinfo
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.bak
+
+# OS
+Thumbs.db
+Desktop.ini
