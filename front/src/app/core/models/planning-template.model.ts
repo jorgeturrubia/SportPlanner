@@ -20,6 +20,7 @@ export interface PlanningTemplate {
     systemSourceId?: number;
     systemSource?: PlanningTemplate;
 
+    templateConcepts?: PlanningTemplateConcept[];
     concepts?: PlanningTemplateConcept[];
 }
 

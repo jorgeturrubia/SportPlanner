@@ -127,6 +127,44 @@ public class PlanningTemplateService : IPlanningTemplateService
         return true;
     }
 
+    public async Task<PlanningTemplate> CreateTemplateAsync(PlanningTemplate template, string userId)
+    {
+        template.OwnerId = userId;
+        template.IsSystem = false;
+        // Ensure Code is set if not provided, though typically required
+        if (string.IsNullOrEmpty(template.Code))
+        {
+            template.Code = $"{template.Name.Replace(" ", "_").ToUpper()}_{Guid.NewGuid().ToString().Substring(0, 8)}";
+        }
+        
+        _db.PlanningTemplates.Add(template);
+        await _db.SaveChangesAsync();
+        return template;
+    }
+
+    public async Task<bool> UpdateTemplateConceptsAsync(int templateId, List<PlanningTemplateConcept> concepts, string userId)
+    {
+        var template = await _db.PlanningTemplates
+            .Include(t => t.TemplateConcepts)
+            .FirstOrDefaultAsync(t => t.Id == templateId && t.OwnerId == userId);
+
+        if (template == null) return false;
+
+        // Clear existing
+        _db.RemoveRange(template.TemplateConcepts);
+        
+        // Add new
+        foreach (var concept in concepts)
+        {
+            concept.PlanningTemplateId = templateId; // Ensure ID is linked
+            concept.Id = 0; // Reset ID to ensure insert
+            _db.Set<PlanningTemplateConcept>().Add(concept);
+        }
+
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
     public async Task<List<PlanningTemplate>> DownloadItineraryAsync(int itineraryId, string userId)
     {
         var itinerary = await _db.MethodologicalItineraries

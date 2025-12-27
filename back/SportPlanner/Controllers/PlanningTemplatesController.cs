@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace SportPlanner.Controllers;
 
-[Route("api/planning-templates")]
+[Route("api/planningtemplates")]
 [ApiController]
 [Authorize]
 public class PlanningTemplatesController : ControllerBase
@@ -30,6 +30,16 @@ public class PlanningTemplatesController : ControllerBase
     {
         var results = await _planningTemplateService.GetUserTemplatesAsync(UserId, sportId);
         return Ok(results);
+    }
+
+    [HttpPost]
+    public async Task<ActionResult<PlanningTemplate>> Create([FromBody] PlanningTemplate template)
+    {
+        if (!ModelState.IsValid)
+            return BadRequest(ModelState);
+
+        var created = await _planningTemplateService.CreateTemplateAsync(template, UserId);
+        return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
     }
 
     [HttpGet("{id}")]
@@ -54,6 +64,15 @@ public class PlanningTemplatesController : ControllerBase
         if (id != template.Id) return BadRequest();
         
         var success = await _planningTemplateService.UpdateTemplateAsync(template, UserId);
+        if (!success) return NotFound("Template not found or not owned by user.");
+        
+        return NoContent();
+    }
+
+    [HttpPut("{id}/concepts")]
+    public async Task<IActionResult> UpdateConcepts(int id, [FromBody] List<PlanningTemplateConcept> concepts)
+    {
+        var success = await _planningTemplateService.UpdateTemplateConceptsAsync(id, concepts, UserId);
         if (!success) return NotFound("Template not found or not owned by user.");
         
         return NoContent();

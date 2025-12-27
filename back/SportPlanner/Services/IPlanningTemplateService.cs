@@ -36,6 +36,16 @@ public interface IPlanningTemplateService
     Task<bool> UpdateTemplateAsync(PlanningTemplate template, string userId);
 
     /// <summary>
+    /// Creates a new template for a user.
+    /// </summary>
+    Task<PlanningTemplate> CreateTemplateAsync(PlanningTemplate template, string userId);
+
+    /// <summary>
+    /// Updates the concepts of a template (replace all).
+    /// </summary>
+    Task<bool> UpdateTemplateConceptsAsync(int templateId, List<PlanningTemplateConcept> concepts, string userId);
+
+    /// <summary>
     /// Downloads all templates within an itinerary to a user's local workspace.
     /// </summary>
     Task<List<PlanningTemplate>> DownloadItineraryAsync(int itineraryId, string userId);

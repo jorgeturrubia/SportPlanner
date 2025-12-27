@@ -25,7 +25,15 @@ export class PlanningTemplateService {
     return this.http.delete<void>(`${this.apiUrl}/${id}`);
   }
 
+  create(template: PlanningTemplate): Observable<PlanningTemplate> {
+    return this.http.post<PlanningTemplate>(this.apiUrl, template);
+  }
+
   update(template: PlanningTemplate): Observable<void> {
     return this.http.put<void>(`${this.apiUrl}/${template.id}`, template);
+  }
+
+  updateConcepts(templateId: number, concepts: any[]): Observable<void> {
+    return this.http.put<void>(`${this.apiUrl}/${templateId}/concepts`, concepts);
   }
 }

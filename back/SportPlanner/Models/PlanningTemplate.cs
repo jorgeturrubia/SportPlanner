@@ -15,8 +15,7 @@ public class PlanningTemplate
     public string Name { get; set; } = null!;
     
     /// <summary>Code for programmatic reference (e.g., "ALEVIN")</summary>
-    [Required]
-    public string Code { get; set; } = null!;
+    public string? Code { get; set; }
     
     /// <summary>
     /// Development level (1-6) corresponding to DevelopmentLevel in SportConcept.
