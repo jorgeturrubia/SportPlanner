@@ -149,4 +149,58 @@ public class PlanningTemplateService : IPlanningTemplateService
 
         return downloadedTemplates;
     }
+
+    public async Task<List<MethodologicalItinerary>> GetUserItinerariesAsync(string userId)
+    {
+        return await _db.MethodologicalItineraries
+            .Where(i => i.OwnerId == userId && !i.IsSystem)
+            .Include(i => i.Sport)
+            .Include(i => i.PlanningTemplates)
+            .ToListAsync();
+    }
+
+    public async Task<MethodologicalItinerary?> GetItineraryByIdAsync(int id, string userId)
+    {
+        return await _db.MethodologicalItineraries
+            .Include(i => i.Sport)
+            .Include(i => i.PlanningTemplates)
+            .FirstOrDefaultAsync(i => i.Id == id && i.OwnerId == userId);
+    }
+
+    public async Task<MethodologicalItinerary> CreateItineraryAsync(MethodologicalItinerary itinerary, string userId)
+    {
+        itinerary.OwnerId = userId;
+        itinerary.IsSystem = false;
+        _db.MethodologicalItineraries.Add(itinerary);
+        await _db.SaveChangesAsync();
+        return itinerary;
+    }
+
+    public async Task<bool> UpdateItineraryAsync(MethodologicalItinerary itinerary, string userId)
+    {
+        var existing = await _db.MethodologicalItineraries
+            .FirstOrDefaultAsync(i => i.Id == itinerary.Id && i.OwnerId == userId);
+
+        if (existing == null) return false;
+
+        existing.Name = itinerary.Name;
+        existing.Description = itinerary.Description;
+        existing.SportId = itinerary.SportId;
+        existing.IsActive = itinerary.IsActive;
+
+        await _db.SaveChangesAsync();
+        return true;
+    }
+
+    public async Task<bool> DeleteItineraryAsync(int id, string userId)
+    {
+        var itinerary = await _db.MethodologicalItineraries
+            .FirstOrDefaultAsync(i => i.Id == id && i.OwnerId == userId);
+
+        if (itinerary == null) return false;
+
+        _db.MethodologicalItineraries.Remove(itinerary);
+        await _db.SaveChangesAsync();
+        return true;
+    }
 }

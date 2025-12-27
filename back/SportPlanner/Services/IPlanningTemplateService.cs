@@ -39,4 +39,11 @@ public interface IPlanningTemplateService
     /// Downloads all templates within an itinerary to a user's local workspace.
     /// </summary>
     Task<List<PlanningTemplate>> DownloadItineraryAsync(int itineraryId, string userId);
+
+    // MethodologicalItinerary methods
+    Task<List<MethodologicalItinerary>> GetUserItinerariesAsync(string userId);
+    Task<MethodologicalItinerary?> GetItineraryByIdAsync(int id, string userId);
+    Task<MethodologicalItinerary> CreateItineraryAsync(MethodologicalItinerary itinerary, string userId);
+    Task<bool> UpdateItineraryAsync(MethodologicalItinerary itinerary, string userId);
+    Task<bool> DeleteItineraryAsync(int id, string userId);
 }
