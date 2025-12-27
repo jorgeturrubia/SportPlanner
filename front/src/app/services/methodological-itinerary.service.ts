@@ -19,7 +19,7 @@ export interface MethodologicalItinerary {
   providedIn: 'root'
 })
 export class MethodologicalItineraryService {
-  private apiUrl = `${environment.apiUrl}/api/methodological-itineraries`;
+  private apiUrl = `${environment.apiUrl}/methodological-itineraries`;
 
   constructor(private http: HttpClient) {}
 
