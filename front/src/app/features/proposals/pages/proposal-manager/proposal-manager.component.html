@@ -1,15 +1,15 @@
 <div class="h-full flex flex-col bg-[#121212] text-neutral-200 overflow-hidden font-sans">
 
     <!-- Top Bar: Tuner & Controls -->
-    <div class="bg-neutral-900 border-b border-neutral-800 p-4 shrink-0 shadow-lg z-30 relative">
-        <div class="w-full flex flex-col md:flex-row items-center justify-between gap-6">
+    <div class="bg-neutral-900 border-b border-neutral-800 p-1 shrink-0 shadow-lg z-30 relative">
+        <div class="w-full flex flex-col md:flex-row items-center justify-between gap-3">
 
             <!-- Team Selector -->
             <div class="w-full md:w-64" *ngIf="!embedded">
-                <label class="block text-[10px] uppercase tracking-widest text-[#CCFF00] font-bold mb-1">Equipo</label>
+                <label class="block text-[9px] uppercase tracking-widest text-[#CCFF00] font-bold mb-1">Equipo</label>
                 <div class="relative">
                     <select [(ngModel)]="selectedTeamId" (change)="onTeamChange()"
-                        class="w-full bg-neutral-800 text-white text-sm rounded border border-neutral-700 p-2.5 focus:ring-2 focus:ring-[#CCFF00] focus:border-[#CCFF00] outline-none appearance-none cursor-pointer">
+                        class="w-full bg-neutral-800 text-white text-xs rounded border border-neutral-700 p-1.5 focus:ring-2 focus:ring-[#CCFF00] focus:border-[#CCFF00] outline-none appearance-none cursor-pointer">
                         <option [ngValue]="null">Selecciona equipo...</option>
                         <option *ngFor="let team of teams" [ngValue]="team.id">{{ team.name }}
                             ({{team.teamCategory?.name}})</option>
@@ -105,11 +105,17 @@
                             <div *ngFor="let row of category.subCategories" class="mb-4">
                                 
                                 <!-- SUBCATEGORY HEADER -->
-                                <h4 class="text-sm font-bold text-white/90 mb-2 pl-1 border-l-2 border-[#CCFF00] ml-1 uppercase tracking-wider flex items-center gap-2">
-                                    {{ row.name }}
-                                </h4>
+                                <div (click)="toggleRow(row)" class="group cursor-pointer flex items-center justify-between mb-2 pl-1 border-l-2 border-[#CCFF00] ml-1 select-none hover:bg-white/5 transition-colors p-1 rounded-r-md">
+                                    <h4 class="text-sm font-bold text-white/90 uppercase tracking-wider flex items-center gap-2">
+                                        {{ row.name }}
+                                    </h4>
+                                    <span class="material-icons text-neutral-500 group-hover:text-[#CCFF00] transition-transform duration-300"
+                                        [class.rotate-180]="!row.isExpanded">
+                                        expand_more
+                                    </span>
+                                </div>
 
-                                <div class="grid grid-cols-[1fr_1px_1fr] gap-4 bg-neutral-800/20 p-2 rounded-lg border border-neutral-800/50">
+                                <div *ngIf="row.isExpanded" class="animate-fadeIn grid grid-cols-[1fr_1px_1fr] gap-4 bg-neutral-800/20 p-2 rounded-lg border border-neutral-800/50">
 
                                 <!-- LEFT COLUMN: ACTIVE ITINERARY -->
                                 <div class="flex flex-col h-full">

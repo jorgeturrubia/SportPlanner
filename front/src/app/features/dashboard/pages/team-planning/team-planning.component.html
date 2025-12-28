@@ -9,18 +9,18 @@
     </div>
 </div>
 
-<div class="bg-dark-surface border border-dark-border p-4">
+<div class="bg-dark-surface border border-dark-border p-2">
     <!-- Steps Indicator -->
-    <div class="flex mb-4 items-center justify-center scale-90">
+    <div class="flex mb-2 items-center justify-center scale-90">
         <div
-            [class]="'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 ' + (step() >= 1 ? 'bg-primary text-black' : 'bg-dark-bg text-gray-500 border border-gray-700')">
+            [class]="'w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300 ' + (step() >= 1 ? 'bg-primary text-black' : 'bg-dark-bg text-gray-500 border border-gray-700')">
             1</div>
         <div class="w-16 h-0.5 bg-dark-bg mx-2 relative">
             <div [class]="'absolute top-0 left-0 h-full bg-primary transition-all duration-500 ease-out'"
                 [style.width]="step() >= 2 ? '100%' : '0%'"></div>
         </div>
         <div
-            [class]="'w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm transition-colors duration-300 delay-150 ' + (step() >= 2 ? 'bg-primary text-black' : 'bg-dark-bg text-gray-500 border border-gray-700')">
+            [class]="'w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs transition-colors duration-300 delay-150 ' + (step() >= 2 ? 'bg-primary text-black' : 'bg-dark-bg text-gray-500 border border-gray-700')">
             2</div>
     </div>
 
@@ -106,7 +106,7 @@
                 te sugerimos trabajar estos conceptos.</p>
 
             <!-- Compensate Parent Padding for Full Width -->
-            <div class="mb-4 min-h-[500px] -mx-4 w-[calc(100%+2rem)]">
+            <div class="mb-4 min-h-[500px] -mx-2 w-[calc(100%+1rem)]">
                 <app-proposal-manager [selectedTeamId]="teamId" [initialSelectedConceptIds]="selectedConceptIds()"
                     [embedded]="true">
                 </app-proposal-manager>
