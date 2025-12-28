@@ -14,6 +14,7 @@ public class LookupProfile : Profile
         CreateMap<Sport, SportDto>();
         CreateMap<CreateSportDto, Sport>();
         CreateMap<UpdateSportDto, Sport>();
-        CreateMap<ConceptCategory, ConceptCategoryDto>();
+        CreateMap<ConceptCategory, ConceptCategoryDto>()
+            .ForMember(dest => dest.Concepts, opt => opt.MapFrom(src => src.SportConcepts));
     }
 }

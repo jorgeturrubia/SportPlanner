@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
 import { TemplateTunerComponent } from '../../components/template-tuner/template-tuner.component';
+import { ConceptCreatorComponent } from '../../components/concept-creator/concept-creator.component';
 import { ProposalsService } from '../../services/proposals.service';
 import { TeamsService } from '../../../../services/teams.service';
 import { SportsService } from '../../../../services/sports.service';
@@ -10,7 +11,7 @@ import { SeasonService } from '../../../../services/season.service';
 import { SubscriptionsService } from '../../../../services/subscriptions.service';
 import { PlanningTemplateService } from '../../../../services/planning-template.service';
 import { SportConceptService } from '../../../../services/sport-concept.service';
-import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto, PlanningTemplateDto } from '../../models/proposal.models';
+import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto, PlanningTemplateDto, ProposalPriority } from '../../models/proposal.models';
 
 // --- New Hierarchical Interfaces ---
 interface SubCategoryRow {
@@ -47,7 +48,7 @@ interface MethodologicalSection {
 @Component({
     selector: 'app-proposal-manager',
     standalone: true,
-    imports: [CommonModule, FormsModule, DragDropModule, TemplateTunerComponent],
+    imports: [CommonModule, FormsModule, DragDropModule, TemplateTunerComponent, ConceptCreatorComponent],
     templateUrl: './proposal-manager.component.html',
     styleUrls: ['./proposal-manager.component.css']
 })
@@ -97,7 +98,17 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     }
 
     closeCreateConceptModal() {
+        console.trace('closeCreateConceptModal called');
         this.showCreateModal = false;
+    }
+
+    handleConceptCreated(newConcept: any) {
+        // Did not close modal to allow rapid/bulk creation
+        console.log('handleConceptCreated triggered', newConcept);
+        if (newConcept) {
+            this.initialSelectedConceptIds.push(newConcept.id);
+        }
+        this.generateProposals(newConcept);
     }
 
     loadCategories() {
@@ -149,7 +160,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 
                 if (this.response) {
                     this.initialSelectedConceptIds.push(concept.id);
-                    this.generateProposals(); 
+                    this.generateProposals(concept); 
                 }
             },
             error: (err) => {
@@ -300,7 +311,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         return 3; // Default
     }
 
-    generateProposals() {
+    generateProposals(forceIncludeConcept?: any) {
         if (!this.selectedTeamId) {
             return;
         }
@@ -330,6 +341,11 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                         ...this.response.suggestedGroups
                     ];
                     this.response.suggestedGroups = [];
+                }
+
+                // INJECTION LOGIC: If we just created a concept, ensure it exists in the response
+                if (forceIncludeConcept && this.response) {
+                    this.ensureConceptInResponse(this.response, forceIncludeConcept);
                 }
 
                 this.processResponseIntoHierarchy();
@@ -485,6 +501,55 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             row.distantPastConcepts.push(conceptWrapper);
             row.distantPastConcepts.sort((a, b) => b.concept.developmentLevel - a.concept.developmentLevel);
         }
+    }
+
+    private ensureConceptInResponse(response: ConceptProposalResponseDto, concept: any) {
+        // 1. Check if it already exists
+        const allGroups = [...response.suggestedGroups, ...response.optionalGroups];
+        let found = false;
+        
+        for (const group of allGroups) {
+            if (group.concepts.some(c => c.concept.id === concept.id)) {
+                found = true;
+                break;
+            }
+        }
+
+        if (found) return;
+
+        // 2. Not found, we must inject it
+        // Find suitable group by Category ID
+        let targetGroup = allGroups.find(g => g.categoryId === concept.conceptCategoryId);
+
+        if (!targetGroup) {
+            // Need to create a new group?
+            // If the category is totally missing from response, we need to fetch category details to make a nice group name?
+            // For now, let's try to infer or just add it to a generic group if absolutely necessary, 
+            // BUT usually categories exist if we just selected it from the tree.
+            
+            // If we don't have the group, checking 'flattenedCategories' might help get the name
+            const catInfo = this.flattenedCategories.find(c => c.id === concept.conceptCategoryId);
+            const catName = catInfo ? catInfo.name : 'Nueva Categoría';
+             // We don't have full path here easily unless we traverse tree, but name is okay.
+
+            targetGroup = {
+                categoryName: catName,
+                categoryId: concept.conceptCategoryId,
+                section: 'General', // Fallback
+                concepts: []
+            };
+            // Add to optional groups
+            response.optionalGroups.push(targetGroup);
+        }
+
+        // 3. Add concept to the group
+        targetGroup.concepts.push({
+            concept: concept,
+            score: 100,
+            scoreReason: 'Recién creado',
+            priority: ProposalPriority.Essential,
+            tag: ConceptTag.Own
+        });
     }
 
     /**

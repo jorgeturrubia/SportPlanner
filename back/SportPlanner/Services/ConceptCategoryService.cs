@@ -35,10 +35,12 @@ public class ConceptCategoryService : IConceptCategoryService
         {
             query = query.Where(c => c.IsActive);
         }
-
-        return await query
+        var categories = await query
+            .Include(c => c.SportConcepts)
             .OrderBy(c => c.Name)
             .ToListAsync();
+
+        return categories;
     }
 
     public async Task<ConceptCategory?> GetByIdAsync(int id)

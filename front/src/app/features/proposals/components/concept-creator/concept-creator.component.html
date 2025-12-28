@@ -1,0 +1,224 @@
+<div class="flex h-full bg-neutral-900 text-neutral-200 font-sans overflow-hidden rounded-lg shadow-2xl border border-neutral-800">
+
+    <!-- LEFT PANEL: CATEGORY TREE -->
+    <div class="w-1/2 flex flex-col border-r border-neutral-800 bg-neutral-900/50">
+        <!-- Header -->
+        <div class="p-4 border-b border-neutral-800 flex justify-between items-center bg-neutral-900 sticky top-0 z-10">
+            <h3 class="text-[#CCFF00] font-bold uppercase tracking-widest text-xs flex items-center gap-2">
+                <span class="material-icons text-sm">account_tree</span>
+                Árbol de Categorías
+            </h3>
+            <button type="button" (click)="loadCategories()" class="text-neutral-500 hover:text-white transition-colors" title="Recargar">
+                <span class="material-icons text-sm">refresh</span>
+            </button>
+        </div>
+
+        <!-- Tree Content -->
+        <div class="flex-1 overflow-y-auto p-2 custom-scrollbar relative">
+            
+            <!-- Root Add Button -->
+            <button type="button" (click)="selectedCategory = null; startCreateCategory()" 
+                class="w-full mb-2 flex items-center gap-2 p-2 rounded border border-dashed border-neutral-700 text-neutral-500 hover:border-[#CCFF00] hover:text-[#CCFF00] transition-all group">
+                <span class="material-icons text-sm group-hover:rotate-90 transition-transform">add</span>
+                <span class="text-xs font-bold uppercase">Nueva Categoría Raíz</span>
+            </button>
+
+            <!-- Recursive Tree Rendering -->
+            <ng-container *ngTemplateOutlet="categoryTree; context: { $implicit: categories }"></ng-container>
+
+            <ng-template #categoryTree let-nodes>
+                <div class="flex flex-col gap-1 pl-2 border-l border-neutral-800 ml-1">
+                    <div *ngFor="let node of nodes">
+                        <!-- Node Row -->
+                        <div (click)="selectCategory(node)"
+                            class="group flex items-center justify-between p-2 rounded cursor-pointer transition-all border border-transparent"
+                            [class.bg-neutral-800]="node.isActive"
+                            [class.border-neutral-700]="node.isActive"
+                            [class.hover:bg-neutral-800]="!node.isActive">
+                            
+                            <div class="flex items-center gap-2 overflow-hidden">
+                                <!-- Expand Toggle -->
+                                <button type="button" (click)="toggleExpand(node, $event)" 
+                                    class="w-5 h-5 flex items-center justify-center rounded hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors"
+                                    [class.invisible]="node.subCategories.length === 0">
+                                    <span class="material-icons text-sm transition-transform duration-200"
+                                        [class.rotate-90]="node.isOpen">chevron_right</span>
+                                </button>
+                                
+                                <!-- Icon & Name -->
+                                <span class="material-icons text-sm" 
+                                    [class.text-[#CCFF00]]="node.isActive" 
+                                    [class.text-neutral-500]="!node.isActive">folder</span>
+                                <span class="text-sm font-medium truncate select-none"
+                                    [class.text-white]="node.isActive"
+                                    [class.text-neutral-400]="!node.isActive">
+                                    {{ node.name }}
+                                </span>
+                            </div>
+
+                            <!-- Count Badge (optional) -->
+                            <span *ngIf="node.subCategories.length > 0" class="text-[9px] bg-neutral-900 text-neutral-500 px-1.5 rounded">
+                                {{ node.subCategories.length }}
+                            </span>
+                        </div>
+
+                        <!-- Subcategories (Recursive) -->
+                        <div *ngIf="node.isOpen && node.subCategories.length > 0" class="animate-fadeIn">
+                            <ng-container *ngTemplateOutlet="categoryTree; context: { $implicit: node.subCategories }"></ng-container>
+                        </div>
+                    </div>
+                </div>
+            </ng-template>
+
+            <!-- Loading State -->
+            <div *ngIf="loading" class="flex justify-center p-8">
+                <div class="w-6 h-6 border-2 border-[#CCFF00] border-t-transparent rounded-full animate-spin"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- RIGHT PANEL: CONTEXT ACTIONS -->
+    <div class="w-1/2 flex flex-col bg-neutral-900">
+        
+        <!-- Top Bar: Close -->
+        <div class="flex justify-end p-2 border-b border-neutral-800 mb-4 bg-neutral-900 sticky top-0 z-10">
+            <button type="button" (click)="close.emit()" 
+                class="flex items-center gap-2 px-4 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white rounded transition-colors text-xs uppercase font-bold tracking-wider">
+                <span class="material-icons text-sm">check</span>
+                Terminar
+            </button>
+        </div>
+
+        <div class="flex-1 flex flex-col items-center justify-center p-6 text-center" *ngIf="!selectedCategory && !isCreatingCategory">
+            <span class="material-icons text-6xl text-neutral-800 mb-4">touch_app</span>
+            <h4 class="text-neutral-400 font-bold uppercase tracking-widest text-sm mb-2">Selecciona una categoría</h4>
+            <p class="text-xs text-neutral-600 max-w-xs">Navega por el árbol de la izquierda para ver opciones o crear nuevos conceptos.</p>
+        </div>
+
+        <!-- SELECTED CONTEXT -->
+        <div *ngIf="selectedCategory || isCreatingCategory" class="flex-1 flex flex-col px-6 pb-6 overflow-y-auto">
+            
+            <!-- Context Header -->
+            <div class="mb-4 text-left" *ngIf="selectedCategory && !isCreatingCategory">
+                <span class="text-[10px] text-[#CCFF00] font-bold uppercase tracking-widest bg-[#CCFF00]/10 px-2 py-1 rounded">Categoría Seleccionada</span>
+                <h2 class="text-3xl font-black text-white mt-2 uppercase italic tracking-tighter">{{ selectedCategory.name }}</h2>
+            </div>
+
+            <!-- EXISTING CONCEPTS LIST -->
+            <div *ngIf="selectedCategory && selectedCategory.concepts.length > 0 && !isCreatingCategory && !isCreatingConcept" 
+                 class="mb-6 animate-fadeIn">
+                <h4 class="text-neutral-500 font-bold uppercase tracking-widest text-[10px] mb-2 flex items-center gap-2">
+                    <span class="material-icons text-xs">list</span>
+                    Conceptos Existentes ({{ selectedCategory.concepts.length }})
+                </h4>
+                <div class="space-y-1 max-h-48 overflow-y-auto custom-scrollbar pr-1">
+                    <div *ngFor="let c of selectedCategory.concepts" 
+                         class="flex items-center justify-between p-2 bg-neutral-800/30 rounded border border-neutral-800 hover:border-neutral-700 transition-colors group">
+                        <div class="flex items-center gap-2">
+                             <span class="material-icons text-xs text-neutral-600 group-hover:text-[#CCFF00] transition-colors">emoji_objects</span>
+                             <span class="text-xs text-neutral-300 font-medium group-hover:text-white transition-colors">{{ c.name }}</span>
+                        </div>
+                        <span class="text-[9px] bg-neutral-900 text-neutral-500 px-1 py-0.5 rounded border border-neutral-800">
+                            Lvl {{ c.developmentLevel || '?' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ACTION: CREATE CATEGORY FORM -->
+            <div *ngIf="isCreatingCategory" class="animate-fadeIn w-full bg-neutral-800/50 p-4 rounded border border-[#CCFF00]/30 mb-4">
+                <h4 class="text-[#CCFF00] font-bold uppercase tracking-widest text-xs mb-4 flex items-center gap-2">
+                    <span class="material-icons text-sm">create_new_folder</span>
+                    {{ selectedCategory ? 'Nueva Subcategoría en ' + selectedCategory.name : 'Nueva Categoría Raíz' }}
+                </h4>
+                
+                <input type="text" [(ngModel)]="newCategoryName" #categoryInput
+                    placeholder="Nombre de la categoría..."
+                    class="w-full bg-neutral-900 text-white p-3 rounded border border-neutral-700 focus:border-[#CCFF00] outline-none mb-3 font-bold"
+                    (keydown.enter)="$event.preventDefault(); $event.stopImmediatePropagation(); saveCategory()">
+
+                <div class="flex justify-end gap-2">
+                    <button type="button" (click)="isCreatingCategory = false" class="px-3 py-1 text-xs text-neutral-400 hover:text-white">Cancelar</button>
+                    <button type="button" (click)="saveCategory()" [disabled]="!newCategoryName.trim()"
+                        class="px-4 py-2 bg-[#CCFF00] text-black font-bold uppercase text-xs rounded hover:bg-lime-400 disabled:opacity-50">
+                        Guardar (+)
+                    </button>
+                </div>
+            </div>
+
+            <!-- ACTIONS MENU (If not creating category) -->
+            <div *ngIf="selectedCategory && !isCreatingCategory && !isCreatingConcept" class="grid grid-cols-1 gap-3 animate-fadeIn">
+                
+                <button type="button" (click)="startCreateConcept()" 
+                    class="flex items-center gap-4 p-4 bg-neutral-800 hover:bg-[#CCFF00] group transition-all duration-300 rounded border border-neutral-700 hover:border-[#CCFF00]">
+                    <span class="material-icons text-2xl text-[#CCFF00] group-hover:text-black">add_circle</span>
+                    <div class="text-left">
+                        <div class="font-bold text-white group-hover:text-black uppercase tracking-wider text-sm">Crear Concepto Aquí</div>
+                        <div class="text-[10px] text-neutral-400 group-hover:text-black/70">Añade un ejercicio o concepto técnico/táctico</div>
+                    </div>
+                </button>
+
+                <button type="button" (click)="startCreateCategory()" 
+                    class="flex items-center gap-4 p-4 bg-neutral-800/50 hover:bg-neutral-800 group transition-all duration-300 rounded border border-neutral-800 hover:border-neutral-600">
+                    <span class="material-icons text-2xl text-neutral-500 group-hover:text-white">create_new_folder</span>
+                    <div class="text-left">
+                        <div class="font-bold text-neutral-400 group-hover:text-white uppercase tracking-wider text-sm">Añadir Subcategoría</div>
+                        <div class="text-[10px] text-neutral-600 group-hover:text-neutral-400">Crea una carpeta hija dentro de {{ selectedCategory.name }}</div>
+                    </div>
+                </button>
+
+            </div>
+
+            <!-- ACTION: CREATE CONCEPT FORM -->
+            <div *ngIf="isCreatingConcept" class="animate-fadeIn w-full bg-neutral-800 p-4 rounded border border-[#CCFF00]/50 shadow-[0_0_20px_rgba(204,255,0,0.1)]">
+                <h4 class="text-[#CCFF00] font-bold uppercase tracking-widest text-xs mb-4 flex items-center gap-2 border-b border-neutral-700 pb-2">
+                    <span class="material-icons text-sm">emoji_objects</span>
+                    Nuevo Concepto en {{ selectedCategory!.name }}
+                </h4>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-[10px] uppercase text-neutral-500 font-bold mb-1">Nombre</label>
+                        <input type="text" [(ngModel)]="newConceptName" #conceptInput
+                            class="w-full bg-neutral-900 text-white p-2 rounded border border-neutral-700 focus:border-[#CCFF00] outline-none font-bold text-sm"
+                            placeholder="Ej. Salida de balón..." (keydown.enter)="$event.preventDefault(); $event.stopImmediatePropagation(); saveConcept()">
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase text-neutral-500 font-bold mb-1">Descripción</label>
+                        <textarea [(ngModel)]="newConceptDescription" rows="3"
+                            class="w-full bg-neutral-900 text-white p-2 rounded border border-neutral-700 focus:border-[#CCFF00] outline-none text-xs"
+                            placeholder="Detalles técnicos..."></textarea>
+                    </div>
+
+                    <div>
+                        <label class="block text-[10px] uppercase text-neutral-500 font-bold mb-1">Nivel (1-5)</label>
+                        <div class="flex gap-2">
+                            <button type="button" *ngFor="let lvl of [1,2,3,4,5]" 
+                                (click)="newConceptLevel = lvl"
+                                class="w-8 h-8 rounded border flex items-center justify-center font-bold text-xs transition-all"
+                                [class.bg-[#CCFF00]]="newConceptLevel === lvl"
+                                [class.text-black]="newConceptLevel === lvl"
+                                [class.border-[#CCFF00]]="newConceptLevel === lvl"
+                                [class.bg-neutral-900]="newConceptLevel !== lvl"
+                                [class.text-neutral-400]="newConceptLevel !== lvl"
+                                [class.border-neutral-700]="newConceptLevel !== lvl">
+                                {{ lvl }}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-2 mt-6">
+                    <button type="button" (click)="isCreatingConcept = false" class="px-3 py-1 text-xs text-neutral-400 hover:text-white">Cancelar</button>
+                    <button type="button" (click)="saveConcept()" [disabled]="!newConceptName.trim()"
+                        class="px-4 py-2 bg-[#CCFF00] text-black font-bold uppercase text-xs rounded hover:bg-lime-400 disabled:opacity-50 flex items-center gap-2">
+                        <span class="material-icons text-sm">save</span>
+                        Guardar y Seguir (+)
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

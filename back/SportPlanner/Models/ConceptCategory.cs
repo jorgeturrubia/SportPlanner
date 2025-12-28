@@ -14,4 +14,5 @@ public class ConceptCategory
     public int? ParentId { get; set; }
     public ConceptCategory? Parent { get; set; }
     public ICollection<ConceptCategory> SubCategories { get; set; } = new List<ConceptCategory>();
+    public ICollection<SportConcept> SportConcepts { get; set; } = new List<SportConcept>();
 }

@@ -11,4 +11,5 @@ public class ConceptCategoryDto
     public ConceptCategoryDto? Parent { get; set; }
     public bool IsActive { get; set; }
     public List<ConceptCategoryDto> SubCategories { get; set; } = new List<ConceptCategoryDto>();
+    public List<SportConceptDto> Concepts { get; set; } = new List<SportConceptDto>();
 }
