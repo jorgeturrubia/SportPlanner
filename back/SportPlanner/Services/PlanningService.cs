@@ -110,7 +110,10 @@ namespace SportPlanner.Services
 
         public async Task<PlanningDto?> UpdateAsync(int id, UpdatePlanningDto updatePlanningDto)
         {
-            var planning = await _context.Plannings.FindAsync(id);
+            var planning = await _context.Plannings
+                .Include(p => p.ScheduleDays)  // Explicitly load ScheduleDays
+                .FirstOrDefaultAsync(p => p.Id == id);
+
             if (planning == null)
             {
                 return null;
@@ -122,10 +125,53 @@ namespace SportPlanner.Services
             if (updatePlanningDto.EndDate.HasValue)
                 updatePlanningDto.EndDate = DateTime.SpecifyKind(updatePlanningDto.EndDate.Value, DateTimeKind.Utc);
 
+            // Handle ScheduleDays manually to avoid Unique Constraint violations
+            var newScheduleDays = updatePlanningDto.ScheduleDays;
+            updatePlanningDto.ScheduleDays = null; // Prevent automapper from touching the collection directly
+
             _mapper.Map(updatePlanningDto, planning);
+
             // Ensure the entity's DateTime kinds are UTC as well
             planning.StartDate = DateTime.SpecifyKind(planning.StartDate, DateTimeKind.Utc);
             planning.EndDate = DateTime.SpecifyKind(planning.EndDate, DateTimeKind.Utc);
+
+            // Synchronize ScheduleDays
+            if (newScheduleDays != null)
+            {
+                // 1. Remove days not present in the new list
+                var daysToRemove = planning.ScheduleDays
+                    .Where(existing => !newScheduleDays.Any(n => n.DayOfWeek == existing.DayOfWeek))
+                    .ToList();
+
+                foreach (var day in daysToRemove)
+                {
+                    _context.Entry(day).State = EntityState.Deleted; // Explicitly mark for deletion
+                    planning.ScheduleDays.Remove(day);
+                }
+
+                // 2. Add or Update days
+                foreach (var newDay in newScheduleDays)
+                {
+                    var existingDay = planning.ScheduleDays.FirstOrDefault(d => d.DayOfWeek == newDay.DayOfWeek);
+                    if (existingDay != null)
+                    {
+                        // Update existing day
+                        existingDay.StartTime = newDay.StartTime;
+                        existingDay.EndTime = newDay.EndTime;
+                        existingDay.CourtId = newDay.CourtId;
+                        _context.Entry(existingDay).State = EntityState.Modified;
+                    }
+                    else
+                    {
+                        // Add new day
+                        // Ensure ID is 0 so EF treats it as new
+                        newDay.Id = 0; 
+                        newDay.PlanningId = planning.Id; // Ensure link to parent
+                        planning.ScheduleDays.Add(newDay);
+                    }
+                }
+            }
+
             _context.Entry(planning).State = EntityState.Modified;
 
             try

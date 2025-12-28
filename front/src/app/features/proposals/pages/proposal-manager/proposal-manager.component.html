@@ -410,11 +410,11 @@
             </div>
 
             <div class="flex items-center justify-end gap-3 mt-6">
-                <button (click)="closeCreateConceptModal()" 
+                <button type="button" (click)="closeCreateConceptModal()" 
                         class="px-4 py-2 text-sm text-neutral-400 hover:text-white transition-colors">
                     Cancelar
                 </button>
-                <button (click)="saveNewConcept()" [disabled]="!newConceptName || !newConceptCategoryId || isCreating"
+                <button type="button" (click)="saveNewConcept()" [disabled]="!newConceptName || !newConceptCategoryId || isCreating"
                         class="px-4 py-2 bg-[#CCFF00] text-black font-bold rounded hover:bg-lime-400 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
                     <span *ngIf="isCreating" class="codicon codicon-loading animate-spin"></span>
                     Crear y Añadir

@@ -20,8 +20,10 @@ import { PlanningTemplateDto } from '../../models/proposal.models';
                 <div class="relative group">
                     <select [ngModel]="activeTemplateId" (ngModelChange)="onTemplateChange($event)"
                         class="w-full bg-neutral-800 text-white text-lg font-bold uppercase tracking-tight rounded border border-neutral-700 p-2 focus:ring-2 focus:ring-primary focus:border-primary outline-none appearance-none cursor-pointer pr-10 transition-all">
-                        <option [ngValue]="null" class="bg-neutral-800 text-white">Automático ({{ defaultTemplateName || 'Nivel Equipo' }})</option>
-                        <option [ngValue]="-1" class="bg-neutral-800 text-white">Sin plantilla (Manual)</option>
+                        <option *ngIf="templates.length > 0" [ngValue]="null" class="bg-neutral-800 text-white">Automático ({{ defaultTemplateName || 'Nivel Equipo' }})</option>
+                        <option [ngValue]="-1" class="bg-neutral-800 text-white">
+                            {{ templates.length > 0 ? 'Sin plantilla (Manual)' : 'Planificación Customizada' }}
+                        </option>
                         <option *ngFor="let temp of templates" [ngValue]="temp.id" class="bg-neutral-800 text-white">
                             {{ temp.name }}
                         </option>
@@ -43,7 +45,7 @@ import { PlanningTemplateDto } from '../../models/proposal.models';
         <div class="h-10 w-[2px] bg-dark-border mx-2"></div>
 
         <!-- Create Concept Button -->
-         <button (click)="onCreateClick()" 
+         <button type="button" (click)="onCreateClick()" 
             class="flex items-center gap-2 bg-primary/10 hover:bg-primary/20 text-primary px-4 py-2 rounded font-bold uppercase text-xs tracking-wider transition-colors border border-primary/30">
             <span class="material-icons text-sm">add</span>
             Nuevo Concepto

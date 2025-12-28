@@ -232,19 +232,26 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         this.planningTemplateService.getMyTemplates(sportId).subscribe({
             next: (res) => {
                 this.templates = res as unknown as PlanningTemplateDto[];
-                // Determine default template name
-                const categoryName = team.teamCategory?.name || '';
-                const expectedLevel = this.calculateTargetLevel(categoryName);
+                
+                if (this.templates.length === 0) {
+                     // No templates: Force Custom/Manual mode
+                     this.selectedTemplateId = -1;
+                     this.defaultTemplateName = 'Sin Plantilla';
+                } else {
+                    // Determine default template name
+                    const categoryName = team.teamCategory?.name || '';
+                    const expectedLevel = this.calculateTargetLevel(categoryName);
 
-                // Try to find exact match or partial match
-                const match = this.templates.find(i => i.name === categoryName)
-                    || this.templates.find(i => i.level === expectedLevel);
+                    // Try to find exact match or partial match
+                    const match = this.templates.find(i => i.name === categoryName)
+                        || this.templates.find(i => i.level === expectedLevel);
 
-                this.defaultTemplateName = match ? match.name : categoryName;
+                    this.defaultTemplateName = match ? match.name : categoryName;
 
-                // Only set selectedTemplateId if not already set (to preserve user selection or edit mode)
-                if (!this.selectedTemplateId && match) {
-                    this.selectedTemplateId = match.id;
+                    // Only set selectedTemplateId if not already set (to preserve user selection or edit mode)
+                    if (!this.selectedTemplateId && match) {
+                        this.selectedTemplateId = match.id;
+                    }
                 }
 
                 this.generateProposals();
