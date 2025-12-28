@@ -158,6 +158,8 @@ public class PlanningTemplateService : IPlanningTemplateService
         {
             concept.PlanningTemplateId = templateId; // Ensure ID is linked
             concept.Id = 0; // Reset ID to ensure insert
+            concept.PlanningTemplate = null;
+            concept.SportConcept = null;
             _db.Set<PlanningTemplateConcept>().Add(concept);
         }
 

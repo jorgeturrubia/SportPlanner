@@ -11,12 +11,12 @@ public class PlanningTemplateConcept
     [Required]
     public int PlanningTemplateId { get; set; }
     [ForeignKey(nameof(PlanningTemplateId))]
-    public PlanningTemplate PlanningTemplate { get; set; } = null!;
+    public PlanningTemplate? PlanningTemplate { get; set; }
 
     [Required]
     public int SportConceptId { get; set; }
     [ForeignKey(nameof(SportConceptId))]
-    public SportConcept SportConcept { get; set; } = null!;
+    public SportConcept? SportConcept { get; set; }
 
     public string? CustomDescription { get; set; }
     
