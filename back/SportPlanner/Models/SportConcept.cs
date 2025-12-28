@@ -29,7 +29,8 @@ public class SportConcept
     public int? PlanningTemplateId { get; set; }
     public PlanningTemplate? PlanningTemplate { get; set; }
 
-    public int? SportId { get; set; }
+    [Required] // Enforced by DB and Model validation
+    public int SportId { get; set; }
     public Sport? Sport { get; set; }
     public bool IsSystem { get; set; } = true;
     public bool IsActive { get; set; } = true;

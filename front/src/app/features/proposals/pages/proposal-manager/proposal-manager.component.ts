@@ -279,9 +279,9 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             this.processResponseIntoHierarchy();
         }
 
-        // If initialSelectedConceptIds changes and we already have a response, re-process to update "Own" tags
-        if (changes['initialSelectedConceptIds'] && !changes['initialSelectedConceptIds'].firstChange && this.response) {
-            this.processResponseIntoHierarchy();
+        // If initialSelectedConceptIds changes, we need to regenerate to ensure we fetch forced concepts that might have been filtered out
+        if (changes['initialSelectedConceptIds'] && !changes['initialSelectedConceptIds'].firstChange) {
+            this.generateProposals();
         }
 
         if (changes['selectedTeamId'] && this.selectedTeamId) {
@@ -312,7 +312,13 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     }
 
     generateProposals(forceIncludeConcept?: any) {
+        console.log('--- GENERATE PROPOSALS START ---');
+        console.log('Selected Team ID:', this.selectedTeamId);
+        console.log('Selected Template ID:', this.selectedTemplateId);
+        console.log('Initial Selected Concept IDs:', this.initialSelectedConceptIds);
+
         if (!this.selectedTeamId) {
+            console.warn('No team selected, aborting.');
             return;
         }
 
@@ -325,16 +331,23 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         // Or send active template ID if standard
         const templateIdToSend = (this.selectedTemplateId === -1) ? undefined : (this.selectedTemplateId ?? undefined);
 
-        this.proposalsService.generateProposals({
+        const payload = {
             teamId: this.selectedTeamId,
             levelOffset: this.currentLevelOffset,
-            planningTemplateId: templateIdToSend
-        }).subscribe({
+            planningTemplateId: templateIdToSend,
+            includeConceptIds: this.initialSelectedConceptIds,
+            skipLevelFilter: this.selectedTemplateId === -1
+        };
+        console.log('Sending payload to service:', payload);
+
+        this.proposalsService.generateProposals(payload).subscribe({
             next: (res) => {
+                console.log('Response received from service:', res);
                 this.response = res;
 
                 // Handle "Sin plantilla" (Manual Mode)
                 if (this.selectedTemplateId === -1 && this.response) {
+                    console.log('Manual Mode detected (-1). Moving suggested groups to optional.');
                     // Move all suggested groups to optional groups to make them available but not "suggested"
                     this.response.optionalGroups = [
                         ...this.response.optionalGroups,
@@ -342,6 +355,11 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                     ];
                     this.response.suggestedGroups = [];
                 }
+
+                console.log('Final Response Structure (before hierarchy):', {
+                   suggested: this.response?.suggestedGroups?.length,
+                   optional: this.response?.optionalGroups?.length
+                });
 
                 // INJECTION LOGIC: If we just created a concept, ensure it exists in the response
                 if (forceIncludeConcept && this.response) {
@@ -691,6 +709,13 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                     categoriesMap.get(catName)!.push(row);
                     // Collect IDs for drag & drop connections
                     this.allListIds.push(row.activeListId, row.prevListId, row.nextListId, row.distantListId);
+
+                    // --- Manual Mode UI Polish ---
+                    if (this.selectedTemplateId === -1) {
+                        row.isPrevExpanded = row.immediatePrevConcepts.length > 0;
+                        row.isNextExpanded = row.immediateNextConcepts.length > 0;
+                        row.showAllLevels = row.distantFutureConcepts.length > 0 || row.distantPastConcepts.length > 0;
+                    }
                 }
             });
 
@@ -698,9 +723,11 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             categoriesMap.forEach((rows, catName) => {
                 if (rows.length > 0) {
                     const activeContent = rows.some(r => r.activeConcepts.length > 0);
+                    const isManual = this.selectedTemplateId === -1;
+                    
                     categories.push({
                         name: catName,
-                        isCollapsed: !activeContent, // Auto-expand if has active content
+                        isCollapsed: isManual ? false : !activeContent, // Auto-expand if has active content OR Manual Mode
                         hasActiveContent: activeContent,
                         subCategories: rows.sort((a, b) => a.name.localeCompare(b.name))
                     });
@@ -708,9 +735,10 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             });
 
             if (categories.length > 0) {
+                const isManual = this.selectedTemplateId === -1;
                 this.methodologicalSections.push({
                     name: sectName,
-                    isCollapsed: true,
+                    isCollapsed: isManual ? false : true, // Auto-expand sections in Manual Mode
                     categories: categories.sort((a, b) => a.name.localeCompare(b.name)) // Simple sort for now
                 });
             }

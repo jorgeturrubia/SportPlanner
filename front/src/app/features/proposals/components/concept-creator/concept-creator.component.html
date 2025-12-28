@@ -56,10 +56,15 @@
                                 </span>
                             </div>
 
-                            <!-- Count Badge (optional) -->
-                            <span *ngIf="node.subCategories.length > 0" class="text-[9px] bg-neutral-900 text-neutral-500 px-1.5 rounded">
-                                {{ node.subCategories.length }}
-                            </span>
+                            <!-- Count Badge -->
+                            <div class="flex gap-1">
+                                <span class="text-[9px] bg-neutral-900 text-neutral-500 px-1.5 rounded" title="Subcategorías">
+                                    {{ node.subCategories?.length || 0 }}
+                                </span>
+                                <span class="text-[9px] bg-[#CCFF00]/10 text-[#CCFF00] px-1.5 rounded font-bold" title="Conceptos">
+                                    {{ node.concepts?.length || 0 }}
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Subcategories (Recursive) -->

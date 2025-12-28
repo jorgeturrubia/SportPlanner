@@ -28,7 +28,7 @@ public class SportConceptService : ISportConceptService
             TacticalComplexity = dto.TacticalComplexity,
             TechnicalTacticalFocus = dto.TechnicalTacticalFocus,
             DevelopmentLevel = dto.DevelopmentLevel,
-            SportId = dto.SportId
+            SportId = dto.SportId ?? throw new ArgumentException("SportId is required for creation")
         };
         _db.SportConcepts.Add(concept);
         await _db.SaveChangesAsync();
@@ -169,7 +169,12 @@ public class SportConceptService : ISportConceptService
         concept.TacticalComplexity = dto.TacticalComplexity;
         concept.TechnicalTacticalFocus = dto.TechnicalTacticalFocus;
         concept.DevelopmentLevel = dto.DevelopmentLevel;
-        concept.SportId = dto.SportId;
+        
+        // Do not update SportId on edit usually, but if needed:
+        if (dto.SportId.HasValue) 
+        {
+            concept.SportId = dto.SportId.Value;
+        }
 
         await _db.SaveChangesAsync();
         return concept;

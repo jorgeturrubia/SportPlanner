@@ -44,7 +44,7 @@ public class ConceptCategoryService : IConceptCategoryService
     }
 
     public async Task<ConceptCategory?> GetByIdAsync(int id)
-    {
+    { 
         return await _db.ConceptCategories
             .FirstOrDefaultAsync(c => c.Id == id);
     }

@@ -14,7 +14,7 @@ public class SportConceptDto
     public int? DevelopmentLevel { get; set; }
     public int ProgressWeight { get; set; }
     public bool IsProgressive { get; set; }
-    public int? SportId { get; set; }
+    public int SportId { get; set; }
     public bool IsActive { get; set; }
 }
 

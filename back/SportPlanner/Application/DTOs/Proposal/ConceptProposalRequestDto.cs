@@ -20,6 +20,9 @@ public class ConceptProposalRequestDto
     /// <summary>Category IDs to exclude from proposals (optional)</summary>
     public List<int>? ExcludeCategoryIds { get; set; }
 
+    /// <summary>Concept IDs to explicitly include regardless of filters</summary>
+    public List<int>? IncludeConceptIds { get; set; }
+
     /// <summary>Focus on specific sections: "Ataque", "Defensa", or null for both</summary>
     public string? SectionFocus { get; set; }
 
@@ -28,4 +31,7 @@ public class ConceptProposalRequestDto
 
     /// <summary>Specific Template ID to use (overrides Team's default)</summary>
     public int? PlanningTemplateId { get; set; }
+
+    /// <summary>If true, disables the development level filtering</summary>
+    public bool SkipLevelFilter { get; set; }
 }

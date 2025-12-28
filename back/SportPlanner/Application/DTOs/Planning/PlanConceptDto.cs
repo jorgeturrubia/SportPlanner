@@ -1,4 +1,4 @@
-using SportPlanner.Application.DTOs.SportConcept;
+using SportPlanner.Application.DTOs;
 
 namespace SportPlanner.Application.DTOs.Planning
 {

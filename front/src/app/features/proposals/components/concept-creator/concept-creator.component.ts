@@ -201,6 +201,10 @@ export class ConceptCreatorComponent implements OnInit {
 
     this.conceptService.create(payload).subscribe({
         next: (res) => {
+            // Update local state so the badge and list update immediately
+            if (this.selectedCategory) {
+                this.selectedCategory.concepts.push(res);
+            }
             this.conceptCreated.emit(res);
             // Rapid Fire: Reset fields but keep creating
             this.newConceptName = '';

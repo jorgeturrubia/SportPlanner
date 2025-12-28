@@ -1,0 +1,19 @@
+  Determinando los proyectos que se van a restaurar...
+  Todos los proyectos están actualizados para la restauración.
+C:\Proyectos\SportPlanner\back\SportPlanner\Controllers\SportsController.cs(63,24): warning CS8601: Posible asignación de referencia nula. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(31,23): error CS0266: No se puede convertir implícitamente el tipo 'int?' en 'int'. Ya existe una conversión explícita (compruebe si le falta una conversión) [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(31,23): warning CS8629: Un tipo que acepta valores NULL puede ser nulo. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(172,27): error CS0266: No se puede convertir implícitamente el tipo 'int?' en 'int'. Ya existe una conversión explícita (compruebe si le falta una conversión) [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(172,27): warning CS8629: Un tipo que acepta valores NULL puede ser nulo. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+
+ERROR al compilar.
+
+C:\Proyectos\SportPlanner\back\SportPlanner\Controllers\SportsController.cs(63,24): warning CS8601: Posible asignación de referencia nula. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(31,23): warning CS8629: Un tipo que acepta valores NULL puede ser nulo. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(172,27): warning CS8629: Un tipo que acepta valores NULL puede ser nulo. [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(31,23): error CS0266: No se puede convertir implícitamente el tipo 'int?' en 'int'. Ya existe una conversión explícita (compruebe si le falta una conversión) [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+C:\Proyectos\SportPlanner\back\SportPlanner\Services\SportConceptService.cs(172,27): error CS0266: No se puede convertir implícitamente el tipo 'int?' en 'int'. Ya existe una conversión explícita (compruebe si le falta una conversión) [C:\Proyectos\SportPlanner\back\SportPlanner\SportPlanner.csproj]
+    3 Advertencia(s)
+    2 Errores
+
+Tiempo transcurrido 00:00:05.44

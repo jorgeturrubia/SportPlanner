@@ -10,13 +10,11 @@ public class TrainingProfile : Profile
     public TrainingProfile()
     {
         CreateMap<CreateSportConceptDto, SportConcept>();
-        CreateMap<SportConcept, SportConceptDto>();
-
+        
         CreateMap<Team, TeamDto>();
         CreateMap<TeamCategory, TeamCategoryDto>();
         CreateMap<TeamLevel, TeamLevelDto>();
         CreateMap<DifficultyLevel, DifficultyLevelDto>();
-        CreateMap<ConceptCategory, ConceptCategoryDto>();
 
         CreateMap<TrainingScheduleCreateDto, Planning>()
             .ForMember(dest => dest.PlanConcepts, opt => opt.Ignore())

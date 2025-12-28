@@ -2,10 +2,12 @@ export interface ConceptProposalRequestDto {
     teamId: number;
     durationDays?: number;
     maxConcepts?: number;
+    includeConceptIds?: number[];
     excludeCategoryIds?: number[];
     sectionFocus?: 'Ataque' | 'Defensa';
     levelOffset?: number;
     planningTemplateId?: number;
+    skipLevelFilter?: boolean;
 }
 
 export interface PlanningTemplateDto {

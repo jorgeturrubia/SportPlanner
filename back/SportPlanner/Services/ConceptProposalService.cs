@@ -95,6 +95,14 @@ public class ConceptProposalService : IConceptProposalService
         // 4. Filter concepts by development level window
         var filteredConcepts = concepts.Where(c =>
         {
+            // Always include if specifically requested
+            if (request.IncludeConceptIds != null && request.IncludeConceptIds.Contains(c.Id))
+                return true;
+
+            // Skip level filter if requested (Manual Mode)
+            if (request.SkipLevelFilter)
+                return true;
+
             if (!c.DevelopmentLevel.HasValue)
                 return true; // Include concepts without level
             return c.DevelopmentLevel.Value >= minLevel && c.DevelopmentLevel.Value <= maxLevel;
