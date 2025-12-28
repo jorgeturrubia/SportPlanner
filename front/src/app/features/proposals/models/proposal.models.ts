@@ -31,8 +31,25 @@ export interface ConceptProposalGroupDto {
     concepts: ScoredConceptDto[];
 }
 
+export interface ConceptItineraryContextDto {
+    itineraryName: string;
+    templateName: string;
+    level: number;
+    totalLevels: number;
+}
+
+export interface SportConceptDto {
+    id: number;
+    name: string;
+    description: string;
+    developmentLevel: number;
+    itineraryContexts: ConceptItineraryContextDto[];
+    // ... add other fields if needed or allow loose typing
+    [key: string]: any; 
+}
+
 export interface ScoredConceptDto {
-    concept: any; // Using any for now, ideally SportConceptDto
+    concept: SportConceptDto;
     score: number;
     scoreReason: string;
     priority: ProposalPriority;

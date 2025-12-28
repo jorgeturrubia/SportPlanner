@@ -1,3 +1,4 @@
+
 namespace SportPlanner.Application.DTOs;
 
 public class SportConceptDto
@@ -16,6 +17,17 @@ public class SportConceptDto
     public bool IsProgressive { get; set; }
     public int SportId { get; set; }
     public bool IsActive { get; set; }
+    
+    // New property for Itinerary Context
+    public List<ConceptItineraryContextDto> ItineraryContexts { get; set; } = new();
+}
+
+public class ConceptItineraryContextDto
+{
+    public string ItineraryName { get; set; } = null!;
+    public string TemplateName { get; set; } = null!;
+    public int Level { get; set; }
+    public int TotalLevels { get; set; }
 }
 
 public class SportConceptWithSuggestionDto : SportConceptDto

@@ -14,9 +14,7 @@ public class LookupProfile : Profile
         CreateMap<Sport, SportDto>();
         CreateMap<CreateSportDto, Sport>();
         CreateMap<UpdateSportDto, Sport>();
-        // Explicitly map nested concept here to ensure it's available
-        CreateMap<SportConcept, SportConceptDto>()
-            .ForMember(d => d.ConceptCategory, opt => opt.Ignore());
+
 
         CreateMap<ConceptCategory, ConceptCategoryDto>()
              .ForMember(dest => dest.Concepts, opt => opt.MapFrom(src => src.SportConcepts));

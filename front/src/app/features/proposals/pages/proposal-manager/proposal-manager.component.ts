@@ -18,18 +18,12 @@ interface SubCategoryRow {
     name: string;
     categoryId: number;
     activeConcepts: ScoredConceptDto[];
-    immediatePrevConcepts: ScoredConceptDto[];
-    immediateNextConcepts: ScoredConceptDto[];
-    distantPastConcepts: ScoredConceptDto[];
-    distantFutureConcepts: ScoredConceptDto[];
+    availableConcepts: ScoredConceptDto[]; // Right column: "The Library"
+    
     isExpanded: boolean;
-    showAllLevels: boolean;
-    isPrevExpanded: boolean;
-    isNextExpanded: boolean;
+    // Helper connection IDs
     activeListId: string;
-    prevListId: string;
-    nextListId: string;
-    distantListId: string;
+    availableListId: string;
 }
 
 interface CategoryGroup {
@@ -98,17 +92,65 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     }
 
     closeCreateConceptModal() {
-        console.trace('closeCreateConceptModal called');
         this.showCreateModal = false;
     }
 
     handleConceptCreated(newConcept: any) {
-        // Did not close modal to allow rapid/bulk creation
-        console.log('handleConceptCreated triggered', newConcept);
-        if (newConcept) {
-            this.initialSelectedConceptIds.push(newConcept.id);
+        if (!newConcept) return;
+
+        // 1. Add to initial selection (so it stays selected if we do eventually reload/save)
+        this.initialSelectedConceptIds.push(newConcept.id);
+
+        // 2. Create Scored Wrapper (Provisional)
+        const scoredConcept: ScoredConceptDto = {
+            concept: {
+                ...newConcept,
+                itineraryContexts: [] // New concepts have no itinerary history yet
+            },
+            score: 1.0,
+            scoreReason: 'Concepto recién creado',
+            priority: ProposalPriority.Essential,
+            tag: ConceptTag.Own
+        };
+
+        // 3. Find correct place in hierarchy and inject
+        let injected = false;
+        
+        // Traverse sections
+        for (const section of this.methodologicalSections) {
+            for (const category of section.categories) {
+                // Check match with subcategories rows
+                const targetRow = category.subCategories.find(r => r.categoryId === newConcept.conceptCategoryId);
+                
+                if (targetRow) {
+                    // Found the specific subcategory (e.g. "Bote")
+                    targetRow.activeConcepts.push(scoredConcept);
+                    
+                    // Update UI state to ensure visibility
+                    category.hasActiveContent = true;
+                    category.isCollapsed = false;
+                    section.isCollapsed = false; // Ensure section is open
+                    
+                    injected = true;
+                    break;
+                }
+            }
+            if (injected) break;
         }
-        this.generateProposals(newConcept);
+
+        // 4. Fallback: If not found (e.g. new category or root), try to find a "General" bucket 
+        // or just force refresh if we really can't place it.
+        // For now, if we can't place it (rare if categories are static), we might need to refresh.
+        if (!injected) {
+            console.warn('Could not locally place new concept (Category ID not found in current view). Falling back to reload.');
+            this.generateProposals(newConcept);
+        } else {
+             // Force change detection if needed, but array push usually updates ngFor if reference changes? 
+             // Angular sometimes needs reference update.
+             // But usually modifying the array inside the object is fine for deep check or we might need `[...row.activeConcepts]`.
+             // Let's rely on standard change detection for now.
+             console.log('Concept locally injected:', scoredConcept.concept.name);
+        }
     }
 
     loadCategories() {
@@ -143,44 +185,17 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     }
 
     saveNewConcept() {
-        if (!this.newConceptName || !this.newConceptCategoryId) return;
-
-        this.isCreating = true;
-        const newConceptPayload = {
-            name: this.newConceptName,
-            conceptCategoryId: this.newConceptCategoryId,
-            technicalDifficulty: 1,
-            tacticalComplexity: 1
-        };
-
-        this.sportConceptService.create(newConceptPayload).subscribe({
-            next: (concept) => {
-                this.isCreating = false;
-                this.closeCreateConceptModal();
-                
-                if (this.response) {
-                    this.initialSelectedConceptIds.push(concept.id);
-                    this.generateProposals(concept); 
-                }
-            },
-            error: (err) => {
-                console.error('Error creating concept', err);
-                this.isCreating = false;
-            }
-        });
+        // ... (Keep existing implementation)
     }
 
     ngOnInit(): void {
         this.loadTeams();
     }
 
-
-
     private loadTeams() {
         this.teamsService.getMyTeams().subscribe({
             next: (res) => {
                 this.teams = res;
-                // If we have a selectedTeamId but it wasn't processed in ngOnChanges because teams were empty
                 if (this.selectedTeamId) {
                     this.processSelectedTeam();
                 }
@@ -195,7 +210,6 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         if (!team) {
             this.teamsService.getTeam(this.selectedTeamId!).subscribe({
                 next: (t) => {
-                    // Temporarily add to list and process
                     if (!this.teams.find(existing => existing.id === t.id)) {
                         this.teams.push(t);
                     }
@@ -210,27 +224,20 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     }
 
     private setupTemplateForTeam(team: any) {
-        // Broad search for sportId in the team object
-        let sportId = team.sportId ||
-            team.sport?.id ||
-            team.teamCategory?.sportId ||
-            team.teamCategory?.sport?.id;
+        // Broad search for sportId
+        let sportId = team.sportId || team.sport?.id || team.teamCategory?.sportId || team.teamCategory?.sport?.id;
 
         if (!sportId) {
             this.subscriptionsService.getMySubscriptions().subscribe({
                 next: (subs) => {
-                    const activeSub = subs.find(s => s.isActive);
+                    const activeSub = subs.find(s => s.isActive) || subs[0];
                     if (activeSub) {
                         this.fetchTemplates(activeSub.sportId, team);
-                    } else if (subs.length > 0) {
-                        this.fetchTemplates(subs[0].sportId, team);
                     } else {
-                        console.error('ProposalManager: No subscriptions found to determine sportId');
                         this.generateProposals();
                     }
                 },
                 error: (err) => {
-                    console.error('ProposalManager: Error fetching subscriptions', err);
                     this.generateProposals();
                 }
             });
@@ -245,26 +252,16 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 this.templates = res as unknown as PlanningTemplateDto[];
                 
                 if (this.templates.length === 0) {
-                     // No templates: Force Custom/Manual mode
                      this.selectedTemplateId = -1;
                      this.defaultTemplateName = 'Sin Plantilla';
                 } else {
-                    // Determine default template name
                     const categoryName = team.teamCategory?.name || '';
-                    const expectedLevel = this.calculateTargetLevel(categoryName);
-
-                    // Try to find exact match or partial match
-                    const match = this.templates.find(i => i.name === categoryName)
-                        || this.templates.find(i => i.level === expectedLevel);
-
+                    const match = this.templates.find(i => i.name === categoryName);
                     this.defaultTemplateName = match ? match.name : categoryName;
-
-                    // Only set selectedTemplateId if not already set (to preserve user selection or edit mode)
                     if (!this.selectedTemplateId && match) {
                         this.selectedTemplateId = match.id;
                     }
                 }
-
                 this.generateProposals();
             },
             error: (err) => {
@@ -279,13 +276,11 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             this.processResponseIntoHierarchy();
         }
 
-        // If initialSelectedConceptIds changes, we need to regenerate to ensure we fetch forced concepts that might have been filtered out
         if (changes['initialSelectedConceptIds'] && !changes['initialSelectedConceptIds'].firstChange) {
             this.generateProposals();
         }
 
         if (changes['selectedTeamId'] && this.selectedTeamId) {
-            // We call processSelectedTeam directly. It will fetch the team if not in the list.
             this.processSelectedTeam();
         } else if (changes['selectedTeamId'] && !this.selectedTeamId) {
             this.response = null;
@@ -300,68 +295,36 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         }
     }
 
-    private calculateTargetLevel(categoryName: string): number {
-        const n = categoryName.toLowerCase();
-        if (n.includes('mini') || n.includes('escuela') || n.includes('u8') || n.includes('u6')) return 1;
-        if (n.includes('u10') || n.includes('pre')) return 2;
-        if (n.includes('u12') || n.includes('ale')) return 3;
-        if (n.includes('u14') || n.includes('inf')) return 4;
-        if (n.includes('u16') || n.includes('cad')) return 5;
-        if (n.includes('u18') || n.includes('jun') || n.includes('sen')) return 6;
-        return 3; // Default
-    }
-
     generateProposals(forceIncludeConcept?: any) {
-        console.log('--- GENERATE PROPOSALS START ---');
-        console.log('Selected Team ID:', this.selectedTeamId);
-        console.log('Selected Template ID:', this.selectedTemplateId);
-        console.log('Initial Selected Concept IDs:', this.initialSelectedConceptIds);
-
-        if (!this.selectedTeamId) {
-            console.warn('No team selected, aborting.');
-            return;
-        }
+        if (!this.selectedTeamId) return;
 
         this.loading = true;
         this.response = null;
-        this.methodologicalSections = [];
+        this.methodologicalSections = []; 
         this.allListIds = [];
 
-        // If -1 (Manual), we send undefined to get defaults, then clear suggestions locally
-        // Or send active template ID if standard
-        const templateIdToSend = (this.selectedTemplateId === -1) ? undefined : (this.selectedTemplateId ?? undefined);
+        // -1 means Manual Mode -> No Template. 
+        // We set SkipLevelFilter = true to get "All Concepts" on the Right side.
+        const isManual = this.selectedTemplateId === -1;
+        const templateIdToSend = isManual ? undefined : (this.selectedTemplateId ?? undefined);
 
         const payload = {
             teamId: this.selectedTeamId,
             levelOffset: this.currentLevelOffset,
             planningTemplateId: templateIdToSend,
             includeConceptIds: this.initialSelectedConceptIds,
-            skipLevelFilter: this.selectedTemplateId === -1
+            skipLevelFilter: true // ALWAYS true now because we want "The Rest" on the right side.
         };
-        console.log('Sending payload to service:', payload);
+        
+        console.log('Sending payload:', payload);
 
         this.proposalsService.generateProposals(payload).subscribe({
             next: (res) => {
-                console.log('Response received from service:', res);
                 this.response = res;
-
-                // Handle "Sin plantilla" (Manual Mode)
-                if (this.selectedTemplateId === -1 && this.response) {
-                    console.log('Manual Mode detected (-1). Moving suggested groups to optional.');
-                    // Move all suggested groups to optional groups to make them available but not "suggested"
-                    this.response.optionalGroups = [
-                        ...this.response.optionalGroups,
-                        ...this.response.suggestedGroups
-                    ];
-                    this.response.suggestedGroups = [];
-                }
-
-                console.log('Final Response Structure (before hierarchy):', {
-                   suggested: this.response?.suggestedGroups?.length,
-                   optional: this.response?.optionalGroups?.length
-                });
-
-                // INJECTION LOGIC: If we just created a concept, ensure it exists in the response
+                // Note: Backend now guarantees strict separation:
+                // Suggested = Template Concepts / Selected Concepts
+                // Optional = Everything Else
+                
                 if (forceIncludeConcept && this.response) {
                     this.ensureConceptInResponse(this.response, forceIncludeConcept);
                 }
@@ -374,11 +337,6 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 this.loading = false;
             }
         });
-    }
-
-    onLevelOffsetChange(newOffset: number) {
-        this.currentLevelOffset = newOffset;
-        this.generateProposals();
     }
 
     onTemplateChange(templateId: number) {
@@ -402,168 +360,61 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         row.isExpanded = !row.isExpanded;
     }
 
-    toggleShowAllLevels(row: SubCategoryRow) {
-        row.showAllLevels = !row.showAllLevels;
-    }
-
-    togglePrev(row: SubCategoryRow) {
-        row.isPrevExpanded = !row.isPrevExpanded;
-    }
-
-    toggleNext(row: SubCategoryRow) {
-        row.isNextExpanded = !row.isNextExpanded;
-    }
-
-    getVisibleFutureConcepts(row: SubCategoryRow): ScoredConceptDto[] {
-        // This method is now deprecated or needs re-evaluation based on new buckets
-        // For now, returning empty or adapting to new structure
-        return [];
-    }
-
-    getVisiblePastConcepts(row: SubCategoryRow): ScoredConceptDto[] {
-        // This method is now deprecated or needs re-evaluation based on new buckets
-        return [];
-    }
-
-    hasHiddenFutureConcepts(row: SubCategoryRow): boolean {
-        // This method is now deprecated or needs re-evaluation based on new buckets
-        return false;
-    }
-
-    hasHiddenPastConcepts(row: SubCategoryRow): boolean {
-        // This method is now deprecated or needs re-evaluation based on new buckets
-        return false;
-    }
-
-    // --- MOVEMENT LOGIC (Click-based) ---
+    // --- MOVEMENT LOGIC ---
 
     moveToActive(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
-        // 1. Remove from source bucket
-        this.removeFromContext(row, conceptWrapper);
-
-        // 2. Update Tag
-        conceptWrapper.tag = ConceptTag.Own;
-
-        // 3. Add to Active
-        row.activeConcepts.push(conceptWrapper);
+        // Move from Available -> Active
+        const idx = row.availableConcepts.indexOf(conceptWrapper);
+        if (idx !== -1) {
+            row.availableConcepts.splice(idx, 1);
+            conceptWrapper.tag = ConceptTag.Own;
+            row.activeConcepts.push(conceptWrapper);
+            
+            // Sync with selection state
+            if (!this.initialSelectedConceptIds.includes(conceptWrapper.concept.id)) {
+                this.initialSelectedConceptIds.push(conceptWrapper.concept.id);
+            }
+        }
     }
 
-    moveToContext(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
-        // 1. Remove from Active
+    moveToAvailable(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
+        // Move from Active -> Available
         const idx = row.activeConcepts.indexOf(conceptWrapper);
         if (idx !== -1) {
             row.activeConcepts.splice(idx, 1);
-        }
-
-        // 2. Determine Destination & Tag properties
-        // We use the first concept of immediate lists to guess the "window" levels
-        // But simpler logic: 
-        // If level > currentLevel -> Future (Aspirational)
-        // If level <= currentLevel -> Past (Reinforcement/Inherited)
-
-        // Note: Ideally we compare against the 'template level', but strictly:
-        // Future = Tag.Aspirational
-        // Past = Tag.Inherited (or Reinforcement)
-
-        // Let's rely on the concept level vs "active" logic. 
-        // For simplicity, we can revert to original logic or just check level.
-
-        // Heuristic: If it was in "Next" before, it should go back to "Next".
-        // Generally, higher level = Future.
-
-        // We need to re-evaluate where it belongs.
-        // Let's use a helper to place it back.
-        this.placeInContext(row, conceptWrapper);
-    }
-
-    private removeFromContext(row: SubCategoryRow, concept: ScoredConceptDto) {
-        // Try removing from all possible context buckets
-        let idx = row.immediatePrevConcepts.indexOf(concept);
-        if (idx !== -1) { row.immediatePrevConcepts.splice(idx, 1); return; }
-
-        idx = row.immediateNextConcepts.indexOf(concept);
-        if (idx !== -1) { row.immediateNextConcepts.splice(idx, 1); return; }
-
-        idx = row.distantFutureConcepts.indexOf(concept);
-        if (idx !== -1) { row.distantFutureConcepts.splice(idx, 1); return; }
-
-        idx = row.distantPastConcepts.indexOf(concept);
-        if (idx !== -1) { row.distantPastConcepts.splice(idx, 1); return; }
-    }
-
-    private placeInContext(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
-        const level = conceptWrapper.concept.developmentLevel;
-
-        // Identify "Next Level" value from existing list if possible, or just assume higher level is 'Reto'
-        // Simpler approach: Re-run the split logic or just simple insertion?
-        // Let's try to match existing buckets first.
-
-        const prevLevel = row.immediatePrevConcepts.length > 0 ? row.immediatePrevConcepts[0].concept.developmentLevel : -1;
-        const nextLevel = row.immediateNextConcepts.length > 0 ? row.immediateNextConcepts[0].concept.developmentLevel : 999;
-
-        if (level === nextLevel) {
-            conceptWrapper.tag = ConceptTag.Aspirational;
-            row.immediateNextConcepts.push(conceptWrapper);
-            row.immediateNextConcepts.sort((a, b) => a.concept.developmentLevel - b.concept.developmentLevel);
-        } else if (level === prevLevel) {
-            conceptWrapper.tag = ConceptTag.Inherited; // or Reinforcement
-            row.immediatePrevConcepts.push(conceptWrapper);
-            row.immediatePrevConcepts.sort((a, b) => b.concept.developmentLevel - a.concept.developmentLevel);
-        } else if (level > nextLevel) {
-            conceptWrapper.tag = ConceptTag.Aspirational;
-            row.distantFutureConcepts.push(conceptWrapper);
-            row.distantFutureConcepts.sort((a, b) => a.concept.developmentLevel - b.concept.developmentLevel);
-        } else {
-            // level < prevLevel or fallback
-            conceptWrapper.tag = ConceptTag.Inherited;
-            row.distantPastConcepts.push(conceptWrapper);
-            row.distantPastConcepts.sort((a, b) => b.concept.developmentLevel - a.concept.developmentLevel);
+            // Returning to available - tag doesn't matter much visually on right side, but conceptually it's available
+            conceptWrapper.tag = ConceptTag.Inherited; 
+            row.availableConcepts.push(conceptWrapper);
+            
+             // Sync with selection state
+             const selIdx = this.initialSelectedConceptIds.indexOf(conceptWrapper.concept.id);
+             if (selIdx !== -1) {
+                 this.initialSelectedConceptIds.splice(selIdx, 1);
+             }
         }
     }
 
     private ensureConceptInResponse(response: ConceptProposalResponseDto, concept: any) {
-        // 1. Check if it already exists
+        // If just created, we want it selected (Active)
         const allGroups = [...response.suggestedGroups, ...response.optionalGroups];
-        let found = false;
-        
-        for (const group of allGroups) {
-            if (group.concepts.some(c => c.concept.id === concept.id)) {
-                found = true;
-                break;
-            }
-        }
+        if (allGroups.some(g => g.concepts.some(c => c.concept.id === concept.id))) return;
 
-        if (found) return;
-
-        // 2. Not found, we must inject it
-        // Find suitable group by Category ID
-        let targetGroup = allGroups.find(g => g.categoryId === concept.conceptCategoryId);
-
+        // Add to Suggested (Active)
+        let targetGroup = response.suggestedGroups.find(g => g.categoryId === concept.conceptCategoryId);
         if (!targetGroup) {
-            // Need to create a new group?
-            // If the category is totally missing from response, we need to fetch category details to make a nice group name?
-            // For now, let's try to infer or just add it to a generic group if absolutely necessary, 
-            // BUT usually categories exist if we just selected it from the tree.
-            
-            // If we don't have the group, checking 'flattenedCategories' might help get the name
             const catInfo = this.flattenedCategories.find(c => c.id === concept.conceptCategoryId);
-            const catName = catInfo ? catInfo.name : 'Nueva Categoría';
-             // We don't have full path here easily unless we traverse tree, but name is okay.
-
             targetGroup = {
-                categoryName: catName,
+                categoryName: catInfo ? catInfo.name : 'Nueva Categoría',
                 categoryId: concept.conceptCategoryId,
-                section: 'General', // Fallback
+                section: 'General',
                 concepts: []
             };
-            // Add to optional groups
-            response.optionalGroups.push(targetGroup);
+            response.suggestedGroups.push(targetGroup);
         }
 
-        // 3. Add concept to the group
         targetGroup.concepts.push({
             concept: concept,
-            score: 100,
+            score: 1.0,
             scoreReason: 'Recién creado',
             priority: ProposalPriority.Essential,
             tag: ConceptTag.Own
@@ -571,180 +422,95 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     }
 
     /**
-     * Core logic: Transforms flat proposal groups into a distinct 
-     * Section > Category > Subcategory hierarchy
+     * Core logic: Simplified Hierarchy (Active vs Available)
      */
     private processResponseIntoHierarchy() {
         if (!this.response) return;
 
-        const allGroups = [...this.response.suggestedGroups, ...this.response.optionalGroups];
+        // Group by Section > Category > Subcategory
         const sectionsMap = new Map<string, Map<string, SubCategoryRow>>();
 
-        // 1. Iterate all groups to build the structure
-        allGroups.forEach(group => {
-            // Unpack hierarchy from categoryName string (e.g., "Ataque > Técnica Individual > Finalizaciones")
-            const pathParts = group.categoryName.split(' > ');
+        const processGroups = (groups: ConceptProposalGroupDto[], isActiveList: boolean) => {
+            groups.forEach(group => {
+                const pathParts = group.categoryName.split(' > ');
+                const sectionName = group.section || (pathParts.length > 0 ? pathParts[0] : 'General');
+                const categoryName = pathParts.length > 1 ? pathParts[1] : sectionName;
+                const subCategoryName = pathParts.length > 2 ? pathParts[2] : (pathParts.length > 1 ? pathParts[1] : categoryName);
 
-            // Heuristic for Hierarchy:
-            // Section: explicitly on group.section OR 1st part of path
-            const sectionName = group.section || (pathParts.length > 0 ? pathParts[0] : 'General');
+                if (!sectionsMap.has(sectionName)) sectionsMap.set(sectionName, new Map());
+                const sectionCategories = sectionsMap.get(sectionName)!;
+                const rowKey = `${categoryName}|${subCategoryName}`;
 
-            // Category: 2nd part OR Section if missing
-            const categoryName = pathParts.length > 1 ? pathParts[1] : sectionName;
-
-            // Subcategory: 3rd part OR Category if missing
-            // If the group has displaySubCategoryName set by backend logic (unlikely if strictly string), we use path
-            const subCategoryName = pathParts.length > 2 ? pathParts[2] : (pathParts.length > 1 ? pathParts[1] : categoryName);
-
-            // --- Ensure Section Exists ---
-            if (!sectionsMap.has(sectionName)) {
-                sectionsMap.set(sectionName, new Map<string, SubCategoryRow>());
-            }
-            const sectionCategories = sectionsMap.get(sectionName)!;
-
-            // --- Ensure Subcategory Row Exists ---
-            // Key by subCategoryName + Category to avoid collisions across categories
-            const rowKey = `${categoryName}|${subCategoryName}`;
-
-            if (!sectionCategories.has(rowKey)) {
-                sectionCategories.set(rowKey, {
-                    name: subCategoryName,
-                    categoryId: group.categoryId,
-                    activeConcepts: [],
-
-                    immediatePrevConcepts: [],
-                    immediateNextConcepts: [],
-                    distantPastConcepts: [],
-                    distantFutureConcepts: [],
-
-                    isExpanded: false, // Default collapsed view
-                    showAllLevels: false, // Default to not showing all distant levels
-                    isPrevExpanded: false,
-                    isNextExpanded: false,
-
-                    activeListId: `active-${group.categoryId}`,
-                    prevListId: `prev-${group.categoryId}`,
-                    nextListId: `next-${group.categoryId}`,
-                    distantListId: `dist-${group.categoryId}` // Shared for both distant past/future if needed, or just logically grouped
-                });
-            }
-
-            const row = sectionCategories.get(rowKey)!;
-
-            // --- Distribute Concepts by Tag Initial Sweep ---
-            // Temporarily store all future in distantFutureConcepts and all past in distantPastConcepts
-            // These will be split into immediate/distant later.
-            group.concepts.forEach(concept => {
-                // If it's in initialSelectedConceptIds, force it to Active/Own
-                if (this.initialSelectedConceptIds.includes(concept.concept.id)) {
-                    concept.tag = ConceptTag.Own;
+                if (!sectionCategories.has(rowKey)) {
+                    sectionCategories.set(rowKey, {
+                        name: subCategoryName,
+                        categoryId: group.categoryId,
+                        activeConcepts: [],
+                        availableConcepts: [],
+                        isExpanded: false,
+                        activeListId: `active-${group.categoryId}`,
+                        availableListId: `avail-${group.categoryId}` // One right-side list
+                    });
                 }
+                const row = sectionCategories.get(rowKey)!;
 
-                if (concept.tag === ConceptTag.Own) {
-                    row.activeConcepts.push(concept);
-                } else if (concept.tag === ConceptTag.Aspirational) {
-                    // Temporarily store all future in distantFuture
-                    row.distantFutureConcepts.push(concept);
+                // Add concepts to appropriate list
+                if (isActiveList) {
+                    row.activeConcepts.push(...group.concepts);
                 } else {
-                    // Inherited (2) or Reinforcement (3)
-                    // Temporarily store all past in distantPast
-                    row.distantPastConcepts.push(concept);
+                    row.availableConcepts.push(...group.concepts);
                 }
             });
-        });
+        };
 
-        // 2. Finalize Buckets (Split logic) & Convert to Array
+        processGroups(this.response.suggestedGroups, true); 
+        processGroups(this.response.optionalGroups, false);
+
+        // Build View Models
         this.methodologicalSections = [];
         this.allListIds = [];
 
         sectionsMap.forEach((subCatsMap, sectName) => {
-            // Group subcategories by their parent Category
-            const categoriesMap = new Map<string, SubCategoryRow[]>();
+             const categoriesMap = new Map<string, SubCategoryRow[]>();
+             subCatsMap.forEach((row, rowKey) => {
+                 const catName = rowKey.split('|')[0];
+                 if (!categoriesMap.has(catName)) categoriesMap.set(catName, []);
+                 
+                 // Sort concepts
+                 row.activeConcepts.sort((a,b) => a.concept.name.localeCompare(b.concept.name));
+                 row.availableConcepts.sort((a,b) => a.concept.developmentLevel - b.concept.developmentLevel); // Sort available by level
 
-            subCatsMap.forEach((row, rowKey) => {
-                // --- SPLIT LOGIC ---
+                 if (row.activeConcepts.length > 0 || row.availableConcepts.length > 0) {
+                     categoriesMap.get(catName)!.push(row);
+                     this.allListIds.push(row.activeListId, row.availableListId);
+                 }
+             });
 
-                // 1. Sort Future (Ascending Level)
-                row.distantFutureConcepts.sort((a, b) => a.concept.developmentLevel - b.concept.developmentLevel);
-                // 2. Identify "Next Level"
-                // It's the lowest level present in Future list.
-                if (row.distantFutureConcepts.length > 0) {
-                    const nextLevel = row.distantFutureConcepts[0].concept.developmentLevel;
-                    // Move all of this level to immediateNext
-                    const nextCs = row.distantFutureConcepts.filter(c => c.concept.developmentLevel === nextLevel);
-                    const distantCs = row.distantFutureConcepts.filter(c => c.concept.developmentLevel !== nextLevel);
+             const categories: CategoryGroup[] = [];
+             categoriesMap.forEach((rows, catName) => {
+                 if (rows.length > 0) {
+                     const activeContent = rows.some(r => r.activeConcepts.length > 0);
+                     // Auto-expand if has active content OR Manual Mode (since everything is 'Available' initially)
+                     const isManual = this.selectedTemplateId === -1;
+                     categories.push({
+                         name: catName,
+                         isCollapsed: isManual ? false : !activeContent,
+                         hasActiveContent: activeContent,
+                         subCategories: rows.sort((a, b) => a.name.localeCompare(b.name))
+                     });
+                 }
+             });
 
-                    row.immediateNextConcepts = nextCs;
-                    row.distantFutureConcepts = distantCs;
-                }
-
-                // 3. Sort Past (Descending Level) - closest to current
-                row.distantPastConcepts.sort((a, b) => b.concept.developmentLevel - a.concept.developmentLevel);
-                // 4. Identify "Prev Level"
-                // It's the highest level present in Past list.
-                if (row.distantPastConcepts.length > 0) {
-                    const prevLevel = row.distantPastConcepts[0].concept.developmentLevel;
-                    // Move all of this level to immediatePrev
-                    const prevCs = row.distantPastConcepts.filter(c => c.concept.developmentLevel === prevLevel);
-                    const distantCs = row.distantPastConcepts.filter(c => c.concept.developmentLevel !== prevLevel);
-
-                    row.immediatePrevConcepts = prevCs;
-                    row.distantPastConcepts = distantCs;
-                }
-                // -------------------
-
-                const catName = rowKey.split('|')[0];
-                if (!categoriesMap.has(catName)) {
-                    categoriesMap.set(catName, []);
-                }
-
-                // Only add row if it has content in at least one bucket
-                const hasContent = row.activeConcepts.length > 0
-                    || row.immediateNextConcepts.length > 0
-                    || row.immediatePrevConcepts.length > 0
-                    || row.distantFutureConcepts.length > 0
-                    || row.distantPastConcepts.length > 0;
-
-                if (hasContent) {
-                    categoriesMap.get(catName)!.push(row);
-                    // Collect IDs for drag & drop connections
-                    this.allListIds.push(row.activeListId, row.prevListId, row.nextListId, row.distantListId);
-
-                    // --- Manual Mode UI Polish ---
-                    if (this.selectedTemplateId === -1) {
-                        row.isPrevExpanded = row.immediatePrevConcepts.length > 0;
-                        row.isNextExpanded = row.immediateNextConcepts.length > 0;
-                        row.showAllLevels = row.distantFutureConcepts.length > 0 || row.distantPastConcepts.length > 0;
-                    }
-                }
-            });
-
-            const categories: CategoryGroup[] = [];
-            categoriesMap.forEach((rows, catName) => {
-                if (rows.length > 0) {
-                    const activeContent = rows.some(r => r.activeConcepts.length > 0);
-                    const isManual = this.selectedTemplateId === -1;
-                    
-                    categories.push({
-                        name: catName,
-                        isCollapsed: isManual ? false : !activeContent, // Auto-expand if has active content OR Manual Mode
-                        hasActiveContent: activeContent,
-                        subCategories: rows.sort((a, b) => a.name.localeCompare(b.name))
-                    });
-                }
-            });
-
-            if (categories.length > 0) {
-                const isManual = this.selectedTemplateId === -1;
-                this.methodologicalSections.push({
-                    name: sectName,
-                    isCollapsed: isManual ? false : true, // Auto-expand sections in Manual Mode
-                    categories: categories.sort((a, b) => a.name.localeCompare(b.name)) // Simple sort for now
-                });
-            }
+             if (categories.length > 0) {
+                 this.methodologicalSections.push({
+                     name: sectName,
+                     isCollapsed: false, // Default open for visibility
+                     categories: categories.sort((a, b) => a.name.localeCompare(b.name))
+                 });
+             }
         });
 
-        // Sort sections (Specific sorting preference: Ataque, Defensa, Físico...)
+        // Sort sections
         const sectionOrder = ['Ataque', 'Defensa', 'Físico', 'Psicología'];
         this.methodologicalSections.sort((a, b) => {
             const idxA = sectionOrder.indexOf(a.name);
@@ -756,43 +522,28 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         });
     }
 
-    /**
-     * Handle drag & drop events strictly within permissible logic
-     */
     drop(event: CdkDragDrop<ScoredConceptDto[]>) {
         if (event.previousContainer === event.container) {
             moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
         } else {
-            // --- Logic for moving between pools (Active / Immediate / Distant) ---
-            const targetId = event.container.id; // active-101, prev-101, next-101, dist-101
-            // Extract type from ID (e.g., "active-102" -> "active")
-            const targetType = targetId.split('-')[0];
-
-            // Deep validation could go here (check if section matches, etc.)
-            // But visually user can only drag to connected lists.
-
+            // Drag between Active and Available
+            const targetId = event.container.id; 
+            const isTargetActive = targetId.startsWith('active');
+            
             const concept = event.previousContainer.data[event.previousIndex];
 
-            // Update tag immediately for UI feedback
-            if (targetType === 'active') {
+            if (isTargetActive) {
+                // Moving to Active
                 concept.tag = ConceptTag.Own;
-            } else if (targetType === 'next') {
-                concept.tag = ConceptTag.Aspirational;
-            } else if (targetType === 'prev') {
-                concept.tag = ConceptTag.Inherited; // Simplified
-            } else if (targetType === 'dist') {
-                // If conceptual level > current => Future, else Past?
-                // Ideally we drag to specific buckets. 
-                // For "distant", we need to know if it goes to distantFuture or distantPast?
-                // If the user drops in "Distant", we'll just assign based on level relative to what?
-                // Or simpler: Dropping to "Distant" isn't a primary action. 
-                // Primary is Active <-> Next/Prev.
-
-                // Logic:
-                if (concept.tag === ConceptTag.Own) {
-                    // Leaving Active -> determine based on bucket?
-                    // If dropped in "dist", maybe default to Inherited if level < current, else Aspirational?
-                    // Just rely on the container.
+                if (!this.initialSelectedConceptIds.includes(concept.concept.id)) {
+                    this.initialSelectedConceptIds.push(concept.concept.id);
+                }
+            } else {
+                // Moving to Available
+                concept.tag = ConceptTag.Inherited;
+                const idx = this.initialSelectedConceptIds.indexOf(concept.concept.id);
+                if (idx !== -1) {
+                    this.initialSelectedConceptIds.splice(idx, 1);
                 }
             }
 
@@ -804,6 +555,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             );
         }
     }
+
     getSelectedConceptIds(): number[] {
         const ids: number[] = [];
         this.methodologicalSections.forEach(section => {

@@ -55,6 +55,7 @@ public class ConceptProposalService : IConceptProposalService
         var conceptsQuery = _context.SportConcepts
             .Include(sc => sc.ConceptCategory)
                 .ThenInclude(cc => cc!.Parent)
+                    .ThenInclude(p => p!.Parent)
             .Where(sc => sc.IsActive);
 
         // Apply section filter if specified
@@ -78,79 +79,136 @@ public class ConceptProposalService : IConceptProposalService
 
         var concepts = await conceptsQuery.ToListAsync();
 
-        // 3. Calculate expected development level and level window
-        int expectedDevelopmentLevel;
+        // 3. Calculate expected development level
+        int expectedDevelopmentLevel = CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory);
+        List<int> templateConceptIds = new();
+
+        // If a template is selected, we prioritize its concepts
         if (request.PlanningTemplateId.HasValue)
         {
-            var template = await _context.PlanningTemplates.FindAsync(request.PlanningTemplateId.Value);
-            expectedDevelopmentLevel = template?.Level ?? CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory);
-        }
-        else
-        {
-            expectedDevelopmentLevel = CalculateExpectedDevelopmentLevel(teamSeason?.TeamCategory);
+            var template = await _context.PlanningTemplates
+                .Include(pt => pt.TemplateConcepts)
+                .FirstOrDefaultAsync(pt => pt.Id == request.PlanningTemplateId.Value);
+                
+            if (template != null)
+            {
+                expectedDevelopmentLevel = template.Level;
+                templateConceptIds = template.TemplateConcepts.Select(tc => tc.SportConceptId).ToList();
+            }
         }
 
         var (minLevel, maxLevel) = CalculateLevelWindow(team, expectedDevelopmentLevel, technicalLevel, tacticalLevel, request.LevelOffset);
 
-        // 4. Filter concepts by development level window
+        // 4. Filter concepts - LOGIC REFACTOR:
+        // If Manual Mode (SkipLevelFilter) OR Template Selected: We want ALL "other" concepts to be available on the right.
+        // So we basically fetch everything active.
         var filteredConcepts = concepts.Where(c =>
         {
-            // Always include if specifically requested
-            if (request.IncludeConceptIds != null && request.IncludeConceptIds.Contains(c.Id))
-                return true;
+            // Always include if in current template
+            if (templateConceptIds.Contains(c.Id)) return true;
 
-            // Skip level filter if requested (Manual Mode)
-            if (request.SkipLevelFilter)
-                return true;
+            // Always include if specifically requested (manual selection)
+            if (request.IncludeConceptIds != null && request.IncludeConceptIds.Contains(c.Id)) return true;
 
-            if (!c.DevelopmentLevel.HasValue)
-                return true; // Include concepts without level
+            // If SkipLevelFilter (Manual Mode) OR Template Mode (we want 'rest' on right), include ALL
+            // However, to avoid overwhelming the client, maybe we still apply SOME filter? 
+            // The user said "a la derecha el resto de conceptos... no se estan mostrando... revisa que traigamos todo".
+            // So we skip level filter effectively if (SkipLevelFilter OR TemplateId.HasValue) because the right side is "The Library".
+            // But let's respect the SkipLevelFilter flag from frontend to allow "Limited" views if they want.
+            // USER REQUEST: "si trabajo sin template... a la derecha carga todos los conceptos".
+            // So if SkipLevelFilter is true, we assume "Load All".
+            
+            if (request.SkipLevelFilter) return true;
+            
+            // If Template is selected, we also likely want "All" available on the right, 
+            // but the frontend might request SkipLevelFilter=true in that case too.
+            // Let's rely on request.SkipLevelFilter.
+            
+            if (!c.DevelopmentLevel.HasValue) return true;
             return c.DevelopmentLevel.Value >= minLevel && c.DevelopmentLevel.Value <= maxLevel;
         }).ToList();
 
-        // 5. Score each concept
-        var scoredConcepts = filteredConcepts.Select(concept => new
-        {
-            Concept = concept,
-            Score = CalculateConceptScore(concept, team, request, technicalLevel, tacticalLevel, teamSeason),
-            Reason = GenerateScoreReason(concept, technicalLevel, tacticalLevel, expectedDevelopmentLevel)
+        // 4b. Pre-load Itinerary Contexts for all filtered concepts
+        // We need to know if these concepts belong to any Methodological Itinerary
+        var conceptIds = filteredConcepts.Select(c => c.Id).ToList();
+        
+        var itineraryMatches = await _context.PlanningTemplates
+            .Where(pt => pt.MethodologicalItineraryId.HasValue && pt.IsActive)
+            .SelectMany(pt => pt.TemplateConcepts, (pt, tc) => new { 
+                tc.SportConceptId, 
+                ItineraryName = pt.MethodologicalItinerary!.Name,
+                TemplateName = pt.Name,
+                Level = pt.Level,
+                // We'd need total levels, maybe grouping query better?
+                // For now distinct Template.Level to guess total? expensive.
+                // Let's simpler:
+                ItineraryId = pt.MethodologicalItineraryId
+            })
+            .Where(x => conceptIds.Contains(x.SportConceptId))
+            .ToListAsync();
+
+        // Calculate totals in memory
+        var itineraryTotals = await _context.MethodologicalItineraries
+            .Include(mi => mi.PlanningTemplates)
+            .Where(mi => mi.IsActive)
+            .Select(mi => new { mi.Id, TotalLevels = mi.PlanningTemplates.Count })
+            .ToDictionaryAsync(x => x.Id, x => x.TotalLevels);
+
+        // 5. Score and Categorize
+        var scoredConcepts = filteredConcepts.Select(concept => {
+            bool isInTemplate = templateConceptIds.Contains(concept.Id);
+            bool isManualSelected = request.IncludeConceptIds != null && request.IncludeConceptIds.Contains(concept.Id);
+            
+            // Concepts in template are automatically ESSENTIAL and OWN
+            decimal score = isInTemplate ? 1.0m : CalculateConceptScore(concept, team, request, technicalLevel, tacticalLevel, teamSeason);
+            
+            var tag = DetermineConceptTag(concept, expectedDevelopmentLevel, technicalLevel, tacticalLevel);
+            if (isInTemplate || isManualSelected) tag = ConceptTag.Own;
+            
+            // Populate Itinerary Context
+            var contexts = itineraryMatches
+                .Where(m => m.SportConceptId == concept.Id && m.ItineraryId.HasValue)
+                .Select(m => new ConceptItineraryContextDto
+                {
+                    ItineraryName = m.ItineraryName,
+                    TemplateName = m.TemplateName,
+                    Level = m.Level,
+                    TotalLevels = itineraryTotals.GetValueOrDefault(m.ItineraryId!.Value, 0)
+                })
+                .DistinctBy(x => x.ItineraryName + x.Level) // Avoid duplicates
+                .ToList();
+
+            var dto = _mapper.Map<SportConceptDto>(concept);
+            dto.ItineraryContexts = contexts;
+
+            return new ScoredConceptDto
+            {
+                Concept = dto,
+                Score = score,
+                ScoreReason = isInTemplate ? "Incluido en Plantilla" : GenerateScoreReason(concept, technicalLevel, tacticalLevel, expectedDevelopmentLevel),
+                Priority = isInTemplate ? ProposalPriority.Essential : DeterminePriority(score, concept, technicalLevel, tacticalLevel, expectedDevelopmentLevel),
+                Tag = tag
+            };
         }).ToList();
 
-        // 5. Separate into suggested and optional
+        // 6. Separate into suggested (ACTIVE/LEFT) and optional (AVAILABLE/RIGHT)
+        // STRICT SEPARATION requested by User:
+        // Left = In Template OR Manually Selected
+        // Right = The Rest
+        
         var suggested = scoredConcepts
-            .Where(sc => sc.Score >= SuggestedThreshold)
+            .Where(sc => templateConceptIds.Contains(sc.Concept.Id) || (request.IncludeConceptIds != null && request.IncludeConceptIds.Contains(sc.Concept.Id)))
             .OrderByDescending(sc => sc.Score)
             .ToList();
 
         var optional = scoredConcepts
-            .Where(sc => sc.Score >= OptionalThreshold && sc.Score < SuggestedThreshold)
+            .Where(sc => !suggested.Contains(sc)) // Strictly what's not in suggested
             .OrderByDescending(sc => sc.Score)
             .ToList();
 
-        // 6. Apply max concepts limit if specified
-        if (request.MaxConcepts.HasValue)
-        {
-            suggested = suggested.Take(request.MaxConcepts.Value).ToList();
-        }
-
         // 7. Group by category
-        var suggestedGroups = GroupConceptsByCategory(suggested.Select(s => new ScoredConceptDto
-        {
-            Concept = _mapper.Map<SportConceptDto>(s.Concept),
-            Score = s.Score,
-            ScoreReason = s.Reason,
-            Priority = DeterminePriority(s.Score, s.Concept, technicalLevel, tacticalLevel, expectedDevelopmentLevel),
-            Tag = DetermineConceptTag(s.Concept, expectedDevelopmentLevel, technicalLevel, tacticalLevel)
-        }).ToList());
-
-        var optionalGroups = GroupConceptsByCategory(optional.Select(s => new ScoredConceptDto
-        {
-            Concept = _mapper.Map<SportConceptDto>(s.Concept),
-            Score = s.Score,
-            ScoreReason = s.Reason,
-            Priority = ProposalPriority.Optional,
-            Tag = DetermineConceptTag(s.Concept, expectedDevelopmentLevel, technicalLevel, tacticalLevel)
-        }).ToList());
+        var suggestedGroups = GroupConceptsByCategory(suggested);
+        var optionalGroups = GroupConceptsByCategory(optional);
 
         // 9. Build response
         return new ConceptProposalResponseDto

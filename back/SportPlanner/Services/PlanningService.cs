@@ -112,6 +112,7 @@ namespace SportPlanner.Services
         {
             var planning = await _context.Plannings
                 .Include(p => p.ScheduleDays)  // Explicitly load ScheduleDays
+                .Include(p => p.PlanConcepts)  // Explicitly load PlanConcepts to avoid duplicates
                 .FirstOrDefaultAsync(p => p.Id == id);
 
             if (planning == null)
@@ -168,6 +169,47 @@ namespace SportPlanner.Services
                         newDay.Id = 0; 
                         newDay.PlanningId = planning.Id; // Ensure link to parent
                         planning.ScheduleDays.Add(newDay);
+                    }
+                }
+
+            }
+
+            // Handle PlanConcepts manually to avoid Unique Constraint violations
+            var newPlanConcepts = updatePlanningDto.PlanConcepts;
+            updatePlanningDto.PlanConcepts = null; // Prevent automapper from touching the collections directly
+
+            if (newPlanConcepts != null)
+            {
+                // 1. Remove concepts not present in the new list
+                var conceptsToRemove = planning.PlanConcepts
+                    .Where(existing => !newPlanConcepts.Any(n => n.SportConceptId == existing.SportConceptId))
+                    .ToList();
+
+                foreach (var concept in conceptsToRemove)
+                {
+                    // _context.Entry(concept).State = EntityState.Deleted; // Sometimes needed
+                    planning.PlanConcepts.Remove(concept);
+                }
+
+                // 2. Add or Update concepts
+                foreach (var newConcept in newPlanConcepts)
+                {
+                    var existingConcept = planning.PlanConcepts.FirstOrDefault(c => c.SportConceptId == newConcept.SportConceptId);
+                    if (existingConcept != null)
+                    {
+                        // Update properties if any (tag, etc.)
+                        // existingConcept.SomeProperty = newConcept.SomeProperty;
+                        // For now PlanConcept mainly links PlanningId and SportConceptId
+                    }
+                    else
+                    {
+                        // Add new concept
+                        newConcept.Id = 0; // Ensure it's treated as new
+                        newConcept.PlanningId = planning.Id;
+                        newConcept.Planning = null;
+                        newConcept.SportConcept = null; 
+                        
+                        planning.PlanConcepts.Add(newConcept);
                     }
                 }
             }

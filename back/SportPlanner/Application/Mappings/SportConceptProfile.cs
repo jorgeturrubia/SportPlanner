@@ -8,8 +8,7 @@ namespace SportPlanner.Application.Mappings
     {
         public SportConceptProfile()
         {
-            CreateMap<SportConcept, SportConceptDto>()
-                .ForMember(d => d.ConceptCategory, opt => opt.Ignore());
+            CreateMap<SportConcept, SportConceptDto>();
             CreateMap<SportConcept, SportConceptWithSuggestionDto>();
             CreateMap<DifficultyLevel, DifficultyLevelDto>();
         }
