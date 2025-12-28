@@ -1,4 +1,5 @@
 import { Component, Input, OnChanges, SimpleChanges, OnInit, inject } from '@angular/core';
+import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DragDropModule, CdkDragDrop, moveItemInArray, transferArrayItem } from '@angular/cdk/drag-drop';
@@ -42,7 +43,7 @@ interface MethodologicalSection {
 @Component({
     selector: 'app-proposal-manager',
     standalone: true,
-    imports: [CommonModule, FormsModule, DragDropModule, TemplateTunerComponent, ConceptCreatorComponent],
+    imports: [CommonModule, FormsModule, DragDropModule, RouterModule, TemplateTunerComponent, ConceptCreatorComponent],
     templateUrl: './proposal-manager.component.html',
     styleUrls: ['./proposal-manager.component.css']
 })

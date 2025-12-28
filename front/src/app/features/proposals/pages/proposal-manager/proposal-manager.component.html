@@ -36,6 +36,38 @@
     <div class="flex-1 overflow-y-auto custom-scrollbar relative bg-neutral-900" *ngIf="response && !loading">
         <div class="max-w-[1800px] mx-auto w-full pb-20 px-4 md:px-6">
 
+            <!-- Empty State for Manual Mode (No Concepts) -->
+            <div *ngIf="methodologicalSections.length === 0 && selectedTemplateId === -1" class="flex flex-col items-center justify-center py-20 animate-fadeIn">
+                <div class="relative mb-6 group cursor-pointer" (click)="openCreateConceptModal()">
+                    <div class="absolute inset-0 bg-[#CCFF00]/20 rounded-full blur-xl group-hover:bg-[#CCFF00]/40 transition-all duration-500"></div>
+                    <div class="relative bg-[#1a1a1a] p-6 rounded-full border-2 border-[#CCFF00]/30 group-hover:border-[#CCFF00] group-hover:scale-110 transition-all duration-300">
+                        <span class="material-icons text-5xl text-[#CCFF00]">library_add</span>
+                    </div>
+                </div>
+                
+                <h3 class="text-2xl font-black italic text-white uppercase tracking-tighter mb-2 text-center">
+                    No tienes conceptos creados
+                </h3>
+                
+                <p class="text-neutral-400 text-center max-w-md mb-8">
+                    Para planificar sin plantilla, necesitas tener tu propia biblioteca de conceptos o adquirir una en el Marketplace.
+                </p>
+
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <button (click)="openCreateConceptModal()" 
+                        class="px-6 py-3 bg-[#CCFF00] text-black font-bold uppercase tracking-wider rounded hover:bg-[#b3e600] active:scale-95 transition-all shadow-[0_0_20px_rgba(204,255,0,0.3)] hover:shadow-[0_0_30px_rgba(204,255,0,0.5)] flex items-center justify-center gap-2">
+                        <span class="material-icons text-xl">add</span>
+                        Crear Concepto
+                    </button>
+
+                    <a routerLink="/dashboard/marketplace" 
+                        class="px-6 py-3 bg-neutral-800 text-white font-bold uppercase tracking-wider rounded border border-neutral-700 hover:bg-neutral-700 hover:border-neutral-500 active:scale-95 transition-all flex items-center justify-center gap-2 group">
+                        <span class="material-icons text-xl text-[#CCFF00] group-hover:rotate-12 transition-transform">storefront</span>
+                        Ir al Marketplace
+                    </a>
+                </div>
+            </div>
+
             <!-- SECTIONS LOOP -->
             <div *ngFor="let section of methodologicalSections" class="mb-2 relative z-10">
 

@@ -1,130 +1,130 @@
-<div class="h-full bg-dark-bg p-6">
-    <!-- Header -->
-    <div class="mb-6 flex items-center justify-between border-b-2 border-dark-border pb-4">
-        <div>
-            <h1 class="text-3xl font-black text-white tracking-tight">DEPORTES DE SUSCRIPCIÓN</h1>
-            <p class="text-gray-400 mt-1">Gestiona los deportes disponibles para suscripciones</p>
-        </div>
+<div class="p-2 sm:p-4 space-y-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <h1 class="text-xl sm:text-2xl font-black text-white tracking-tighter">DEPORTES DE SUSCRIPCIÓN</h1>
         <button (click)="openCreateModal()"
-            class="px-6 py-3 bg-primary text-black font-bold border-2 border-black hover:bg-secondary transition-colors">
-            + NUEVO DEPORTE
+            class="w-full sm:w-auto bg-primary text-black font-black py-1.5 px-3 text-xs sm:text-sm hover:bg-white transition-colors flex items-center justify-center uppercase tracking-tight">
+            NUEVO DEPORTE
         </button>
     </div>
 
     <!-- Loading State -->
-    <div *ngIf="isLoading() && sports().length === 0" class="flex justify-center items-center h-64">
-        <div class="text-primary text-xl font-bold">Cargando...</div>
+    <div *ngIf="isLoading() && sports().length === 0" class="text-center py-8 text-gray-400">
+        Cargando deportes...
     </div>
 
-    <!-- Sports Table -->
+    <!-- Sports Grid -->
     <div *ngIf="!isLoading() || sports().length > 0" class="bg-dark-surface border-2 border-dark-border">
-        <table class="w-full">
-            <thead class="bg-dark-bg border-b-2 border-dark-border">
-                <tr>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider">ID</th>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider">Nombre
-                    </th>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider">Slug</th>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider">
-                        Descripción</th>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider">Estado
-                    </th>
-                    <th class="px-6 py-4 text-left text-xs font-black text-gray-400 uppercase tracking-wider">Acciones
-                    </th>
-                </tr>
-            </thead>
-            <tbody class="divide-y-2 divide-dark-border">
-                <tr *ngFor="let sport of sports()" class="hover:bg-dark-bg transition-colors">
-                    <td class="px-6 py-4 text-sm text-gray-300">{{ sport.id }}</td>
-                    <td class="px-6 py-4">
-                        <div class="text-sm font-bold text-white">{{ sport.name }}</div>
-                    </td>
-                    <td class="px-6 py-4 text-sm text-gray-400">{{ sport.slug || '-' }}</td>
-                    <td class="px-6 py-4 text-sm text-gray-400 max-w-xs truncate">{{ sport.description || '-' }}</td>
-                    <td class="px-6 py-4">
-                        <button (click)="toggleActive(sport)" [class.bg-primary]="sport.isActive"
-                            [class.bg-gray-600]="!sport.isActive"
-                            class="px-3 py-1 text-xs font-bold border-2 border-black transition-colors">
-                            {{ sport.isActive ? 'ACTIVO' : 'INACTIVO' }}
-                        </button>
-                    </td>
-                    <td class="px-6 py-4">
-                        <div class="flex gap-2">
-                            <button (click)="openEditModal(sport)"
-                                class="px-3 py-1 bg-secondary text-black text-xs font-bold border-2 border-black hover:bg-primary transition-colors">
-                                EDITAR
-                            </button>
-                            <button (click)="deleteSport(sport)"
-                                class="px-3 py-1 bg-danger text-white text-xs font-bold border-2 border-black hover:opacity-80 transition-opacity">
-                                ELIMINAR
-                            </button>
-                        </div>
-                    </td>
-                </tr>
-                <tr *ngIf="sports().length === 0">
-                    <td colspan="6" class="px-6 py-8 text-center text-gray-400">
-                        No hay deportes registrados. Haz clic en "NUEVO DEPORTE" para crear uno.
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+        <!-- Header -->
+        <div class="hidden sm:grid grid-cols-12 gap-4 bg-dark-bg border-b-2 border-dark-border p-3">
+            <div class="col-span-1 text-[10px] font-black text-gray-500 uppercase tracking-widest">ID</div>
+            <div class="col-span-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">Nombre</div>
+            <div class="col-span-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">Slug</div>
+            <div class="col-span-3 text-[10px] font-black text-gray-500 uppercase tracking-widest">Descripción</div>
+            <div class="col-span-2 text-[10px] font-black text-gray-500 uppercase tracking-widest text-right">Acciones</div>
+        </div>
+
+        <!-- List -->
+        <div class="divide-y-2 divide-dark-border">
+            <div *ngFor="let sport of sports()" class="grid grid-cols-1 sm:grid-cols-12 gap-2 sm:gap-4 p-3 hover:bg-dark-bg transition-colors items-center group">
+                <!-- Mobile Label -->
+                <div class="sm:hidden text-[10px] font-black text-gray-500 uppercase tracking-widest mb-1">ID: {{sport.id}}</div>
+                <div class="hidden sm:block col-span-1 text-sm text-gray-500 font-mono">{{ sport.id }}</div>
+
+                <div class="col-span-3">
+                    <div class="text-sm font-black text-white uppercase tracking-tight">{{ sport.name }}</div>
+                    <div *ngIf="!sport.isActive" class="inline-block mt-1 text-[10px] bg-red-900/50 text-red-400 px-1 py-0.5 rounded font-black uppercase">INACTIVO</div>
+                </div>
+
+                <div class="col-span-3 text-xs text-gray-400 font-mono">{{ sport.slug || '-' }}</div>
+                
+                <div class="col-span-3 text-xs text-gray-400 truncate">{{ sport.description || '-' }}</div>
+
+                <div class="col-span-2 flex items-center justify-end gap-2">
+                    <button (click)="toggleActive(sport)"
+                        class="p-1 hover:bg-dark-bg border border-transparent hover:border-dark-border transition-all"
+                        [class.text-red-500]="sport.isActive" 
+                        [class.text-green-500]="!sport.isActive"
+                        title="{{ sport.isActive ? 'Desactivar' : 'Activar' }}">
+                        <svg *ngIf="sport.isActive" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path><line x1="12" y1="2" x2="12" y2="12"></line></svg>
+                        <svg *ngIf="!sport.isActive" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+                    </button>
+                    <button (click)="openEditModal(sport)" class="p-1 hover:text-primary text-gray-500 transition-colors" title="Editar">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                    </button>
+                    <button (click)="deleteSport(sport)" class="p-1 hover:text-danger text-gray-500 transition-colors" title="Eliminar">
+                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <div *ngIf="sports().length === 0" class="p-8 text-center text-gray-400">
+                No hay deportes registrados.
+            </div>
+        </div>
     </div>
 
     <!-- Modal -->
-    <div *ngIf="showModal()" class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-        <div class="bg-dark-surface border-4 border-primary w-full max-w-md">
+    <div *ngIf="showModal()" class="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+        <div class="bg-dark-surface border-2 border-primary w-full max-w-md animate-fade-in shadow-2xl shadow-primary/20">
             <!-- Modal Header -->
-            <div class="bg-primary px-6 py-4 border-b-4 border-black">
-                <h2 class="text-2xl font-black text-black">
+            <div class="bg-primary px-4 py-3 border-b-2 border-black flex justify-between items-center">
+                <h2 class="text-sm font-black text-black uppercase tracking-widest">
                     {{ editMode() ? 'EDITAR DEPORTE' : 'NUEVO DEPORTE' }}
                 </h2>
+                <button (click)="closeModal()" class="text-black hover:opacity-70 transition-opacity">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                </button>
             </div>
 
             <!-- Modal Body -->
-            <form [formGroup]="sportForm" (ngSubmit)="saveSport()" class="p-6">
-                <div class="space-y-4">
-                    <!-- Name -->
-                    <div>
-                        <label class="block text-sm font-bold text-gray-400 mb-2">NOMBRE *</label>
-                        <input type="text" formControlName="name"
-                            class="w-full px-4 py-3 bg-dark-bg text-white border-2 border-dark-border focus:border-primary outline-none font-bold"
-                            placeholder="Ej: Fútbol, Baloncesto...">
-                        <div *ngIf="sportForm.get('name')?.invalid && sportForm.get('name')?.touched"
-                            class="text-danger text-xs mt-1 font-bold">
-                            El nombre es requerido (máx. 100 caracteres)
-                        </div>
-                    </div>
-
-                    <!-- Description -->
-                    <div>
-                        <label class="block text-sm font-bold text-gray-400 mb-2">DESCRIPCIÓN</label>
-                        <textarea formControlName="description" rows="3"
-                            class="w-full px-4 py-3 bg-dark-bg text-white border-2 border-dark-border focus:border-primary outline-none font-bold resize-none"
-                            placeholder="Descripción del deporte..."></textarea>
-                        <div *ngIf="sportForm.get('description')?.invalid && sportForm.get('description')?.touched"
-                            class="text-danger text-xs mt-1 font-bold">
-                            Máximo 500 caracteres
-                        </div>
-                    </div>
-
-                    <!-- Is Active -->
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox" formControlName="isActive" id="isActive"
-                            class="w-5 h-5 border-2 border-dark-border bg-dark-bg checked:bg-primary">
-                        <label for="isActive" class="text-sm font-bold text-white cursor-pointer">
-                            DEPORTE ACTIVO
-                        </label>
+            <form [formGroup]="sportForm" (ngSubmit)="saveSport()" class="p-4 space-y-4">
+                <!-- Name -->
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest">NOMBRE *</label>
+                    <input type="text" formControlName="name"
+                        class="w-full bg-dark-bg border-2 border-dark-border p-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-gray-700 font-bold uppercase"
+                        placeholder="Ej: FÚTBOL">
+                    <div *ngIf="sportForm.get('name')?.invalid && sportForm.get('name')?.touched"
+                        class="text-danger text-[10px] mt-1 font-bold uppercase">
+                        El nombre es requerido (máx. 100 caracteres)
                     </div>
                 </div>
 
+                <!-- Slug -->
+                <div>
+                     <label class="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest">
+                        SLUG <span class="text-gray-600 font-medium normal-case tracking-normal">(Auto si vacío)</span>
+                    </label>
+                    <input type="text" formControlName="slug"
+                        class="w-full bg-dark-bg border-2 border-dark-border p-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-gray-700 font-mono"
+                        placeholder="ej: futbol-base">
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label class="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest">DESCRIPCIÓN</label>
+                    <textarea formControlName="description" rows="3"
+                        class="w-full bg-dark-bg border-2 border-dark-border p-2 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-gray-700 resize-none"
+                        placeholder="Descripción opcional..."></textarea>
+                </div>
+
+                <!-- Is Active -->
+                <div class="flex items-center gap-2 pt-2">
+                    <input type="checkbox" formControlName="isActive" id="isActive"
+                        class="w-4 h-4 border-2 border-dark-border bg-dark-bg checked:bg-primary rounded-none">
+                    <label for="isActive" class="text-xs font-black text-white cursor-pointer select-none uppercase tracking-wide">
+                        Activo
+                    </label>
+                </div>
+
                 <!-- Modal Footer -->
-                <div class="flex gap-3 mt-6 pt-6 border-t-2 border-dark-border">
+                <div class="flex gap-2 pt-4 border-t-2 border-dark-border mt-2">
                     <button type="button" (click)="closeModal()"
-                        class="flex-1 px-4 py-3 bg-gray-600 text-white font-bold border-2 border-black hover:bg-gray-700 transition-colors">
+                        class="flex-1 px-4 py-2 bg-transparent text-gray-400 font-black border-2 border-dark-border hover:text-white hover:border-white transition-colors text-xs uppercase tracking-wider">
                         CANCELAR
                     </button>
                     <button type="submit" [disabled]="sportForm.invalid || isLoading()"
-                        class="flex-1 px-4 py-3 bg-primary text-black font-bold border-2 border-black hover:bg-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                        class="flex-1 px-4 py-2 bg-primary text-black font-black border-2 border-primary hover:bg-white hover:border-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-xs uppercase tracking-wider">
                         {{ isLoading() ? 'GUARDANDO...' : 'GUARDAR' }}
                     </button>
                 </div>

@@ -5,6 +5,7 @@ import { SportsService, Sport, CreateSportDto, UpdateSportDto } from '../../../.
 import { NotificationService } from '../../../../../services/notification.service';
 import { finalize } from 'rxjs/operators';
 
+
 @Component({
     selector: 'app-subscription-sports',
     standalone: true,
@@ -27,9 +28,11 @@ export class SubscriptionSportsComponent implements OnInit {
     ) {
         this.sportForm = this.fb.group({
             name: ['', [Validators.required, Validators.maxLength(100)]],
+            slug: ['', [Validators.maxLength(100)]],
             description: ['', Validators.maxLength(500)],
             isActive: [true]
         });
+
     }
 
     ngOnInit() {
@@ -63,9 +66,11 @@ export class SubscriptionSportsComponent implements OnInit {
         this.currentSportId.set(sport.id);
         this.sportForm.patchValue({
             name: sport.name,
+            slug: sport.slug,
             description: sport.description || '',
             isActive: sport.isActive
         });
+
         this.showModal.set(true);
     }
 
@@ -85,9 +90,11 @@ export class SubscriptionSportsComponent implements OnInit {
 
         const dto: CreateSportDto | UpdateSportDto = {
             name: formValue.name,
+            slug: formValue.slug || undefined,
             description: formValue.description || undefined,
             isActive: formValue.isActive
         };
+
 
         const operation = this.editMode()
             ? this.sportsService.update(this.currentSportId()!, dto as UpdateSportDto)

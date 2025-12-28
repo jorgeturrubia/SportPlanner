@@ -78,7 +78,7 @@ public class SportsController : ControllerBase
             return Conflict("A sport with this name already exists.");
 
         var sport = _mapper.Map<Sport>(dto);
-        sport.Slug = GenerateSlug(dto.Name);
+        sport.Slug = !string.IsNullOrWhiteSpace(dto.Slug) ? dto.Slug : GenerateSlug(dto.Name);
         sport.CreatedAt = DateTime.UtcNow;
         sport.UpdatedAt = DateTime.UtcNow;
 
@@ -105,7 +105,8 @@ public class SportsController : ControllerBase
         sport.Name = dto.Name;
         sport.Description = dto.Description;
         sport.IsActive = dto.IsActive;
-        sport.Slug = GenerateSlug(dto.Name);
+        sport.IsActive = dto.IsActive;
+        sport.Slug = !string.IsNullOrWhiteSpace(dto.Slug) ? dto.Slug : GenerateSlug(dto.Name);
         sport.UpdatedAt = DateTime.UtcNow;
 
         await _db.SaveChangesAsync();

@@ -1,61 +1,61 @@
-<div class="p-6 space-y-6">
-    <div class="flex justify-between items-center">
-        <h1 class="text-3xl font-black text-white tracking-tighter">CATEGORÍAS</h1>
-        <div class="flex gap-2">
+<div class="p-2 sm:p-4 space-y-4">
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+        <h1 class="text-xl sm:text-2xl font-black text-white tracking-tighter">CATEGORÍAS</h1>
+        <div class="flex gap-2 w-full sm:w-auto">
             <button (click)="toggleShowInactive()"
-                class="border-2 font-bold py-2 px-4 transition-colors flex items-center"
+                class="flex-1 sm:flex-none border-2 font-bold py-1.5 px-3 text-xs sm:text-sm transition-colors flex items-center justify-center"
                 [class.bg-white]="showInactive()" [class.text-black]="showInactive()"
                 [class.border-white]="showInactive()" [class.border-dark-border]="!showInactive()"
                 [class.text-gray-400]="!showInactive()">
-                {{ showInactive() ? 'OCULTAR DESACTIVADOS' : 'VER DESACTIVADOS' }}
+                {{ showInactive() ? 'OCULTAR DESACT.' : 'VER DESACT.' }}
             </button>
             <button (click)="toggleForm()"
-                class="bg-primary text-black font-bold py-2 px-4 hover:bg-white transition-colors flex items-center">
-                <span *ngIf="!showForm()">NUEVA CATEGORÍA</span>
+                class="flex-1 sm:flex-none bg-primary text-black font-bold py-1.5 px-3 text-xs sm:text-sm hover:bg-white transition-colors flex items-center justify-center">
+                <span *ngIf="!showForm()">NUEVA</span>
                 <span *ngIf="showForm()">CANCELAR</span>
             </button>
         </div>
     </div>
 
     <!-- Form -->
-    <div *ngIf="showForm()" class="bg-dark-surface border-2 border-dark-border p-4 animate-fade-in mb-6">
-        <div class="flex justify-between items-center mb-4">
-            <h2 class="text-lg font-bold text-white uppercase tracking-wider">
+    <div *ngIf="showForm()" class="bg-dark-surface border-2 border-dark-border p-3 animate-fade-in mb-4">
+        <div class="flex justify-between items-center mb-2">
+            <h2 class="text-base font-bold text-white uppercase tracking-wider">
                 {{ editingCategoryId() ? 'Editar Categoría' : 'Nueva Categoría' }}
             </h2>
             <button (click)="resetForm()" class="text-gray-400 hover:text-white transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
             </button>
         </div>
-        <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="space-y-4">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-4">
-                <div class="md:col-span-5">
-                    <label class="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest">Nombre</label>
+        <form [formGroup]="categoryForm" (ngSubmit)="onSubmit()" class="space-y-3">
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+                <div class="md:col-span-4">
+                    <label class="block text-[10px] font-black text-gray-500 mb-0.5 uppercase tracking-widest">Nombre</label>
                     <input type="text" formControlName="name" #nameInput
                         (keydown.enter)="$event.preventDefault(); onSubmit()"
                         (keydown.escape)="resetForm()"
                         placeholder="Ej: Técnica Individual..."
-                        class="w-full bg-dark-bg border-2 border-dark-border p-2 text-white focus:border-primary outline-none transition-all placeholder:text-gray-700">
+                        class="w-full bg-dark-bg border-2 border-dark-border p-1.5 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-gray-700">
                 </div>
-                <div class="md:col-span-4">
-                    <label class="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest">Categoría Padre</label>
-                    <div class="w-full bg-dark-bg border-2 border-dark-border p-2 text-gray-500 cursor-not-allowed text-sm truncate">
+                <div class="md:col-span-3">
+                    <label class="block text-[10px] font-black text-gray-500 mb-0.5 uppercase tracking-widest">Padre</label>
+                    <div class="w-full bg-dark-bg border-2 border-dark-border p-1.5 text-gray-500 cursor-not-allowed text-xs truncate">
                         {{ getParentName(categoryForm.get('parentId')?.value) }}
                     </div>
                 </div>
-                <div class="md:col-span-3 flex items-end">
-                    <button type="submit" [disabled]="!categoryForm.valid || isLoading()"
-                        class="w-full bg-primary text-black font-black py-2 px-4 hover:bg-white transition-all disabled:opacity-20 disabled:cursor-not-allowed uppercase text-sm leading-tight h-[44px]">
-                        {{ isLoading() ? '...' : (editingCategoryId() ? 'ACTUALIZAR' : 'GUARDAR') }}
-                    </button>
-                </div>
-                <div class="md:col-span-12">
-                    <label class="block text-[10px] font-black text-gray-500 mb-1 uppercase tracking-widest">Descripción (Opcional)</label>
+                <div class="md:col-span-3">
+                    <label class="block text-[10px] font-black text-gray-500 mb-0.5 uppercase tracking-widest">Descripción</label>
                     <input type="text" formControlName="description"
                         (keydown.enter)="$event.preventDefault(); onSubmit()"
                         (keydown.escape)="resetForm()"
-                        placeholder="Breve descripción de la categoría..."
-                        class="w-full bg-dark-bg border-2 border-dark-border p-2 text-white focus:border-primary outline-none transition-all placeholder:text-gray-700">
+                        placeholder="Opcional..."
+                        class="w-full bg-dark-bg border-2 border-dark-border p-1.5 text-sm text-white focus:border-primary outline-none transition-all placeholder:text-gray-700">
+                </div>
+                <div class="md:col-span-2 flex items-end">
+                    <button type="submit" [disabled]="!categoryForm.valid || isLoading()"
+                        class="w-full bg-primary text-black font-black py-1.5 px-2 hover:bg-white transition-all disabled:opacity-20 disabled:cursor-not-allowed uppercase text-xs leading-tight h-[36px]">
+                        {{ isLoading() ? '...' : (editingCategoryId() ? 'ACTUALIZAR' : 'GUARDAR') }}
+                    </button>
                 </div>
             </div>
         </form>
@@ -67,38 +67,38 @@
             Cargando categorías...
         </div>
 
-        <div *ngIf="!isLoading() && categories().length" class="grid grid-cols-1 lg:grid-cols-2 gap-6 w-full items-start">
+        <div *ngIf="!isLoading() && categories().length" class="grid grid-cols-1 lg:grid-cols-2 gap-4 w-full items-start">
             <!-- Root Column -->
             <div *ngFor="let root of categories()" class="bg-dark-surface border-2 border-dark-border flex flex-col">
                 
                 <!-- Root Header -->
-                <div class="p-4 bg-dark-bg border-b-2 border-dark-border flex justify-between items-center group"
+                <div class="p-2 sm:p-3 bg-dark-bg border-b-2 border-dark-border flex justify-between items-start sm:items-center group"
                      [class.opacity-50]="!root.isActive">
-                    <div>
-                        <h3 class="text-xl font-black text-white uppercase" [class.line-through]="!root.isActive">
+                    <div class="flex-1 min-w-0 pr-2">
+                        <h3 class="text-base sm:text-lg font-black text-white uppercase truncate" [class.line-through]="!root.isActive">
                             {{ root.name }}
                             <span *ngIf="!root.isActive" class="ml-2 text-[10px] bg-red-900/50 text-red-400 px-1 py-0.5 rounded font-black no-underline inline-block align-middle">INACTIVO</span>
                         </h3>
-                        <p *ngIf="root.description" class="text-xs text-gray-400 mt-1">{{ root.description }}</p>
+                        <p *ngIf="root.description" class="text-[10px] sm:text-xs text-gray-400 truncate">{{ root.description }}</p>
                     </div>
-                    <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity whitespace-nowrap">
                         <button (click)="addChildCategory(root)" class="p-1 hover:text-primary text-gray-400 transition-colors" title="Añadir Subcategoría">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                         </button>
                         <button (click)="editCategory(root)" class="p-1 hover:text-primary text-gray-400 transition-colors" title="Editar">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                         </button>
                         <button (click)="deleteCategory(root)" class="p-1 hover:text-danger text-gray-400 transition-colors" title="Eliminar">
-                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                         </button>
                     </div>
                 </div>
 
                 <!-- Children Tree -->
-                <div class="p-4 flex-1">
+                <div class="p-2 sm:p-3 flex-1 overflow-x-auto">
                     <ng-container *ngTemplateOutlet="nodeTemplate; context: { $implicit: root.children }"></ng-container>
                     
-                    <div *ngIf="!root.children || root.children.length === 0" class="text-center py-4 text-gray-500 text-sm italic">
+                    <div *ngIf="!root.children || root.children.length === 0" class="text-center py-2 text-gray-500 text-xs italic">
                         Sin subcategorías
                     </div>
                 </div>
@@ -112,44 +112,45 @@
 
 <!-- Recursive Node Template -->
 <ng-template #nodeTemplate let-nodes>
-    <div *ngFor="let node of nodes" class="relative pl-4 border-l-2 border-gray-800 ml-2 mb-2">
+    <div *ngFor="let node of nodes" class="relative pl-3 border-l-2 border-gray-800 ml-1.5 mb-1.5">
         <!-- Node Content -->
-        <div class="flex justify-between items-center group py-1">
-            <div class="flex items-center">
+        <div class="flex justify-between items-center group py-0.5">
+            <div class="flex items-center flex-1 min-w-0">
                 <!-- Toggle Button if children exist -->
                  <button *ngIf="node.children && node.children.length > 0" 
                          (click)="toggleNode(node)" 
-                         class="mr-2 text-gray-400 hover:text-white transition-transform duration-200 focus:outline-none"
+                         class="mr-1.5 text-gray-400 hover:text-white transition-transform duration-200 focus:outline-none flex-shrink-0"
                          [class.rotate-90]="node.expanded">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"></polyline></svg>
                  </button>
                  <!-- Dot if no children -->
-                 <div *ngIf="!node.children || node.children.length === 0" class="w-2 h-2 bg-primary rounded-full mr-2 ml-1"></div>
+                 <div *ngIf="!node.children || node.children.length === 0" class="w-1.5 h-1.5 bg-primary rounded-full mr-1.5 ml-1 flex-shrink-0"></div>
                  
-                 <span class="font-medium hover:text-white transition-colors cursor-pointer select-none" 
+                 <span class="font-medium text-sm hover:text-white transition-colors cursor-pointer select-none truncate" 
                        [class.text-gray-300]="node.isActive"
                        [class.text-gray-600]="!node.isActive"
                        [class.line-through]="!node.isActive"
+                       title="{{node.name}}"
                        (click)="toggleNode(node)">
                      {{ node.name }}
                      <span *ngIf="!node.isActive" class="ml-1 text-[8px] text-red-500/50 font-black no-underline">INA</span>
                  </span>
             </div>
-             <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+             <div class="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity pl-2">
                 <button (click)="addChildCategory(node)" class="p-1 hover:text-primary text-gray-500 transition-colors" title="Añadir Subcategoría">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                 </button>
                 <button (click)="editCategory(node)" class="p-1 hover:text-primary text-gray-500 transition-colors" title="Editar">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
                 </button>
                 <button (click)="deleteCategory(node)" class="p-1 hover:text-danger text-gray-500 transition-colors" title="Eliminar">
-                     <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                     <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                 </button>
             </div>
         </div>
         
         <!-- Recursion -->
-        <div *ngIf="node.children && node.children.length > 0 && node.expanded" class="mt-1 animate-fade-in">
+        <div *ngIf="node.children && node.children.length > 0 && node.expanded" class="mt-0.5 animate-fade-in">
              <ng-container *ngTemplateOutlet="nodeTemplate; context: { $implicit: node.children }"></ng-container>
         </div>
     </div>

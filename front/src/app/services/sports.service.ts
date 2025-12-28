@@ -14,12 +14,14 @@ export interface Sport {
 
 export interface CreateSportDto {
     name: string;
+    slug?: string;
     description?: string;
     isActive: boolean;
 }
 
 export interface UpdateSportDto {
     name: string;
+    slug?: string;
     description?: string;
     isActive: boolean;
 }
