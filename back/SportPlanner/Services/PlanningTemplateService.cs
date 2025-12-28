@@ -29,6 +29,7 @@ public class PlanningTemplateService : IPlanningTemplateService
         return await query
             .Include(i => i.TeamCategory)
             .Include(i => i.SystemSource)
+            .Include(i => i.TemplateConcepts)
             .ToListAsync();
     }
 
@@ -211,14 +212,74 @@ public class PlanningTemplateService : IPlanningTemplateService
     {
         itinerary.OwnerId = userId;
         itinerary.IsSystem = false;
+
+        // If SportId is not provided, infer from active subscription
+        if (itinerary.SportId == 0)
+        {
+            var subscription = await _db.Subscriptions
+                .FirstOrDefaultAsync(s => s.UserSupabaseId == userId && s.IsActive);
+            
+            if (subscription != null)
+            {
+                itinerary.SportId = subscription.SportId;
+            }
+            else
+            {
+                // Fallback or error? For now, if no subscription, we might fail DB constraint if SportId is required.
+                // But let's assume valid user has valid subscription.
+                // Or maybe check if user is in an Organization?
+                // Check if user is in an Organization
+                var orgMembership = await _db.OrganizationMemberships
+                     .FirstOrDefaultAsync(m => m.UserSupabaseId == userId);
+                
+                if (orgMembership != null)
+                {
+                    var orgSub = await _db.Subscriptions
+                        .FirstOrDefaultAsync(s => s.OrganizationId == orgMembership.OrganizationId && s.IsActive);
+                    
+                    if (orgSub != null)
+                    {
+                         itinerary.SportId = orgSub.SportId;
+                    }
+                }
+            }
+
+            if (itinerary.SportId == 0) 
+            {
+                throw new InvalidOperationException("Cannot determine Sport for Itinerary. User has no active subscription.");
+            }
+        }
+        
+        // Extract templates to avoid EF inserting them as new
+        var inputTemplates = itinerary.PlanningTemplates?.ToList();
+        itinerary.PlanningTemplates = null; // Clear to prevent duplicate insertion
+        
+        // Save first to get ID
         _db.MethodologicalItineraries.Add(itinerary);
         await _db.SaveChangesAsync();
+
+        // If templates are provided, link them
+        if (inputTemplates != null && inputTemplates.Any())
+        {
+            var templateIds = inputTemplates.Select(t => t.Id).ToList();
+            var userTemplates = await _db.PlanningTemplates
+                .Where(t => templateIds.Contains(t.Id) && t.OwnerId == userId)
+                .ToListAsync();
+
+            foreach (var template in userTemplates)
+            {
+                template.MethodologicalItineraryId = itinerary.Id;
+            }
+            await _db.SaveChangesAsync();
+        }
+
         return itinerary;
     }
 
     public async Task<bool> UpdateItineraryAsync(MethodologicalItinerary itinerary, string userId)
     {
         var existing = await _db.MethodologicalItineraries
+            .Include(i => i.PlanningTemplates)
             .FirstOrDefaultAsync(i => i.Id == itinerary.Id && i.OwnerId == userId);
 
         if (existing == null) return false;
@@ -227,6 +288,37 @@ public class PlanningTemplateService : IPlanningTemplateService
         existing.Description = itinerary.Description;
         existing.SportId = itinerary.SportId;
         existing.IsActive = itinerary.IsActive;
+
+        // Handle Template Updates
+        if (itinerary.PlanningTemplates != null)
+        {
+            var newTemplateIds = itinerary.PlanningTemplates.Select(t => t.Id).ToHashSet();
+            
+            // 1. Unlink templates that are no longer in the list
+            foreach (var existingTemplate in existing.PlanningTemplates.ToList())
+            {
+                if (!newTemplateIds.Contains(existingTemplate.Id))
+                {
+                    existingTemplate.MethodologicalItineraryId = null;
+                }
+            }
+
+            // 2. Link new templates
+            var existingTemplateIds = existing.PlanningTemplates.Select(t => t.Id).ToHashSet();
+            var templatesToAdd = newTemplateIds.Where(id => !existingTemplateIds.Contains(id)).ToList();
+
+            if (templatesToAdd.Any())
+            {
+                var templatesToLink = await _db.PlanningTemplates
+                    .Where(t => templatesToAdd.Contains(t.Id) && t.OwnerId == userId)
+                    .ToListAsync();
+
+                foreach (var template in templatesToLink)
+                {
+                    template.MethodologicalItineraryId = existing.Id;
+                }
+            }
+        }
 
         await _db.SaveChangesAsync();
         return true;

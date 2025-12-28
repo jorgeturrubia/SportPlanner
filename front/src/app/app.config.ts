@@ -76,6 +76,8 @@ export const appConfig: ApplicationConfig = {
           { path: 'plannings/info/:id', loadComponent: () => import('./features/dashboard/pages/plan-info/plan-info.component').then(m => m.PlanInfoComponent) },
           { path: 'marketplace', loadComponent: () => import('./features/marketplace/marketplace.component').then(m => m.MarketplaceComponent) },
           { path: 'itineraries', loadComponent: () => import('./features/dashboard/pages/itineraries/itinerary-list/itinerary-list.component').then(m => m.ItineraryListComponent) },
+          { path: 'itineraries/create', loadComponent: () => import('./features/dashboard/pages/itineraries/itinerary-form/itinerary-form.component').then(m => m.ItineraryFormComponent) },
+          { path: 'itineraries/:id/edit', loadComponent: () => import('./features/dashboard/pages/itineraries/itinerary-form/itinerary-form.component').then(m => m.ItineraryFormComponent) },
           { path: 'my-templates', loadComponent: () => import('./features/planning-templates/template-list/template-list.component').then(m => m.PlanningTemplateListComponent) },
           { path: 'my-templates/create', loadComponent: () => import('./features/planning-templates/template-form/template-form.component').then(m => m.TemplateFormComponent) },
           { path: 'my-templates/:id/edit', loadComponent: () => import('./features/planning-templates/template-form/template-form.component').then(m => m.TemplateFormComponent) },
