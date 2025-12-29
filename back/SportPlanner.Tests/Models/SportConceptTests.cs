@@ -19,4 +19,17 @@ public class SportConceptTests
         Assert.NotNull(property);
         Assert.Equal(typeof(string), property.PropertyType);
     }
+
+    [Fact]
+    public void SportConceptDto_ShouldHaveOwnershipProperties()
+    {
+        var isSystem = typeof(SportPlanner.Application.DTOs.SportConceptDto).GetProperty("IsSystem");
+        var ownerId = typeof(SportPlanner.Application.DTOs.SportConceptDto).GetProperty("OwnerId");
+
+        Assert.NotNull(isSystem);
+        Assert.Equal(typeof(bool), isSystem.PropertyType);
+        
+        Assert.NotNull(ownerId);
+        Assert.Equal(typeof(string), ownerId.PropertyType);
+    }
 }
