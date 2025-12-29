@@ -38,6 +38,21 @@ public class SportConceptsController : ControllerBase
             {
                 dto.SportId = activeSportId.Value;
             }
+            
+            // Assign Ownership
+            dto.OwnerId = userId;
+            
+            // Admin Check - For now, hardcoded to specific admin ID, or check role
+            // TODO: Move Admin ID to configuration or use Role-based authorization
+            var adminId = "43ccbcfc-5fc1-47b4-a9ce-bd8ed0356c75"; 
+            if (userId == adminId)
+            {
+                dto.IsSystem = true;
+            }
+            else
+            {
+                dto.IsSystem = false;
+            }
         }
         
         if (!dto.SportId.HasValue)
