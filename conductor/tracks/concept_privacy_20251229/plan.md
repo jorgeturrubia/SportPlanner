@@ -9,7 +9,7 @@
     - [x] Sub-task: Update `SportConceptDto` and `CreateSportConceptDto` (if necessary) to handle or exclude `OwnerId` (it should likely be inferred from context, not sent by client).
 - [x] Task: Data Migration (Optional/Manual)
     - [x] Sub-task: Script to set existing `IsSystem=true` concepts to have `OwnerId = NULL` (or a system user ID) to ensure backward compatibility.
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Database & Model Updates' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Database & Model Updates' (Protocol in workflow.md) [checkpoint: 6b19b48]
 
 ## Phase 2: Backend Logic Implementation
 - [ ] Task: Update SportConceptsController.Create
