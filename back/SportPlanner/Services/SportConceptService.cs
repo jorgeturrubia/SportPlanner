@@ -28,20 +28,36 @@ public class SportConceptService : ISportConceptService
             TacticalComplexity = dto.TacticalComplexity,
             TechnicalTacticalFocus = dto.TechnicalTacticalFocus,
             DevelopmentLevel = dto.DevelopmentLevel,
-            SportId = dto.SportId ?? throw new ArgumentException("SportId is required for creation")
+            SportId = dto.SportId ?? throw new ArgumentException("SportId is required for creation"),
+            OwnerId = dto.OwnerId,
+            IsSystem = dto.IsSystem
         };
         _db.SportConcepts.Add(concept);
         await _db.SaveChangesAsync();
         return concept;
     }
 
-    public async Task<List<SportConcept>> GetBySportAsync(int sportId)
+    public async Task<List<SportConcept>> GetBySportAsync(int sportId, string? userId = null)
     {
         // 1. Fetch concepts
-        var concepts = await _db.SportConcepts
+        var query = _db.SportConcepts
             .Include(sc => sc.ConceptCategory)
-            .Where(sc => sc.SportId == sportId && sc.IsActive)
-            .ToListAsync();
+            .Where(sc => sc.SportId == sportId && sc.IsActive);
+            
+        // Filter: Show System concepts OR owned by user
+        if (!string.IsNullOrEmpty(userId))
+        {
+            query = query.Where(sc => sc.IsSystem || sc.OwnerId == userId);
+        }
+        else
+        {
+            // If no user context, show only system concepts? 
+            // Or typically this is called by authenticated users.
+            // Let's default to only IsSystem to be safe if no user provided.
+            query = query.Where(sc => sc.IsSystem);
+        }
+
+        var concepts = await query.ToListAsync();
 
         // 2. Fetch all categories to build the full hierarchy
         // This is efficient enough as categories are usually < 1000
@@ -69,17 +85,26 @@ public class SportConceptService : ISportConceptService
         return concepts;
     }
 
-    public async Task<List<SportConcept>> GetAllAsync(int? sportId = null)
+    public async Task<List<SportConcept>> GetAllAsync(int? sportId = null, string? userId = null)
     {
         var query = _db.SportConcepts
             .Include(sc => sc.ConceptCategory)
                 .ThenInclude(cc => cc!.Parent)
-
             .Where(sc => sc.IsActive);
 
         if (sportId.HasValue)
         {
             query = query.Where(sc => sc.SportId == sportId);
+        }
+        
+        // Filter: Show System concepts OR owned by user
+        if (!string.IsNullOrEmpty(userId))
+        {
+            query = query.Where(sc => sc.IsSystem || sc.OwnerId == userId);
+        }
+        else
+        {
+            query = query.Where(sc => sc.IsSystem);
         }
 
         return await query.OrderBy(sc => sc.Name).ToListAsync();

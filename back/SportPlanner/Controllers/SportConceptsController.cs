@@ -68,7 +68,8 @@ public class SportConceptsController : ControllerBase
     [HttpGet("by-sport/{sportId}")]
     public async Task<IActionResult> GetBySport(int sportId)
     {
-        var concepts = await _service.GetBySportAsync(sportId);
+        var userId = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var concepts = await _service.GetBySportAsync(sportId, userId);
         var result = _mapper.Map<List<SportConceptDto>>(concepts);
         return Ok(result);
     }
@@ -83,7 +84,8 @@ public class SportConceptsController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] int? sportId = null)
     {
-        var concepts = await _service.GetAllAsync(sportId);
+        var userId = User.FindFirst("sub")?.Value ?? User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+        var concepts = await _service.GetAllAsync(sportId, userId);
         var result = _mapper.Map<List<SportConceptDto>>(concepts);
         return Ok(result);
     }
