@@ -4,11 +4,11 @@
 - [x] Task: Create Migration for OwnerId abc0d52
     - [x] Sub-task: Generate EF Core migration to add `OwnerId` (string, nullable) to `SportConcept` table.
     - [x] Sub-task: Apply migration to update the database schema.
-- [ ] Task: Update SportConcept Model
-    - [ ] Sub-task: Add `OwnerId` property to `SportConcept` class in `back/SportPlanner/Models/SportConcept.cs`.
-    - [ ] Sub-task: Update `SportConceptDto` and `CreateSportConceptDto` (if necessary) to handle or exclude `OwnerId` (it should likely be inferred from context, not sent by client).
-- [ ] Task: Data Migration (Optional/Manual)
-    - [ ] Sub-task: Script to set existing `IsSystem=true` concepts to have `OwnerId = NULL` (or a system user ID) to ensure backward compatibility.
+- [x] Task: Update SportConcept Model 54e32f7
+    - [x] Sub-task: Add `OwnerId` property to `SportConcept` class in `back/SportPlanner/Models/SportConcept.cs`.
+    - [x] Sub-task: Update `SportConceptDto` and `CreateSportConceptDto` (if necessary) to handle or exclude `OwnerId` (it should likely be inferred from context, not sent by client).
+- [x] Task: Data Migration (Optional/Manual)
+    - [x] Sub-task: Script to set existing `IsSystem=true` concepts to have `OwnerId = NULL` (or a system user ID) to ensure backward compatibility.
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Database & Model Updates' (Protocol in workflow.md)
 
 ## Phase 2: Backend Logic Implementation
