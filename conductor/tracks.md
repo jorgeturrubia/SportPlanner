@@ -12,5 +12,5 @@
 
 ---
 
-## [ ] Track: Privacidad de conceptos (Evitar que creaciones de usuario salgan en Marketplace)
+## [~] Track: Privacidad de conceptos (Evitar que creaciones de usuario salgan en Marketplace)
 *Link: [./conductor/tracks/concept_privacy_20251229/](./conductor/tracks/concept_privacy_20251229/)*
