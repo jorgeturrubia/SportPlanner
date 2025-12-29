@@ -1,9 +1,9 @@
 # Implementation Plan - Concept Ownership & Visibility
 
 ## Phase 1: Database & Model Updates
-- [ ] Task: Create Migration for OwnerId
-    - [ ] Sub-task: Generate EF Core migration to add `OwnerId` (string, nullable) to `SportConcept` table.
-    - [ ] Sub-task: Apply migration to update the database schema.
+- [x] Task: Create Migration for OwnerId abc0d52
+    - [x] Sub-task: Generate EF Core migration to add `OwnerId` (string, nullable) to `SportConcept` table.
+    - [x] Sub-task: Apply migration to update the database schema.
 - [ ] Task: Update SportConcept Model
     - [ ] Sub-task: Add `OwnerId` property to `SportConcept` class in `back/SportPlanner/Models/SportConcept.cs`.
     - [ ] Sub-task: Update `SportConceptDto` and `CreateSportConceptDto` (if necessary) to handle or exclude `OwnerId` (it should likely be inferred from context, not sent by client).
