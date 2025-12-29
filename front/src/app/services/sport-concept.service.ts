@@ -27,4 +27,12 @@ export class SportConceptService {
   getCategories(): Observable<any[]> {
     return this.http.get<any[]>(`${environment.apiUrl}/conceptcategories`);
   }
+
+  update(id: number, data: any): Observable<SportConcept> {
+    return this.http.put<SportConcept>(`${this.apiUrl}/${id}`, data);
+  }
+
+  delete(id: number): Observable<void> {
+    return this.http.delete<void>(`${this.apiUrl}/${id}`);
+  }
 }

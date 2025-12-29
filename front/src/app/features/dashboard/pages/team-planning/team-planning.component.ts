@@ -187,17 +187,25 @@ export class TeamPlanningComponent implements OnInit {
                     endTime: d.endTime
                 }));
 
-            const selectedIds = this.proposalManager
-                ? this.proposalManager.getSelectedConceptIds()
-                : this.selectedConceptIds();
+            // All concepts are already saved (no pending concepts)
+            this.savePlanning(formVal, scheduleDays);
+        }
+    }
 
-            const planConcepts: PlanConcept[] = selectedIds.map((id, index) => ({
-                id: 0,
-                planningId: 0,
-                sportConcept: null,
-                sportConceptId: id,
-                order: index
-            }));
+
+
+    private savePlanning(formVal: any, scheduleDays: any[]) {
+        const selectedIds = this.proposalManager
+            ? this.proposalManager.getSelectedConceptIds()
+            : this.selectedConceptIds();
+
+        const planConcepts: PlanConcept[] = selectedIds.map((id, index) => ({
+            id: 0,
+            planningId: 0,
+            sportConcept: null,
+            sportConceptId: id,
+            order: index
+        }));
 
             if (this.planningId) {
                 const payload = {
@@ -241,7 +249,6 @@ export class TeamPlanningComponent implements OnInit {
                     }
                 });
             }
-        }
     }
 
     cancel() {

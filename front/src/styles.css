@@ -93,6 +93,60 @@ body {
   @apply bg-dark-bg text-white;
 }
 
+/* Prevent text cursor on non-editable elements */
+* {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  cursor: default;
+}
+
+/* Allow text cursor and selection only on editable elements */
+input,
+textarea,
+[contenteditable="true"],
+[contenteditable] {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+  cursor: text;
+}
+
+/* Allow text selection for paragraphs and spans that might need to be copied */
+p,
+span,
+code,
+pre {
+  user-select: text;
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  -ms-user-select: text;
+}
+
+/* Prevent text cursor on headings, labels, buttons, etc */
+h1, h2, h3, h4, h5, h6,
+label,
+button,
+a,
+.cursor-pointer {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  cursor: default;
+}
+
+/* Restore pointer cursor for clickable elements */
+button,
+a,
+.cursor-pointer,
+[role="button"],
+select {
+  cursor: pointer !important;
+}
+
 /* Fix for missing Material Icons: Map to Material Symbols */
 .material-icons {
   font-family: 'Material Symbols Rounded';

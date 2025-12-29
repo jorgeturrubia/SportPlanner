@@ -96,62 +96,17 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         this.showCreateModal = false;
     }
 
-    handleConceptCreated(newConcept: any) {
-        if (!newConcept) return;
+    handleConceptCreated(savedConcept: any) {
+        if (!savedConcept || savedConcept.id <= 0) {
+            console.warn('Received invalid concept (no ID or negative ID)');
+            return;
+        }
 
-        // 1. Add to initial selection (so it stays selected if we do eventually reload/save)
-        this.initialSelectedConceptIds.push(newConcept.id);
-
-        // 2. Create Scored Wrapper (Provisional)
-        const scoredConcept: ScoredConceptDto = {
-            concept: {
-                ...newConcept,
-                itineraryContexts: [] // New concepts have no itinerary history yet
-            },
-            score: 1.0,
-            scoreReason: 'Concepto recién creado',
-            priority: ProposalPriority.Essential,
-            tag: ConceptTag.Own
-        };
-
-        // 3. Find correct place in hierarchy and inject
-        let injected = false;
+        console.log('Concept created and saved:', savedConcept.name, 'ID:', savedConcept.id);
         
-        // Traverse sections
-        for (const section of this.methodologicalSections) {
-            for (const category of section.categories) {
-                // Check match with subcategories rows
-                const targetRow = category.subCategories.find(r => r.categoryId === newConcept.conceptCategoryId);
-                
-                if (targetRow) {
-                    // Found the specific subcategory (e.g. "Bote")
-                    targetRow.activeConcepts.push(scoredConcept);
-                    
-                    // Update UI state to ensure visibility
-                    category.hasActiveContent = true;
-                    category.isCollapsed = false;
-                    section.isCollapsed = false; // Ensure section is open
-                    
-                    injected = true;
-                    break;
-                }
-            }
-            if (injected) break;
-        }
-
-        // 4. Fallback: If not found (e.g. new category or root), try to find a "General" bucket 
-        // or just force refresh if we really can't place it.
-        // For now, if we can't place it (rare if categories are static), we might need to refresh.
-        if (!injected) {
-            console.warn('Could not locally place new concept (Category ID not found in current view). Falling back to reload.');
-            this.generateProposals(newConcept);
-        } else {
-             // Force change detection if needed, but array push usually updates ngFor if reference changes? 
-             // Angular sometimes needs reference update.
-             // But usually modifying the array inside the object is fine for deep check or we might need `[...row.activeConcepts]`.
-             // Let's rely on standard change detection for now.
-             console.log('Concept locally injected:', scoredConcept.concept.name);
-        }
+        // Reload proposals to include the newly created concept
+        // The backend will now return this concept in the appropriate group
+        this.generateProposals();
     }
 
     loadCategories() {
@@ -299,9 +254,13 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     generateProposals(forceIncludeConcept?: any) {
         if (!this.selectedTeamId) return;
 
+        // Capture state before reload
+        const expandedState = this.captureExpansionState();
+
         this.loading = true;
-        this.response = null;
-        this.methodologicalSections = []; 
+        // Do NOT clear response or sections here to enable Ghost Loading
+        // this.response = null; 
+        // this.methodologicalSections = []; 
         this.allListIds = [];
 
         // -1 means Manual Mode -> No Template. 
@@ -309,15 +268,28 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         const isManual = this.selectedTemplateId === -1;
         const templateIdToSend = isManual ? undefined : (this.selectedTemplateId ?? undefined);
 
+        // Get current season
+        const currentSeason = this.seasonService.currentSeason();
+        if (!currentSeason) {
+            console.error('No hay temporada seleccionada');
+            this.loading = false;
+            return;
+        }
+
+        // Filter out negative IDs (pending concepts) - backend can't process them
+        const validConceptIds = this.initialSelectedConceptIds.filter(id => id > 0);
+
         const payload = {
             teamId: this.selectedTeamId,
+            seasonId: currentSeason.id,
             levelOffset: this.currentLevelOffset,
             planningTemplateId: templateIdToSend,
-            includeConceptIds: this.initialSelectedConceptIds,
+            includeConceptIds: validConceptIds,
             skipLevelFilter: true // ALWAYS true now because we want "The Rest" on the right side.
         };
         
         console.log('Sending payload:', payload);
+
 
         this.proposalsService.generateProposals(payload).subscribe({
             next: (res) => {
@@ -331,6 +303,11 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 }
 
                 this.processResponseIntoHierarchy();
+                this.restoreExpansionState(expandedState); // Restore state
+
+                if (forceIncludeConcept) {
+                    this.expandRowForConcept(forceIncludeConcept.id);
+                }
                 this.loading = false;
             },
             error: (err) => {
@@ -419,6 +396,55 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             scoreReason: 'Recién creado',
             priority: ProposalPriority.Essential,
             tag: ConceptTag.Own
+        });
+    }
+
+    private expandRowForConcept(conceptId: number) {
+        for (const section of this.methodologicalSections) {
+            for (const category of section.categories) {
+                const targetRow = category.subCategories.find(r => 
+                    r.activeConcepts.some(c => c.concept.id === conceptId) || 
+                    r.availableConcepts.some(c => c.concept.id === conceptId)
+                );
+                
+                if (targetRow) {
+                    targetRow.isExpanded = true;
+                    category.isCollapsed = false;
+                    category.hasActiveContent = true; 
+                    section.isCollapsed = false;
+                    return;
+                }
+            }
+        }
+    }
+
+    private captureExpansionState(): Set<string> {
+        const state = new Set<string>();
+        this.methodologicalSections.forEach(section => {
+             if (!section.isCollapsed) state.add(`sec:${section.name}`);
+             section.categories.forEach(cat => {
+                 if (!cat.isCollapsed) state.add(`cat:${section.name}|${cat.name}`);
+                 cat.subCategories.forEach(row => {
+                     if (row.isExpanded) state.add(`row:${row.categoryId}`);
+                 });
+             });
+        });
+        return state;
+    }
+
+    private restoreExpansionState(state: Set<string>) {
+        this.methodologicalSections.forEach(section => {
+             if (state.has(`sec:${section.name}`)) section.isCollapsed = false;
+             section.categories.forEach(cat => {
+                 if (state.has(`cat:${section.name}|${cat.name}`)) {
+                     cat.isCollapsed = false;
+                 }
+                 cat.subCategories.forEach(row => {
+                     if (state.has(`row:${row.categoryId}`)) {
+                         row.isExpanded = true;
+                     }
+                 });
+             });
         });
     }
 
@@ -562,10 +588,27 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         this.methodologicalSections.forEach(section => {
             section.categories.forEach(category => {
                 category.subCategories.forEach(sub => {
-                    sub.activeConcepts.forEach(c => ids.push(c.concept.id));
+                    sub.activeConcepts.forEach(c => {
+                        ids.push(c.concept.id);
+                    });
                 });
             });
         });
         return ids;
+    }
+
+
+
+    deleteConcept(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
+        const idx = row.activeConcepts.indexOf(conceptWrapper);
+        if (idx !== -1) {
+            row.activeConcepts.splice(idx, 1);
+            
+            // Remove from selection state
+            const selIdx = this.initialSelectedConceptIds.indexOf(conceptWrapper.concept.id);
+            if (selIdx !== -1) {
+                this.initialSelectedConceptIds.splice(selIdx, 1);
+            }
+        }
     }
 }

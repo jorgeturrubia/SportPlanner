@@ -37,17 +37,17 @@
                             [class.hover:bg-neutral-800]="!node.isActive">
                             
                             <div class="flex items-center gap-2 overflow-hidden">
-                                <!-- Expand Toggle -->
+                                <!-- Expand Toggle (visible if has children OR concepts) -->
                                 <button type="button" (click)="toggleExpand(node, $event)" 
                                     class="w-5 h-5 flex items-center justify-center rounded hover:bg-neutral-700 text-neutral-400 hover:text-white transition-colors"
-                                    [class.invisible]="node.subCategories.length === 0">
+                                    [class.invisible]="node.subCategories.length === 0 && node.concepts.length === 0">
                                     <span class="material-icons text-sm transition-transform duration-200"
                                         [class.rotate-90]="node.isOpen">chevron_right</span>
                                 </button>
                                 
                                 <!-- Icon & Name -->
                                 <span class="material-icons text-sm" 
-                                    [class.text-[#CCFF00]]="node.isActive" 
+                                    [class.text-[#FF6B00]]="node.isActive" 
                                     [class.text-neutral-500]="!node.isActive">folder</span>
                                 <span class="text-sm font-medium truncate select-none"
                                     [class.text-white]="node.isActive"
@@ -56,8 +56,16 @@
                                 </span>
                             </div>
 
-                            <!-- Count Badge -->
-                            <div class="flex gap-1">
+                            <!-- Count Badge & Delete Button -->
+                            <div class="flex items-center gap-1">
+                                <!-- Delete button (only for newly created) -->
+                                <button type="button" *ngIf="node.isNewlyCreated"
+                                    (click)="deleteCategory(node, $event)"
+                                    class="w-5 h-5 flex items-center justify-center rounded hover:bg-red-900/30 text-neutral-600 hover:text-red-500 transition-colors opacity-0 group-hover:opacity-100"
+                                    title="Eliminar categoría">
+                                    <span class="material-icons text-xs">delete</span>
+                                </button>
+                                
                                 <span class="text-[9px] bg-neutral-900 text-neutral-500 px-1.5 rounded" title="Subcategorías">
                                     {{ node.subCategories?.length || 0 }}
                                 </span>
@@ -67,9 +75,44 @@
                             </div>
                         </div>
 
-                        <!-- Subcategories (Recursive) -->
-                        <div *ngIf="node.isOpen && node.subCategories.length > 0" class="animate-fadeIn">
-                            <ng-container *ngTemplateOutlet="categoryTree; context: { $implicit: node.subCategories }"></ng-container>
+                        <!-- Children Container (Subcategories + Concepts) -->
+                        <div *ngIf="node.isOpen && (node.subCategories.length > 0 || node.concepts.length > 0)" class="animate-fadeIn">
+                            
+                            <!-- Subcategories (Recursive) -->
+                            <ng-container *ngIf="node.subCategories.length > 0">
+                                <ng-container *ngTemplateOutlet="categoryTree; context: { $implicit: node.subCategories }"></ng-container>
+                            </ng-container>
+                            
+                            <!-- Concepts as leaf nodes -->
+                            <div *ngIf="node.concepts.length > 0" class="pl-2 border-l border-neutral-800 ml-1">
+                                <div *ngFor="let concept of node.concepts"
+                                    class="flex items-center gap-2 p-2 rounded hover:bg-neutral-800/50 transition-colors group/concept">
+                                    
+                                    <!-- Spacer for alignment -->
+                                    <div class="w-5"></div>
+                                    
+                                    <!-- Concept Icon -->
+                                    <span class="material-icons text-xs text-[#CCFF00]/70 group-hover/concept:text-[#CCFF00]">emoji_objects</span>
+                                    
+                                    <!-- Concept Name -->
+                                    <span class="text-xs text-neutral-400 group-hover/concept:text-neutral-300 truncate flex-1">
+                                        {{ concept.name }}
+                                    </span>
+                                    
+                                    <!-- Level Badge -->
+                                    <span class="text-[8px] bg-neutral-900 text-neutral-600 px-1 rounded">
+                                        L{{ concept.developmentLevel || '?' }}
+                                    </span>
+                                    
+                                    <!-- Delete button (only for newly created concepts) -->
+                                    <button type="button" *ngIf="concept.isNewlyCreated"
+                                        (click)="deleteConcept(node, concept, $event)"
+                                        class="w-5 h-5 flex items-center justify-center rounded hover:bg-red-900/30 text-neutral-600 hover:text-red-500 transition-colors opacity-0 group-hover/concept:opacity-100"
+                                        title="Eliminar concepto">
+                                        <span class="material-icons text-xs">delete</span>
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -86,9 +129,9 @@
     <div class="w-1/2 flex flex-col bg-neutral-900">
         
         <!-- Top Bar: Close -->
-        <div class="flex justify-end p-2 border-b border-neutral-800 mb-4 bg-neutral-900 sticky top-0 z-10">
+        <div class="flex justify-end p-2 border-b border-neutral-800 mb-4 bg-gradient-to-r from-neutral-900 to-[#FF6B00]/5 sticky top-0 z-10">
             <button type="button" (click)="close.emit()" 
-                class="flex items-center gap-2 px-4 py-1.5 bg-neutral-800 hover:bg-neutral-700 text-neutral-400 hover:text-white rounded transition-colors text-xs uppercase font-bold tracking-wider">
+                class="flex items-center gap-2 px-4 py-1.5 bg-[#FF6B00] hover:bg-[#FF8533] text-white rounded transition-colors text-xs uppercase font-bold tracking-wider shadow-lg shadow-[#FF6B00]/20">
                 <span class="material-icons text-sm">check</span>
                 Terminar
             </button>
@@ -107,27 +150,10 @@
             <div class="mb-4 text-left" *ngIf="selectedCategory && !isCreatingCategory">
                 <span class="text-[10px] text-[#CCFF00] font-bold uppercase tracking-widest bg-[#CCFF00]/10 px-2 py-1 rounded">Categoría Seleccionada</span>
                 <h2 class="text-3xl font-black text-white mt-2 uppercase italic tracking-tighter">{{ selectedCategory.name }}</h2>
-            </div>
-
-            <!-- EXISTING CONCEPTS LIST -->
-            <div *ngIf="selectedCategory && selectedCategory.concepts.length > 0 && !isCreatingCategory && !isCreatingConcept" 
-                 class="mb-6 animate-fadeIn">
-                <h4 class="text-neutral-500 font-bold uppercase tracking-widest text-[10px] mb-2 flex items-center gap-2">
-                    <span class="material-icons text-xs">list</span>
-                    Conceptos Existentes ({{ selectedCategory.concepts.length }})
-                </h4>
-                <div class="space-y-1 max-h-48 overflow-y-auto custom-scrollbar pr-1">
-                    <div *ngFor="let c of selectedCategory.concepts" 
-                         class="flex items-center justify-between p-2 bg-neutral-800/30 rounded border border-neutral-800 hover:border-neutral-700 transition-colors group">
-                        <div class="flex items-center gap-2">
-                             <span class="material-icons text-xs text-neutral-600 group-hover:text-[#CCFF00] transition-colors">emoji_objects</span>
-                             <span class="text-xs text-neutral-300 font-medium group-hover:text-white transition-colors">{{ c.name }}</span>
-                        </div>
-                        <span class="text-[9px] bg-neutral-900 text-neutral-500 px-1 py-0.5 rounded border border-neutral-800">
-                            Lvl {{ c.developmentLevel || '?' }}
-                        </span>
-                    </div>
-                </div>
+                <p class="text-xs text-neutral-500 mt-1">
+                    <span class="material-icons text-xs align-middle">info</span>
+                    Los conceptos aparecen en el árbol de la izquierda
+                </p>
             </div>
 
             <!-- ACTION: CREATE CATEGORY FORM -->
@@ -181,27 +207,50 @@
                     Nuevo Concepto en {{ selectedCategory!.name }}
                 </h4>
                 
+                <!-- Success/Error Messages -->
+                <div *ngIf="successMessage" class="mb-4 p-3 bg-green-900/30 border border-green-700 rounded text-green-300 text-xs animate-fadeIn flex items-center gap-2">
+                    <span class="material-icons text-sm">check_circle</span>
+                    {{ successMessage }}
+                </div>
+                
+                <div *ngIf="errorMessage" class="mb-4 p-3 bg-red-900/30 border border-red-700 rounded text-red-300 text-xs animate-fadeIn flex items-center gap-2">
+                    <span class="material-icons text-sm">error</span>
+                    {{ errorMessage }}
+                </div>
+                
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-[10px] uppercase text-neutral-500 font-bold mb-1">Nombre</label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-[10px] uppercase text-neutral-500 font-bold">Nombre *</label>
+                            <span class="text-[9px] text-neutral-600">{{ newConceptName.length }}/100</span>
+                        </div>
                         <input type="text" [(ngModel)]="newConceptName" #conceptInput
-                            class="w-full bg-neutral-900 text-white p-2 rounded border border-neutral-700 focus:border-[#CCFF00] outline-none font-bold text-sm"
-                            placeholder="Ej. Salida de balón..." (keydown.enter)="$event.preventDefault(); $event.stopImmediatePropagation(); saveConcept()">
+                            [disabled]="isSaving"
+                            maxlength="100"
+                            class="w-full bg-neutral-900 text-white p-2 rounded border border-neutral-700 focus:border-[#CCFF00] outline-none font-bold text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                            placeholder="Ej. Salida de balón..." 
+                            (keydown.enter)="$event.preventDefault(); $event.stopImmediatePropagation(); saveConcept()">
                     </div>
 
                     <div>
-                        <label class="block text-[10px] uppercase text-neutral-500 font-bold mb-1">Descripción</label>
+                        <div class="flex justify-between items-center mb-1">
+                            <label class="block text-[10px] uppercase text-neutral-500 font-bold">Descripción</label>
+                            <span class="text-[9px] text-neutral-600">{{ newConceptDescription.length }}/500</span>
+                        </div>
                         <textarea [(ngModel)]="newConceptDescription" rows="3"
-                            class="w-full bg-neutral-900 text-white p-2 rounded border border-neutral-700 focus:border-[#CCFF00] outline-none text-xs"
+                            [disabled]="isSaving"
+                            maxlength="500"
+                            class="w-full bg-neutral-900 text-white p-2 rounded border border-neutral-700 focus:border-[#CCFF00] outline-none text-xs disabled:opacity-50 disabled:cursor-not-allowed"
                             placeholder="Detalles técnicos..."></textarea>
                     </div>
 
                     <div>
-                        <label class="block text-[10px] uppercase text-neutral-500 font-bold mb-1">Nivel (1-5)</label>
+                        <label class="block text-[10px] uppercase text-neutral-500 font-bold mb-1">Nivel (1-5) *</label>
                         <div class="flex gap-2">
                             <button type="button" *ngFor="let lvl of [1,2,3,4,5]" 
                                 (click)="newConceptLevel = lvl"
-                                class="w-8 h-8 rounded border flex items-center justify-center font-bold text-xs transition-all"
+                                [disabled]="isSaving"
+                                class="w-8 h-8 rounded border flex items-center justify-center font-bold text-xs transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                                 [class.bg-[#CCFF00]]="newConceptLevel === lvl"
                                 [class.text-black]="newConceptLevel === lvl"
                                 [class.border-[#CCFF00]]="newConceptLevel === lvl"
@@ -215,11 +264,14 @@
                 </div>
 
                 <div class="flex justify-end gap-2 mt-6">
-                    <button type="button" (click)="isCreatingConcept = false" class="px-3 py-1 text-xs text-neutral-400 hover:text-white">Cancelar</button>
-                    <button type="button" (click)="saveConcept()" [disabled]="!newConceptName.trim()"
-                        class="px-4 py-2 bg-[#CCFF00] text-black font-bold uppercase text-xs rounded hover:bg-lime-400 disabled:opacity-50 flex items-center gap-2">
-                        <span class="material-icons text-sm">save</span>
-                        Guardar y Seguir (+)
+                    <button type="button" (click)="isCreatingConcept = false" [disabled]="isSaving"
+                        class="px-3 py-1 text-xs text-neutral-400 hover:text-white disabled:opacity-50">Cancelar</button>
+                    <button type="button" (click)="saveConcept()" [disabled]="isSaving"
+                        class="px-4 py-2 bg-[#CCFF00] text-black font-bold uppercase text-xs rounded hover:bg-lime-400 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2">
+                        <span class="material-icons text-sm" *ngIf="!isSaving">save</span>
+                        <div class="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" *ngIf="isSaving"></div>
+                        <span *ngIf="!isSaving">Guardar y Seguir (+)</span>
+                        <span *ngIf="isSaving">Guardando...</span>
                     </button>
                 </div>
             </div>

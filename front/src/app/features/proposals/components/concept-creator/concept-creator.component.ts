@@ -12,6 +12,7 @@ interface CategoryNode {
   isActive?: boolean;
   level?: number;
   concepts: any[];
+  isNewlyCreated?: boolean; // Flag to show delete button
 }
 
 @Component({
@@ -48,6 +49,11 @@ export class ConceptCreatorComponent implements OnInit {
   newConceptDescription = '';
   newConceptLevel: number | null = null;
   
+  // UI States for Concept Creation
+  isSaving = false;
+  errorMessage = '';
+  successMessage = '';
+  
   constructor(
     private categoryService: ConceptCategoriesService,
     private conceptService: SportConceptService
@@ -72,17 +78,9 @@ export class ConceptCreatorComponent implements OnInit {
   }
 
   // Convert flat list to tree if necessary, or just map if already nested
-  // Assuming the API returns a flat list based on previous file inspection (no explicit subCategories in DTO used in service?)
-  // Actually the model had SubCategories. Let's assume the API might return flat or nested. 
-  // Safety check: if flat, build tree.
   private buildHierarchy(flatList: any[]): CategoryNode[] {
-    // Check if we are dealing with a flat list that has parent references
-    // If ANY item has a parentId, we MUST rebuild the tree manually to avoid duplication
-    // (because the API might return both the Parent with nested children AND the Children as top-level items)
     const hasParentRefs = flatList.some(item => item.parentId != null);
 
-    // Only use direct mapping if it's purely a nested tree (no parentIds indicating flat structure)
-    // AND it has structure
     if (!hasParentRefs && flatList.length > 0 && flatList[0].subCategories && flatList[0].subCategories.length > 0) {
         return this.mapToNode(flatList); 
     }
@@ -143,6 +141,7 @@ export class ConceptCreatorComponent implements OnInit {
     // Reset creation forms when changing context
     this.isCreatingCategory = false;
     this.isCreatingConcept = false;
+    this.clearMessages();
   }
 
   toggleExpand(category: CategoryNode, event: Event) {
@@ -168,11 +167,37 @@ export class ConceptCreatorComponent implements OnInit {
     };
 
     this.categoryService.create(payload).subscribe({
-      next: (res) => {
-        this.loadCategories(); 
-        // Rapid Fire: Don't close, just clear and focus
+      next: (res: any) => {
+        // Create the new category node
+        const newNode: CategoryNode = {
+          id: res.id,
+          name: res.name,
+          subCategories: [],
+          concepts: [],
+          isOpen: true,
+          isActive: false,
+          isNewlyCreated: true // Mark as newly created (shows delete button)
+        };
+
+        // Add to the tree locally (without full reload)
+        if (this.selectedCategory) {
+          // Add as child of selected category
+          this.selectedCategory.subCategories.push(newNode);
+          this.selectedCategory.isOpen = true; // Ensure parent is expanded
+        } else {
+          // Add as root category
+          this.categories.push(newNode);
+        }
+
+        // Auto-select the new category for immediate feedback
+        this.selectCategory(newNode);
+
+        // Clear form and stay ready for next category
         this.newCategoryName = '';
-        setTimeout(() => this.categoryInput?.nativeElement.focus(), 50);
+        this.isCreatingCategory = false;
+        
+        // Show success feedback briefly
+        console.log('✓ Categoría creada:', res.name);
       },
       error: (err) => console.error(err)
     });
@@ -184,34 +209,224 @@ export class ConceptCreatorComponent implements OnInit {
     this.newConceptName = '';
     this.newConceptDescription = '';
     this.newConceptLevel = null;
+    this.clearMessages();
     setTimeout(() => this.conceptInput?.nativeElement.focus(), 100);
   }
 
   saveConcept() {
-    if (!this.newConceptName.trim() || !this.selectedCategory) return;
+    // Clear previous messages
+    this.clearMessages();
 
-    const payload = {
-        name: this.newConceptName,
-        description: this.newConceptDescription,
-        conceptCategoryId: this.selectedCategory.id,
-        developmentLevel: this.newConceptLevel || 1, // Default to level 1
-        technicalDifficulty: 5, // Defaults
-        tacticalComplexity: 5
-    };
+    // Validate
+    if (!this.validateConcept()) {
+      return;
+    }
 
+    // Build payload
+    const payload = this.buildConceptPayload();
+    
+    // Set saving state
+    this.isSaving = true;
+
+    // Save to backend
     this.conceptService.create(payload).subscribe({
-        next: (res) => {
-            // Update local state so the badge and list update immediately
-            if (this.selectedCategory) {
-                this.selectedCategory.concepts.push(res);
-            }
-            this.conceptCreated.emit(res);
-            // Rapid Fire: Reset fields but keep creating
-            this.newConceptName = '';
-            this.newConceptDescription = '';
-            setTimeout(() => this.conceptInput?.nativeElement.focus(), 50);
-        },
-        error: (err) => console.error(err)
+      next: (savedConcept: any) => {
+        // Mark concept as newly created
+        savedConcept.isNewlyCreated = true;
+        
+        // Update local category state
+        if (this.selectedCategory) {
+          // Check if concept already exists (avoid duplicates)
+          const exists = this.selectedCategory.concepts.some(c => c.id === savedConcept.id);
+          if (!exists) {
+            this.selectedCategory.concepts.push(savedConcept);
+            // Ensure category is expanded to show the new concept
+            this.selectedCategory.isOpen = true;
+          }
+        }
+        
+        // Emit to parent with REAL saved concept (positive ID)
+        this.conceptCreated.emit(savedConcept);
+        
+        // Show success feedback
+        this.showSuccessFeedback();
+        
+        // Reset form for rapid creation
+        this.resetForm();
+        
+        // Re-focus for next concept
+        setTimeout(() => this.conceptInput?.nativeElement.focus(), 50);
+      },
+      error: (err) => {
+        console.error('Error creating concept:', err);
+        this.showErrorFeedback(err);
+        this.isSaving = false;
+      }
+    });
+  }
+
+  // --- VALIDATION ---
+
+  private validateConcept(): boolean {
+    if (!this.newConceptName.trim()) {
+      this.errorMessage = 'El nombre del concepto es obligatorio';
+      return false;
+    }
+
+    if (this.newConceptName.length < 3) {
+      this.errorMessage = 'El nombre debe tener al menos 3 caracteres';
+      return false;
+    }
+
+    if (this.newConceptName.length > 100) {
+      this.errorMessage = 'El nombre no puede exceder 100 caracteres';
+      return false;
+    }
+
+    if (!this.selectedCategory) {
+      this.errorMessage = 'Debes seleccionar una categoría';
+      return false;
+    }
+
+    if (this.newConceptDescription && this.newConceptDescription.length > 500) {
+      this.errorMessage = 'La descripción no puede exceder 500 caracteres';
+      return false;
+    }
+
+    if (!this.newConceptLevel || this.newConceptLevel < 1 || this.newConceptLevel > 5) {
+      this.errorMessage = 'Debes seleccionar un nivel entre 1 y 5';
+      return false;
+    }
+
+    return true;
+  }
+
+  // --- PAYLOAD BUILDER ---
+
+  private buildConceptPayload(): any {
+    return {
+      name: this.newConceptName.trim(),
+      description: this.newConceptDescription.trim() || null,
+      conceptCategoryId: this.selectedCategory!.id,
+      developmentLevel: this.newConceptLevel,
+      technicalDifficulty: 5,
+      tacticalComplexity: 5,
+      progressWeight: 50,
+      isProgressive: true
+      // sportId will be auto-assigned by backend based on user subscription
+    };
+  }
+
+  // --- FEEDBACK ---
+
+  private showSuccessFeedback() {
+    this.successMessage = '✓ Concepto guardado correctamente';
+    setTimeout(() => {
+      this.successMessage = '';
+    }, 2000);
+  }
+
+  private showErrorFeedback(err: any) {
+    if (err.error && typeof err.error === 'string') {
+      this.errorMessage = err.error;
+    } else if (err.error && err.error.message) {
+      this.errorMessage = err.error.message;
+    } else if (err.status === 0) {
+      this.errorMessage = 'Error de conexión. Verifica que el servidor esté activo.';
+    } else if (err.status === 400) {
+      this.errorMessage = 'Datos inválidos. Verifica los campos.';
+    } else {
+      this.errorMessage = 'Error al guardar el concepto. Inténtalo de nuevo.';
+    }
+  }
+
+  private clearMessages() {
+    this.errorMessage = '';
+    this.successMessage = '';
+  }
+
+  // --- FORM RESET ---
+
+  private resetForm() {
+    this.newConceptName = '';
+    this.newConceptDescription = '';
+    this.newConceptLevel = null;
+    this.isSaving = false;
+  }
+
+  // --- DELETE METHODS ---
+
+  deleteCategory(category: CategoryNode, event: Event) {
+    event.stopPropagation();
+    
+    if (!confirm(`¿Eliminar la categoría "${category.name}"?`)) {
+      return;
+    }
+
+    // Delete from backend
+    this.categoryService.delete(category.id).subscribe({
+      next: () => {
+        // Remove from tree locally
+        this.removeCategoryFromTree(category.id);
+        
+        // If it was selected, clear selection
+        if (this.selectedCategory?.id === category.id) {
+          this.selectedCategory = null;
+        }
+        
+        console.log('✓ Categoría eliminada:', category.name);
+      },
+      error: (err) => {
+        console.error('Error deleting category:', err);
+        alert('Error al eliminar la categoría');
+      }
+    });
+  }
+
+  private removeCategoryFromTree(categoryId: number) {
+    // Recursive function to find and remove category
+    const removeFromArray = (nodes: CategoryNode[]): boolean => {
+      const index = nodes.findIndex(n => n.id === categoryId);
+      if (index !== -1) {
+        nodes.splice(index, 1);
+        return true;
+      }
+      
+      // Search in children
+      for (const node of nodes) {
+        if (removeFromArray(node.subCategories)) {
+          return true;
+        }
+      }
+      return false;
+    };
+    
+    removeFromArray(this.categories);
+  }
+
+  deleteConcept(category: CategoryNode, concept: any, event: Event) {
+    event.stopPropagation();
+    
+    if (!confirm(`¿Eliminar el concepto "${concept.name}"?`)) {
+      return;
+    }
+
+    // Delete from backend
+    this.conceptService.delete(concept.id).subscribe({
+      next: () => {
+        // Remove from local array
+        const index = category.concepts.indexOf(concept);
+        if (index !== -1) {
+          category.concepts.splice(index, 1);
+        }
+        
+        console.log('✓ Concepto eliminado:', concept.name);
+      },
+      error: (err) => {
+        console.error('Error deleting concept:', err);
+        alert('Error al eliminar el concepto');
+      }
     });
   }
 }
+
