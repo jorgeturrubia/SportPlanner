@@ -12,10 +12,10 @@
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Database & Model Updates' (Protocol in workflow.md) [checkpoint: 6b19b48]
 
 ## Phase 2: Backend Logic Implementation
-- [ ] Task: Update SportConceptsController.Create
-    - [ ] Sub-task: Modify `Create` method to automatically assign `OwnerId` from `User.FindFirst(ClaimTypes.NameIdentifier)`.
-    - [ ] Sub-task: Set `IsSystem = false` by default for regular users.
-    - [ ] Sub-task: Add logic to allow Admin users (hardcoded ID or role check) to set `IsSystem = true`.
+- [x] Task: Update SportConceptsController.Create 6606f00
+    - [x] Sub-task: Modify `Create` method to automatically assign `OwnerId` from `User.FindFirst(ClaimTypes.NameIdentifier)`.
+    - [x] Sub-task: Set `IsSystem = false` by default for regular users.
+    - [x] Sub-task: Add logic to allow Admin users (hardcoded ID or role check) to set `IsSystem = true`.
 - [ ] Task: Update SportConceptService Query Logic
     - [ ] Sub-task: Modify `GetBySportAsync` and `GetAllAsync` to filter by `(IsSystem == true || OwnerId == currentUserId)`.
     - [ ] Sub-task: Ensure Marketplace-specific endpoints (if any separate ones exist) strictly filter `IsSystem == true`.
