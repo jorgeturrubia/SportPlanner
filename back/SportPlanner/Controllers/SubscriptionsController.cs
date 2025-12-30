@@ -20,14 +20,24 @@ public class SubscriptionsController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IMapper _mapper;
     private readonly IUserService _userService;
-
     private readonly IBillingService _billing;
-    public SubscriptionsController(AppDbContext db, IMapper mapper, IUserService userService, IBillingService billing)
+    private readonly ISupabaseAdminService _supabaseAdmin;
+    private readonly ILogger<SubscriptionsController> _logger;
+
+    public SubscriptionsController(
+        AppDbContext db, 
+        IMapper mapper, 
+        IUserService userService, 
+        IBillingService billing,
+        ISupabaseAdminService supabaseAdmin,
+        ILogger<SubscriptionsController> logger)
     {
         _db = db;
         _mapper = mapper;
         _userService = userService;
         _billing = billing;
+        _supabaseAdmin = supabaseAdmin;
+        _logger = logger;
     }
 
     // POST /api/subscriptions
@@ -115,6 +125,30 @@ public class SubscriptionsController : ControllerBase
                 return StatusCode(402, "Payment required or billing failed.");
             }
             await tx.CommitAsync();
+            
+            // RBAC: Asignar rol automáticamente al usuario que recibe la suscripción
+            if (!string.IsNullOrEmpty(subscription.UserSupabaseId))
+            {
+                // Determinar el rol basado en el plan/licencia
+                // Por ahora, todas las suscripciones asignan el rol "Coach"
+                var roleAssigned = await _supabaseAdmin.UpdateUserRoleAsync(
+                    subscription.UserSupabaseId, 
+                    UserRoles.Coach);
+                    
+                if (roleAssigned)
+                {
+                    _logger.LogInformation(
+                        "Role {Role} assigned to user {UserId} after subscription creation",
+                        UserRoles.Coach,
+                        subscription.UserSupabaseId);
+                }
+                else
+                {
+                    _logger.LogWarning(
+                        "Failed to assign role to user {UserId} after subscription creation. User may need manual role assignment.",
+                        subscription.UserSupabaseId);
+                }
+            }
         }
         catch (DbUpdateException ex)
         {

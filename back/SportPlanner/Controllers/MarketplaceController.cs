@@ -94,15 +94,10 @@ public class MarketplaceController : ControllerBase
         return Ok(rating);
     }
 
+    [Authorize(Roles = SportPlanner.Models.UserRoles.AdminOwner)]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)
     {
-        // Simple SuperAdmin check (Jorge's ID)
-        if (UserId != "43ccbcfc-5fc1-47b4-a9ce-bd8ed0356c75") 
-        {
-            return Forbid();
-        }
-
         var success = await _marketplaceService.DeleteSystemItineraryAsync(id);
         if (!success) return NotFound();
         return NoContent();

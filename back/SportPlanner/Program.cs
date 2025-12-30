@@ -50,6 +50,11 @@ builder.Services.AddScoped<SportPlanner.Services.ITrainingExecutionService, Spor
 builder.Services.AddScoped<SportPlanner.Services.IMarketplaceService, SportPlanner.Services.MarketplaceService>();
 builder.Services.AddScoped<SportPlanner.Services.IPlanningTemplateService, SportPlanner.Services.PlanningTemplateService>();
 builder.Services.AddScoped<SportPlanner.Services.IRatingService, SportPlanner.Services.RatingService>();
+// RBAC - Current User Service
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<SportPlanner.Services.ICurrentUserService, SportPlanner.Services.CurrentUserService>();
+// RBAC - Supabase Admin Service (para gestión de roles)
+builder.Services.AddHttpClient<SportPlanner.Services.ISupabaseAdminService, SportPlanner.Services.SupabaseAdminService>();
 // Concept interpretation & team metadata
 
 // Configure authentication for Supabase tokens
@@ -70,7 +75,8 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
                 ValidateIssuerSigningKey = true,
                 IssuerSigningKey = new Microsoft.IdentityModel.Tokens.SymmetricSecurityKey(key),
                 ValidateLifetime = true,
-                NameClaimType = "sub"
+                NameClaimType = "sub",
+                RoleClaimType = System.Security.Claims.ClaimTypes.Role
             };
         }
         else if (!string.IsNullOrEmpty(supabaseUrl))
@@ -84,7 +90,8 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
                 ValidateAudience = true,
                 ValidAudience = "authenticated",
                 ValidateLifetime = true,
-                NameClaimType = "sub"
+                NameClaimType = "sub",
+                RoleClaimType = System.Security.Claims.ClaimTypes.Role
             };
         }
         else
@@ -95,7 +102,8 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
                 ValidateIssuer = false,
                 ValidateAudience = false,
                 ValidateLifetime = true,
-                NameClaimType = "sub"
+                NameClaimType = "sub",
+                RoleClaimType = System.Security.Claims.ClaimTypes.Role
             };
         }
         // Add events to help debugging token validation issues in development
@@ -120,6 +128,32 @@ builder.Services.AddAuthentication(Microsoft.AspNetCore.Authentication.JwtBearer
                 if (ctx.Principal?.Claims != null)
                 {
                     logger.LogInformation("Token validated. Claims: {@Claims}", ctx.Principal.Claims.Select(c => new { c.Type, c.Value }).ToArray());
+                    
+                    // Extraer rol de app_metadata y agregarlo como claim de rol
+                    var appMetadataClaim = ctx.Principal.Claims.FirstOrDefault(c => c.Type == "app_metadata");
+                    if (appMetadataClaim != null)
+                    {
+                        try
+                        {
+                            var appMetadata = System.Text.Json.JsonSerializer.Deserialize<System.Collections.Generic.Dictionary<string, object>>(
+                                appMetadataClaim.Value);
+                            
+                            if (appMetadata?.TryGetValue("role", out var roleObj) == true)
+                            {
+                                var role = roleObj.ToString();
+                                if (!string.IsNullOrEmpty(role))
+                                {
+                                    var identity = ctx.Principal.Identity as System.Security.Claims.ClaimsIdentity;
+                                    identity?.AddClaim(new System.Security.Claims.Claim(System.Security.Claims.ClaimTypes.Role, role));
+                                    logger.LogInformation("Role claim added from app_metadata: {Role}", role);
+                                }
+                            }
+                        }
+                        catch (System.Exception ex)
+                        {
+                            logger.LogWarning(ex, "Failed to parse app_metadata for role extraction");
+                        }
+                    }
                 }
                 return Task.CompletedTask;
             }

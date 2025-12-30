@@ -13,12 +13,18 @@ public class SportConceptsController : ControllerBase
     private readonly ISportConceptService _service;
     private readonly IMapper _mapper;
     private readonly SportPlanner.Data.AppDbContext _db;
+    private readonly ICurrentUserService _currentUser;
 
-    public SportConceptsController(ISportConceptService service, IMapper mapper, SportPlanner.Data.AppDbContext db)
+    public SportConceptsController(
+        ISportConceptService service, 
+        IMapper mapper, 
+        SportPlanner.Data.AppDbContext db,
+        ICurrentUserService currentUser)
     {
         _service = service;
         _mapper = mapper;
         _db = db;
+        _currentUser = currentUser;
     }
 
     [HttpPost]
@@ -39,20 +45,11 @@ public class SportConceptsController : ControllerBase
                 dto.SportId = activeSportId.Value;
             }
             
-            // Assign Ownership
+            // Asignar Ownership
             dto.OwnerId = userId;
             
-            // Admin Check - For now, hardcoded to specific admin ID, or check role
-            // TODO: Move Admin ID to configuration or use Role-based authorization
-            var adminId = "43ccbcfc-5fc1-47b4-a9ce-bd8ed0356c75"; 
-            if (userId == adminId)
-            {
-                dto.IsSystem = true;
-            }
-            else
-            {
-                dto.IsSystem = false;
-            }
+            // Asignar IsSystem basado en el rol del usuario
+            dto.IsSystem = _currentUser.IsInRole(Models.UserRoles.AdminOwner);
         }
         
         if (!dto.SportId.HasValue)

@@ -14,3 +14,8 @@
 
 ## [~] Track: Privacidad de conceptos (Evitar que creaciones de usuario salgan en Marketplace)
 *Link: [./conductor/tracks/concept_privacy_20251229/](./conductor/tracks/concept_privacy_20251229/)*
+
+---
+
+## [~] Track: Sistema de roles (RBAC) con Supabase Auth Metadata y sincronización de suscripciones
+*Link: [./conductor/tracks/rbac_system_20251229/](./conductor/tracks/rbac_system_20251229/)*
