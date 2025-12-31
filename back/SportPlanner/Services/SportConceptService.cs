@@ -47,7 +47,7 @@ public class SportConceptService : ISportConceptService
         // Filter: Show System concepts OR owned by user
         if (!string.IsNullOrEmpty(userId))
         {
-            query = query.Where(sc => sc.IsSystem || sc.OwnerId == userId);
+            query = query.Where(sc => sc.OwnerId == userId);
         }
         else
         {
@@ -100,7 +100,7 @@ public class SportConceptService : ISportConceptService
         // Filter: Show System concepts OR owned by user
         if (!string.IsNullOrEmpty(userId))
         {
-            query = query.Where(sc => sc.IsSystem || sc.OwnerId == userId);
+            query = query.Where(sc => sc.OwnerId == userId);
         }
         else
         {

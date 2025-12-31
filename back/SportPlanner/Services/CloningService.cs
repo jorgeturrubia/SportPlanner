@@ -56,6 +56,7 @@ public class CloningService : ICloningService
         foreach (var systemTemplate in systemItinerary.PlanningTemplates)
         {
             var clonedTemplate = await CloneTemplateInternalAsync(systemTemplate, userId, clonedItinerary.Id);
+            clonedItinerary.PlanningTemplates.Add(clonedTemplate);
         }
 
         return clonedItinerary;

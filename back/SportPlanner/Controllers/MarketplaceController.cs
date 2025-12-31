@@ -68,8 +68,14 @@ public class MarketplaceController : ControllerBase
     {
         try
         {
-            var results = await _planningTemplateService.DownloadItineraryAsync(id, UserId);
-            var dtos = _mapper.Map<List<PlanningTemplateSimpleDto>>(results);
+            var result = await _cloningService.CloneItineraryAsync(id, UserId);
+            
+            // Re-load templates if needed, or ensure CloningService returns them
+            // For now, let's assume we want to return the templates of the newly cloned itinerary
+            var templates = await _planningTemplateService.GetUserTemplatesAsync(UserId);
+            var itineraryTemplates = templates.Where(t => t.MethodologicalItineraryId == result.Id).ToList();
+
+            var dtos = _mapper.Map<List<PlanningTemplateSimpleDto>>(itineraryTemplates);
             return Ok(dtos);
         }
         catch (KeyNotFoundException ex)

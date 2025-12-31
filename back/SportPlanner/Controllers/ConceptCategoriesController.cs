@@ -11,17 +11,19 @@ public class ConceptCategoriesController : ControllerBase
 {
     private readonly IConceptCategoryService _service;
     private readonly IMapper _mapper;
+    private readonly ICurrentUserService _currentUser;
 
-    public ConceptCategoriesController(IConceptCategoryService service, IMapper mapper)
+    public ConceptCategoriesController(IConceptCategoryService service, IMapper mapper, ICurrentUserService currentUser)
     {
         _service = service;
         _mapper = mapper;
+        _currentUser = currentUser;
     }
 
     [HttpGet]
     public async Task<IActionResult> GetAll([FromQuery] bool includeInactive = false)
     {
-        var categories = await _service.GetAllAsync(includeInactive);
+        var categories = await _service.GetAllAsync(includeInactive, _currentUser.UserId);
         var result = _mapper.Map<List<ConceptCategoryDto>>(categories);
         return Ok(result);
     }
@@ -38,6 +40,9 @@ public class ConceptCategoriesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> Create([FromBody] CreateConceptCategoryDto dto)
     {
+        dto.OwnerId = _currentUser.UserId;
+        dto.IsSystem = _currentUser.IsInRole(Models.UserRoles.AdminOwner);
+
         var category = await _service.CreateAsync(dto);
         var result = _mapper.Map<ConceptCategoryDto>(category);
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);

@@ -34,7 +34,7 @@ public class SportConcept
     [Required] // Enforced by DB and Model validation
     public int SportId { get; set; }
     public Sport? Sport { get; set; }
-    public bool IsSystem { get; set; } = true;
+    public bool IsSystem { get; set; } = false;
     public bool IsActive { get; set; } = true;
 
     /// <summary>

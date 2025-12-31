@@ -20,14 +20,16 @@ public class ConceptCategoryService : IConceptCategoryService
         {
             Name = dto.Name,
             Description = dto.Description,
-            ParentId = dto.ParentId
+            ParentId = dto.ParentId,
+            OwnerId = dto.OwnerId,
+            IsSystem = dto.IsSystem
         };
         _db.ConceptCategories.Add(category);
         await _db.SaveChangesAsync();
         return category;
     }
 
-    public async Task<List<ConceptCategory>> GetAllAsync(bool includeInactive = false)
+    public async Task<List<ConceptCategory>> GetAllAsync(bool includeInactive = false, string? userId = null)
     {
         var query = _db.ConceptCategories.AsQueryable();
         
@@ -35,6 +37,16 @@ public class ConceptCategoryService : IConceptCategoryService
         {
             query = query.Where(c => c.IsActive);
         }
+
+        if (!string.IsNullOrEmpty(userId))
+        {
+            query = query.Where(c => c.OwnerId == userId);
+        }
+        else
+        {
+            query = query.Where(c => c.IsSystem);
+        }
+
         var categories = await query
             .Include(c => c.SportConcepts)
             .OrderBy(c => c.Name)

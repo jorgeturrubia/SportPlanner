@@ -8,4 +8,8 @@ public class CreateConceptCategoryDto
     public string Name { get; set; } = null!;
     public string? Description { get; set; }
     public int? ParentId { get; set; }
+    
+    // Internal use for ownership
+    public string? OwnerId { get; set; }
+    public bool IsSystem { get; set; } = false;
 }

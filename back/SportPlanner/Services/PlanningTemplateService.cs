@@ -18,20 +18,19 @@ public class PlanningTemplateService : IPlanningTemplateService
 
     public async Task<List<PlanningTemplate>> GetUserTemplatesAsync(string userId, int? sportId = null)
     {
+        // Return ALL user templates regardless of sportId
+        // SportId filtering only applies to system templates in the marketplace
         var query = _db.PlanningTemplates
             .Where(i => i.OwnerId == userId && !i.IsSystem);
-
-        if (sportId.HasValue)
-        {
-            query = query.Where(i => i.TeamCategoryId == null || i.TeamCategory!.SportId == sportId.Value);
-        }
 
         return await query
             .Include(i => i.TeamCategory)
             .Include(i => i.SystemSource)
             .Include(i => i.TemplateConcepts)
+            .Include(i => i.MethodologicalItinerary)
             .ToListAsync();
     }
+
 
     public async Task<PlanningTemplate?> GetTemplateByIdAsync(int id, string userId)
     {
