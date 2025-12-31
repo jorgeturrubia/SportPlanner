@@ -31,4 +31,13 @@ public class Exercise
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public List<string> Tags { get; set; } = new();
+
+    // Ownership & Marketplace Properties
+    public string? OwnerId { get; set; }
+    
+    /// <summary>
+    /// If this is a user copy, this links to the original system exercise.
+    /// </summary>
+    public int? OriginSystemId { get; set; }
+    public Exercise? OriginSystem { get; set; }
 }

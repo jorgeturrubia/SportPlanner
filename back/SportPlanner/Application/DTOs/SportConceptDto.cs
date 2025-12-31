@@ -19,6 +19,7 @@ public class SportConceptDto
     public bool IsActive { get; set; }
     public bool IsSystem { get; set; }
     public string? OwnerId { get; set; }
+    public int? OriginSystemId { get; set; }
     
     // New property for Itinerary Context
     public List<ConceptItineraryContextDto> ItineraryContexts { get; set; } = new();

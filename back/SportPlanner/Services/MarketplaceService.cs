@@ -10,14 +10,16 @@ public class MarketplaceService : IMarketplaceService
 {
     private readonly AppDbContext _db;
     private readonly IMapper _mapper;
+    private readonly ICloningService _cloningService;
 
-    public MarketplaceService(AppDbContext db, IMapper mapper)
+    public MarketplaceService(AppDbContext db, IMapper mapper, ICloningService cloningService)
     {
         _db = db;
         _mapper = mapper;
+        _cloningService = cloningService;
     }
 
-    public async Task<List<MarketplaceItemDto>> SearchAsync(MarketplaceFilterDto filter)
+    public async Task<List<MarketplaceItemDto>> SearchAsync(MarketplaceFilterDto filter, string? userId)
     {
         if (filter.ItemType == "template")
         {
@@ -45,7 +47,8 @@ public class MarketplaceService : IMarketplaceService
             }
 
             var templates = await templateQuery.ToListAsync();
-            return _mapper.Map<List<MarketplaceItemDto>>(templates);
+            var templateDtos = _mapper.Map<List<MarketplaceItemDto>>(templates);
+            return await SetIsDownloadedAsync(templateDtos, "template", userId);
         }
 
         if (filter.ItemType == "concept")
@@ -69,7 +72,8 @@ public class MarketplaceService : IMarketplaceService
             }
 
             var concepts = await conceptQuery.ToListAsync();
-            return _mapper.Map<List<MarketplaceItemDto>>(concepts);
+            var conceptDtos = _mapper.Map<List<MarketplaceItemDto>>(concepts);
+            return await SetIsDownloadedAsync(conceptDtos, "concept", userId);
         }
 
         if (filter.ItemType == "exercise")
@@ -92,7 +96,8 @@ public class MarketplaceService : IMarketplaceService
             }
 
             var exercises = await exerciseQuery.ToListAsync();
-            return _mapper.Map<List<MarketplaceItemDto>>(exercises);
+            var exerciseDtos = _mapper.Map<List<MarketplaceItemDto>>(exercises);
+            return await SetIsDownloadedAsync(exerciseDtos, "exercise", userId);
         }
 
         // Default / Itineraries
@@ -129,7 +134,8 @@ public class MarketplaceService : IMarketplaceService
         }
 
         var results = await query.ToListAsync();
-        return _mapper.Map<List<MarketplaceItemDto>>(results);
+        var resultDtos = _mapper.Map<List<MarketplaceItemDto>>(results);
+        return await SetIsDownloadedAsync(resultDtos, "itinerary", userId);
     }
 
     public async Task<ItineraryDetailDto?> GetItineraryDetailAsync(int id)
@@ -172,4 +178,41 @@ public class MarketplaceService : IMarketplaceService
         await _db.SaveChangesAsync();
         return true;
     }
-}
+
+        private async Task<List<MarketplaceItemDto>> SetIsDownloadedAsync(
+
+            List<MarketplaceItemDto> items, 
+
+            string itemType, 
+
+            string? userId)
+
+        {
+
+            if (string.IsNullOrEmpty(userId) || !items.Any())
+
+                return items;
+
+    
+
+            var ids = items.Select(i => i.Id).ToList();
+
+            var downloadedIds = await _cloningService.GetDownloadedIdsAsync(ids, itemType, userId);
+
+    
+
+            foreach (var item in items)
+
+            {
+
+                item.IsDownloaded = downloadedIds.Contains(item.Id);
+
+            }
+
+            return items;
+
+        }
+
+    }
+
+    

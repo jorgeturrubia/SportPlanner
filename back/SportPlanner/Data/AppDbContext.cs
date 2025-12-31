@@ -125,6 +125,13 @@ public class AppDbContext : DbContext
             .WithMany(c => c.SubCategories)
             .HasForeignKey(c => c.ParentId)
             .OnDelete(DeleteBehavior.Restrict);
+        modelBuilder.Entity<ConceptCategory>()
+            .HasIndex(c => c.OwnerId);
+        modelBuilder.Entity<ConceptCategory>()
+            .HasOne(c => c.OriginSystem)
+            .WithMany()
+            .HasForeignKey(c => c.OriginSystemId)
+            .OnDelete(DeleteBehavior.SetNull);
 
 
 
@@ -134,6 +141,13 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<SportConcept>()
             .HasIndex(sc => new { sc.Name, sc.SportId })
             .IsUnique(false);
+        modelBuilder.Entity<SportConcept>()
+            .HasIndex(sc => sc.OwnerId);
+        modelBuilder.Entity<SportConcept>()
+            .HasOne(sc => sc.OriginSystem)
+            .WithMany()
+            .HasForeignKey(sc => sc.OriginSystemId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         modelBuilder.Entity<PlanConcept>().HasKey(pc => pc.Id);
         modelBuilder.Entity<PlanConcept>()
@@ -249,6 +263,13 @@ public class AppDbContext : DbContext
             .HasMany(e => e.Concepts)
             .WithMany(sc => sc.Exercises)
             .UsingEntity(j => j.ToTable("ExerciseConcepts"));
+        modelBuilder.Entity<Exercise>()
+            .HasIndex(e => e.OwnerId);
+        modelBuilder.Entity<Exercise>()
+            .HasOne(e => e.OriginSystem)
+            .WithMany()
+            .HasForeignKey(e => e.OriginSystemId)
+            .OnDelete(DeleteBehavior.SetNull);
 
         // TrainingSession configuration
         modelBuilder.Entity<TrainingSession>().HasKey(ts => ts.Id);

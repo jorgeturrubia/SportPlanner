@@ -7,6 +7,11 @@ public class ExerciseDto
     public string? Description { get; set; }
     public string? MediaUrl { get; set; }
     public List<int> ConceptIds { get; set; } = new();
+    
+    // Ownership & Marketplace Properties
+    public string? OwnerId { get; set; }
+    public bool IsSystem { get; set; }
+    public int? OriginSystemId { get; set; }
 }
 
 public class CreateExerciseDto

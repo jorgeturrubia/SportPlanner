@@ -19,3 +19,8 @@
 
 ## [~] Track: Sistema de roles (RBAC) con Supabase Auth Metadata y sincronización de suscripciones
 *Link: [./conductor/tracks/rbac_system_20251229/](./conductor/tracks/rbac_system_20251229/)*
+
+---
+
+## [ ] Track: Sistema de Privacidad, Propiedad y Marketplace
+*Link: [./conductor/tracks/user_privacy_marketplace_20251230/](./conductor/tracks/user_privacy_marketplace_20251230/)*

@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { MarketplaceItem, MarketplaceFilter, RateItineraryRequest, PlanningTemplateSimple, ItineraryDetail, TemplateDetail } from '../core/models/planning-template.model';
+import { SportConcept, ConceptCategory } from '../core/models/sport-concept.model';
 import { environment } from '../../environments/environment';
 
 @Injectable({
@@ -33,6 +34,18 @@ export class MarketplaceService {
 
   download(id: number): Observable<PlanningTemplateSimple[]> {
     return this.http.post<PlanningTemplateSimple[]>(`${this.apiUrl}/download/${id}`, {});
+  }
+
+  cloneConcept(id: number): Observable<SportConcept> {
+    return this.http.post<SportConcept>(`${this.apiUrl}/clone/concept/${id}`, {});
+  }
+
+  cloneCategory(id: number): Observable<ConceptCategory> {
+    return this.http.post<ConceptCategory>(`${this.apiUrl}/clone/category/${id}`, {});
+  }
+
+  cloneTemplate(id: number): Observable<PlanningTemplateSimple> {
+    return this.http.post<PlanningTemplateSimple>(`${this.apiUrl}/clone/template/${id}`, {});
   }
 
   rate(request: RateItineraryRequest): Observable<void> {

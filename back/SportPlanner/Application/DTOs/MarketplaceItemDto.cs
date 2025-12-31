@@ -19,4 +19,7 @@ public class MarketplaceItemDto
     public string? SportName { get; set; }
     public string? CategoryName { get; set; }
     public int? ElementCount { get; set; } // e.g., number of templates in itinerary, number of concepts in template
+    
+    // Indicates if the current user has already downloaded this item
+    public bool IsDownloaded { get; set; }
 }

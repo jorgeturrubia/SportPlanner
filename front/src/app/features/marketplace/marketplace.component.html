@@ -115,11 +115,17 @@
                         <span class="text-[10px] font-black uppercase tracking-widest">Detalles</span>
                         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                     </button>
-                    <button (click)="download(item)"
-                        class="flex-[2] bg-dark-bg border-t-2 border-dark-border py-4 px-4 flex items-center justify-between bg-primary group-hover:bg-primary group-hover:text-black transition-all shadow-[inset_0_0_20px_rgba(0,0,0,0.2)] rounded-none group-hover:border-primary/50">
-                        <span class="text-[10px] font-black uppercase tracking-widest text-[#111]">Descargar</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <button (click)="download(item)" [disabled]="item.isDownloaded || isDownloading(item.id)"
+                        class="flex-[2] bg-dark-bg border-t-2 border-dark-border py-4 px-4 flex items-center justify-between bg-primary group-hover:bg-primary group-hover:text-black transition-all shadow-[inset_0_0_20px_rgba(0,0,0,0.2)] rounded-none group-hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:text-gray-400">
+                        <span class="text-[10px] font-black uppercase tracking-widest text-[#111] disabled:text-gray-400">
+                            {{ item.isDownloaded ? 'DESCARGADO' : (isDownloading(item.id) ? 'CLONANDO...' : 'DESCARGAR') }}
+                        </span>
+                        <svg *ngIf="!isDownloading(item.id) && !item.isDownloaded" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>
+                        </svg>
+                        <div *ngIf="isDownloading(item.id)" class="w-4 h-4 border-2 border-black border-t-transparent animate-spin rounded-full"></div>
+                        <svg *ngIf="item.isDownloaded" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline>
                         </svg>
                     </button>
                 </div>
@@ -283,9 +289,9 @@
             <button (click)="closeViewer()" class="px-8 py-3 border-2 border-white/20 text-white font-black hover:bg-white hover:text-black uppercase transition-all tracking-widest skew-x-[-12deg]">
                 Abortar Vista
             </button>
-            <button (click)="download(selectedItem()!); closeViewer()" 
-                class="px-12 py-4 bg-primary text-black font-black uppercase hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,107,0,0.3)] tracking-tighter text-lg skew-x-[-12deg]">
-                {{ selectedItem()?.itemType === 'itinerary' ? 'Sincronizar Itinerario' : 'Sincronizar Unidad' }}
+            <button (click)="download(selectedItem()!)" [disabled]="selectedItem()?.isDownloaded || isDownloading(selectedItem()!.id)"
+                class="px-12 py-4 bg-primary text-black font-black uppercase hover:scale-105 active:scale-95 transition-all shadow-[0_0_30px_rgba(255,107,0,0.3)] tracking-tighter text-lg skew-x-[-12deg] disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-600 disabled:text-gray-400">
+                {{ selectedItem()?.isDownloaded ? 'YA EN TU BIBLIOTECA' : (isDownloading(selectedItem()!.id) ? 'CLONANDO CONTENIDO...' : (selectedItem()?.itemType === 'itinerary' ? 'Sincronizar Itinerario' : 'Sincronizar Unidad')) }}
             </button>
         </div>
     </div>

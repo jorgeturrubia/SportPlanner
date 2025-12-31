@@ -5,6 +5,9 @@ export interface ConceptCategory {
   parentId: number | null;
   parent: ConceptCategory | null;
   subCategories: ConceptCategory[];
+  isSystem?: boolean;
+  ownerId?: string;
+  originSystemId?: number;
 }
 
 export interface SportConcept {
@@ -17,5 +20,8 @@ export interface SportConcept {
   developmentLevel: number | null;
   technicalTacticalFocus: number | null;
   isSuggested?: boolean;
+  isSystem?: boolean;
+  ownerId?: string;
+  originSystemId?: number;
 }
 

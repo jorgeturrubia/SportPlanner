@@ -19,17 +19,20 @@ public class MarketplaceController : ControllerBase
     private readonly IMarketplaceService _marketplaceService;
     private readonly IPlanningTemplateService _planningTemplateService;
     private readonly IRatingService _ratingService;
+    private readonly ICloningService _cloningService;
     private readonly IMapper _mapper;
 
     public MarketplaceController(
         IMarketplaceService marketplaceService,
         IPlanningTemplateService planningTemplateService,
         IRatingService ratingService,
+        ICloningService cloningService,
         IMapper mapper)
     {
         _marketplaceService = marketplaceService;
         _planningTemplateService = planningTemplateService;
         _ratingService = ratingService;
+        _cloningService = cloningService;
         _mapper = mapper;
     }
 
@@ -40,7 +43,7 @@ public class MarketplaceController : ControllerBase
     [HttpGet]
     public async Task<ActionResult<IEnumerable<MarketplaceItemDto>>> Search([FromQuery] MarketplaceFilterDto filter)
     {
-        var results = await _marketplaceService.SearchAsync(filter);
+        var results = await _marketplaceService.SearchAsync(filter, UserId);
         return Ok(results);
     }
 
@@ -76,6 +79,60 @@ public class MarketplaceController : ControllerBase
         catch (Exception ex)
         {
             return BadRequest(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Clones a system concept to the user's private space.
+    /// </summary>
+    [HttpPost("clone/concept/{id}")]
+    public async Task<ActionResult<SportConceptDto>> CloneConcept(int id)
+    {
+        try
+        {
+            var cloned = await _cloningService.CloneConceptAsync(id, UserId);
+            var dto = _mapper.Map<SportConceptDto>(cloned);
+            return Ok(dto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Clones a system category to the user's private space.
+    /// </summary>
+    [HttpPost("clone/category/{id}")]
+    public async Task<ActionResult<ConceptCategoryDto>> CloneCategory(int id)
+    {
+        try
+        {
+            var cloned = await _cloningService.CloneCategoryAsync(id, UserId);
+            var dto = _mapper.Map<ConceptCategoryDto>(cloned);
+            return Ok(dto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Clones a system template to the user's private space.
+    /// </summary>
+    [HttpPost("clone/template/{id}")]
+    public async Task<ActionResult<PlanningTemplateSimpleDto>> CloneTemplate(int id)
+    {
+        try
+        {
+            var cloned = await _cloningService.CloneTemplateAsync(id, UserId);
+            var dto = _mapper.Map<PlanningTemplateSimpleDto>(cloned);
+            return Ok(dto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
         }
     }
 

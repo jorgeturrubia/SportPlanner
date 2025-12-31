@@ -50,6 +50,7 @@ builder.Services.AddScoped<SportPlanner.Services.ITrainingExecutionService, Spor
 builder.Services.AddScoped<SportPlanner.Services.IMarketplaceService, SportPlanner.Services.MarketplaceService>();
 builder.Services.AddScoped<SportPlanner.Services.IPlanningTemplateService, SportPlanner.Services.PlanningTemplateService>();
 builder.Services.AddScoped<SportPlanner.Services.IRatingService, SportPlanner.Services.RatingService>();
+builder.Services.AddScoped<SportPlanner.Services.ICloningService, SportPlanner.Services.CloningService>();
 // RBAC - Current User Service
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddScoped<SportPlanner.Services.ICurrentUserService, SportPlanner.Services.CurrentUserService>();

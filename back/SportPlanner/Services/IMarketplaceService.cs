@@ -14,8 +14,9 @@ public interface IMarketplaceService
     /// Searches for system items (itineraries, templates, concepts, exercises) based on a set of filters.
     /// </summary>
     /// <param name="filter">The filtering criteria.</param>
+    /// <param name="userId">The current user's ID to calculate IsDownloaded status.</param>
     /// <returns>A list of matching marketplace items.</returns>
-    Task<List<MarketplaceItemDto>> SearchAsync(MarketplaceFilterDto filter);
+    Task<List<MarketplaceItemDto>> SearchAsync(MarketplaceFilterDto filter, string? userId);
 
     /// <summary>
     /// Gets the full details of an itinerary, including its templates and concepts.

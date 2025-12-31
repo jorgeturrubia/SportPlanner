@@ -59,6 +59,7 @@ export interface MarketplaceItem {
     sportName?: string;
     categoryName?: string;
     elementCount?: number;
+    isDownloaded?: boolean;
 }
 
 export interface ItineraryDetail {

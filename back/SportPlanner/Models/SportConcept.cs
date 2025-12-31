@@ -37,6 +37,12 @@ public class SportConcept
     public bool IsSystem { get; set; } = true;
     public bool IsActive { get; set; } = true;
 
+    /// <summary>
+    /// If this is a user copy, this links to the original system concept.
+    /// </summary>
+    public int? OriginSystemId { get; set; }
+    public SportConcept? OriginSystem { get; set; }
+
     // Relationship with Exercise library
     public ICollection<Exercise> Exercises { get; set; } = new List<Exercise>();
 }

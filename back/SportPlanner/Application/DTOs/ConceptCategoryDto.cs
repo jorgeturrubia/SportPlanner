@@ -10,6 +10,12 @@ public class ConceptCategoryDto
     public int? ParentId { get; set; }
     public ConceptCategoryDto? Parent { get; set; }
     public bool IsActive { get; set; }
+    
+    // Ownership & Marketplace Properties
+    public string? OwnerId { get; set; }
+    public bool IsSystem { get; set; }
+    public int? OriginSystemId { get; set; }
+    
     public List<ConceptCategoryDto> SubCategories { get; set; } = new List<ConceptCategoryDto>();
     public List<SportConceptDto> Concepts { get; set; } = new List<SportConceptDto>();
 }
