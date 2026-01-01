@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, effect } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SeasonService } from '../../services/season.service';
 import { Season } from '../../models/season.model';
@@ -20,6 +20,17 @@ export class SeasonSelectorComponent implements OnInit {
     // We expose the current season to the template if needed
     currentSeason = this.seasonService.currentSeason;
 
+    constructor() {
+        effect(() => {
+            const current = this.seasonService.currentSeason();
+            if (current) {
+                this.selectedSeasonId.set(current.id);
+            } else {
+                this.selectedSeasonId.set(null);
+            }
+        }, { allowSignalWrites: true });
+    }
+
     ngOnInit() {
         this.loadSeasons();
 
@@ -27,12 +38,6 @@ export class SeasonSelectorComponent implements OnInit {
         this.seasonService.seasonsRefreshed$.subscribe(() => {
             this.loadSeasons();
         });
-
-        // Subscribe to internal state changes to sync dropdown
-        const current = this.seasonService.currentSeason();
-        if (current) {
-            this.selectedSeasonId.set(current.id);
-        }
     }
 
     loadSeasons() {

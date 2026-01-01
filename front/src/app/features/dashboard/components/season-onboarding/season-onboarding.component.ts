@@ -2,7 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { SeasonService } from '../../../../services/season.service';
-import { CreateSeasonDto } from '../../../../models/season.model';
+import { Season, CreateSeasonDto } from '../../../../models/season.model';
 
 @Component({
   selector: 'app-season-onboarding',
@@ -41,7 +41,10 @@ export class SeasonOnboardingComponent {
     };
 
     this.seasonService.createSeason(dto).subscribe({
-      next: () => {
+      next: (createdSeason: Season) => {
+        // Explicitly set the new season as active (Global Context)
+        this.seasonService.setSeason(createdSeason);
+        
         // Refresh checks, which should clear the modal via the parent's logic
         this.seasonService.checkUserSeasons();
         this.isSubmitting.set(false);

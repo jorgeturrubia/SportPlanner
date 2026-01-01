@@ -42,13 +42,21 @@ export class RegisterComponent {
         const { name, email, password } = this.registerForm.value;
 
         try {
-            const { error } = await this.authService.signUp(email, password, name);
+            const { data, error } = await this.authService.signUp(email, password, name);
             
             if (error) {
                 this.errorMessage = error.message;
             } else {
-                // Optionally auto-login or redirect to login
-                this.router.navigate(['/login']);
+                // Check if we have a session (auto-login successful)
+                const session = data?.session;
+                
+                if (session) {
+                    // Auto-login successful, redirect to subscription
+                    this.router.navigate(['/subscription']);
+                } else {
+                    // Email verification might be required
+                    this.router.navigate(['/login'], { queryParams: { registered: true } });
+                }
             }
         } catch (err: any) {
             this.errorMessage = 'Ocurrió un error inesperado.';
