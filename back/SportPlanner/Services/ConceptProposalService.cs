@@ -585,7 +585,7 @@ public class ConceptProposalService : IConceptProposalService
     private string GetSectionName(SportConceptDto concept)
     {
         if (concept.ConceptCategory == null)
-            return "General";
+            return "Sin Categoría";
 
         // Traverse up to find root section (Ataque/Defensa)
         var current = concept.ConceptCategory;
@@ -594,7 +594,7 @@ public class ConceptProposalService : IConceptProposalService
             current = current.Parent;
         }
 
-        return current?.Name ?? "General";
+        return current?.Name ?? "Sin Categoría";
     }
 }
 

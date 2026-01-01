@@ -20,7 +20,7 @@ import { PlanningTemplateDto } from '../../models/proposal.models';
                 <div class="relative group">
                     <select [ngModel]="activeTemplateId" (ngModelChange)="onTemplateChange($event)"
                         class="w-full bg-neutral-800 text-white text-sm font-bold uppercase tracking-tight rounded border border-neutral-700 p-1 focus:ring-2 focus:ring-primary focus:border-primary outline-none appearance-none cursor-pointer pr-10 transition-all">
-                        <option *ngIf="templates.length > 0" [ngValue]="null" class="bg-neutral-800 text-white">Automático ({{ defaultTemplateName || 'Nivel Equipo' }})</option>
+
                         <option [ngValue]="-1" class="bg-neutral-800 text-white">
                             {{ templates.length > 0 ? 'Sin plantilla (Manual)' : 'Planificación Customizada' }}
                         </option>
@@ -87,6 +87,6 @@ export class TemplateTunerComponent implements OnChanges {
             const selected = this.templates.find(i => i.id == this.activeTemplateId);
             return selected ? `Nivel ${selected.level}` : 'Personalizado';
         }
-        return 'Automático';
+        return 'Personalizado';
     }
 }

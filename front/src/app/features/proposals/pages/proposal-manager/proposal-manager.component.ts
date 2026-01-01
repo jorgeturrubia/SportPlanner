@@ -12,33 +12,7 @@ import { SeasonService } from '../../../../services/season.service';
 import { SubscriptionsService } from '../../../../services/subscriptions.service';
 import { PlanningTemplateService } from '../../../../services/planning-template.service';
 import { SportConceptService } from '../../../../services/sport-concept.service';
-import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, ConceptProposalGroupDto, PlanningTemplateDto, ProposalPriority } from '../../models/proposal.models';
-
-// --- New Hierarchical Interfaces ---
-interface SubCategoryRow {
-    name: string;
-    categoryId: number;
-    activeConcepts: ScoredConceptDto[];
-    availableConcepts: ScoredConceptDto[]; // Right column: "The Library"
-    
-    isExpanded: boolean;
-    // Helper connection IDs
-    activeListId: string;
-    availableListId: string;
-}
-
-interface CategoryGroup {
-    name: string;
-    isCollapsed: boolean;
-    hasActiveContent: boolean;
-    subCategories: SubCategoryRow[];
-}
-
-interface MethodologicalSection {
-    name: string;
-    isCollapsed: boolean;
-    categories: CategoryGroup[];
-}
+import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, PlanningTemplateDto, ProposalPriority } from '../../models/proposal.models';
 
 @Component({
     selector: 'app-proposal-manager',
@@ -60,9 +34,10 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     defaultTemplateName: string = '';
     loading: boolean = false;
     currentLevelOffset: number = 0;
-    methodologicalSections: MethodologicalSection[] = [];
-    allListIds: string[] = [];
-    readonly INITIAL_VISIBLE_COUNT = 3;
+
+    // SIMPLIFIED: Two flat lists
+    selectedConcepts: ScoredConceptDto[] = [];
+    availableConcepts: ScoredConceptDto[] = [];
 
     private seasonService: SeasonService = inject(SeasonService);
 
@@ -101,11 +76,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             console.warn('Received invalid concept (no ID or negative ID)');
             return;
         }
-
         console.log('Concept created and saved:', savedConcept.name, 'ID:', savedConcept.id);
-        
-        // Reload proposals to include the newly created concept
-        // The backend will now return this concept in the appropriate group
         this.generateProposals();
     }
 
@@ -126,7 +97,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 this.flattenedCategories.push({ id: c.id, name: c.name, level: 0 });
             }
             if (c.subCategories && c.subCategories.length > 0) {
-                 this.processChildren(c.subCategories, 1);
+                this.processChildren(c.subCategories, 1);
             }
         });
     }
@@ -134,14 +105,10 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     processChildren(cats: any[], level: number) {
         cats.forEach(c => {
             this.flattenedCategories.push({ id: c.id, name: '- '.repeat(level) + c.name, level: level });
-             if (c.subCategories && c.subCategories.length > 0) {
-                 this.processChildren(c.subCategories, level + 1);
+            if (c.subCategories && c.subCategories.length > 0) {
+                this.processChildren(c.subCategories, level + 1);
             }
         });
-    }
-
-    saveNewConcept() {
-        // ... (Keep existing implementation)
     }
 
     ngOnInit(): void {
@@ -180,7 +147,6 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     }
 
     private setupTemplateForTeam(team: any) {
-        // Broad search for sportId
         let sportId = team.sportId || team.sport?.id || team.teamCategory?.sportId || team.teamCategory?.sport?.id;
 
         if (!sportId) {
@@ -193,7 +159,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                         this.generateProposals();
                     }
                 },
-                error: (err) => {
+                error: () => {
                     this.generateProposals();
                 }
             });
@@ -208,14 +174,17 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 this.templates = res as unknown as PlanningTemplateDto[];
                 
                 if (this.templates.length === 0) {
-                     this.selectedTemplateId = -1;
-                     this.defaultTemplateName = 'Sin Plantilla';
+                    this.selectedTemplateId = -1;
+                    this.defaultTemplateName = 'Sin Plantilla';
                 } else {
                     const categoryName = team.teamCategory?.name || '';
                     const match = this.templates.find(i => i.name === categoryName);
                     this.defaultTemplateName = match ? match.name : categoryName;
-                    if (!this.selectedTemplateId && match) {
+                    
+                    if (match) {
                         this.selectedTemplateId = match.id;
+                    } else {
+                        this.selectedTemplateId = -1;
                     }
                 }
                 this.generateProposals();
@@ -229,7 +198,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
 
     ngOnChanges(changes: SimpleChanges): void {
         if (changes['response'] && this.response) {
-            this.processResponseIntoHierarchy();
+            this.processResponseIntoFlatLists();
         }
 
         if (changes['initialSelectedConceptIds'] && !changes['initialSelectedConceptIds'].firstChange) {
@@ -254,21 +223,11 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     generateProposals(forceIncludeConcept?: any) {
         if (!this.selectedTeamId) return;
 
-        // Capture state before reload
-        const expandedState = this.captureExpansionState();
-
         this.loading = true;
-        // Do NOT clear response or sections here to enable Ghost Loading
-        // this.response = null; 
-        // this.methodologicalSections = []; 
-        this.allListIds = [];
 
-        // -1 means Manual Mode -> No Template. 
-        // We set SkipLevelFilter = true to get "All Concepts" on the Right side.
         const isManual = this.selectedTemplateId === -1;
         const templateIdToSend = isManual ? undefined : (this.selectedTemplateId ?? undefined);
 
-        // Get current season
         const currentSeason = this.seasonService.currentSeason();
         if (!currentSeason) {
             console.error('No hay temporada seleccionada');
@@ -276,7 +235,6 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             return;
         }
 
-        // Filter out negative IDs (pending concepts) - backend can't process them
         const validConceptIds = this.initialSelectedConceptIds.filter(id => id > 0);
 
         const payload = {
@@ -285,29 +243,15 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             levelOffset: this.currentLevelOffset,
             planningTemplateId: templateIdToSend,
             includeConceptIds: validConceptIds,
-            skipLevelFilter: true // ALWAYS true now because we want "The Rest" on the right side.
+            skipLevelFilter: true
         };
         
         console.log('Sending payload:', payload);
 
-
         this.proposalsService.generateProposals(payload).subscribe({
             next: (res) => {
                 this.response = res;
-                // Note: Backend now guarantees strict separation:
-                // Suggested = Template Concepts / Selected Concepts
-                // Optional = Everything Else
-                
-                if (forceIncludeConcept && this.response) {
-                    this.ensureConceptInResponse(this.response, forceIncludeConcept);
-                }
-
-                this.processResponseIntoHierarchy();
-                this.restoreExpansionState(expandedState); // Restore state
-
-                if (forceIncludeConcept) {
-                    this.expandRowForConcept(forceIncludeConcept.id);
-                }
+                this.processResponseIntoFlatLists();
                 this.loading = false;
             },
             error: (err) => {
@@ -322,251 +266,45 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         this.generateProposals();
     }
 
-    sectionHasActive(section: MethodologicalSection): boolean {
-        return section.categories.some(c => c.hasActiveContent);
-    }
-
-    toggleSection(section: MethodologicalSection) {
-        section.isCollapsed = !section.isCollapsed;
-    }
-
-    toggleCategory(category: CategoryGroup) {
-        category.isCollapsed = !category.isCollapsed;
-    }
-
-    toggleRow(row: SubCategoryRow) {
-        row.isExpanded = !row.isExpanded;
-    }
-
-    // --- MOVEMENT LOGIC ---
-
-    moveToActive(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
-        // Move from Available -> Active
-        const idx = row.availableConcepts.indexOf(conceptWrapper);
-        if (idx !== -1) {
-            row.availableConcepts.splice(idx, 1);
-            conceptWrapper.tag = ConceptTag.Own;
-            row.activeConcepts.push(conceptWrapper);
-            
-            // Sync with selection state
-            if (!this.initialSelectedConceptIds.includes(conceptWrapper.concept.id)) {
-                this.initialSelectedConceptIds.push(conceptWrapper.concept.id);
-            }
-        }
-    }
-
-    moveToAvailable(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
-        // Move from Active -> Available
-        const idx = row.activeConcepts.indexOf(conceptWrapper);
-        if (idx !== -1) {
-            row.activeConcepts.splice(idx, 1);
-            // Returning to available - tag doesn't matter much visually on right side, but conceptually it's available
-            conceptWrapper.tag = ConceptTag.Inherited; 
-            row.availableConcepts.push(conceptWrapper);
-            
-             // Sync with selection state
-             const selIdx = this.initialSelectedConceptIds.indexOf(conceptWrapper.concept.id);
-             if (selIdx !== -1) {
-                 this.initialSelectedConceptIds.splice(selIdx, 1);
-             }
-        }
-    }
-
-    private ensureConceptInResponse(response: ConceptProposalResponseDto, concept: any) {
-        // If just created, we want it selected (Active)
-        const allGroups = [...response.suggestedGroups, ...response.optionalGroups];
-        if (allGroups.some(g => g.concepts.some(c => c.concept.id === concept.id))) return;
-
-        // Add to Suggested (Active)
-        let targetGroup = response.suggestedGroups.find(g => g.categoryId === concept.conceptCategoryId);
-        if (!targetGroup) {
-            const catInfo = this.flattenedCategories.find(c => c.id === concept.conceptCategoryId);
-            targetGroup = {
-                categoryName: catInfo ? catInfo.name : 'Nueva Categoría',
-                categoryId: concept.conceptCategoryId,
-                section: 'General',
-                concepts: []
-            };
-            response.suggestedGroups.push(targetGroup);
-        }
-
-        targetGroup.concepts.push({
-            concept: concept,
-            score: 1.0,
-            scoreReason: 'Recién creado',
-            priority: ProposalPriority.Essential,
-            tag: ConceptTag.Own
-        });
-    }
-
-    private expandRowForConcept(conceptId: number) {
-        for (const section of this.methodologicalSections) {
-            for (const category of section.categories) {
-                const targetRow = category.subCategories.find(r => 
-                    r.activeConcepts.some(c => c.concept.id === conceptId) || 
-                    r.availableConcepts.some(c => c.concept.id === conceptId)
-                );
-                
-                if (targetRow) {
-                    targetRow.isExpanded = true;
-                    category.isCollapsed = false;
-                    category.hasActiveContent = true; 
-                    section.isCollapsed = false;
-                    return;
-                }
-            }
-        }
-    }
-
-    private captureExpansionState(): Set<string> {
-        const state = new Set<string>();
-        this.methodologicalSections.forEach(section => {
-             if (!section.isCollapsed) state.add(`sec:${section.name}`);
-             section.categories.forEach(cat => {
-                 if (!cat.isCollapsed) state.add(`cat:${section.name}|${cat.name}`);
-                 cat.subCategories.forEach(row => {
-                     if (row.isExpanded) state.add(`row:${row.categoryId}`);
-                 });
-             });
-        });
-        return state;
-    }
-
-    private restoreExpansionState(state: Set<string>) {
-        this.methodologicalSections.forEach(section => {
-             if (state.has(`sec:${section.name}`)) section.isCollapsed = false;
-             section.categories.forEach(cat => {
-                 if (state.has(`cat:${section.name}|${cat.name}`)) {
-                     cat.isCollapsed = false;
-                 }
-                 cat.subCategories.forEach(row => {
-                     if (state.has(`row:${row.categoryId}`)) {
-                         row.isExpanded = true;
-                     }
-                 });
-             });
-        });
-    }
-
     /**
-     * Core logic: Simplified Hierarchy (Active vs Available)
+     * SIMPLIFIED: Process backend response into two flat lists
+     * - selectedConcepts (LEFT): Template concepts / manually selected
+     * - availableConcepts (RIGHT): The rest
      */
-    private processResponseIntoHierarchy() {
+    private processResponseIntoFlatLists() {
         if (!this.response) return;
 
-        // Group by Section > Category > Subcategory
-        const sectionsMap = new Map<string, Map<string, SubCategoryRow>>();
+        // Flatten all concepts from suggested groups (LEFT)
+        const suggested = this.response.suggestedGroups.flatMap(g => g.concepts);
+        
+        // Flatten all concepts from optional groups (RIGHT)
+        const optional = this.response.optionalGroups.flatMap(g => g.concepts);
 
-        const processGroups = (groups: ConceptProposalGroupDto[], isActiveList: boolean) => {
-            groups.forEach(group => {
-                const pathParts = group.categoryName.split(' > ');
-                const sectionName = group.section || (pathParts.length > 0 ? pathParts[0] : 'General');
-                const categoryName = pathParts.length > 1 ? pathParts[1] : sectionName;
-                const subCategoryName = pathParts.length > 2 ? pathParts[2] : (pathParts.length > 1 ? pathParts[1] : categoryName);
-
-                if (!sectionsMap.has(sectionName)) sectionsMap.set(sectionName, new Map());
-                const sectionCategories = sectionsMap.get(sectionName)!;
-                const rowKey = `${categoryName}|${subCategoryName}`;
-
-                if (!sectionCategories.has(rowKey)) {
-                    sectionCategories.set(rowKey, {
-                        name: subCategoryName,
-                        categoryId: group.categoryId,
-                        activeConcepts: [],
-                        availableConcepts: [],
-                        isExpanded: false,
-                        activeListId: `active-${group.categoryId}`,
-                        availableListId: `avail-${group.categoryId}` // One right-side list
-                    });
-                }
-                const row = sectionCategories.get(rowKey)!;
-
-                // Add concepts to appropriate list
-                if (isActiveList) {
-                    row.activeConcepts.push(...group.concepts);
-                } else {
-                    row.availableConcepts.push(...group.concepts);
-                }
-            });
-        };
-
-        processGroups(this.response.suggestedGroups, true); 
-        processGroups(this.response.optionalGroups, false);
-
-        // Build View Models
-        this.methodologicalSections = [];
-        this.allListIds = [];
-
-        sectionsMap.forEach((subCatsMap, sectName) => {
-             const categoriesMap = new Map<string, SubCategoryRow[]>();
-             subCatsMap.forEach((row, rowKey) => {
-                 const catName = rowKey.split('|')[0];
-                 if (!categoriesMap.has(catName)) categoriesMap.set(catName, []);
-                 
-                 // Sort concepts
-                 row.activeConcepts.sort((a,b) => a.concept.name.localeCompare(b.concept.name));
-                 row.availableConcepts.sort((a,b) => a.concept.developmentLevel - b.concept.developmentLevel); // Sort available by level
-
-                 if (row.activeConcepts.length > 0 || row.availableConcepts.length > 0) {
-                     categoriesMap.get(catName)!.push(row);
-                     this.allListIds.push(row.activeListId, row.availableListId);
-                 }
-             });
-
-             const categories: CategoryGroup[] = [];
-             categoriesMap.forEach((rows, catName) => {
-                 if (rows.length > 0) {
-                     const activeContent = rows.some(r => r.activeConcepts.length > 0);
-                     // Auto-expand if has active content OR Manual Mode (since everything is 'Available' initially)
-                     const isManual = this.selectedTemplateId === -1;
-                     categories.push({
-                         name: catName,
-                         isCollapsed: isManual ? false : !activeContent,
-                         hasActiveContent: activeContent,
-                         subCategories: rows.sort((a, b) => a.name.localeCompare(b.name))
-                     });
-                 }
-             });
-
-             if (categories.length > 0) {
-                 this.methodologicalSections.push({
-                     name: sectName,
-                     isCollapsed: false, // Default open for visibility
-                     categories: categories.sort((a, b) => a.name.localeCompare(b.name))
-                 });
-             }
-        });
-
-        // Sort sections
-        const sectionOrder = ['Ataque', 'Defensa', 'Físico', 'Psicología'];
-        this.methodologicalSections.sort((a, b) => {
-            const idxA = sectionOrder.indexOf(a.name);
-            const idxB = sectionOrder.indexOf(b.name);
-            if (idxA !== -1 && idxB !== -1) return idxA - idxB;
-            if (idxA !== -1) return -1;
-            if (idxB !== -1) return 1;
-            return a.name.localeCompare(b.name);
-        });
+        // Sort by category name for easier browsing
+        this.selectedConcepts = suggested.sort((a, b) => 
+            (a.concept.conceptCategory?.name || '').localeCompare(b.concept.conceptCategory?.name || '')
+        );
+        
+        this.availableConcepts = optional.sort((a, b) => 
+            (a.concept.conceptCategory?.name || '').localeCompare(b.concept.conceptCategory?.name || '')
+        );
     }
 
+    // --- DRAG & DROP ---
     drop(event: CdkDragDrop<ScoredConceptDto[]>) {
         if (event.previousContainer === event.container) {
             moveItemInArray(event.container.data, event.previousIndex, event.currentIndex);
         } else {
-            // Drag between Active and Available
-            const targetId = event.container.id; 
-            const isTargetActive = targetId.startsWith('active');
-            
             const concept = event.previousContainer.data[event.previousIndex];
+            const targetId = event.container.id;
+            const isTargetSelected = targetId === 'selected-list';
 
-            if (isTargetActive) {
-                // Moving to Active
+            if (isTargetSelected) {
                 concept.tag = ConceptTag.Own;
                 if (!this.initialSelectedConceptIds.includes(concept.concept.id)) {
                     this.initialSelectedConceptIds.push(concept.concept.id);
                 }
             } else {
-                // Moving to Available
                 concept.tag = ConceptTag.Inherited;
                 const idx = this.initialSelectedConceptIds.indexOf(concept.concept.id);
                 if (idx !== -1) {
@@ -583,32 +321,81 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         }
     }
 
-    getSelectedConceptIds(): number[] {
-        const ids: number[] = [];
-        this.methodologicalSections.forEach(section => {
-            section.categories.forEach(category => {
-                category.subCategories.forEach(sub => {
-                    sub.activeConcepts.forEach(c => {
-                        ids.push(c.concept.id);
-                    });
-                });
-            });
-        });
-        return ids;
+    // --- MOVEMENT ACTIONS ---
+    moveToSelected(conceptWrapper: ScoredConceptDto) {
+        const idx = this.availableConcepts.indexOf(conceptWrapper);
+        if (idx !== -1) {
+            this.availableConcepts.splice(idx, 1);
+            conceptWrapper.tag = ConceptTag.Own;
+            this.selectedConcepts.push(conceptWrapper);
+            
+            if (!this.initialSelectedConceptIds.includes(conceptWrapper.concept.id)) {
+                this.initialSelectedConceptIds.push(conceptWrapper.concept.id);
+            }
+        }
     }
 
-
-
-    deleteConcept(row: SubCategoryRow, conceptWrapper: ScoredConceptDto) {
-        const idx = row.activeConcepts.indexOf(conceptWrapper);
+    moveToAvailable(conceptWrapper: ScoredConceptDto) {
+        const idx = this.selectedConcepts.indexOf(conceptWrapper);
         if (idx !== -1) {
-            row.activeConcepts.splice(idx, 1);
+            this.selectedConcepts.splice(idx, 1);
+            conceptWrapper.tag = ConceptTag.Inherited;
+            this.availableConcepts.push(conceptWrapper);
             
-            // Remove from selection state
             const selIdx = this.initialSelectedConceptIds.indexOf(conceptWrapper.concept.id);
             if (selIdx !== -1) {
                 this.initialSelectedConceptIds.splice(selIdx, 1);
             }
         }
+    }
+
+    getSelectedConceptIds(): number[] {
+        return this.selectedConcepts.map(c => c.concept.id);
+    }
+
+    deleteConcept(conceptWrapper: ScoredConceptDto) {
+        const idx = this.selectedConcepts.indexOf(conceptWrapper);
+        if (idx !== -1) {
+            this.selectedConcepts.splice(idx, 1);
+            
+            const selIdx = this.initialSelectedConceptIds.indexOf(conceptWrapper.concept.id);
+            if (selIdx !== -1) {
+                this.initialSelectedConceptIds.splice(selIdx, 1);
+            }
+        }
+    }
+
+    // Helper to group selected concepts by category for display
+    get selectedByCategory(): { category: string; concepts: ScoredConceptDto[] }[] {
+        const groups = new Map<string, ScoredConceptDto[]>();
+        
+        this.selectedConcepts.forEach(c => {
+            const catName = c.concept.conceptCategory?.name || 'Sin Categoría';
+            if (!groups.has(catName)) {
+                groups.set(catName, []);
+            }
+            groups.get(catName)!.push(c);
+        });
+
+        return Array.from(groups.entries())
+            .map(([category, concepts]) => ({ category, concepts }))
+            .sort((a, b) => a.category.localeCompare(b.category));
+    }
+
+    // Helper to group available concepts by category for display
+    get availableByCategory(): { category: string; concepts: ScoredConceptDto[] }[] {
+        const groups = new Map<string, ScoredConceptDto[]>();
+        
+        this.availableConcepts.forEach(c => {
+            const catName = c.concept.conceptCategory?.name || 'Sin Categoría';
+            if (!groups.has(catName)) {
+                groups.set(catName, []);
+            }
+            groups.get(catName)!.push(c);
+        });
+
+        return Array.from(groups.entries())
+            .map(([category, concepts]) => ({ category, concepts }))
+            .sort((a, b) => a.category.localeCompare(b.category));
     }
 }
