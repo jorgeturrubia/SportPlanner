@@ -114,15 +114,26 @@ textarea,
   cursor: text;
 }
 
-/* Allow text selection for paragraphs and spans that might need to be copied */
+/* Allow text selection for paragraphs and spans that might need to be copied, but NOT inside buttons/links */
 p,
-span,
+span:not(button span):not(a span),
 code,
 pre {
   user-select: text;
   -webkit-user-select: text;
   -moz-user-select: text;
   -ms-user-select: text;
+}
+
+/* Force no text selection inside interactive elements */
+button *,
+a *,
+nav *,
+aside * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
 }
 
 /* Prevent text cursor on headings, labels, buttons, etc */

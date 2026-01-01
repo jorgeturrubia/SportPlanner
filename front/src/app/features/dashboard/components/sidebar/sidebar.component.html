@@ -1,5 +1,5 @@
 <aside
-    class="h-full flex flex-col bg-dark-surface border-r-2 border-dark-border transition-all duration-300 overflow-hidden"
+    class="h-full flex flex-col bg-dark-surface border-r-2 border-dark-border transition-all duration-300 overflow-hidden select-none"
     [class.w-56]="!collapsed" [class.w-16]="collapsed">
     <!-- Logo Area -->
     <div class="h-14 flex items-center justify-center border-b-2 border-dark-border shrink-0">
@@ -17,7 +17,7 @@
     <nav class="flex-1 py-4 px-2 space-y-1 overflow-y-auto">
         <a routerLink="/dashboard" routerLinkActive="bg-primary text-black border-primary"
             [routerLinkActiveOptions]="{exact: true}"
-            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm">
+            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm select-none">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
@@ -30,7 +30,7 @@
         </a>
 
         <a routerLink="/dashboard/teams" routerLinkActive="bg-primary text-black border-primary"
-            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm">
+            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm select-none">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
                 <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
@@ -51,7 +51,7 @@
 
 
         <a routerLink="/dashboard/marketplace" routerLinkActive="bg-primary text-black border-primary"
-            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm">
+            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm select-none">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                 stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
                 <circle cx="8" cy="21" r="1" />
@@ -64,23 +64,12 @@
             </span>
         </a>
 
-        <a routerLink="/dashboard/itineraries" routerLinkActive="bg-primary text-black border-primary"
-            class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
-                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-            </svg>
-            <span class="ml-3 font-bold tracking-wide truncate transition-opacity duration-300"
-                [class.opacity-0]="collapsed" [class.w-0]="collapsed" [class.hidden]="collapsed">
-                {{ 'SIDEBAR.MY_ITINERARIES' | translate }}
-            </span>
-        </a>
+
 
         <!-- Plan Configuration Menu -->
         <div class="space-y-1">
             <button (click)="togglePlanConfig()"
-                class="w-full flex items-center justify-between px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm">
+                class="w-full flex items-center justify-between px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm select-none">
                 <div class="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -105,7 +94,7 @@
                 class="ml-6 space-y-1 overflow-hidden transition-all duration-300">
                 <a routerLink="/dashboard/master-user/sport-concepts"
                     routerLinkActive="bg-secondary text-black border-secondary"
-                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs">
+                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs select-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="shrink-0">
@@ -118,7 +107,7 @@
                 </a>
                 <a routerLink="/dashboard/master-user/concept-categories"
                     routerLinkActive="bg-secondary text-black border-secondary"
-                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs">
+                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs select-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="shrink-0">
@@ -131,7 +120,7 @@
                 </a>
                 <a routerLink="/dashboard/itineraries"
                     routerLinkActive="bg-secondary text-black border-secondary"
-                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs">
+                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs select-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="shrink-0">
@@ -143,7 +132,7 @@
                 </a>
                 <a routerLink="/dashboard/my-templates"
                     routerLinkActive="bg-secondary text-black border-secondary"
-                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs">
+                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs select-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="shrink-0">
@@ -160,7 +149,7 @@
         <!-- System Configuration Menu -->
         <div class="space-y-1">
             <button (click)="toggleSystemConfig()"
-                class="w-full flex items-center justify-between px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm">
+                class="w-full flex items-center justify-between px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-sm select-none">
                 <div class="flex items-center">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -186,7 +175,7 @@
                 class="ml-6 space-y-1 overflow-hidden transition-all duration-300">
                 <a routerLink="/dashboard/master-user/seasons"
                     routerLinkActive="bg-secondary text-black border-secondary"
-                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs">
+                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs select-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="shrink-0">
@@ -201,7 +190,7 @@
                 </a>
                 <a routerLink="/dashboard/core-masters/subscription-sports"
                     routerLinkActive="bg-secondary text-black border-secondary"
-                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs">
+                    class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs select-none">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
                         class="shrink-0">
@@ -222,10 +211,10 @@
         <!-- Language Switcher -->
         <div class="flex justify-center gap-2 text-xs font-bold text-gray-400 mb-3" *ngIf="!collapsed">
             <button (click)="switchLanguage('es')" [class.text-primary]="currentLang() === 'es'"
-                class="hover:text-white transition-colors">ES</button>
+                class="hover:text-white transition-colors select-none">ES</button>
             <span>|</span>
             <button (click)="switchLanguage('en')" [class.text-primary]="currentLang() === 'en'"
-                class="hover:text-white transition-colors">EN</button>
+                class="hover:text-white transition-colors select-none">EN</button>
         </div>
 
         <div class="flex items-center justify-between overflow-hidden">
@@ -241,7 +230,7 @@
                 </div>
             </div>
             <button (click)="logout()"
-                class="shrink-0 p-2 border-2 border-transparent hover:border-danger hover:text-danger text-gray-400 transition-all group"
+                class="shrink-0 p-2 border-2 border-transparent hover:border-danger hover:text-danger text-gray-400 transition-all group select-none"
                 [class.ml-2]="!collapsed" [title]="'SIDEBAR.LOGOUT' | translate">
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
                     stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
