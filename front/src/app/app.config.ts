@@ -69,6 +69,7 @@ export const appConfig: ApplicationConfig = {
             ]
           },
           { path: 'master-user/sport-concepts', loadComponent: () => import('./features/dashboard/pages/master-user/sport-concepts/sport-concepts.component').then(m => m.SportConceptsComponent) },
+          { path: 'new-concept', loadComponent: () => import('./features/dashboard/pages/new-concept/new-concept-page.component').then(m => m.NewConceptPageComponent) },
           { path: 'master-user/concept-categories', loadComponent: () => import('./features/dashboard/pages/master-user/concept-categories/concept-categories.component').then(m => m.ConceptCategoriesComponent) },
           { path: 'master-user/seasons', loadComponent: () => import('./features/dashboard/pages/master-user/seasons/seasons.component').then(m => m.SeasonsComponent) },
           { path: 'core-masters/subscription-sports', loadComponent: () => import('./features/dashboard/pages/core-masters/subscription-sports/subscription-sports.component').then(m => m.SubscriptionSportsComponent) },

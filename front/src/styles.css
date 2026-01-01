@@ -154,8 +154,29 @@ button,
 a,
 .cursor-pointer,
 [role="button"],
-select {
+select,
+[onclick],
+[click],
+div[class*="hover:"],
+.group {
   cursor: pointer !important;
+}
+
+/* Ensure all children of clickable elements also have pointer cursor */
+button *,
+a *,
+.cursor-pointer *,
+[role="button"] *,
+.group * {
+  cursor: pointer !important;
+}
+
+/* Force no text cursor on select-none elements */
+.select-none,
+.select-none * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  cursor: inherit;
 }
 
 /* Fix for missing Material Icons: Map to Material Symbols */
