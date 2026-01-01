@@ -121,14 +121,24 @@
                     </svg>
                     <span>{{ training.sessionExercises.length }} Ejercicios</span>
                 </div>
-                <span
-                    class="text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x21="19"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </span>
+                <div class="flex items-center gap-2">
+                    <!-- Botón Ejecutar Entrenamiento -->
+                    <button (click)="executeTraining(training.id, $event)"
+                        class="px-2 py-1 bg-secondary text-black text-[9px] font-black uppercase tracking-wider rounded hover:bg-green-400 transition-colors flex items-center gap-1 opacity-0 group-hover:opacity-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                            <polygon points="5 3 19 12 5 21 5 3"></polygon>
+                        </svg>
+                        INICIAR
+                    </button>
+                    <span
+                        class="text-primary opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x21="19"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </span>
+                </div>
             </div>
         </div>
         }
