@@ -128,16 +128,10 @@ export class MarketplaceComponent implements OnInit, OnDestroy {
         // If 'exercise' I might need to skip or handle. Let's assume concept for now.
         // The itemTypes array has: itinerary, template, concept, exercise.
         if (item.itemType === 'exercise') {
-             // Future implementation
-             this.notificationService.error('Info', 'Descarga de ejercicios individuales próximamente.');
-             this.downloadingItems.update(set => {
-                const newSet = new Set(set);
-                newSet.delete(item.id);
-                return newSet;
-             });
-             return;
+             request = this.marketplaceService.cloneExercise(item.id);
+        } else {
+             request = this.marketplaceService.cloneConcept(item.id);
         }
-        request = this.marketplaceService.cloneConcept(item.id); // Defaulting to concept if unknown? No, better be safe.
     }
 
     if (request) {

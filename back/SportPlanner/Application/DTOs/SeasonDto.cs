@@ -8,6 +8,8 @@ public class SeasonDto
     public DateTime EndDate { get; set; }
     public bool IsActive { get; set; }
     public int? OrganizationId { get; set; }
+    public string? OwnerId { get; set; }
+    public bool IsSystem { get; set; }
 }
 
 public class CreateSeasonDto

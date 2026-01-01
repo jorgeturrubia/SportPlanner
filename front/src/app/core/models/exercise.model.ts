@@ -4,6 +4,11 @@ export interface Exercise {
     description?: string;
     mediaUrl?: string;
     conceptIds: number[];
+    
+    // Ownership & Marketplace Properties
+    ownerId?: string;
+    isSystem?: boolean;
+    originSystemId?: number;
 }
 
 export interface CreateExerciseDto {

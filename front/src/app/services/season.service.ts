@@ -19,7 +19,15 @@ export class SeasonService {
     private seasonsRefreshSubject = new Subject<void>();
     public seasonsRefreshed$ = this.seasonsRefreshSubject.asObservable();
 
-    constructor(private http: HttpClient) { }
+    // Signals to track user seasons state
+    public userSeasons = signal<Season[]>([]);
+    public isLoadingSeasons = signal<boolean>(true);
+    public hasSeasons = computed(() => this.userSeasons().length > 0);
+
+    constructor(private http: HttpClient) { 
+        // Initial check
+        this.checkUserSeasons();
+    }
 
     private loadSeasonFromStorage(): Season | null {
         const stored = localStorage.getItem('selectedSeason');
@@ -37,6 +45,27 @@ export class SeasonService {
 
     public refreshSeasonsList() {
         this.seasonsRefreshSubject.next();
+        this.checkUserSeasons();
+    }
+
+    public checkUserSeasons() {
+        this.isLoadingSeasons.set(true);
+        this.getSeasons().subscribe({
+            next: (seasons) => {
+                this.userSeasons.set(seasons);
+                this.isLoadingSeasons.set(false);
+                
+                // Automatically select the first season if none is selected and seasons exist
+                if (seasons.length > 0 && !this.currentSeason()) {
+                    this.setSeason(seasons[0]);
+                } else if (seasons.length === 0) {
+                     this.setSeason(null);
+                }
+            },
+            error: () => {
+                this.isLoadingSeasons.set(false);
+            }
+        });
     }
 
     getSeasons(organizationId?: number): Observable<Season[]> {

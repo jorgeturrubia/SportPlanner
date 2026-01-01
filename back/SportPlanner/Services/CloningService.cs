@@ -178,6 +178,52 @@ public class CloningService : ICloningService
         return clonedConcept;
     }
 
+    public async Task<Exercise> CloneExerciseAsync(int systemExerciseId, string userId)
+    {
+        var systemExercise = await _db.Exercises
+            .Include(e => e.Concepts)
+            .FirstOrDefaultAsync(e => e.Id == systemExerciseId && e.IsSystem);
+
+        if (systemExercise == null)
+            throw new KeyNotFoundException("System exercise not found.");
+
+        // Check if already cloned
+        var existingClone = await _db.Exercises
+            .FirstOrDefaultAsync(e => e.OriginSystemId == systemExercise.Id && e.OwnerId == userId);
+
+        if (existingClone != null)
+            return existingClone;
+
+        var clonedExercise = new Exercise
+        {
+            Name = systemExercise.Name,
+            Description = systemExercise.Description,
+            MediaUrl = systemExercise.MediaUrl,
+            IsSystem = false,
+            IsActive = true,
+            SportId = systemExercise.SportId,
+            AuthorName = systemExercise.AuthorName,
+            OwnerId = userId,
+            OriginSystemId = systemExercise.Id,
+            CreatedAt = DateTime.UtcNow,
+            Tags = new List<string>(systemExercise.Tags)
+        };
+
+        _db.Exercises.Add(clonedExercise);
+        await _db.SaveChangesAsync();
+
+        // Clone and link concepts
+        foreach (var concept in systemExercise.Concepts)
+        {
+            var clonedConcept = await EnsureConceptClonedAsync(concept, userId);
+            clonedExercise.Concepts.Add(clonedConcept);
+        }
+
+        await _db.SaveChangesAsync(); // Save relationships
+
+        return clonedExercise;
+    }
+
     public async Task<ConceptCategory> CloneCategoryAsync(int systemCategoryId, string userId)
     {
         var systemCategory = await _db.ConceptCategories

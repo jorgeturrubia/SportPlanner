@@ -19,7 +19,8 @@
         "SYSTEM_CONFIG": "Configuración Sistema",
         "SPORT_CONCEPTS": "Conceptos Deportivos",
         "NEW_CONCEPT": "Nuevo Concepto",
-        "CATEGORIES": "Categorias"
+        "CATEGORIES": "Categorias",
+        "EXERCISES": "Ejercicios"
     },
     "COMMON": {
         "LOADING": "Cargando...",

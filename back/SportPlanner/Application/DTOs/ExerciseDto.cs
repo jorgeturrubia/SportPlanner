@@ -20,4 +20,8 @@ public class CreateExerciseDto
     public string? Description { get; set; }
     public string? MediaUrl { get; set; }
     public List<int>? ConceptIds { get; set; }
+    
+    // Ownership properties (set by controller)
+    public string? OwnerId { get; set; }
+    public bool IsSystem { get; set; } = false;
 }

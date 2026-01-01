@@ -1,4 +1,10 @@
-<div class="flex h-screen overflow-hidden bg-dark-bg text-white font-sans">
+<div class="flex h-screen overflow-hidden bg-dark-bg text-white font-sans relative">
+    <!-- Season Onboarding Modal (Blocking) -->
+    <app-season-onboarding 
+        *ngIf="!seasonService.isLoadingSeasons() && !seasonService.hasSeasons()" 
+        class="absolute inset-0 z-[100]">
+    </app-season-onboarding>
+
     <!-- Sidebar -->
     <app-sidebar [collapsed]="sidebarCollapsed()" class="shrink-0 h-full z-20 shadow-xl"></app-sidebar>
 

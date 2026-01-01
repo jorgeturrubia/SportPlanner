@@ -1,0 +1,91 @@
+<div class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+    <div class="relative bg-[#1e1e1e] border border-white/10 rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden animate-fade-in-up">
+        
+        <!-- Decorative background glow -->
+        <div class="absolute -top-20 -right-20 w-64 h-64 bg-primary-500/20 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -bottom-20 -left-20 w-64 h-64 bg-secondary-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative p-8 text-center space-y-6">
+            <!-- Header -->
+            <div class="space-y-2">
+                <div class="mx-auto w-16 h-16 bg-gradient-to-br from-primary-500 to-primary-600 rounded-xl flex items-center justify-center shadow-lg shadow-primary-500/30 mb-6">
+                    <span class="material-icons text-3xl text-white">sports_score</span>
+                </div>
+                <h2 class="text-3xl font-bold text-white tracking-tight">Bienvenido a SportPlanner</h2>
+                <p class="text-gray-400">Para comenzar a planificar, necesitas crear tu primera temporada.</p>
+            </div>
+
+            <!-- Form -->
+            <div class="space-y-4 text-left mt-8">
+                <!-- Name Input -->
+                <div class="space-y-1">
+                    <label class="text-sm font-medium text-gray-300 ml-1">Nombre de la Temporada</label>
+                    <input 
+                        type="text" 
+                        [ngModel]="name()" 
+                        (ngModelChange)="name.set($event)"
+                        placeholder="Ej. Temporada 2024-2025" 
+                        class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-gray-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                    >
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <!-- Start Date -->
+                    <div class="space-y-1">
+                        <label class="text-sm font-medium text-gray-300 ml-1">Fecha Inicio</label>
+                        <input 
+                            type="date" 
+                            [ngModel]="startDate()" 
+                            (ngModelChange)="startDate.set($event)"
+                            class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all calendar-dark"
+                        >
+                    </div>
+
+                    <!-- End Date -->
+                    <div class="space-y-1">
+                        <label class="text-sm font-medium text-gray-300 ml-1">Fecha Fin</label>
+                        <input 
+                            type="date" 
+                            [ngModel]="endDate()" 
+                            (ngModelChange)="endDate.set($event)"
+                            class="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 text-white focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all calendar-dark"
+                        >
+                    </div>
+                </div>
+
+                <!-- Error Message -->
+                <div *ngIf="errorMessage()" class="text-red-400 text-sm text-center bg-red-500/10 py-2 rounded-lg border border-red-500/20">
+                    {{ errorMessage() }}
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button 
+                (click)="createSeason()" 
+                [disabled]="isSubmitting()"
+                class="w-full bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-500 hover:to-primary-400 text-white font-semibold py-3.5 px-6 rounded-xl shadow-lg shadow-primary-500/25 transform transition-all active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed flex items-center justify-center gap-2 mt-4"
+            >
+                <span *ngIf="isSubmitting()" class="material-icons animate-spin text-lg">sync</span>
+                <span>{{ isSubmitting() ? 'Creando...' : 'Comenzar Temporada' }}</span>
+                <span *ngIf="!isSubmitting()" class="material-icons text-lg">arrow_forward</span>
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Custom animations if not in global css */
+@keyframes fade-in-up {
+    0% { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up {
+    animation: fade-in-up 0.5s ease-out forwards;
+}
+/* Dark calendar fix for webkit */
+.calendar-dark::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.6;
+    cursor: pointer;
+}
+</style>

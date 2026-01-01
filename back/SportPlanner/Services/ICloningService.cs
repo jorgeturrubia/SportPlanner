@@ -32,6 +32,14 @@ public interface ICloningService
     Task<SportConcept> CloneConceptAsync(int systemConceptId, string userId);
 
     /// <summary>
+    /// Clones a system exercise with its concepts to the user's space.
+    /// </summary>
+    /// <param name="systemExerciseId">ID of the system exercise to clone.</param>
+    /// <param name="userId">ID of the user who will own the cloned content.</param>
+    /// <returns>The cloned exercise with user ownership.</returns>
+    Task<Exercise> CloneExerciseAsync(int systemExerciseId, string userId);
+
+    /// <summary>
     /// Clones a system category (and its parent hierarchy) to the user's space.
     /// </summary>
     /// <param name="systemCategoryId">ID of the system category to clone.</param>

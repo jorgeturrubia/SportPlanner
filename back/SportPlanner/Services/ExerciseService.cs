@@ -14,7 +14,7 @@ public class ExerciseService : IExerciseService
         _db = db;
     }
 
-    public async Task<List<Exercise>> GetAllAsync(int? conceptId = null)
+    public async Task<List<Exercise>> GetAllAsync(int? conceptId = null, string? userId = null)
     {
         var query = _db.Exercises
             .Include(e => e.Concepts)
@@ -23,6 +23,16 @@ public class ExerciseService : IExerciseService
         if (conceptId.HasValue)
         {
             query = query.Where(e => e.Concepts.Any(c => c.Id == conceptId));
+        }
+
+        // Filter by ownership: user's exercises OR system exercises
+        if (!string.IsNullOrEmpty(userId))
+        {
+            query = query.Where(e => e.OwnerId == userId);
+        }
+        else
+        {
+            query = query.Where(e => e.IsSystem);
         }
 
         return await query.OrderBy(e => e.Name).ToListAsync();
@@ -41,7 +51,9 @@ public class ExerciseService : IExerciseService
         {
             Name = dto.Name,
             Description = dto.Description,
-            MediaUrl = dto.MediaUrl
+            MediaUrl = dto.MediaUrl,
+            OwnerId = dto.OwnerId,
+            IsSystem = dto.IsSystem
         };
 
         if (dto.ConceptIds != null && dto.ConceptIds.Any())

@@ -11,7 +11,10 @@
         "SYSTEM_CONFIG": "System Config",
         "SPORT_CONCEPTS": "Sport Concepts",
         "NEW_CONCEPT": "New Concept",
-        "CATEGORIES": "Categories"
+        "CATEGORIES": "Categories",
+        "ITINERARIES": "Itineraries",
+        "TEMPLATES": "Templates",
+        "EXERCISES": "Exercises"
     },
     "DASHBOARD": {
         "WELCOME": "Welcome",

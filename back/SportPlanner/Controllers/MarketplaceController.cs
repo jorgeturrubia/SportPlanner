@@ -142,6 +142,26 @@ public class MarketplaceController : ControllerBase
         }
     }
 
+    /// <summary>
+    /// Clones a system exercise to the user's private space.
+    /// </summary>
+    /// <param name="id">ID of the system exercise to clone.</param>
+    /// <returns>The cloned exercise.</returns>
+    [HttpPost("clone/exercise/{id}")]
+    public async Task<ActionResult<ExerciseDto>> CloneExercise(int id)
+    {
+        try
+        {
+            var cloned = await _cloningService.CloneExerciseAsync(id, UserId);
+            var dto = _mapper.Map<ExerciseDto>(cloned);
+            return Ok(dto);
+        }
+        catch (KeyNotFoundException ex)
+        {
+            return NotFound(ex.Message);
+        }
+    }
+
     [HttpPost("rate")]
     public async Task<IActionResult> Rate([FromBody] RateItineraryRequest request)
     {

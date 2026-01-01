@@ -5,6 +5,8 @@ export interface Season {
     endDate: string;   // ISO Date
     isActive: boolean;
     organizationId?: number;
+    ownerId?: string;
+    isSystem?: boolean;
 }
 
 export interface CreateSeasonDto {

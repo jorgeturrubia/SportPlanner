@@ -5,6 +5,8 @@ import { MarketplaceItem, MarketplaceFilter, RateItineraryRequest, PlanningTempl
 import { SportConcept, ConceptCategory } from '../core/models/sport-concept.model';
 import { environment } from '../../environments/environment';
 
+import { Exercise } from '../core/models/exercise.model';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -46,6 +48,10 @@ export class MarketplaceService {
 
   cloneTemplate(id: number): Observable<PlanningTemplateSimple> {
     return this.http.post<PlanningTemplateSimple>(`${this.apiUrl}/clone/template/${id}`, {});
+  }
+
+  cloneExercise(id: number): Observable<Exercise> {
+    return this.http.post<Exercise>(`${this.apiUrl}/clone/exercise/${id}`, {});
   }
 
   rate(request: RateItineraryRequest): Observable<void> {

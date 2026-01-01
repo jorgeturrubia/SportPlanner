@@ -15,6 +15,9 @@ public class Season
 
     public bool IsActive { get; set; } = true;
 
+    public string? OwnerId { get; set; }
+    public bool IsSystem { get; set; } = false;
+
     // Optional: OwnerOrganizationId if seasons are per-organization
     public int? OrganizationId { get; set; }
     public Organization? Organization { get; set; }
