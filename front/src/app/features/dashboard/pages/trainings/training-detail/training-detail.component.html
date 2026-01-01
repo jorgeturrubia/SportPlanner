@@ -1,577 +1,289 @@
-<div class="h-full flex flex-col bg-dark-bg text-white">
-    <!-- Compact Header -->
-    <header
-        class="h-16 border-b border-dark-border flex items-center justify-between px-6 bg-dark-surface shrink-0 z-10 shadow-md">
-        <div class="flex items-center gap-6 flex-1 min-w-0">
-            <button (click)="cancel()"
-                class="p-2 hover:bg-dark-bg rounded-full transition-colors text-gray-400 hover:text-white shrink-0">
-                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 12H5" />
-                    <path d="M12 19l-7-7 7-7" />
-                </svg>
+<div class="h-full flex flex-col bg-dark-bg text-white font-sans selection:bg-primary/30">
+    <!-- 1. COMPACT HEADER (Merged) -->
+    <header class="h-14 border-b border-dark-border bg-dark-surface/95 backdrop-blur flex items-center justify-between px-4 shrink-0 z-20 shadow-sm">
+        
+        <!-- Left: Back & Title -->
+        <div class="flex items-center gap-3 flex-1 min-w-0">
+            <button (click)="cancel()" class="p-1.5 -ml-2 hover:bg-white/5 rounded-full text-gray-400 hover:text-white transition-colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
             </button>
-            <div class="flex flex-col min-w-0 flex-1">
-                <span class="text-xs font-bold text-primary uppercase tracking-wider truncate">Sesión de
-                    Entrenamiento</span>
+            <div class="h-6 w-px bg-dark-border"></div>
+            
+            <!-- Editable Title & Meta Inline -->
+            <div class="flex items-center gap-4 flex-1 overflow-hidden">
                 <input [ngModel]="name()" (ngModelChange)="name.set($event)" type="text"
-                    placeholder="Nombre de la sesión (e.g. Equipo U16 - Semana 4)"
-                    class="bg-transparent border-none p-0 text-xl font-black text-white focus:ring-0 placeholder-gray-600 w-full max-w-lg truncate">
+                    placeholder="Nombre de la sesión..."
+                    class="bg-transparent border-none p-0 text-lg font-black text-white focus:ring-0 placeholder-gray-600 truncate min-w-[200px]">
+                
+                 <!-- Planning Badge / Selector -->
+                 <div class="relative group hidden md:block">
+                     <select [ngModel]="planningId()" (ngModelChange)="onPlanningChange($event)" [disabled]="true"
+                        class="appearance-none bg-dark-bg border border-dark-border text-[10px] font-bold text-primary px-2 py-0.5 rounded cursor-not-allowed opacity-70 focus:outline-none pr-6 uppercase tracking-wider">
+                         <option [value]="null">S. LIBRE</option>
+                         @for (p of allPlannings(); track p.id) {
+                         <option [value]="p.id">{{ p.name }}</option>
+                         }
+                     </select>
+                     <div class="absolute inset-y-0 right-1 flex items-center pointer-events-none">
+                        <svg class="w-3 h-3 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                     </div>
+                 </div>
             </div>
         </div>
 
-        <div class="flex items-center gap-4">
-            <div class="flex items-center gap-2 bg-dark-bg p-1.5 rounded border border-dark-border">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
-                    <line x1="16" y1="2" x2="16" y2="6" />
-                    <line x1="8" y1="2" x2="8" y2="6" />
-                    <line x1="3" y1="10" x2="21" y2="10" />
-                </svg>
-                <input [ngModel]="date()" (ngModelChange)="date.set($event)" type="date"
-                    class="bg-transparent border-none p-0 text-sm font-bold text-white focus:ring-0 w-28">
-            </div>
-            <div class="flex items-center gap-2 bg-dark-bg p-1.5 rounded border border-dark-border">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none"
-                    stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <circle cx="12" cy="12" r="10" />
-                    <polyline points="12 6 12 12 16 14" />
-                </svg>
-                <input [ngModel]="startTime()" (ngModelChange)="startTime.set($event)" type="time"
-                    class="bg-transparent border-none p-0 text-sm font-bold text-white focus:ring-0 w-20">
-            </div>
+        <!-- Right: Time, Duration & Actions -->
+        <div class="flex items-center gap-3">
+            <!-- Date/Time Compact -->
+             <div class="flex items-center gap-2 bg-dark-bg/50 px-2 py-1 rounded border border-dark-border/50 text-xs">
+                 <input [ngModel]="date()" (ngModelChange)="date.set($event)" type="date" class="bg-transparent border-none p-0 w-24 text-gray-300 font-bold focus:ring-0 text-right [color-scheme:dark]">
+                 <span class="text-gray-600">@</span>
+                 <input [ngModel]="startTime()" (ngModelChange)="startTime.set($event)" type="time" class="bg-transparent border-none p-0 w-16 text-gray-300 font-bold focus:ring-0 [color-scheme:dark]">
+             </div>
 
-            <div class="h-8 w-px bg-dark-border mx-2"></div>
+             <div class="h-6 w-px bg-dark-border"></div>
 
-            <div class="flex flex-col items-end mr-2">
-                <span class="text-[10px] text-gray-400 font-bold uppercase">Duración</span>
-                <span class="text-lg font-black text-secondary leading-none">{{ totalDuration() }}</span>
-            </div>
+             <div class="text-right hidden sm:block">
+                 <div class="text-[9px] text-gray-500 uppercase font-black tracking-widest">Duración</div>
+                 <div class="text-sm font-black text-secondary leading-none">{{ totalDuration() }}</div>
+             </div>
 
-            <button (click)="save()" [disabled]="saving()" class="btn btn-primary btn-sm gap-2">
-                <svg *ngIf="!saving()" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                    fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-                    <polyline points="17 21 17 13 7 13 7 21" />
-                    <polyline points="7 3 7 8 15 8" />
-                </svg>
-                <svg *ngIf="saving()" class="animate-spin" viewBox="0 0 24 24" width="18" height="18"
-                    stroke="currentColor" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
-                    <line x1="12" y1="2" x2="12" y2="6" />
-                    <line x1="12" y1="18" x2="12" y2="22" />
-                    <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
-                    <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
-                    <line x1="2" y1="12" x2="6" y2="12" />
-                    <line x1="18" y1="12" x2="22" y2="12" />
-                    <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
-                    <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
-                </svg>
-                {{ saving() ? 'GUARDANDO...' : 'GUARDAR' }}
-            </button>
-
-            <button *ngIf="isEdit()" (click)="startSession()"
-                class="btn btn-secondary btn-sm gap-2 font-black animate-pulse">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor"
-                    stroke="none">
-                    <polygon points="5 3 19 12 5 21 5 3"></polygon>
-                </svg>
-                INICIAR
-            </button>
+             <div class="flex gap-2 ml-2">
+                 <button (click)="save()" [disabled]="saving()" 
+                    class="px-4 py-1.5 bg-primary text-black text-xs font-black uppercase tracking-wider rounded hover:bg-white transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+                     <span *ngIf="saving()" class="w-3 h-3 border-2 border-black border-t-transparent rounded-full animate-spin"></span>
+                     {{ saving() ? 'GUARDANDO' : 'GUARDAR' }}
+                 </button>
+             </div>
         </div>
     </header>
 
-    <!-- Main Content Area -->
-    <main class="flex-1 overflow-y-auto p-6 bg-dark-bg relative">
-        <div class="max-w-5xl mx-auto space-y-6 pb-24">
+    <!-- 2. MAIN SHEET CONTENT (Table/List View) -->
+    <main class="flex-1 overflow-hidden flex flex-col relative">
 
+        <!-- Scrollable List -->
+        <div class="flex-1 overflow-y-auto scrollbar-thin bg-dark-bg pb-32 space-y-2 p-4" cdkDropList (cdkDropListDropped)="drop($event)">
+            
+            @if (trainingConcepts().length === 0) {
+            <div class="flex flex-col items-center justify-center p-12 text-gray-600 opacity-60">
+                <div class="w-16 h-16 border-2 border-dashed border-current rounded-xl flex items-center justify-center mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                </div>
+                <p class="text-sm font-bold uppercase tracking-wider">Planilla Vacía</p>
+                <p class="text-xs mt-1">Usa la barra inferior para añadir conceptos rápidamente</p>
+            </div>
+            }
 
-            <div class="flex-1 flex flex-col overflow-hidden relative">
-
-                <!-- Planning Selection & Efficiency Bar (Add Actions) -->
-                <div
-                    class="shrink-0 p-6 bg-dark-surface/50 backdrop-blur-sm border-b border-dark-border flex flex-col md:flex-row gap-4 items-center z-10">
-
-                    <!-- Planning Selector -->
-                    <div class="flex flex-col min-w-[200px]">
-                        <label class="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-1">Planificación
-                            Asociada</label>
-                        <select [ngModel]="planningId()" (ngModelChange)="onPlanningChange($event)"
-                            class="bg-dark-bg border border-dark-border text-xs font-bold text-white rounded px-3 py-2 focus:ring-1 focus:ring-primary focus:border-primary outline-none transition-all">
-                            <option [value]="null">Sin Planificación</option>
-                            @for (p of allPlannings(); track p.id) {
-                            <option [value]="p.id">{{ p.name }}</option>
-                            }
-                        </select>
+            @for (concept of trainingConcepts(); track concept.id; let i = $index) {
+            <div cdkDrag class="group bg-dark-surface border border-dark-border rounded-lg overflow-hidden hover:border-dark-border/80 transition-all shadow-sm">
+                
+                <!-- Main Header Row: Concept Info + Time + Tools -->
+                <div class="flex items-start gap-3 p-3 bg-gradient-to-r from-dark-surface to-dark-bg">
+                    
+                    <!-- 1. Drag & Index -->
+                    <div class="flex flex-col items-center justify-start pt-1 gap-1">
+                        <div cdkDragHandle class="cursor-move text-gray-600 hover:text-white transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="5" r="1"/><circle cx="15" cy="5" r="1"/><circle cx="9" cy="19" r="1"/><circle cx="15" cy="19" r="1"/></svg>
+                        </div>
+                        <span class="text-[10px] font-mono text-gray-600 font-bold">{{ i + 1 }}</span>
                     </div>
 
-                    <div class="h-8 w-px bg-dark-border hidden md:block"></div>
-
-                    <!-- Library Button -->
-                    <button (click)="openConceptModal()"
-                        class="btn btn-primary btn-lg flex-1 md:flex-none uppercase font-black tracking-widest shadow-lg shadow-primary/20 hover:shadow-primary/40 transition-all">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none"
-                            stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"
-                            class="mr-2">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
-                        Biblioteca
-                    </button>
-
-                    <div class="h-8 w-px bg-dark-border hidden md:block"></div>
-
-                    <!-- Quick Add Input -->
-                    <div class="flex-1 w-full relative group">
-                        <div
-                            class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-500 group-focus-within:text-primary transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z">
-                                </path>
-                                <polyline points="14 2 14 8 20 8"></polyline>
-                                <line x1="12" y1="18" x2="12" y2="12"></line>
-                                <line x1="9" y1="15" x2="15" y2="15"></line>
-                            </svg>
+                    <!-- 2. Concept Details -->
+                    <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2 mb-1">
+                             <span *ngIf="concept.categoryName" class="text-[9px] px-1.5 py-px rounded bg-dark-active border border-dark-border text-primary font-bold uppercase tracking-wider truncate max-w-[120px]">
+                                {{ concept.categoryName }}
+                            </span>
+                            @if (concept.isEditing) {
+                                <input autoFocus type="text" [(ngModel)]="concept.editName" (keydown.enter)="saveConceptName(concept)" (blur)="saveConceptName(concept)" 
+                                    class="bg-black border border-primary text-white text-sm font-bold px-2 py-0.5 rounded w-full focus:outline-none">
+                            } @else {
+                                <div class="flex items-center gap-2 group/title cursor-pointer" (click)="toggleEdit(concept)">
+                                    <h3 class="text-sm font-black text-white truncate uppercase tracking-tight leading-none">{{ concept.name }}</h3>
+                                    <svg class="opacity-0 group-hover/title:opacity-100 text-gray-500 w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"></path></svg>
+                                </div>
+                            }
                         </div>
-                        <input type="text" [ngModel]="quickConceptName()" (ngModelChange)="quickConceptName.set($event)"
-                            (keyup.enter)="addQuickConcept()" placeholder="Concepto rápido..."
-                            class="w-full bg-dark-bg border border-dark-border rounded-lg py-3 pl-10 pr-4 text-white placeholder-gray-500 focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all shadow-sm">
+                        <p class="text-[11px] text-gray-500 leading-tight line-clamp-2 md:line-clamp-1 mb-2">{{ concept.description || 'Añade una descripción para este objetivo...' }}</p>
+                        
+                        <!-- Time Input (Moved here as requested "abajo el tiempo") -->
+                        <div class="flex items-center gap-1.5">
+                            <div class="flex items-center bg-dark-bg border border-dark-border rounded px-1.5 py-0.5">
+                                <svg class="w-3 h-3 text-secondary mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                <input type="number" [(ngModel)]="concept.durationMinutes" (ngModelChange)="updateDuration()"
+                                    class="w-8 bg-transparent text-center text-[10px] font-bold text-white focus:outline-none p-0 [appearance:textfield]" min="1">
+                                <span class="text-[9px] text-gray-500 font-bold">min</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3. Add Tools (Right Side) -->
+                    <div class="flex items-start gap-2 pt-1 border-l border-dark-border/50 pl-3">
+                        <div class="flex flex-col gap-1 items-end">
+                            <!-- Add Library Exercise -->
+                            <button (click)="openLibrary(concept.id)" class="btn btn-xs btn-outline border-dark-border text-gray-400 hover:text-white hover:border-primary w-full flex items-center justify-center gap-1 h-7">
+                                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                                <span class="text-[9px] font-bold uppercase hidden xl:inline">Biblioteca</span>
+                            </button>
+                            
+                            <!-- Quick Text Input for Exercise -->
+                             <div class="relative w-32 xl:w-48">
+                                <input type="text" #customExInput (keydown.enter)="addCustomExercise(concept.id, customExInput.value); customExInput.value = ''"
+                                    placeholder="+ Escribir Ejercicio..."
+                                    class="w-full bg-dark-bg border border-dark-border rounded px-2 py-1 text-[10px] text-white placeholder-gray-600 focus:border-primary focus:ring-0 focus:outline-none h-7">
+                             </div>
+                        </div>
+
+                         <!-- Delete Concept -->
+                         <button (click)="removeConcept(i)" class="text-gray-600 hover:text-danger p-1.5 rounded hover:bg-danger/10 transition-colors ml-1">
+                             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                         </button>
                     </div>
                 </div>
 
-                <!-- Scrollable Grid Content -->
-                <div class="flex-1 overflow-y-auto p-6 scrollbar-thin">
-
-                    @if (trainingConcepts().length === 0) {
-                    <div class="h-full flex flex-col items-center justify-center text-center opacity-40">
-                        <div class="bg-dark-bg p-6 rounded-full border-2 border-dashed border-gray-700 mb-4">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" class="text-gray-500"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
-                            </svg>
-                        </div>
-                        <h3 class="text-xl font-bold text-gray-300 mb-1">Tu sesión está vacía
-                        </h3>
-                        <p class="text-gray-500">Añade conceptos desde la biblioteca o
-                            escríbelos arriba.</p>
-                    </div>
-                    } @else {
-
-                    <div cdkDropList (cdkDropListDropped)="drop($event)"
-                        class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 auto-rows-max">
-                        @for (concept of trainingConcepts(); track concept.id; let i = $index) {
-                        <div cdkDrag
-                            class="group relative flex flex-col h-full min-h-[220px] bg-dark-card rounded-xl border border-dark-border hover:border-gray-500 transition-all shadow-sm">
-
-                            <div class="p-5 flex-1 flex flex-col">
-                                <!-- Header Row: Drag | Number | Category | Spacer | Duration | Edit/Delete -->
-                                <div class="flex items-center gap-3 mb-3">
-                                    <!-- Drag Handle -->
-                                    <div cdkDragHandle
-                                        class="cursor-move text-gray-600 hover:text-white transition-colors p-1 -ml-1">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="1"></circle>
-                                            <circle cx="12" cy="5" r="1"></circle>
-                                            <circle cx="12" cy="19" r="1"></circle>
-                                        </svg>
-                                    </div>
-
-                                    <!-- Number -->
-                                    <span
-                                        class="flex shrink-0 items-center justify-center w-8 h-8 rounded-md bg-primary/20 text-primary font-bold text-base">
-                                        {{ i + 1 }}
-                                    </span>
-
-                                    <!-- Category -->
-                                    <span *ngIf="concept.categoryName"
-                                        class="text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider items-center flex gap-1"
-                                        [ngClass]="concept.categoryName === 'Personal' ? 'text-blue-400 bg-blue-500/10 border border-blue-500/20' : 'text-secondary bg-secondary/10'">
-                                        <span *ngIf="concept.categoryName === 'Personal'"
-                                            class="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse"></span>
-                                        {{ concept.categoryName }}
-                                    </span>
-
-                                    <!-- Spacer -->
-                                    <div class="flex-1"></div>
-
-                                    <!-- Right Actions Group -->
-                                    <div class="flex items-center gap-2">
-                                        <!-- Duration Input -->
-                                        <div class="flex items-center gap-1 bg-dark-surface border border-dark-border rounded px-1.5 py-0.5"
-                                            title="Duración del concepto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round" class="text-gray-500">
-                                                <circle cx="12" cy="12" r="10"></circle>
-                                                <polyline points="12 6 12 12 16 14"></polyline>
-                                            </svg>
-                                            <input type="number" [(ngModel)]="concept.durationMinutes"
-                                                (ngModelChange)="updateDuration()" min="1"
-                                                class="w-10 bg-transparent text-[10px] font-bold text-white text-center focus:outline-none [appearance:textfield] m-0 p-0"
-                                                placeholder="Min">
-                                            <span class="text-[9px] text-gray-500 font-bold">min</span>
-                                        </div>
-
-                                        <!-- Actions Divider -->
-                                        <div class="w-px h-4 bg-gray-700/50"></div>
-
-                                        <!-- Edit Action -->
-                                        <button (click)="toggleEdit(concept)"
-                                            class="text-gray-500 hover:text-white transition-colors p-1 rounded hover:bg-white/5"
-                                            title="Editar nombre">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7">
-                                                </path>
-                                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z">
-                                                </path>
-                                            </svg>
-                                        </button>
-
-                                        <!-- Delete Action -->
-                                        <button (click)="removeConcept(i)"
-                                            class="text-gray-500 hover:text-danger transition-colors p-1 rounded hover:bg-danger/10"
-                                            title="Eliminar concepto">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <polyline points="3 6 5 6 21 6"></polyline>
-                                                <path
-                                                    d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2">
-                                                </path>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                </div>
-
-                                <!-- Content -->
-                                @if (concept.isEditing) {
-                                <div class="flex flex-col gap-2 mb-2 animate-fade-in">
-                                    <input type="text" [(ngModel)]="concept.editName"
-                                        (keyup.enter)="saveConceptName(concept)" (keyup.escape)="toggleEdit(concept)"
-                                        class="w-full bg-dark-bg border border-primary text-white text-lg font-bold rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-primary/50"
-                                        autoFocus placeholder="Nombre del concepto">
-                                    <textarea [(ngModel)]="concept.editDescription"
-                                        class="w-full bg-dark-bg border border-gray-700 text-gray-300 text-sm rounded px-2 py-1 focus:outline-none focus:ring-1 focus:ring-primary resize-none placeholder-gray-600"
-                                        rows="2" placeholder="Descripción del objetivo..."></textarea>
-                                    <div class="flex justify-end gap-2">
-                                        <button (click)="toggleEdit(concept)"
-                                            class="text-xs text-gray-400 hover:text-white uppercase font-bold tracking-wider px-2 py-1">Cancelar</button>
-                                        <button (click)="saveConceptName(concept)"
-                                            class="text-xs bg-primary text-black hover:bg-primary-light uppercase font-bold tracking-wider px-3 py-1 rounded">Guardar</button>
-                                    </div>
-                                </div>
-                                } @else {
-                                <h3 class="text-xl font-bold text-white mb-2 leading-tight tracking-tight group-hover:text-gray-100 transition-colors cursor-pointer"
-                                    (dblclick)="toggleEdit(concept)">
-                                    {{ concept.name }}
-                                </h3>
-                                <p class="text-sm text-gray-500 italic mb-4 line-clamp-2">
-                                    {{ concept.description || 'Sin descripción detallada.' }}
-                                </p>
-                                }
-                            </div>
-
-                            <!-- Exercises Footer (Sticky Bottom of Card) -->
-                            <div class="p-4 bg-dark-bg/50 border-t border-dark-border rounded-b-xl">
-
-                                @if (concept.exercises.length > 0) {
-                                <div class="space-y-2">
-                                    <div class="text-[10px] text-gray-500 font-bold uppercase mb-1">
-                                        Ejercicios seleccionados</div>
-                                    @for (exercise of concept.exercises; track exercise.id; let
-                                    exIndex = $index) {
-                                    <div
-                                        class="flex items-center bg-dark-surface border border-dark-border rounded px-3 py-2 shadow-sm group/exercise">
-                                        <div class="flex-1 min-w-0 mr-2">
-                                            <div class="text-xs font-bold text-gray-200 truncate">
-                                                {{ exercise.exerciseName || exercise.customText
-                                                }}</div>
-                                            <div class="text-[10px] text-secondary font-mono">{{
-                                                exercise.durationMinutes }} min</div>
-                                        </div>
-                                        <button (click)="removeExercise(concept.id, exIndex)"
-                                            class="text-gray-600 hover:text-danger opacity-0 group-hover/exercise:opacity-100 transition-opacity">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <line x1="18" y1="6" x2="6" y2="18"></line>
-                                                <line x1="6" y1="6" x2="18" y2="18"></line>
-                                            </svg>
-                                        </button>
-                                    </div>
-                                    }
-                                    <!-- Quick Add Another -->
-                                    <button (click)="openLibrary(concept.id)"
-                                        class="w-full mt-2 text-[10px] text-primary hover:underline text-center uppercase tracking-wider font-bold">
-                                        + Añadir otro ejercicio
-                                    </button>
-                                </div>
-                                } @else {
-                                <button (click)="openLibrary(concept.id)"
-                                    class="w-full py-3 border border-dashed border-gray-600 hover:border-primary text-gray-500 hover:text-primary rounded-lg transition-all flex items-center justify-center gap-2 group/btn">
-                                    <div
-                                        class="p-1 bg-gray-700/50 group-hover/btn:bg-primary/20 rounded text-inherit transition-colors">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                            stroke-linecap="round" stroke-linejoin="round">
-                                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                                        </svg>
-                                    </div>
-                                    <span class="text-xs font-bold uppercase tracking-wider">Añadir
-                                        Ejercicio</span>
+                <!-- 4. Selected Exercises List (Always Visible "DEBAJO") -->
+                @if (concept.exercises.length > 0) {
+                    <div class="bg-black/20 border-t border-dark-border/30 px-3 py-2 space-y-1">
+                        @for (exercise of concept.exercises; track exercise.id || exercise.customText; let exIdx = $index) {
+                            <div class="flex items-center gap-3 pl-2 py-1.5 group/ex hover:bg-white/5 rounded border border-transparent hover:border-dark-border/50 transition-all">
+                                <div class="w-1 h-3 bg-primary rounded-full"></div>
+                                <span class="text-xs text-gray-300 font-medium flex-1 truncate">{{ exercise.exerciseName || exercise.customText }}</span>
+                                <input type="number" [(ngModel)]="exercise.durationMinutes" 
+                                    class="w-10 bg-transparent text-right text-[10px] font-mono text-gray-500 focus:text-white focus:outline-none border-b border-transparent focus:border-gray-600" 
+                                    placeholder="Min">
+                                <span class="text-[9px] text-gray-600 mr-2">min</span>
+                                
+                                <button (click)="removeExercise(concept.id, exIdx)" class="opacity-0 group-hover/ex:opacity-100 text-gray-600 hover:text-danger p-1">
+                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                                 </button>
-                                }
-
                             </div>
-                        </div>
                         }
                     </div>
-                    }
-                </div>
+                }
             </div>
+            }
         </div>
+
+        <!-- 3. FOOTER QUICK ADD (Sticky) -->
+        <div class="absolute bottom-6 left-6 right-6 bg-dark-bg/90 backdrop-blur-md border border-dark-border rounded-lg shadow-2xl p-2 flex items-center gap-2 ring-1 ring-white/5 z-30 animate-slide-up">
+            
+            <div class="pl-3 text-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+            </div>
+            
+            <input type="text" [ngModel]="quickConceptName()" (ngModelChange)="quickConceptName.set($event)"
+                (keyup.enter)="addQuickConcept()"
+                placeholder="Añadir nuevo concepto / objetivo a la sesión..."
+                class="flex-1 bg-transparent border-none text-sm font-bold text-white placeholder-gray-500 focus:ring-0 py-2">
+            
+            <div class="h-6 w-px bg-dark-border mx-1"></div>
+
+            <button (click)="openConceptModal()" class="px-3 py-1.5 rounded hover:bg-dark-surface text-[10px] font-black uppercase tracking-wider text-gray-400 hover:text-white transition-colors flex items-center gap-2">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+                Explorar Biblioteca
+            </button>
+        </div>
+
     </main>
 
-    <!-- Concept Selector Modal (Categorized) -->
+    <!-- Modal Templates Reuse (Concept Modal & Library Modal) -->
+    <!-- Ideally these should be separate components but keeping logical continuity valid -->
+    <!-- Using existing templates references -->
     <ng-template #conceptModalTemplate>
-        <div
-            class="bg-dark-surface border border-dark-border w-full max-w-5xl rounded-xl shadow-2xl flex flex-col h-[85vh] overflow-hidden animate-fade-in-up m-4 pointer-events-auto">
-            <!-- Modal Header -->
-            <div class="p-5 border-b border-dark-border flex justify-between items-center bg-dark-bg shrink-0">
-                <div>
-                    <h3 class="text-2xl font-black text-white italic uppercase tracking-tighter">
-                        SELECCIONAR OBJETIVOS
-                    </h3>
-                    <p class="text-xs text-gray-500 font-bold uppercase tracking-wider">
-                        PLANIFICACIÓN ACTIVA DEL EQUIPO
-                    </p>
-                </div>
-                <button (click)="closeConceptModal()"
-                    class="text-gray-400 hover:text-white transition-colors p-2 hover:bg-dark-surface rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
-            </div>
+         <div class="bg-dark-surface border border-dark-border w-full max-w-4xl rounded-xl shadow-2xl flex flex-col h-[85vh] overflow-hidden animate-fade-in-up m-4 pointer-events-auto">
+             <!-- Modal Header -->
+             <div class="p-4 border-b border-dark-border flex justify-between items-center bg-dark-bg shrink-0">
+                 <div>
+                     <h3 class="text-lg font-black text-white italic uppercase tracking-tighter">Seleccionar Conceptos</h3>
+                     <p class="text-[10px] text-gray-500 font-bold uppercase">Planificación: {{ activePlanning()?.name || 'S. Libre' }}</p>
+                 </div>
+                 <div class="flex items-center gap-4">
+                     <span class="text-xs text-primary font-bold uppercase tracking-wider">{{ trainingConcepts().length }} Seleccionados</span>
+                     <button (click)="closeConceptModal()" class="text-gray-400 hover:text-white p-1 hover:bg-white/10 rounded-full transition-colors">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+                     </button>
+                 </div>
+             </div>
+             
+             <!-- Compact Grouped List -->
+             <div class="flex-1 overflow-y-auto bg-dark-bg p-4 space-y-4">
+                 @if (groupedConcepts().length === 0) {
+                     <div class="text-center py-12 text-gray-500">
+                         <p class="text-sm font-bold uppercase">No hay conceptos disponibles</p>
+                     </div>
+                 }
 
-            <!-- Modal Content (Hierarchical Drill-Down) -->
-            <div class="flex flex-1 overflow-hidden">
+                 @for (group of groupedConcepts(); track group.parentName + group.subName) {
+                     <div class="animate-fade-in">
+                         <!-- Group Header -->
+                         <div class="flex items-center gap-2 mb-2 sticky top-0 bg-dark-bg/95 backdrop-blur z-10 py-1 border-b border-dark-border/50">
+                             <div class="w-1 h-3 bg-secondary rounded-full"></div>
+                             <h4 class="text-xs font-black text-gray-300 uppercase tracking-wide">
+                                 <span class="text-gray-500">{{ group.parentName }}</span> 
+                                 <span class="mx-1 text-gray-600">/</span> 
+                                 <span class="text-white">{{ group.subName }}</span>
+                             </h4>
+                         </div>
 
-                <!-- Left Sidebar: Categories Navigation -->
-                <div
-                    class="w-80 bg-dark-bg border-r border-dark-border overflow-y-auto p-4 flex flex-col gap-2 shrink-0">
+                         <!-- Concepts Grid (Dense) -->
+                         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 pl-3">
+                             @for (concept of group.items; track concept.id) {
+                                 <button (click)="addConcept(concept)" 
+                                    class="text-left px-3 py-2 rounded border transition-all relative group flex items-start gap-2"
+                                    [class.bg-primary-dark]="isConceptSelected(concept.id)"
+                                    [class.border-primary]="isConceptSelected(concept.id)"
+                                    [class.bg-dark-surface]="!isConceptSelected(concept.id)"
+                                    [class.border-dark-border]="!isConceptSelected(concept.id)"
+                                    [class.hover:border-gray-500]="!isConceptSelected(concept.id)">
+                                     
+                                     <!-- Checkbox visuals -->
+                                     <div class="mt-0.5 w-4 h-4 rounded border flex items-center justify-center shrink-0 transition-colors"
+                                        [class.bg-primary]="isConceptSelected(concept.id)"
+                                        [class.border-primary]="isConceptSelected(concept.id)"
+                                        [class.border-gray-600]="!isConceptSelected(concept.id)">
+                                         <svg *ngIf="isConceptSelected(concept.id)" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                                     </div>
 
-                    <!-- Navigation Controls -->
-                    <div class="flex gap-2 mb-4">
-                        <button (click)="resetFilter()"
-                            class="flex-1 btn btn-sm btn-outline text-xs uppercase tracking-wider"
-                            [disabled]="!currentCategoryNode()">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-                                <polyline points="9 22 9 12 15 12 15 22" />
-                            </svg>
-                            Inicio
-                        </button>
-                        <button (click)="goBack()"
-                            class="flex-1 btn btn-sm btn-outline text-xs uppercase tracking-wider"
-                            [disabled]="!currentCategoryNode()">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <path d="M19 12H5M12 19l-7-7 7-7" />
-                            </svg>
-                            Atrás
-                        </button>
-                    </div>
-
-                    <!-- Current Context (Breadcrumbs) -->
-                    <div class="mb-4 px-1" *ngIf="currentCategoryNode()">
-                        <div class="text-[10px] text-gray-500 font-bold uppercase mb-1">
-                            Filtro Actual</div>
-                        <div class="text-sm font-black text-white leading-tight">
-                            {{ currentCategoryNode()?.name }}
-                        </div>
-                        <div class="text-[10px] text-primary mt-1 flex flex-wrap gap-1">
-                            <span *ngFor="let cat of categoryPath(); let last = last" class="opacity-70">
-                                {{ cat.name }} <span *ngIf="!last" class="text-gray-600">/</span>
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="h-px bg-dark-border my-2" *ngIf="currentCategoryNode()">
-                    </div>
-
-                    <!-- Categories List (Children of Current Node) -->
-                    <div class="space-y-2">
-                        <div *ngIf="visibleCategories().length === 0 && !currentCategoryNode()"
-                            class="text-center py-4 text-xs text-gray-500">
-                            No hay categorías disponibles
-                        </div>
-
-                        <div *ngIf="visibleCategories().length > 0"
-                            class="text-[10px] text-gray-500 font-bold uppercase mb-2 px-1">
-                            {{ currentCategoryNode() ? 'Subcategorías' : 'Categorías
-                            Principales' }}
-                        </div>
-
-                        @for (cat of visibleCategories(); track cat.id) {
-                        <button (click)="drillDown(cat)"
-                            class="w-full text-left px-4 py-4 rounded-lg bg-dark-active border border-dark-border hover:border-primary hover:bg-dark-surface transition-all group relative flex items-center justify-between">
-                            <span
-                                class="font-bold text-sm text-gray-200 group-hover:text-white uppercase tracking-wide">{{
-                                cat.name }}</span>
-                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                class="text-gray-500 group-hover:text-primary transition-colors" viewBox="0 0 24 24"
-                                fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                stroke-linejoin="round">
-                                <polyline points="9 18 15 12 9 6"></polyline>
-                            </svg>
-                        </button>
-                        }
-                    </div>
-                </div>
-
-                <!-- Right Content: Concepts Grid -->
-                <div class="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-dark-surface to-dark-bg">
-                    @if (filteredConcepts().length === 0) {
-                    <div class="h-full flex flex-col items-center justify-center text-gray-500 opacity-50">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" class="mb-4" viewBox="0 0 24 24"
-                            fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round"
-                            stroke-linejoin="round">
-                            <circle cx="12" cy="12" r="10" />
-                            <line x1="12" y1="8" x2="12" y2="12" />
-                            <line x1="12" y1="16" x2="12.01" y2="16" />
-                        </svg>
-                        <p class="uppercase font-bold tracking-widest text-sm">No hay
-                            conceptos en este nivel</p>
-                    </div>
-                    } @else {
-                    <div class="space-y-8">
-                        @for (group of groupedConcepts(); track group.name) {
-                        <div class="animate-fade-in-up">
-                            <!-- Group Header -->
-                            <div
-                                class="flex items-center gap-3 mb-4 sticky top-0 bg-dark-bg/95 backdrop-blur z-10 py-2 border-b border-gray-800">
-                                <div class="w-1 h-4 bg-primary rounded-full"></div>
-                                <h4 class="text-xs font-black text-white uppercase tracking-widest">
-                                    {{ group.name }} <span class="text-gray-500 ml-1">({{ group.items.length }})</span>
-                                </h4>
-                            </div>
-
-                            <!-- Grid for this group -->
-                            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-                                @for (concept of group.items; track concept.id) {
-                                <button (click)="addConcept(concept)"
-                                    class="text-left group bg-dark-bg hover:bg-dark-surface border border-dark-border hover:border-primary p-4 rounded-lg shadow-sm hover:shadow-lg transition-all relative overflow-hidden flex flex-col min-h-[120px]">
-
-                                    <div
-                                        class="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <div
-                                            class="bg-primary text-black rounded-full p-1 shadow-lg transform translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0 transition-transform">
-                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16"
-                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                                                stroke-linecap="round" stroke-linejoin="round">
-                                                <line x1="12" y1="5" x2="12" y2="19" />
-                                                <line x1="5" y1="12" x2="19" y2="12" />
-                                            </svg>
-                                        </div>
-                                    </div>
-
-                                    <div class="flex items-center gap-2 mb-2">
-                                        <span *ngIf="concept.conceptCategory"
-                                            class="text-[9px] font-black text-secondary bg-secondary/10 px-2 py-0.5 rounded uppercase tracking-wider truncate max-w-[150px]">
-                                            {{ concept.conceptCategory.name }}
-                                        </span>
-                                    </div>
-                                    <h4
-                                        class="font-bold text-white text-base leading-tight group-hover:text-primary transition-colors pr-6 mb-2">
-                                        {{ concept.name }}</h4>
-
-                                    <div
-                                        class="mt-auto pt-3 border-t border-dark-border group-hover:border-gray-700 flex justify-between items-center w-full">
-                                        <span class="text-[9px] text-gray-500 font-mono uppercase">NIVEL
-                                            {{
-                                            concept.difficultyLevel?.name || 'gen' }}</span>
-                                        <span
-                                            class="text-[9px] text-primary opacity-0 group-hover:opacity-100 font-bold uppercase transition-opacity">Añadir</span>
-                                    </div>
-                                </button>
-                                }
-                            </div>
-                        </div>
-                        }
-                    </div>
-                    }
-                </div>
-            </div>
-
-            <!-- Footer Hints -->
-            <div
-                class="bg-dark-bg p-3 border-t border-dark-border flex justify-between items-center text-[10px] text-gray-500 font-mono uppercase">
-                <span>Navegando: {{ currentCategoryNode()?.name || 'RAÍZ' }}</span>
-                <span>ESC para cerrar</span>
-            </div>
-        </div>
+                                     <div class="min-w-0">
+                                         <div class="text-xs font-bold truncate leading-tight" 
+                                            [class.text-white]="isConceptSelected(concept.id)"
+                                            [class.text-gray-300]="!isConceptSelected(concept.id)">
+                                             {{ concept.name }}
+                                         </div>
+                                         <div class="text-[9px] text-gray-500 truncate group-hover:text-gray-400 transition-colors">
+                                             {{ concept.description || 'Sin descripción' }}
+                                         </div>
+                                     </div>
+                                 </button>
+                             }
+                         </div>
+                     </div>
+                 }
+             </div>
+             
+             <!-- Footer Actions -->
+             <div class="p-3 bg-dark-surface border-t border-dark-border flex justify-end">
+                 <button (click)="closeConceptModal()" class="px-6 py-2 bg-white text-black text-xs font-black uppercase tracking-wider rounded hover:bg-gray-200 transition-colors">
+                     Listo
+                 </button>
+             </div>
+         </div>
     </ng-template>
 
-    <!-- Exercise Library Modal -->
     <ng-template #libraryModalTemplate>
-        <div
-            class="bg-dark-surface border border-dark-border w-full max-w-4xl rounded-xl shadow-2xl flex flex-col h-[80vh] m-4 pointer-events-auto">
-            <div class="p-6 border-b border-dark-border flex justify-between items-center bg-dark-bg">
-                <h3 class="text-2xl font-black text-white italic uppercase tracking-tighter">
-                    BIBLIOTECA DE EJERCICIOS
-                </h3>
-                <button (click)="closeLibraryModal()" class="text-gray-400 hover:text-white transition-colors">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none"
-                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="18" y1="6" x2="6" y2="18" />
-                        <line x1="6" y1="6" x2="18" y2="18" />
-                    </svg>
-                </button>
+        <div class="bg-dark-surface border border-dark-border w-full max-w-4xl rounded-xl shadow-2xl flex flex-col h-[75vh] m-4 pointer-events-auto">
+            <div class="p-4 border-b border-dark-border flex justify-between items-center bg-dark-bg">
+                <h3 class="text-lg font-black text-white italic uppercase">Ejercicios Disponibles</h3>
+                <button (click)="closeLibraryModal()" class="text-gray-400 hover:text-white"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg></button>
             </div>
-
-            <div class="flex-1 overflow-y-auto p-6 bg-dark-bg grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div class="flex-1 overflow-y-auto p-4 bg-dark-bg grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 @for (ex of libraryExercises(); track ex.id) {
-                <div (click)="addExerciseFromLibrary(ex)"
-                    class="group bg-dark-surface p-4 border border-dark-border rounded hover:border-primary cursor-pointer transition-all relative overflow-hidden">
-                    <div
-                        class="absolute top-0 right-0 w-12 h-12 bg-primary opacity-0 group-hover:opacity-10 -mr-6 -mt-6 rotate-45 transition-all">
+                    <div (click)="addExerciseFromLibrary(ex)" class="cursor-pointer bg-dark-surface border border-dark-border p-3 rounded hover:border-primary group transition-all">
+                        <div class="font-bold text-sm text-gray-200 group-hover:text-white mb-1">{{ ex.name }}</div>
+                        <div class="text-[10px] text-gray-500 line-clamp-2">{{ ex.description }}</div>
                     </div>
-
-                    <h4 class="font-bold text-white group-hover:text-primary mb-2 uppercase text-sm">
-                        {{ ex.name }}</h4>
-                    <p class="text-xs text-gray-500 line-clamp-3 mb-4">{{ ex.description
-                        }}</p>
-
-                    <div
-                        class="flex items-center gap-2 mt-auto pt-3 border-t border-dark-border group-hover:border-gray-700">
-                        <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">AÑADIR
-                            A
-                            SESIÓN</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
-                            class="text-primary opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-[-10px] group-hover:translate-x-0"
-                            viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-                            stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="5" y1="12" x2="19" y2="12" />
-                            <polyline points="12 5 19 12 12 19" />
-                        </svg>
-                    </div>
-                </div>
                 }
             </div>
         </div>
     </ng-template>
+
 </div>

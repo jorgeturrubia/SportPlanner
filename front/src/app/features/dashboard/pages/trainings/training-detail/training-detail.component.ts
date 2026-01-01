@@ -133,52 +133,64 @@ export class TrainingDetailComponent implements OnInit {
         });
     });
 
-    // Compute grouped concepts for display
+    // Compute concepts for the modal list, grouped by hierarchy
     groupedConcepts = computed(() => {
-        const concepts = this.filteredConcepts();
-        const groups = new Map<string, SportConcept[]>();
-
-        concepts.forEach(c => {
-            const catName = c.conceptCategory?.name || 'Otros';
-            if (!groups.has(catName)) {
-                groups.set(catName, []);
-            }
-            groups.get(catName)!.push(c);
-        });
-
-        // Convert to array and sort by category name
-        return Array.from(groups.entries())
-            .map(([name, items]) => ({ name, items }))
-            .sort((a, b) => {
-                if (a.name === 'Otros') return 1; // Otros at bottom
-                if (b.name === 'Otros') return -1;
-                return a.name.localeCompare(b.name);
-            });
-    });
-
-    // Compute categories to display as "Buttons" (children of current node)
-    visibleCategories = computed(() => {
-        const currentNode = this.currentCategoryNode();
         const concepts = this.availableConcepts();
-
-        // We need to build the tree from the concepts available (so we don't show empty categories)
-        // Set of reachable categories from current level
-        const relevantCategories = new Map<number, ConceptCategory>();
-
-        console.log('Computing visible categories for node:', currentNode?.name);
+        
+        // Structure: Map<ParentName, Map<SubCategoryName, Concept[]>>
+        // We want to group by the TOP LEVEL category (or active level?)
+        // The user wants "Parent > Subcategory". 
+        // Let's build a flat list of groups for easier rendering: 
+        // { categoryName, subCategoryName, items }
+        
+        const groups: { parentName: string; subName: string; items: SportConcept[] }[] = [];
+        const map = new Map<string, Map<string, SportConcept[]>>();
 
         concepts.forEach(c => {
-            if (!c.conceptCategory) return;
+            // Traverse up to find Parent (Root) and Sub (Leaf/Intermediate)
+            // Assuming simplified 2-level depth for visualization or just use direct category
+            let cat = c.conceptCategory;
+            let parentName = 'General';
+            let subName = 'Otros';
 
-            // Logic to find immediate child...
-            const immediateChild = this.findImmediateChildOf(c.conceptCategory, currentNode ? currentNode.id : null);
-            if (immediateChild) {
-                relevantCategories.set(immediateChild.id, immediateChild);
+            if (cat) {
+                 // If has parent, that's the main bucket? 
+                 // Or if it is a root category?
+                 if (cat.parent) {
+                     parentName = cat.parent.name;
+                     subName = cat.name;
+                 } else {
+                     parentName = cat.name;
+                     subName = 'General';
+                 }
             }
+
+            if (!map.has(parentName)) {
+                map.set(parentName, new Map());
+            }
+            if (!map.get(parentName)!.has(subName)) {
+                map.get(parentName)!.set(subName, []);
+            }
+            map.get(parentName)!.get(subName)!.push(c);
         });
 
-        return Array.from(relevantCategories.values()).sort((a, b) => a.name.localeCompare(b.name));
+        // Convert to array
+        Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([pName, subMap]) => {
+             Array.from(subMap.entries()).sort((a, b) => a[0].localeCompare(b[0])).forEach(([sName, items]) => {
+                 groups.push({
+                     parentName: pName,
+                     subName: sName,
+                     items: items.sort((a, b) => a.name.localeCompare(b.name))
+                 });
+             });
+        });
+
+        return groups;
     });
+
+    // Remove old visibleCategories logic if we are doing a flat list
+    visibleCategories = computed(() => []); 
+
 
     private isConceptInDescendants(concept: SportConcept, targetCatId: number): boolean {
         let cat = concept.conceptCategory;
@@ -424,6 +436,15 @@ export class TrainingDetailComponent implements OnInit {
     }
 
     // Concept Editing Logic
+    toggleOpen(concept: TrainingConceptViewModel) {
+        this.trainingConcepts.update(concepts => concepts.map(c => {
+            if (c.id === concept.id) {
+                return { ...c, isOpen: !c.isOpen };
+            }
+            return c;
+        }));
+    }
+
     toggleEdit(concept: TrainingConceptViewModel) {
         this.trainingConcepts.update(concepts => concepts.map(c => {
             if (c.id === concept.id) {
@@ -460,18 +481,28 @@ export class TrainingDetailComponent implements OnInit {
     }
 
     addConcept(concept: any) {
-        if (!this.trainingConcepts().find(c => c.id === concept.id)) {
+        const exists = this.trainingConcepts().some(c => c.id === concept.id);
+        
+        if (exists) {
+            // If exists, remove it (Toggle behavior)
+            this.trainingConcepts.update(prev => prev.filter(c => c.id !== concept.id));
+        } else {
+            // Add it
             this.trainingConcepts.update(prev => [...prev, {
                 id: concept.id,
                 name: concept.name,
                 description: concept.description,
-                categoryName: concept.category, // Mapped in earlier step (see loadTeamPlanning)
+                categoryName: concept.category, 
                 exercises: [],
                 isOpen: true,
                 durationMinutes: 8
             }]);
         }
-        this.closeConceptModal();
+        // Do NOT close modal
+    }
+
+    isConceptSelected(conceptId: number): boolean {
+        return this.trainingConcepts().some(c => c.id === conceptId);
     }
 
     // Exercise Actions
