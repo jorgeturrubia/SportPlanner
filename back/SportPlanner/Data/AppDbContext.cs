@@ -36,6 +36,7 @@ public class AppDbContext : DbContext
     public DbSet<TrainingSessionConcept> TrainingSessionConcepts { get; set; } = null!;
     public DbSet<TrainingSessionExercise> TrainingSessionExercises { get; set; } = null!;
     public DbSet<MethodologicalItineraryRating> MethodologicalItineraryRatings { get; set; } = null!;
+    public DbSet<Player> Players { get; set; } = null!;
 
 
 
@@ -302,5 +303,15 @@ public class AppDbContext : DbContext
             .HasOne(tse => tse.SportConcept)
             .WithMany()
             .HasForeignKey(tse => tse.SportConceptId);
+
+        // Player configuration
+        modelBuilder.Entity<Player>().HasKey(p => p.Id);
+        modelBuilder.Entity<Player>()
+            .HasOne(p => p.Team)
+            .WithMany()
+            .HasForeignKey(p => p.TeamId)
+            .OnDelete(DeleteBehavior.Cascade);
+        modelBuilder.Entity<Player>()
+            .HasIndex(p => p.TeamId);
     }
 }
