@@ -24,5 +24,6 @@ public class Team
     public ICollection<TeamSeason> TeamSeasons { get; set; } = new List<TeamSeason>();
 
     public ICollection<Planning> Plannings { get; set; } = new List<Planning>();
+    public ICollection<Player> Players { get; set; } = new List<Player>();
 
 }

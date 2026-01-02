@@ -13,4 +13,9 @@ public class Sport
     public bool IsActive { get; set; } = true;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
+
+    // Navigation properties
+    public ICollection<SportConcept> SportConcepts { get; set; } = new List<SportConcept>();
+    public ICollection<TeamCategory> TeamCategories { get; set; } = new List<TeamCategory>();
+    public ICollection<MethodologicalItinerary> MethodologicalItineraries { get; set; } = new List<MethodologicalItinerary>();
 }

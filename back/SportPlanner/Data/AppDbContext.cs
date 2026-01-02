@@ -188,6 +188,8 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Restrict);
 
         modelBuilder.Entity<Court>().HasKey(c => c.Id);
+        modelBuilder.Entity<Court>()
+            .HasIndex(c => c.OwnerId);
 
 
         modelBuilder.Entity<TeamCategory>().HasKey(tc => tc.Id);
@@ -199,7 +201,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<MethodologicalItinerary>().HasKey(mi => mi.Id);
         modelBuilder.Entity<MethodologicalItinerary>()
             .HasOne(mi => mi.Sport)
-            .WithMany()
+            .WithMany(s => s.MethodologicalItineraries)
             .HasForeignKey(mi => mi.SportId)
             .OnDelete(DeleteBehavior.Restrict);
         modelBuilder.Entity<MethodologicalItinerary>()
@@ -308,7 +310,7 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Player>().HasKey(p => p.Id);
         modelBuilder.Entity<Player>()
             .HasOne(p => p.Team)
-            .WithMany()
+            .WithMany(t => t.Players)
             .HasForeignKey(p => p.TeamId)
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<Player>()

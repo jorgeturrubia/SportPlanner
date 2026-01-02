@@ -9,4 +9,7 @@ public class Court
     public string Name { get; set; } = null!;
     public string? Location { get; set; }
     public bool IsActive { get; set; } = true;
+    
+    // Ownership
+    public string? OwnerId { get; set; }
 }

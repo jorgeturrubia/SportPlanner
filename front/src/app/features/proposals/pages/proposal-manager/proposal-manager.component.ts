@@ -365,7 +365,43 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         }
     }
 
-    // Helper to group selected concepts by category for display
+    // --- UI HELPERS ---
+    
+    // Search
+    searchQuery: string = '';
+    
+    // Category Filter
+    selectedCategoryFilter: string = 'all';
+
+    get filteredCategories(): string[] {
+        const categories = new Set<string>();
+        // Only get categories from available concepts for the filter
+        this.availableConcepts.forEach(c => {
+            categories.add(c.concept.conceptCategory?.name || 'Sin Categoría');
+        });
+        return Array.from(categories).sort();
+    }
+
+    setCategoryFilter(category: string) {
+        this.selectedCategoryFilter = category;
+    }
+
+    // Collapse State
+    collapsedCategories = new Set<string>();
+
+    toggleCategory(category: string) {
+        if (this.collapsedCategories.has(category)) {
+            this.collapsedCategories.delete(category);
+        } else {
+            this.collapsedCategories.add(category);
+        }
+    }
+
+    isCategoryCollapsed(category: string): boolean {
+        return this.collapsedCategories.has(category);
+    }
+
+    // List Getters
     get selectedByCategory(): { category: string; concepts: ScoredConceptDto[] }[] {
         const groups = new Map<string, ScoredConceptDto[]>();
         
@@ -382,11 +418,20 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             .sort((a, b) => a.category.localeCompare(b.category));
     }
 
-    // Helper to group available concepts by category for display
     get availableByCategory(): { category: string; concepts: ScoredConceptDto[] }[] {
         const groups = new Map<string, ScoredConceptDto[]>();
         
-        this.availableConcepts.forEach(c => {
+        // Filter by Search Query & Category Filter
+        const query = this.searchQuery.toLowerCase().trim();
+        
+        const filtered = this.availableConcepts.filter(c => {
+            const nameMatch = c.concept.name.toLowerCase().includes(query);
+            const catMatch = this.selectedCategoryFilter === 'all' || 
+                           (c.concept.conceptCategory?.name || 'Sin Categoría') === this.selectedCategoryFilter;
+            return nameMatch && catMatch;
+        });
+
+        filtered.forEach(c => {
             const catName = c.concept.conceptCategory?.name || 'Sin Categoría';
             if (!groups.has(catName)) {
                 groups.set(catName, []);
