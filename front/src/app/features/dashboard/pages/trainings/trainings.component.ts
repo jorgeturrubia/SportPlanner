@@ -138,4 +138,9 @@ export class TrainingsComponent implements OnInit {
     editTraining(id: number) {
         this.router.navigate(['/dashboard/trainings/edit', id]);
     }
+
+    executeTraining(id: number, event: Event) {
+        event.stopPropagation();
+        this.router.navigate(['/dashboard/trainings/execution', id]);
+    }
 }
