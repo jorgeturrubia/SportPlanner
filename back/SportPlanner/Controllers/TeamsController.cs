@@ -183,6 +183,12 @@ public class TeamsController : ControllerBase
 
         if (dto.SeasonId.HasValue)
         {
+            if (dto.CurrentTechnicalLevel < 0 || dto.CurrentTechnicalLevel > 10 || 
+                dto.CurrentTacticalLevel < 0 || dto.CurrentTacticalLevel > 10)
+            {
+                return BadRequest("Technical and Tactical levels must be between 0 and 10.");
+            }
+
             // Update specific season data
             var teamSeason = await _db.TeamSeasons.FirstOrDefaultAsync(ts => ts.TeamId == team.Id && ts.SeasonId == dto.SeasonId.Value);
             if (teamSeason != null)

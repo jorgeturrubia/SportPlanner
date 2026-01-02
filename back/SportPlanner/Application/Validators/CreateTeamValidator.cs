@@ -16,6 +16,8 @@ public class CreateTeamValidator : AbstractValidator<CreateTeamDto>
         _db = db;
         RuleFor(x => x.Name).NotEmpty().MaximumLength(200);
         RuleFor(x => x.SportId).GreaterThan(0);
+        RuleFor(x => x.CurrentTechnicalLevel).InclusiveBetween(0, 10);
+        RuleFor(x => x.CurrentTacticalLevel).InclusiveBetween(0, 10);
         RuleFor(x => x).CustomAsync(ValidatePlanLimitsAsync);
     }
 

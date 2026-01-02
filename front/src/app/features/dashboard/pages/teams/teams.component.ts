@@ -48,8 +48,8 @@ export class TeamsComponent implements OnInit {
             sportId: [1, Validators.required], // Default to 1 (Football) for now
             teamCategoryId: [null],
             teamLevelId: [null],
-            currentTechnicalLevel: [50, [Validators.min(0), Validators.max(100)]],
-            currentTacticalLevel: [50, [Validators.min(0), Validators.max(100)]]
+            currentTechnicalLevel: [5, [Validators.min(0), Validators.max(10)]],
+            currentTacticalLevel: [5, [Validators.min(0), Validators.max(10)]]
         });
 
         // Effect to reload teams when season changes
