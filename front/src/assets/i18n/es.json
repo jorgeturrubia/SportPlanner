@@ -20,7 +20,18 @@
         "SPORT_CONCEPTS": "Conceptos Deportivos",
         "NEW_CONCEPT": "Nuevo Concepto",
         "CATEGORIES": "Categorias",
-        "EXERCISES": "Ejercicios"
+        "EXERCISES": "Ejercicios",
+        "WHITEBOARD": "Pizarra Táctica"
+    },
+    "WHITEBOARD": {
+        "TITLE": "Pizarra Táctica",
+        "SUBTITLE": "Crea jugadas estáticas y animaciones para tus ejercicios",
+        "NEW_BOARD": "Nueva Pizarra",
+        "NO_BOARDS": "No tienes pizarras creadas",
+        "NO_BOARDS_DESC": "Comienza creando tu primera pizarra táctica para visualizar jugadas",
+        "CREATE_FIRST": "Crear Primera Pizarra",
+        "STATIC": "Estática",
+        "ANIMATED": "Animada"
     },
     "COMMON": {
         "LOADING": "Cargando...",

@@ -72,6 +72,8 @@ export const appConfig: ApplicationConfig = {
           { path: 'new-concept', loadComponent: () => import('./features/dashboard/pages/new-concept/new-concept-page.component').then(m => m.NewConceptPageComponent) },
           { path: 'master-user/concept-categories', loadComponent: () => import('./features/dashboard/pages/master-user/concept-categories/concept-categories.component').then(m => m.ConceptCategoriesComponent) },
           { path: 'master-user/exercises', loadComponent: () => import('./features/dashboard/pages/master-user/exercises/exercises.component').then(m => m.ExercisesComponent) },
+          { path: 'whiteboard', loadComponent: () => import('./features/dashboard/pages/whiteboard/whiteboard-list.component').then(m => m.WhiteboardListComponent) },
+          { path: 'whiteboard/:id', loadComponent: () => import('./features/dashboard/pages/whiteboard/whiteboard-editor.component').then(m => m.WhiteboardEditorComponent) },
           { path: 'master-user/seasons', loadComponent: () => import('./features/dashboard/pages/master-user/seasons/seasons.component').then(m => m.SeasonsComponent) },
           { path: 'core-masters/subscription-sports', loadComponent: () => import('./features/dashboard/pages/core-masters/subscription-sports/subscription-sports.component').then(m => m.SubscriptionSportsComponent) },
           { path: 'plannings/info', loadComponent: () => import('./features/dashboard/pages/plan-info/plan-info.component').then(m => m.PlanInfoComponent) },

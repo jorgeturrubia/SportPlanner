@@ -45,6 +45,7 @@ builder.Services.AddScoped<SportPlanner.Services.IConceptCategoryService, SportP
 builder.Services.AddScoped<SportPlanner.Services.IPlanningService, SportPlanner.Services.PlanningService>();
 builder.Services.AddScoped<SportPlanner.Services.IConceptProposalService, SportPlanner.Services.ConceptProposalService>();
 builder.Services.AddScoped<SportPlanner.Services.IExerciseService, SportPlanner.Services.ExerciseService>();
+builder.Services.AddScoped<SportPlanner.Services.ITacticalBoardService, SportPlanner.Services.TacticalBoardService>();
 builder.Services.AddScoped<SportPlanner.Services.ITrainingSessionService, SportPlanner.Services.TrainingSessionService>();
 builder.Services.AddScoped<SportPlanner.Services.ITrainingExecutionService, SportPlanner.Services.TrainingExecutionService>();
 builder.Services.AddScoped<SportPlanner.Services.IMarketplaceService, SportPlanner.Services.MarketplaceService>();
