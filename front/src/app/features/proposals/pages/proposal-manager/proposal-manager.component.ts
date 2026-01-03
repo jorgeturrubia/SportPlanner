@@ -14,6 +14,15 @@ import { PlanningTemplateService } from '../../../../services/planning-template.
 import { SportConceptService } from '../../../../services/sport-concept.service';
 import { ConceptProposalResponseDto, ScoredConceptDto, ConceptTag, PlanningTemplateDto, ProposalPriority } from '../../models/proposal.models';
 
+interface CategoryNode {
+    id: number;
+    name: string;
+    subCategories: CategoryNode[];
+    concepts?: ScoredConceptDto[];
+    isExpanded?: boolean;
+    hasMatches?: boolean; // For search filtering
+}
+
 @Component({
     selector: 'app-proposal-manager',
     standalone: true,
@@ -38,6 +47,10 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     // SIMPLIFIED: Two flat lists
     selectedConcepts: ScoredConceptDto[] = [];
     availableConcepts: ScoredConceptDto[] = [];
+    
+    // Map for fast lookups by category ID
+    // Key: Category ID, Value: List of concepts
+    availableConceptsMap: Map<number, ScoredConceptDto[]> = new Map();
 
     private seasonService: SeasonService = inject(SeasonService);
 
@@ -45,8 +58,16 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     showCreateModal: boolean = false;
     newConceptName: string = '';
     newConceptCategoryId: number | null = null;
-    conceptCategories: any[] = [];
-    flattenedCategories: any[] = [];
+    
+    // Category Tree State
+    conceptCategories: any[] = []; // Full Tree Structure
+    flattenedCategories: any[] = []; // Lookup
+    
+    // UI State
+    currentCategoryId: number | null = null; // Drill-Down Navigation State
+    expandedCategoryIds: Set<number> = new Set<number>();
+    searchQuery: string = '';
+    
     isCreating: boolean = false;
 
     constructor(
@@ -83,36 +104,215 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     loadCategories() {
         this.sportConceptService.getCategories().subscribe({
             next: (cats) => {
-                this.conceptCategories = cats;
-                this.flattenedCategories = [];
-                this.flattenCategoriesRecursive(cats);
+                this.flattenedCategories = cats; 
+                this.conceptCategories = this.buildCategoryTree(cats);
+                
+                // Initialize expanded state for top level
+                this.conceptCategories.forEach(c => this.expandedCategoryIds.add(c.id));
+                
+                console.log('Categories loaded and structured:', this.conceptCategories);
             },
             error: (err) => console.error('Error loading categories', err)
         });
     }
 
-    flattenCategoriesRecursive(cats: any[]) {
-        cats.forEach(c => {
-            if (!c.parentId) {
-                this.flattenedCategories.push({ id: c.id, name: c.name, level: 0 });
-            }
-            if (c.subCategories && c.subCategories.length > 0) {
-                this.processChildren(c.subCategories, 1);
+    buildCategoryTree(flatCats: any[]): any[] {
+        const idMap = new Map();
+        flatCats.forEach(c => {
+            idMap.set(c.id, { ...c, subCategories: [] });
+        });
+        
+        const roots: any[] = [];
+        idMap.forEach(cat => {
+            if (!cat.parentId) {
+                roots.push(cat);
+            } else {
+                const parent = idMap.get(cat.parentId);
+                if (parent) {
+                    parent.subCategories.push(cat);
+                } else {
+                    roots.push(cat);
+                }
             }
         });
+        return roots;
     }
 
-    processChildren(cats: any[], level: number) {
-        cats.forEach(c => {
-            this.flattenedCategories.push({ id: c.id, name: '- '.repeat(level) + c.name, level: level });
-            if (c.subCategories && c.subCategories.length > 0) {
-                this.processChildren(c.subCategories, level + 1);
+
+    // --- NAVIGATION (DRILL DOWN) ACTIONS ---
+
+    setCurrentCategory(categoryId: number | null) {
+        this.currentCategoryId = categoryId;
+        if (categoryId) {
+            this.expandedCategoryIds.add(categoryId);
+        }
+    }
+
+    get breadcrumbs(): { id: number | null, name: string }[] {
+        const crumbs: { id: number | null, name: string }[] = [{ id: null, name: 'Inicio' }];
+        
+        if (this.currentCategoryId !== null) {
+            const path = this.findPathToCategory(this.currentCategoryId, this.conceptCategories);
+            if (path) {
+                path.forEach(cat => crumbs.push({ id: cat.id, name: cat.name }));
             }
-        });
+        }
+        return crumbs;
+    }
+
+    get navigationButtons(): any[] {
+        if (this.currentCategoryId === null) {
+            return this.conceptCategories;
+        } else {
+            const node = this.findCategoryNode(this.currentCategoryId, this.conceptCategories);
+            return node && node.subCategories ? node.subCategories : [];
+        }
+    }
+
+    /**
+     * Finds a node by ID and returns the path (array of ancestors including self).
+     */
+    private findPathToCategory(targetId: number, nodes: any[]): any[] | null {
+        for (const node of nodes) {
+            if (node.id === targetId) {
+                return [node];
+            }
+            if (node.subCategories) {
+                const subPath = this.findPathToCategory(targetId, node.subCategories);
+                if (subPath) {
+                    return [node, ...subPath];
+                }
+            }
+        }
+        return null;
+    }
+
+    private findCategoryNode(id: number, nodes: any[]): any | null {
+        for (const node of nodes) {
+            if (node.id === id) return node;
+            if (node.subCategories) {
+                const found = this.findCategoryNode(id, node.subCategories);
+                if (found) return found;
+            }
+        }
+        return null; // Should not happen if data consistent
+    }
+
+    // --- NESTED TREE LOGIC ---
+
+    toggleCategory(categoryId: number, event?: Event) {
+        if (event) {
+            event.stopPropagation();
+        }
+        if (this.expandedCategoryIds.has(categoryId)) {
+            this.expandedCategoryIds.delete(categoryId);
+        } else {
+            this.expandedCategoryIds.add(categoryId);
+        }
+    }
+
+    isExpanded(categoryId: number): boolean {
+        // If searching, always expand matches
+        if (this.searchQuery && this.searchQuery.trim().length > 0) {
+            return true;
+        }
+        // Always expand the current drill-down root for clarity
+        if (categoryId === this.currentCategoryId) {
+            return true;
+        }
+        return this.expandedCategoryIds.has(categoryId);
+    }
+
+    /**
+     * Builds the visible tree structure combining:
+     * 1. The Category Tree (ZOOMED to current selection)
+     * 2. The Concepts (mapped to categories)
+     * 3. The Search Query (prunes empty branches)
+     */
+    get visibleTree(): CategoryNode[] {
+        let roots = this.conceptCategories;
+        
+        // ZOOM: If a category is selected, we only show THAT node (and its children recursively)
+        // OR: Do we want to show just the CHILDREN as roots? 
+        // The prompt says "sale sus subcategorias...". 
+        // Let's show the Selected Node as the single root of the tree view, fully expanded.
+        // If nothing selected, show all top roots.
+
+        if (this.currentCategoryId !== null) {
+            const contextNode = this.findCategoryNode(this.currentCategoryId, this.conceptCategories);
+            if (contextNode) {
+                roots = [contextNode]; 
+            }
+        }
+
+        const query = this.searchQuery.toLowerCase().trim();
+        const nodes: CategoryNode[] = [];
+
+        for (const root of roots) {
+            const node = this.buildNode(root, query);
+            if (node) {
+                nodes.push(node);
+            }
+        }
+
+        return nodes;
+    }
+
+    private buildNode(category: any, query: string): CategoryNode | null {
+        // 1. Get concepts for this category
+        let concepts = this.availableConceptsMap.get(category.id) || [];
+        
+        // 2. Filter concepts by query
+        if (query) {
+            concepts = concepts.filter(c => c.concept.name.toLowerCase().includes(query));
+        }
+
+        // 3. Process subcategories
+        const subNodes: CategoryNode[] = [];
+        if (category.subCategories) {
+            for (const sub of category.subCategories) {
+                const subNode = this.buildNode(sub, query);
+                if (subNode) {
+                    subNodes.push(subNode);
+                }
+            }
+        }
+
+        const hasConcepts = concepts.length > 0;
+        const hasSubNodes = subNodes.length > 0;
+        const matchesQuery = query ? (hasConcepts || hasSubNodes) : true;
+
+        if (matchesQuery) {
+            return {
+                id: category.id,
+                name: category.name,
+                subCategories: subNodes,
+                concepts: concepts,
+                isExpanded: this.isExpanded(category.id)
+            };
+        }
+
+        return null;
+    }
+
+    // --- TRACEABILITY & HELPERS ---
+    
+    getTraceabilityPath(conceptWrapper: any): string {
+        const concept = conceptWrapper.concept || conceptWrapper;
+        const catId = concept.conceptCategory?.id || concept.conceptCategoryId;
+        if (!catId) return 'Sin Categoría';
+
+        const pathNodes = this.findPathToCategory(catId, this.conceptCategories);
+        if (pathNodes && pathNodes.length > 0) {
+            return pathNodes.map(n => n.name).join(' > ');
+        }
+
+        return concept.conceptCategory?.name || 'Sin Categoría';
     }
 
     ngOnInit(): void {
         this.loadTeams();
+        this.loadCategories(); 
     }
 
     private loadTeams() {
@@ -266,11 +466,6 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         this.generateProposals();
     }
 
-    /**
-     * SIMPLIFIED: Process backend response into two flat lists
-     * - selectedConcepts (LEFT): Template concepts / manually selected
-     * - availableConcepts (RIGHT): The rest
-     */
     private processResponseIntoFlatLists() {
         if (!this.response) return;
 
@@ -280,7 +475,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         // Flatten all concepts from optional groups (RIGHT)
         const optional = this.response.optionalGroups.flatMap(g => g.concepts);
 
-        // Sort by category name for easier browsing
+        // Sort by category name 
         this.selectedConcepts = suggested.sort((a, b) => 
             (a.concept.conceptCategory?.name || '').localeCompare(b.concept.conceptCategory?.name || '')
         );
@@ -288,6 +483,21 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         this.availableConcepts = optional.sort((a, b) => 
             (a.concept.conceptCategory?.name || '').localeCompare(b.concept.conceptCategory?.name || '')
         );
+        
+        this.buildAvailableConceptsMap();
+    }
+
+    private buildAvailableConceptsMap() {
+        this.availableConceptsMap.clear();
+        this.availableConcepts.forEach(c => {
+            const catId = c.concept.conceptCategory?.id || c.concept.conceptCategoryId;
+            if (catId) {
+                if (!this.availableConceptsMap.has(catId)) {
+                    this.availableConceptsMap.set(catId, []);
+                }
+                this.availableConceptsMap.get(catId)!.push(c);
+            }
+        });
     }
 
     // --- DRAG & DROP ---
@@ -319,6 +529,9 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 event.currentIndex,
             );
         }
+        
+        // Rebuild map logic
+        this.buildAvailableConceptsMap(); 
     }
 
     // --- MOVEMENT ACTIONS ---
@@ -327,11 +540,13 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         if (idx !== -1) {
             this.availableConcepts.splice(idx, 1);
             conceptWrapper.tag = ConceptTag.Own;
-            this.selectedConcepts.push(conceptWrapper);
+            this.selectedConcepts = [...this.selectedConcepts, conceptWrapper];
             
             if (!this.initialSelectedConceptIds.includes(conceptWrapper.concept.id)) {
                 this.initialSelectedConceptIds.push(conceptWrapper.concept.id);
             }
+            
+            this.buildAvailableConceptsMap();
         }
     }
 
@@ -340,12 +555,14 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         if (idx !== -1) {
             this.selectedConcepts.splice(idx, 1);
             conceptWrapper.tag = ConceptTag.Inherited;
-            this.availableConcepts.push(conceptWrapper);
+            this.availableConcepts = [...this.availableConcepts, conceptWrapper];
             
             const selIdx = this.initialSelectedConceptIds.indexOf(conceptWrapper.concept.id);
             if (selIdx !== -1) {
                 this.initialSelectedConceptIds.splice(selIdx, 1);
             }
+            
+            this.buildAvailableConceptsMap();
         }
     }
 
@@ -366,77 +583,15 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     }
 
     // --- UI HELPERS ---
-    
-    // Search
-    searchQuery: string = '';
-    
-    // Category Filter
-    selectedCategoryFilter: string = 'all';
-
-    get filteredCategories(): string[] {
-        const categories = new Set<string>();
-        // Only get categories from available concepts for the filter
-        this.availableConcepts.forEach(c => {
-            categories.add(c.concept.conceptCategory?.name || 'Sin Categoría');
-        });
-        return Array.from(categories).sort();
-    }
-
-    setCategoryFilter(category: string) {
-        this.selectedCategoryFilter = category;
-    }
-
-    // Collapse State
-    collapsedCategories = new Set<string>();
-
-    toggleCategory(category: string) {
-        if (this.collapsedCategories.has(category)) {
-            this.collapsedCategories.delete(category);
-        } else {
-            this.collapsedCategories.add(category);
-        }
-    }
-
-    isCategoryCollapsed(category: string): boolean {
-        return this.collapsedCategories.has(category);
-    }
-
-    // List Getters
     get selectedByCategory(): { category: string; concepts: ScoredConceptDto[] }[] {
         const groups = new Map<string, ScoredConceptDto[]>();
         
         this.selectedConcepts.forEach(c => {
-            const catName = c.concept.conceptCategory?.name || 'Sin Categoría';
-            if (!groups.has(catName)) {
-                groups.set(catName, []);
+            const path = this.getTraceabilityPath(c);
+            if (!groups.has(path)) {
+                groups.set(path, []);
             }
-            groups.get(catName)!.push(c);
-        });
-
-        return Array.from(groups.entries())
-            .map(([category, concepts]) => ({ category, concepts }))
-            .sort((a, b) => a.category.localeCompare(b.category));
-    }
-
-    get availableByCategory(): { category: string; concepts: ScoredConceptDto[] }[] {
-        const groups = new Map<string, ScoredConceptDto[]>();
-        
-        // Filter by Search Query & Category Filter
-        const query = this.searchQuery.toLowerCase().trim();
-        
-        const filtered = this.availableConcepts.filter(c => {
-            const nameMatch = c.concept.name.toLowerCase().includes(query);
-            const catMatch = this.selectedCategoryFilter === 'all' || 
-                           (c.concept.conceptCategory?.name || 'Sin Categoría') === this.selectedCategoryFilter;
-            return nameMatch && catMatch;
-        });
-
-        filtered.forEach(c => {
-            const catName = c.concept.conceptCategory?.name || 'Sin Categoría';
-            if (!groups.has(catName)) {
-                groups.set(catName, []);
-            }
-            groups.get(catName)!.push(c);
+            groups.get(path)!.push(c);
         });
 
         return Array.from(groups.entries())

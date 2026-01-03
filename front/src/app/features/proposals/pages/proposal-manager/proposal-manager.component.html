@@ -37,8 +37,8 @@
         <div class="h-full grid grid-cols-1 md:grid-cols-2 gap-4 p-4">
 
             <!-- LEFT COLUMN: Selected Concepts (Tu Planificación) -->
-            <div class="flex flex-col h-full overflow-hidden bg-neutral-800/30 rounded-lg border border-[#CCFF00]/30">
-                <div class="p-3 border-b border-neutral-700 bg-neutral-800/50 flex items-center justify-between">
+            <div class="flex flex-col h-full overflow-hidden bg-neutral-800/30 rounded-lg border border-[#CCFF00]/30 shadow-lg">
+                <div class="p-3 border-b border-neutral-700 bg-neutral-800/50 flex items-center justify-between backdrop-blur-sm">
                     <div class="flex items-center gap-2">
                         <span class="material-icons text-[#CCFF00]">checklist</span>
                         <h3 class="text-sm font-bold text-[#CCFF00] uppercase tracking-wider">Tu Planificación</h3>
@@ -46,53 +46,52 @@
                     <span class="text-xs text-neutral-400 font-mono">{{ selectedConcepts.length }} conceptos</span>
                 </div>
 
-                <div class="flex-1 overflow-y-auto custom-scrollbar p-2"
-                    cdkDropList
-                    id="selected-list"
-                    [cdkDropListData]="selectedConcepts"
-                    [cdkDropListConnectedTo]="['available-list']"
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-2" cdkDropList id="selected-list"
+                    [cdkDropListData]="selectedConcepts" [cdkDropListConnectedTo]="['available-list']"
                     (cdkDropListDropped)="drop($event)">
 
                     <!-- Empty State -->
-                    <div *ngIf="selectedConcepts.length === 0" class="h-full flex flex-col items-center justify-center text-center p-6">
-                        <span class="material-icons text-4xl text-neutral-600 mb-3">drag_indicator</span>
-                        <p class="text-neutral-500 text-sm">Arrastra conceptos aquí desde la biblioteca</p>
-                        <p class="text-neutral-600 text-xs mt-1">o haz clic en el botón + de cada concepto</p>
+                    <div *ngIf="selectedConcepts.length === 0"
+                        class="h-full flex flex-col items-center justify-center text-center p-6 opacity-60">
+                        <span class="material-icons text-5xl text-neutral-600 mb-3">drag_indicator</span>
+                        <p class="text-neutral-500 text-sm font-medium">Lista vacía</p>
+                        <p class="text-neutral-600 text-xs mt-1">Arrastra conceptos aquí</p>
                     </div>
 
                     <!-- Selected Concepts Grouped by Category -->
                     <div *ngFor="let group of selectedByCategory" class="mb-3">
                         <!-- Category Header -->
-                        <div class="text-[10px] font-bold text-[#CCFF00] uppercase tracking-wider mb-1.5 px-1 flex items-center gap-2 sticky top-0 bg-neutral-800/90 py-1 rounded">
+                        <div
+                            class="text-[10px] font-bold text-[#CCFF00] uppercase tracking-wider mb-1.5 px-1 flex items-center gap-2 sticky top-0 bg-neutral-800/95 py-1 rounded backdrop-blur-sm z-10 border-b border-[#CCFF00]/10">
                             <span class="w-2 h-2 rounded-full bg-[#CCFF00]"></span>
                             {{ group.category }}
                             <span class="text-neutral-500 font-mono">({{ group.concepts.length }})</span>
                         </div>
-                        
-                        <!-- Concepts in Category -->
+
                         <div *ngFor="let conceptWrapper of group.concepts" cdkDrag [cdkDragData]="conceptWrapper"
-                            class="mb-1 select-none cursor-grab active:cursor-grabbing">
-                            
-                            <div class="relative bg-neutral-800 border border-[#CCFF00]/40 rounded shadow overflow-hidden group hover:border-[#CCFF00] transition-all">
+                            class="mb-1 select-none cursor-grab active:cursor-grabbing transform transition-transform hover:scale-[1.01]">
+
+                            <div (click)="moveToAvailable(conceptWrapper)"
+                                class="relative bg-neutral-800 border border-[#CCFF00]/40 rounded shadow overflow-hidden group hover:border-[#CCFF00] transition-all cursor-pointer">
                                 <!-- Active Indicator -->
                                 <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#CCFF00]"></div>
-                                
+
                                 <div class="p-2 ml-1 flex items-center gap-2">
                                     <div class="flex-1 min-w-0">
-                                        <h4 class="font-medium text-xs text-white leading-tight truncate">
+                                        <h4 class="font-bold text-xs text-white leading-tight truncate">
                                             {{ conceptWrapper.concept.name }}
                                         </h4>
                                     </div>
-                                    
+
                                     <div class="flex items-center gap-1 shrink-0">
-                                        <span class="text-[9px] font-mono text-[#CCFF00] bg-[#CCFF00]/10 px-1 py-0.5 rounded">
+                                        <span
+                                            class="text-[9px] font-mono text-[#CCFF00] bg-[#CCFF00]/10 px-1 py-0.5 rounded border border-[#CCFF00]/10">
                                             L{{ conceptWrapper.concept.developmentLevel }}
                                         </span>
-                                        <button type="button" 
-                                            (click)="moveToAvailable(conceptWrapper)"
-                                            class="text-neutral-500 hover:text-red-500 transition-colors"
+                                        <button type="button" (click)="moveToAvailable(conceptWrapper)"
+                                            class="text-neutral-500 hover:text-red-500 transition-colors hover:bg-neutral-700/50 rounded-full p-0.5"
                                             title="Quitar de planificación">
-                                            <span class="material-icons text-[14px]">close</span>
+                                            <span class="material-icons text-[16px]">close</span>
                                         </button>
                                     </div>
                                 </div>
@@ -103,99 +102,73 @@
             </div>
 
             <!-- RIGHT COLUMN: Available Concepts (Biblioteca) -->
-            <div class="flex flex-col h-full overflow-hidden bg-neutral-800/20 rounded-lg border border-neutral-700">
-                <div class="p-3 border-b border-neutral-700 bg-neutral-800/50 flex flex-col gap-2">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-2">
-                            <span class="material-icons text-neutral-400">library_books</span>
-                            <h3 class="text-sm font-bold text-neutral-300 uppercase tracking-wider">Biblioteca</h3>
-                        </div>
-                        <span class="text-xs text-neutral-500 font-mono">{{ availableConcepts.length }} disponibles</span>
+            <div class="flex flex-col h-full overflow-hidden bg-neutral-800/20 rounded-lg border border-neutral-700 shadow-lg">
+                <!-- Header: Navigation & Search -->
+                <div class="p-3 border-b border-neutral-700 bg-neutral-800/50 flex flex-col gap-2 backdrop-blur-sm shrink-0">
+                    
+                    <div class="flex items-center justify-between gap-4">
+                        <!-- Search Input -->
+                       <div class="relative group flex-1">
+                           <span class="material-icons absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm group-focus-within:text-[#CCFF00] transition-colors">search</span>
+                           <input type="text" [(ngModel)]="searchQuery" placeholder="Buscar concepto..."
+                               class="w-full bg-neutral-900 border border-neutral-700 rounded-md py-1.5 pl-8 pr-3 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#CCFF00] focus:ring-1 focus:ring-[#CCFF00]/20 transition-all">
+                            <button type="button" *ngIf="searchQuery" (click)="searchQuery = ''" class="absolute right-2 top-1/2 -translate-y-1/2 text-neutral-500 hover:text-white">
+                               <span class="material-icons text-[14px]">close</span>
+                           </button>
+                       </div>
+                       
+                       <button type="button" (click)="openCreateConceptModal()" 
+                           class="px-3 py-1.5 bg-[#CCFF00]/10 text-[#CCFF00] rounded text-[10px] font-bold uppercase hover:bg-[#CCFF00]/20 transition-colors border border-[#CCFF00]/20 flex items-center gap-1 shrink-0">
+                           <span class="material-icons text-[14px]">add</span>
+                           Nuevo
+                       </button>
+                   </div>
+                    
+                    <!-- Breadcrumbs (Traceability) -->
+                    <div class="flex items-center gap-1 flex-wrap text-xs text-neutral-400 font-mono pl-1">
+                         <span class="material-icons text-[14px] text-neutral-500">home</span>
+                         
+                         <ng-container *ngFor="let crumb of breadcrumbs; let last = last">
+                             <span *ngIf="crumb.id !== null" class="material-icons text-[12px] text-neutral-600 mx-0.5">chevron_right</span>
+                             
+                             <button type="button" 
+                                (click)="setCurrentCategory(crumb.id)"
+                                class="hover:text-white transition-colors"
+                                [class.text-[#CCFF00]]="last"
+                                [class.font-bold]="last"
+                                [class.underline]="!last"
+                                [disabled]="last">
+                                {{ crumb.name }}
+                             </button>
+                         </ng-container>
                     </div>
 
-                    <!-- Search Input -->
-                    <div class="relative">
-                        <span class="material-icons absolute left-2 top-1/2 -translate-y-1/2 text-neutral-500 text-sm">search</span>
-                        <input type="text" [(ngModel)]="searchQuery"
-                            placeholder="Buscar concepto..."
-                            class="w-full bg-neutral-900 border border-neutral-700 rounded-md py-1.5 pl-8 pr-3 text-xs text-white placeholder-neutral-500 focus:outline-none focus:border-[#CCFF00] transition-colors">
-                    </div>
-
-                    <!-- Category Chips -->
-                    <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar-horizontal pb-1">
-                        <button type="button" 
-                            (click)="setCategoryFilter('all')"
-                            [class]="'whitespace-nowrap px-2 py-1 rounded text-[10px] font-bold uppercase transition-all border ' + 
-                            (selectedCategoryFilter === 'all' 
-                                ? 'bg-[#CCFF00] text-black border-[#CCFF00]' 
-                                : 'bg-transparent text-neutral-400 border-neutral-700 hover:border-neutral-500')">
-                            Todos
-                        </button>
-                        <button *ngFor="let cat of filteredCategories" type="button" 
-                            (click)="setCategoryFilter(cat)"
-                            [class]="'whitespace-nowrap px-2 py-1 rounded text-[10px] font-bold uppercase transition-all border ' + 
-                            (selectedCategoryFilter === cat
-                                ? 'bg-[#CCFF00] text-black border-[#CCFF00]' 
-                                : 'bg-transparent text-neutral-400 border-neutral-700 hover:border-neutral-500')">
-                            {{ cat }}
+                    <!-- Navigation Buttons (Drill Down) -->
+                    <div class="flex items-center gap-2 overflow-x-auto custom-scrollbar-horizontal pb-1 mt-1 min-h-[30px]" *ngIf="navigationButtons.length > 0">
+                        <button type="button" *ngFor="let cat of navigationButtons" 
+                             (click)="setCurrentCategory(cat.id)"
+                             class="whitespace-nowrap px-3 py-1.5 rounded-full text-[10px] font-bold uppercase transition-all border shrink-0 bg-neutral-900 border-neutral-700 text-neutral-400 hover:border-neutral-500 hover:text-white">
+                             {{ cat.name }}
                         </button>
                     </div>
                 </div>
 
-                <div class="flex-1 overflow-y-auto custom-scrollbar p-2"
-                    cdkDropList
-                    id="available-list"
-                    [cdkDropListData]="availableConcepts"
+                <!-- Content: Nested Tree List -->
+                <div class="flex-1 overflow-y-auto custom-scrollbar p-2 bg-neutral-900/30"
+                    cdkDropList id="available-list"
+                    [cdkDropListData]="availableConcepts" 
                     [cdkDropListConnectedTo]="['selected-list']"
                     (cdkDropListDropped)="drop($event)">
 
-                    <!-- Empty State -->
-                    <div *ngIf="availableByCategory.length === 0" class="h-full flex flex-col items-center justify-center text-center p-6">
-                        <span class="material-icons text-4xl text-neutral-600 mb-3">folder_open</span>
-                        <p class="text-neutral-500 text-sm">No se encontraron conceptos</p>
-                        <button type="button" (click)="openCreateConceptModal()" 
-                            class="mt-3 px-4 py-2 bg-[#CCFF00]/10 text-[#CCFF00] rounded text-xs font-bold uppercase hover:bg-[#CCFF00]/20 transition-colors">
-                            + Crear Concepto
-                        </button>
-                    </div>
+                     <!-- Recursive Template Outlet -->
+                     <ng-container *ngFor="let node of visibleTree">
+                        <ng-container *ngTemplateOutlet="categoryNodeTemplate; context: { $implicit: node, level: 0 }"></ng-container>
+                     </ng-container>
 
-                    <!-- Available Concepts Grouped by Category -->
-                    <div *ngFor="let group of availableByCategory" class="mb-3">
-                        <!-- Category Header (Clickable for collapse) -->
-                        <div (click)="toggleCategory(group.category)" 
-                            class="text-[10px] font-bold text-neutral-500 uppercase tracking-wider mb-1 px-1 flex items-center gap-2 cursor-pointer hover:text-neutral-300 select-none">
-                            <span class="material-icons text-[14px] transition-transform duration-200"
-                                [class.rotate-180]="isCategoryCollapsed(group.category)">expand_more</span>
-                            {{ group.category }}
-                        </div>
-                        
-                        <!-- Concepts in Category -->
-                        <div *ngIf="!isCategoryCollapsed(group.category)" class="animate-in fade-in slide-in-from-top-1 duration-200">
-                            <div *ngFor="let conceptWrapper of group.concepts" cdkDrag [cdkDragData]="conceptWrapper"
-                                class="mb-1 select-none cursor-grab active:cursor-grabbing">
-                            
-                            <div class="group relative bg-neutral-800/60 hover:bg-neutral-800 border border-transparent hover:border-neutral-600 rounded transition-all">
-                                <div class="p-2 flex items-center gap-2">
-                                    <!-- Quick Add Button -->
-                                    <button type="button" 
-                                        (click)="moveToSelected(conceptWrapper)"
-                                        class="text-neutral-600 hover:text-[#CCFF00] transition-colors shrink-0">
-                                        <span class="material-icons text-[18px]">add_circle_outline</span>
-                                    </button>
-                                    
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="text-xs font-medium text-neutral-300 group-hover:text-white truncate">
-                                            {{ conceptWrapper.concept.name }}
-                                        </h4>
-                                    </div>
-                                    
-                                    <span class="text-[9px] font-mono text-neutral-500 shrink-0">
-                                        L{{ conceptWrapper.concept.developmentLevel }}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
+                     <!-- Empty State -->
+                     <div *ngIf="visibleTree.length === 0" class="h-full flex flex-col items-center justify-center text-center p-6 opacity-60">
+                        <span class="material-icons text-4xl text-neutral-700 mb-3">folder_open</span>
+                        <p class="text-neutral-500 text-sm">Esta carpeta está vacía</p>
                     </div>
                 </div>
             </div>
@@ -203,27 +176,82 @@
         </div>
     </div>
 
+    <!-- Recursive Category Node Template -->
+    <ng-template #categoryNodeTemplate let-node let-level="level">
+        <div class="mb-1">
+            <!-- Category Header -->
+            <div (click)="toggleCategory(node.id)" 
+                class="flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer select-none hover:bg-neutral-800/50 transition-colors group"
+                [style.margin-left.px]="level * 12">
+                
+                <span class="material-icons text-neutral-500 text-[14px] transition-transform duration-200"
+                      [class.rotate-90]="node.isExpanded">chevron_right</span>
+                
+                <span class="text-xs font-bold text-neutral-400 group-hover:text-white uppercase tracking-wide">
+                    {{ node.name }}
+                </span>
+                
+                <span class="text-[9px] text-neutral-600 font-mono ml-auto" *ngIf="node.concepts?.length">
+                    {{ node.concepts?.length }}
+                </span>
+            </div>
+
+            <!-- Expanded Body -->
+            <div *ngIf="node.isExpanded">
+                
+                <!-- Concepts List (Direct Children) -->
+                <div class="flex flex-col gap-1 mt-1 mb-2" [style.padding-left.px]="(level + 1) * 12 + 8">
+                    <div *ngFor="let conceptWrapper of node.concepts" cdkDrag [cdkDragData]="conceptWrapper"
+                        class="group relative bg-neutral-800/80 hover:bg-neutral-800 border border-neutral-700 hover:border-[#CCFF00]/50 rounded transition-all cursor-grab active:cursor-grabbing select-none">
+                        
+                        <div (click)="moveToSelected(conceptWrapper)" class="p-2 flex items-center gap-2 cursor-pointer">
+                             <!-- Quick Add -->
+                            <div class="text-neutral-600 group-hover:text-[#CCFF00] group-hover:bg-[#CCFF00]/10 rounded-full p-1 transition-all shrink-0">
+                                <span class="material-icons text-[16px]">add</span>
+                            </div>
+
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-xs font-medium text-neutral-300 group-hover:text-white truncate transition-colors">
+                                    {{ conceptWrapper.concept.name }}
+                                </h4>
+                            </div>
+
+                            <span class="text-[9px] font-mono text-neutral-500 bg-neutral-900/50 px-1.5 py-0.5 rounded border border-neutral-700 shrink-0">
+                                L{{ conceptWrapper.concept.developmentLevel }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Subcategories (Recursive) -->
+                <ng-container *ngFor="let subNode of node.subCategories">
+                     <ng-container *ngTemplateOutlet="categoryNodeTemplate; context: { $implicit: subNode, level: level + 1 }"></ng-container>
+                </ng-container>
+            </div>
+        </div>
+    </ng-template>
+
     <!-- Loading State -->
-    <div *ngIf="loading" class="absolute inset-0 bg-black/50 flex items-center justify-center z-50">
-        <div class="flex flex-col items-center">
+    <div *ngIf="loading" class="absolute inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+        <div class="flex flex-col items-center p-6 bg-neutral-900 border border-neutral-800 rounded-xl shadow-2xl">
             <div class="w-8 h-8 border-4 border-[#CCFF00] border-t-transparent rounded-full animate-spin mb-4"></div>
-            <p class="text-neutral-400 animate-pulse">Cargando conceptos...</p>
+            <p class="text-neutral-400 animate-pulse text-sm font-medium">Procesando planificación...</p>
         </div>
     </div>
 
     <!-- Empty State: No Team Selected -->
-    <div *ngIf="!response && !loading" class="flex-1 flex flex-col items-center justify-center opacity-30">
-        <span class="material-icons text-8xl text-neutral-600 mb-4">sports_basketball</span>
-        <p class="text-xl text-neutral-500">Selecciona un equipo para ver su planificación</p>
+    <div *ngIf="!response && !loading" class="flex-1 flex flex-col items-center justify-center opacity-30 select-none pointer-events-none">
+        <span class="material-icons text-9xl text-neutral-800 mb-4 transform -rotate-12">sports_basketball</span>
+        <p class="text-2xl text-neutral-600 font-bold uppercase tracking-widest">SportPlanner</p>
     </div>
 
     <!-- CREATE CONCEPT MODAL -->
-    <div *ngIf="showCreateModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn p-4 md:p-10">
+    <div *ngIf="showCreateModal"
+        class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-fadeIn p-4 md:p-10">
         <div class="w-full h-full max-w-6xl">
-            <app-concept-creator 
-                (close)="closeCreateConceptModal()" 
-                (conceptCreated)="handleConceptCreated($event)">
+            <app-concept-creator (close)="closeCreateConceptModal()" (conceptCreated)="handleConceptCreated($event)">
             </app-concept-creator>
         </div>
     </div>
+
 </div>
