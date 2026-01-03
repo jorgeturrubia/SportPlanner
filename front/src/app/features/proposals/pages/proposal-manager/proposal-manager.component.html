@@ -152,14 +152,14 @@
     <ng-template #categoryNodeTemplate let-node let-level="level" let-isSelectionMode="isSelectionMode">
         <div class="mb-1">
             <!-- Category Header -->
-            <div (click)="!isSelectionMode ? toggleCategory(node.id) : null" 
+            <div (click)="toggleCategory(node.id, isSelectionMode || false)" 
                 class="flex items-center gap-2 py-1 px-2 rounded cursor-pointer select-none hover:bg-neutral-800/50 transition-colors group"
                 [style.margin-left.px]="level * 12">
                 
-                <span *ngIf="!isSelectionMode" class="material-icons text-neutral-500 text-[14px] transition-transform duration-200"
-                      [class.rotate-90]="node.isExpanded">chevron_right</span>
-                
-                <span *ngIf="isSelectionMode" class="w-1.5 h-1.5 rounded-full bg-[#CCFF00]"></span>
+                <span class="material-icons text-[14px] transition-transform duration-200"
+                      [class.rotate-90]="node.isExpanded"
+                      [class.text-neutral-500]="!isSelectionMode"
+                      [class.text-[#CCFF00]]="isSelectionMode">chevron_right</span>
 
                 <span class="text-[10px] font-bold uppercase tracking-wide"
                     [class.text-neutral-400]="!isSelectionMode"
@@ -172,8 +172,8 @@
                 </span>
             </div>
 
-            <!-- Body (Always expanded in selection mode, toggled in library) -->
-            <div *ngIf="isSelectionMode || node.isExpanded">
+            <!-- Body (Expanded if isExpanded is true) -->
+            <div *ngIf="node.isExpanded">
                 
                 <!-- Concepts List -->
                 <div class="flex flex-col gap-1 mt-1 mb-2" [style.padding-left.px]="(level + 1) * 12 + (isSelectionMode ? 4 : 8)">

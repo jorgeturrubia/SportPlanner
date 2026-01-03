@@ -66,6 +66,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     // UI State
     currentCategoryId: number | null = null; // Drill-Down Navigation State
     expandedCategoryIds: Set<number> = new Set<number>();
+    expandedPlanCategoryIds: Set<number> = new Set<number>();
     searchQuery: string = '';
     
     isCreating: boolean = false;
@@ -200,23 +201,42 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
 
     // --- NESTED TREE LOGIC ---
 
-    toggleCategory(categoryId: number, event?: Event) {
+    toggleCategory(categoryId: number, isSelectionMode: boolean = false, event?: Event) {
         if (event) {
             event.stopPropagation();
         }
-        if (this.expandedCategoryIds.has(categoryId)) {
-            this.expandedCategoryIds.delete(categoryId);
+        
+        if (isSelectionMode) {
+            const newSet = new Set(this.expandedPlanCategoryIds);
+            if (newSet.has(categoryId)) {
+                newSet.delete(categoryId);
+            } else {
+                newSet.add(categoryId);
+            }
+            this.expandedPlanCategoryIds = newSet;
         } else {
-            this.expandedCategoryIds.add(categoryId);
+            const newSet = new Set(this.expandedCategoryIds);
+            if (newSet.has(categoryId)) {
+                newSet.delete(categoryId);
+            } else {
+                newSet.add(categoryId);
+            }
+            this.expandedCategoryIds = newSet;
         }
     }
 
-    isExpanded(categoryId: number): boolean {
-        // If searching, always expand matches
+    isExpanded(categoryId: number, isSelectionMode: boolean = false): boolean {
+        // Selection mode logic
+        if (isSelectionMode) {
+            // New selections are expanded by default if not manually collapsed
+            // For now, simple check
+            return this.expandedPlanCategoryIds.has(categoryId);
+        }
+
+        // Library mode logic
         if (this.searchQuery && this.searchQuery.trim().length > 0) {
             return true;
         }
-        // Always expand the current drill-down root for clarity
         if (categoryId === this.currentCategoryId) {
             return true;
         }
@@ -242,7 +262,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         const nodes: CategoryNode[] = [];
 
         for (const root of roots) {
-            const node = this.buildNode(root, query, this.availableConceptsMap);
+            const node = this.buildNode(root, query, this.availableConceptsMap, false);
             if (node) {
                 nodes.push(node);
             }
@@ -260,7 +280,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         const nodes: CategoryNode[] = [];
         
         for (const root of this.conceptCategories) {
-            const node = this.buildNode(root, '', this.selectedConceptsMap);
+            const node = this.buildNode(root, '', this.selectedConceptsMap, true);
             if (node) {
                 nodes.push(node);
             }
@@ -268,7 +288,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         return nodes;
     }
 
-    private buildNode(category: any, query: string, conceptsMap: Map<number, ScoredConceptDto[]>): CategoryNode | null {
+    private buildNode(category: any, query: string, conceptsMap: Map<number, ScoredConceptDto[]>, isSelectionMode: boolean): CategoryNode | null {
         // 1. Get concepts for this category from the provided map
         let concepts = conceptsMap.get(category.id) || [];
         
@@ -281,7 +301,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         const subNodes: CategoryNode[] = [];
         if (category.subCategories) {
             for (const sub of category.subCategories) {
-                const subNode = this.buildNode(sub, query, conceptsMap);
+                const subNode = this.buildNode(sub, query, conceptsMap, isSelectionMode);
                 if (subNode) {
                     subNodes.push(subNode);
                 }
@@ -300,7 +320,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 name: category.name,
                 subCategories: subNodes,
                 concepts: concepts,
-                isExpanded: true // In Plan view we usually want items visible
+                isExpanded: this.isExpanded(category.id, isSelectionMode)
             };
         }
 
@@ -492,6 +512,12 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             (a.concept.conceptCategory?.name || '').localeCompare(b.concept.conceptCategory?.name || '')
         );
         
+        // Auto-expand parents for initial concepts in plan view
+        this.selectedConcepts.forEach(c => {
+            const catId = c.concept.conceptCategory?.id || c.concept.conceptCategoryId;
+            if (catId) this.expandParentsInPlan(catId);
+        });
+        
         this.availableConcepts = optional.sort((a, b) => 
             (a.concept.conceptCategory?.name || '').localeCompare(b.concept.conceptCategory?.name || '')
         );
@@ -565,6 +591,9 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             conceptWrapper.tag = ConceptTag.Own;
             this.selectedConcepts = [...this.selectedConcepts, conceptWrapper];
             
+            // Auto-expand parents in plan view when a new concept is added
+            this.expandParentsInPlan(conceptWrapper.concept.conceptCategoryId || conceptWrapper.concept.conceptCategory?.id);
+
             if (!this.initialSelectedConceptIds.includes(conceptWrapper.concept.id)) {
                 this.initialSelectedConceptIds.push(conceptWrapper.concept.id);
             }
@@ -620,5 +649,16 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         return Array.from(groups.entries())
             .map(([category, concepts]) => ({ category, concepts }))
             .sort((a, b) => a.category.localeCompare(b.category));
+    }
+
+    private expandParentsInPlan(categoryId?: number) {
+        if (!categoryId) return;
+        
+        const path = this.findPathToCategory(categoryId, this.conceptCategories);
+        if (path) {
+            const newSet = new Set(this.expandedPlanCategoryIds);
+            path.forEach(node => newSet.add(node.id));
+            this.expandedPlanCategoryIds = newSet;
+        }
     }
 }
