@@ -48,12 +48,16 @@ public class TrainingSessionConcept
     public int TrainingSessionId { get; set; }
     public TrainingSession? TrainingSession { get; set; }
 
-    public int SportConceptId { get; set; }
+    public int? SportConceptId { get; set; }
     public SportConcept? SportConcept { get; set; }
+
+    public string? CustomName { get; set; }
 
     public int Order { get; set; }
     public int? DurationMinutes { get; set; }
     public string? OverrideDescription { get; set; }
+
+    public ICollection<TrainingSessionExercise> Exercises { get; set; } = new List<TrainingSessionExercise>();
 }
 
 public class TrainingSessionExercise
@@ -73,6 +77,10 @@ public class TrainingSessionExercise
     // Can also refer to a specific concept if needed
     public int? SportConceptId { get; set; }
     public SportConcept? SportConcept { get; set; }
+
+    // Specific Session Concept relation (Parent)
+    public int? TrainingSessionConceptId { get; set; }
+    public TrainingSessionConcept? TrainingSessionConcept { get; set; }
 
     public int Order { get; set; }
     public int? DurationMinutes { get; set; }

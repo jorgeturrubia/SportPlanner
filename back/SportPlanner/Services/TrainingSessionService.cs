@@ -63,13 +63,33 @@ public class TrainingSessionService : ITrainingSessionService
         {
             foreach (var c in dto.SessionConcepts)
             {
-                session.SessionConcepts.Add(new TrainingSessionConcept
+                 var newConcept = new TrainingSessionConcept
                 {
                     SportConceptId = c.SportConceptId,
+                    CustomName = c.CustomName,
                     Order = c.Order,
                     DurationMinutes = c.DurationMinutes,
                     OverrideDescription = c.OverrideDescription
-                });
+                };
+
+                 // Add nested exercises
+                if (c.Exercises != null)
+                {
+                    foreach (var e in c.Exercises)
+                    {
+                        newConcept.Exercises.Add(new TrainingSessionExercise
+                        {
+                            ExerciseId = e.ExerciseId,
+                            CustomText = e.CustomText,
+                            Order = e.Order,
+                            DurationMinutes = e.DurationMinutes,
+                            SportConceptId = c.SportConceptId,
+                            TrainingSession = session // Link to parent session instance
+                        });
+                    }
+                }
+
+                session.SessionConcepts.Add(newConcept);
             }
         }
 
@@ -114,27 +134,50 @@ public class TrainingSessionService : ITrainingSessionService
         session.PlanningId = dto.PlanningId;
         session.UpdatedAt = DateTime.UtcNow;
 
-        // Sync Concepts
+        // Sync Concepts (and their nested exercises)
         _db.TrainingSessionConcepts.RemoveRange(session.SessionConcepts);
+        // Also remove exercises, as they will be re-added via concepts or flat list (though flat list is deprecated for concepts)
+        _db.TrainingSessionExercises.RemoveRange(session.SessionExercises); 
+
         if (dto.SessionConcepts != null)
         {
             foreach (var c in dto.SessionConcepts)
             {
-                session.SessionConcepts.Add(new TrainingSessionConcept
+                var newConcept = new TrainingSessionConcept
                 {
                     SportConceptId = c.SportConceptId,
+                    CustomName = c.CustomName,
                     Order = c.Order,
                     DurationMinutes = c.DurationMinutes,
                     OverrideDescription = c.OverrideDescription
-                });
+                };
+
+                // Add nested exercises
+                if (c.Exercises != null)
+                {
+                    foreach (var e in c.Exercises)
+                    {
+                        newConcept.Exercises.Add(new TrainingSessionExercise
+                        {
+                            ExerciseId = e.ExerciseId,
+                            CustomText = e.CustomText,
+                            Order = e.Order,
+                            DurationMinutes = e.DurationMinutes,
+                            SportConceptId = c.SportConceptId,
+                            TrainingSessionId = session.Id // Explicitly link to session
+                        });
+                    }
+                }
+
+                session.SessionConcepts.Add(newConcept);
             }
         }
-
-        // Sync Exercises
-        _db.TrainingSessionExercises.RemoveRange(session.SessionExercises);
+        
+        // Handle standalone exercises (if any exist in the flat list, though we are moving away from this for concepts)
+        // Kept for backward compatibility or pure "General" exercises if needed
         if (dto.SessionExercises != null)
         {
-            foreach (var e in dto.SessionExercises)
+             foreach (var e in dto.SessionExercises)
             {
                 session.SessionExercises.Add(new TrainingSessionExercise
                 {

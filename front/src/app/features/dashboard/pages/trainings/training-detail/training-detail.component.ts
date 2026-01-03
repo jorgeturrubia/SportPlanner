@@ -1,4 +1,5 @@
 import { Component, OnInit, signal, inject, computed, effect, ViewChild, TemplateRef, ViewContainerRef } from '@angular/core';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -55,6 +56,8 @@ export class TrainingDetailComponent implements OnInit {
     private overlay = inject(Overlay);
     private viewContainerRef = inject(ViewContainerRef);
 
+    private sanitizer = inject(DomSanitizer);
+
     isEdit = signal(false);
     loading = signal(false);
     saving = signal(false);
@@ -98,6 +101,20 @@ export class TrainingDetailComponent implements OnInit {
     private libraryOverlayRef?: OverlayRef;
 
     // Library State
+    // Expanded Media State
+    expandedMedia = signal<{ url: string; type: 'video' | 'embed' | 'image' } | null>(null);
+
+    openMedia(url: string | undefined) {
+        if (!url) return;
+        const type = this.getMediaType(url);
+        if (type !== 'none') {
+            this.expandedMedia.set({ url, type });
+        }
+    }
+
+    closeMedia() {
+        this.expandedMedia.set(null);
+    }
     currentConceptIdForLibrary = signal<number | null>(null);
     libraryExercises = signal<Exercise[]>([]);
 
@@ -403,42 +420,26 @@ export class TrainingDetailComponent implements OnInit {
         this.categoryPath.set([]);
     }
 
-    // Quick Add Concept Logic
+    // Quick Add Concept Logic (AD-HOC LOCAL ONLY)
     addQuickConcept() {
         const name = this.quickConceptName().trim();
         if (!name) return;
 
-        const dto = {
+        // Create ephemeral ID (negative) to indicate it's not persisted in library
+        const tempId = -Date.now();
+
+        this.trainingConcepts.update(prev => [...prev, {
+            id: tempId,
             name: name,
             description: 'Edita la descripción para detallar el objetivo.',
-            technicalDifficulty: 1,
-            tacticalComplexity: 1,
-            conceptCategoryId: null,
-            progressWeight: 50,
-            isProgressive: false,
-            // Assuming current planning sport or default. 
-            // We need sportId if required by backend, but let's try optional first or 1.
-            // Actually DTO says sportId is optional?
-            sportId: null
-        };
+            categoryName: 'Personal',
+            exercises: [],
+            isOpen: true,
+            durationMinutes: 8
+        }]);
 
-        this.loading.set(true);
-        this.conceptService.createConcept(dto as any).subscribe({
-            next: (concept) => {
-                this.trainingConcepts.update(prev => [...prev, {
-                    id: concept.id,
-                    name: concept.name,
-                    description: concept.description || '',
-                    categoryName: 'Personal',
-                    exercises: [],
-                    isOpen: true,
-                    durationMinutes: 8
-                }]);
-                this.quickConceptName.set('');
-                this.loading.set(false);
-            },
-            error: () => this.loading.set(false)
-        });
+        this.quickConceptName.set('');
+        // No loading state needed as it's instant
     }
 
     // Concept Editing Logic
@@ -471,10 +472,16 @@ export class TrainingDetailComponent implements OnInit {
         // Update local state only
         this.trainingConcepts.update(concepts => concepts.map(c => {
             if (c.id === concept.id) {
+                // For Personal concepts, description is edited directly on 'description' field.
+                // For others, it's edited via 'editDescription' in edit mode.
+                const newDescription = (c.categoryName === 'Personal') 
+                    ? c.description 
+                    : concept.editDescription;
+
                 return {
                     ...c,
                     name: concept.editName!.trim(),
-                    description: concept.editDescription,
+                    description: newDescription,
                     isEditing: false
                 };
             }
@@ -621,13 +628,34 @@ export class TrainingDetailComponent implements OnInit {
 
     isVideo(url: string | undefined): boolean {
         if (!url) return false;
-        return url.toLowerCase().endsWith('.mp4') || url.toLowerCase().endsWith('.webm');
+        const lower = url.toLowerCase();
+        return lower.endsWith('.mp4') || lower.endsWith('.webm') || 
+               lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('vimeo.com');
     }
 
-    getMediaType(url: string | undefined): 'video' | 'image' | 'none' {
+    getMediaType(url: string | undefined): 'video' | 'embed' | 'image' | 'none' {
         if (!url) return 'none';
-        if (this.isVideo(url)) return 'video';
+        const lower = url.toLowerCase();
+        
+        if (lower.endsWith('.mp4') || lower.endsWith('.webm')) return 'video';
+        if (lower.includes('youtube.com') || lower.includes('youtu.be') || lower.includes('vimeo.com')) return 'embed';
+        
         return 'image';
+    }
+
+    getEmbedUrl(url: string): SafeResourceUrl | null {
+        if (!url) return null;
+        let embedUrl = url;
+
+        if (url.includes('youtube.com/watch?v=')) {
+            embedUrl = url.replace('watch?v=', 'embed/');
+        } else if (url.includes('youtu.be/')) {
+            embedUrl = url.replace('youtu.be/', 'www.youtube.com/embed/');
+        } else if (url.includes('vimeo.com/')) {
+            embedUrl = url.replace('vimeo.com/', 'player.vimeo.com/video/');
+        }
+
+        return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
     }
 
     save() {
@@ -635,25 +663,31 @@ export class TrainingDetailComponent implements OnInit {
         this.saving.set(true);
 
         const validConcepts = this.trainingConcepts();
-        const sessionConcepts = validConcepts.map((c, i) => ({
-            sportConceptId: c.id,
-            order: i,
-            durationMinutes: c.durationMinutes,
-            overrideDescription: c.description
-        }));
 
-        const sessionExercises: any[] = [];
-        validConcepts.forEach((c, cIdx) => {
-            c.exercises.forEach((e, eIdx) => {
-                sessionExercises.push({
-                    exerciseId: e.exerciseId,
-                    customText: e.customText,
-                    sportConceptId: c.id,
-                    order: eIdx,
-                    durationMinutes: e.durationMinutes
-                });
-            });
+        const sessionConcepts = validConcepts.map((c, i) => {
+            const isAhHoc = c.id < 0; // Negative ID means it's a local ad-hoc concept
+            
+            // Map exercises nested within the concept
+            const exercises = c.exercises.map((e, eIdx) => ({
+                exerciseId: e.exerciseId,
+                customText: e.customText,
+                order: eIdx,
+                durationMinutes: e.durationMinutes
+                // SportConceptId is inferred by backend from parent, or ignored if ad-hoc
+            }));
+
+            return {
+                sportConceptId: isAhHoc ? null : c.id,
+                customName: isAhHoc ? c.name : null,
+                order: i,
+                durationMinutes: c.durationMinutes,
+                overrideDescription: c.description,
+                exercises: exercises
+            };
         });
+
+        // sessionExercises is now empty/deprecated as we use nested exercises
+        const sessionExercises: any[] = [];
 
         const dto: CreateTrainingSessionDto = {
             name: this.name(),

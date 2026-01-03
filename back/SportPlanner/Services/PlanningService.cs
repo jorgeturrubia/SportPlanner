@@ -298,9 +298,9 @@ namespace SportPlanner.Services
             {
                 foreach (var sc in s.SessionConcepts)
                 {
-                    if (sc.SportConcept != null && !conceptMap.ContainsKey(sc.SportConceptId))
+                    if (sc.SportConceptId.HasValue && sc.SportConcept != null && !conceptMap.ContainsKey(sc.SportConceptId.Value))
                     {
-                        conceptMap[sc.SportConceptId] = sc.SportConcept;
+                        conceptMap[sc.SportConceptId.Value] = sc.SportConcept;
                     }
                 }
                 foreach (var se in s.SessionExercises)

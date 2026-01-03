@@ -73,10 +73,13 @@ public class CreateTrainingSessionDto
 
 public class CreateTrainingSessionConceptDto
 {
-    public int SportConceptId { get; set; }
+    public int? SportConceptId { get; set; }
+    public string? CustomName { get; set; }
     public int Order { get; set; }
     public int? DurationMinutes { get; set; }
     public string? OverrideDescription { get; set; }
+
+    public List<CreateTrainingSessionExerciseDto>? Exercises { get; set; }
 }
 
 public class CreateTrainingSessionExerciseDto
