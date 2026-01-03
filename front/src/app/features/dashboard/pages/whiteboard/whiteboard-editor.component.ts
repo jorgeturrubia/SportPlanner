@@ -68,7 +68,7 @@ export class WhiteboardEditorComponent implements OnInit, AfterViewInit {
   currentColor = signal('#FF6B00');
   currentStrokeWidth = signal(3);
   isDrawing = false;
-  lastLine: Konva.Line | null = null;
+  lastLine: Konva.Line | Konva.Arrow | null = null;
 
   // Enums for template
   DrawingTool = DrawingTool;
@@ -439,17 +439,23 @@ export class WhiteboardEditorComponent implements OnInit, AfterViewInit {
 
   startDrawingLine(pos: Position, isArrow: boolean) {
     this.isDrawing = true;
-    this.lastLine = new Konva.Line({
+    
+    const config = {
       points: [pos.x, pos.y],
       stroke: this.currentColor(),
       strokeWidth: this.currentStrokeWidth(),
-      lineCap: 'round',
-      lineJoin: 'round',
-    });
+      lineCap: 'round' as const,
+      lineJoin: 'round' as const,
+    };
 
     if (isArrow) {
-      this.lastLine.pointerLength(15);
-      this.lastLine.pointerWidth(15);
+      this.lastLine = new Konva.Arrow({
+        ...config,
+        pointerLength: 15,
+        pointerWidth: 15,
+      });
+    } else {
+      this.lastLine = new Konva.Line(config);
     }
 
     this.drawingLayer.add(this.lastLine);
@@ -689,7 +695,7 @@ export class WhiteboardEditorComponent implements OnInit, AfterViewInit {
       const updateDto: UpdateTacticalBoardDto = {
         name: this.boardName(),
         description: this.boardDescription(),
-        boardData: JSON.stringify(boardData),
+        boardData: boardData,
         type: this.boardType(),
         frameCount: this.frames().length,
       };
