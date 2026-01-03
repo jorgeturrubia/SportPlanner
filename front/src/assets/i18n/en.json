@@ -14,7 +14,18 @@
         "CATEGORIES": "Categories",
         "ITINERARIES": "Itineraries",
         "TEMPLATES": "Templates",
-        "EXERCISES": "Exercises"
+        "EXERCISES": "Exercises",
+        "WHITEBOARD": "Tactical Board"
+    },
+    "WHITEBOARD": {
+        "TITLE": "Tactical Board",
+        "SUBTITLE": "Create static plays and animations for your exercises",
+        "NEW_BOARD": "New Board",
+        "NO_BOARDS": "You have no boards created",
+        "NO_BOARDS_DESC": "Start by creating your first tactical board to visualize plays",
+        "CREATE_FIRST": "Create First Board",
+        "STATIC": "Static",
+        "ANIMATED": "Animated"
     },
     "DASHBOARD": {
         "WELCOME": "Welcome",

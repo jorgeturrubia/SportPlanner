@@ -37,6 +37,7 @@ public class AppDbContext : DbContext
     public DbSet<TrainingSessionExercise> TrainingSessionExercises { get; set; } = null!;
     public DbSet<MethodologicalItineraryRating> MethodologicalItineraryRatings { get; set; } = null!;
     public DbSet<Player> Players { get; set; } = null!;
+    public DbSet<TacticalBoard> TacticalBoards { get; set; } = null!;
 
 
 
@@ -315,5 +316,17 @@ public class AppDbContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
         modelBuilder.Entity<Player>()
             .HasIndex(p => p.TeamId);
+
+        // TacticalBoard configuration
+        modelBuilder.Entity<TacticalBoard>().HasKey(tb => tb.Id);
+        modelBuilder.Entity<TacticalBoard>()
+            .HasOne(tb => tb.Exercise)
+            .WithMany()
+            .HasForeignKey(tb => tb.ExerciseId)
+            .OnDelete(DeleteBehavior.SetNull);
+        modelBuilder.Entity<TacticalBoard>()
+            .HasIndex(tb => tb.OwnerId);
+        modelBuilder.Entity<TacticalBoard>()
+            .HasIndex(tb => tb.ExerciseId);
     }
 }
