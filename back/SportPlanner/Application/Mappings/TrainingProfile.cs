@@ -30,6 +30,8 @@ public class TrainingProfile : Profile
 
         CreateMap<TrainingSessionExercise, TrainingSessionExerciseDto>()
             .ForMember(dest => dest.ExerciseName, opt => opt.MapFrom(src => src.Exercise != null ? src.Exercise.Name : null))
+            .ForMember(dest => dest.ExerciseDescription, opt => opt.MapFrom(src => src.Exercise != null ? src.Exercise.Description : null))
+            .ForMember(dest => dest.ExerciseMediaUrl, opt => opt.MapFrom(src => src.Exercise != null ? src.Exercise.MediaUrl : null))
             .ForMember(dest => dest.SportConceptName, opt => opt.MapFrom(src => src.SportConcept != null ? src.SportConcept.Name : null));
 
         CreateMap<PlanConcept, PlanConceptDto>();

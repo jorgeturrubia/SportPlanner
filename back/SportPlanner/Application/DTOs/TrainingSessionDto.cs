@@ -19,6 +19,8 @@ public class TrainingSessionExerciseDto
     public int Id { get; set; }
     public int? ExerciseId { get; set; }
     public string? ExerciseName { get; set; }
+    public string? ExerciseDescription { get; set; }
+    public string? ExerciseMediaUrl { get; set; }
     public string? CustomText { get; set; }
     public int? SportConceptId { get; set; }
     public string? SportConceptName { get; set; }

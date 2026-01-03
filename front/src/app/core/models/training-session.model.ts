@@ -11,6 +11,8 @@ export interface TrainingSessionExercise {
     id: number;
     exerciseId?: number;
     exerciseName?: string;
+    exerciseDescription?: string;
+    exerciseMediaUrl?: string;
     customText?: string;
     sportConceptId?: number;
     sportConceptName?: string;

@@ -32,8 +32,11 @@ interface TrainingExerciseViewModel {
     id?: number; // trainingExerciseId
     exerciseId?: number;
     exerciseName?: string;
+    exerciseDescription?: string;
+    exerciseMediaUrl?: string;
     customText?: string;
     durationMinutes: number;
+    showDetails?: boolean; // UI Toggle
 }
 
 @Component({
@@ -304,8 +307,11 @@ export class TrainingDetailComponent implements OnInit {
                         id: se.id,
                         exerciseId: se.exerciseId,
                         exerciseName: se.exerciseName,
+                        exerciseDescription: (se as any).exerciseDescription,
+                        exerciseMediaUrl: (se as any).exerciseMediaUrl,
                         customText: se.customText,
-                        durationMinutes: se.durationMinutes
+                        durationMinutes: se.durationMinutes,
+                        showDetails: false
                     });
                 }
             });
@@ -508,7 +514,9 @@ export class TrainingDetailComponent implements OnInit {
     // Exercise Actions
     openLibrary(conceptId: number) {
         this.currentConceptIdForLibrary.set(conceptId);
-        this.exerciseService.getAll(conceptId).subscribe(exercises => {
+        // Requirement: Show ALL exercises, not just those linked to the concept.
+        // Passing no arguments (or null) to getAll fetches all exercises for the user.
+        this.exerciseService.getAll().subscribe(exercises => {
             this.libraryExercises.set(exercises);
 
             this.libraryOverlayRef = this.overlay.create({
@@ -541,7 +549,10 @@ export class TrainingDetailComponent implements OnInit {
                         exercises: [...c.exercises, {
                             exerciseId: ex.id,
                             exerciseName: ex.name,
-                            durationMinutes: 10
+                            exerciseDescription: ex.description,
+                            exerciseMediaUrl: ex.mediaUrl,
+                            durationMinutes: 0, // No duration for exercises per user feedback
+                            showDetails: false
                         }]
                     };
                 }
@@ -560,7 +571,7 @@ export class TrainingDetailComponent implements OnInit {
                         ...c,
                         exercises: [...c.exercises, {
                             customText: text,
-                            durationMinutes: 10
+                            durationMinutes: 0
                         }]
                     };
                 }
@@ -587,7 +598,37 @@ export class TrainingDetailComponent implements OnInit {
         });
     }
 
+    toggleExerciseDetails(conceptId: number, exerciseIndex: number) {
+        this.trainingConcepts.update(concepts => {
+            return concepts.map(c => {
+                if (c.id === conceptId) {
+                    return {
+                        ...c,
+                        exercises: c.exercises.map((e, i) => {
+                            if (i === exerciseIndex) {
+                                return { ...e, showDetails: !e.showDetails };
+                            }
+                            return e;
+                        })
+                    };
+                }
+                return c;
+            });
+        });
+    }
 
+
+
+    isVideo(url: string | undefined): boolean {
+        if (!url) return false;
+        return url.toLowerCase().endsWith('.mp4') || url.toLowerCase().endsWith('.webm');
+    }
+
+    getMediaType(url: string | undefined): 'video' | 'image' | 'none' {
+        if (!url) return 'none';
+        if (this.isVideo(url)) return 'video';
+        return 'image';
+    }
 
     save() {
         if (!this.teamId()) return;
