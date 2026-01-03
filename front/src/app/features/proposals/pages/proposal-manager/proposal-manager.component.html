@@ -58,46 +58,18 @@
                         <p class="text-neutral-600 text-xs mt-1">Arrastra conceptos aquí</p>
                     </div>
 
-                    <!-- Selected Concepts Grouped by Category -->
-                    <div *ngFor="let group of selectedByCategory" class="mb-3">
-                        <!-- Category Header -->
-                        <div
-                            class="text-[10px] font-bold text-[#CCFF00] uppercase tracking-wider mb-1.5 px-1 flex items-center gap-2 sticky top-0 bg-neutral-800/95 py-1 rounded backdrop-blur-sm z-10 border-b border-[#CCFF00]/10">
-                            <span class="w-2 h-2 rounded-full bg-[#CCFF00]"></span>
-                            {{ group.category }}
-                            <span class="text-neutral-500 font-mono">({{ group.concepts.length }})</span>
-                        </div>
-
-                        <div *ngFor="let conceptWrapper of group.concepts" cdkDrag [cdkDragData]="conceptWrapper"
-                            class="mb-1 select-none cursor-grab active:cursor-grabbing transform transition-transform hover:scale-[1.01]">
-
-                            <div (click)="moveToAvailable(conceptWrapper)"
-                                class="relative bg-neutral-800 border border-[#CCFF00]/40 rounded shadow overflow-hidden group hover:border-[#CCFF00] transition-all cursor-pointer">
-                                <!-- Active Indicator -->
-                                <div class="absolute left-0 top-0 bottom-0 w-1 bg-[#CCFF00]"></div>
-
-                                <div class="p-2 ml-1 flex items-center gap-2">
-                                    <div class="flex-1 min-w-0">
-                                        <h4 class="font-bold text-xs text-white leading-tight truncate">
-                                            {{ conceptWrapper.concept.name }}
-                                        </h4>
-                                    </div>
-
-                                    <div class="flex items-center gap-1 shrink-0">
-                                        <span
-                                            class="text-[9px] font-mono text-[#CCFF00] bg-[#CCFF00]/10 px-1 py-0.5 rounded border border-[#CCFF00]/10">
-                                            L{{ conceptWrapper.concept.developmentLevel }}
-                                        </span>
-                                        <button type="button" (click)="moveToAvailable(conceptWrapper)"
-                                            class="text-neutral-500 hover:text-red-500 transition-colors hover:bg-neutral-700/50 rounded-full p-0.5"
-                                            title="Quitar de planificación">
-                                            <span class="material-icons text-[16px]">close</span>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Empty State -->
+                    <div *ngIf="selectedTree.length === 0"
+                        class="h-full flex flex-col items-center justify-center text-center p-6 opacity-60">
+                        <span class="material-icons text-5xl text-neutral-600 mb-3">drag_indicator</span>
+                        <p class="text-neutral-500 text-sm font-medium">Lista vacía</p>
+                        <p class="text-neutral-600 text-xs mt-1">Arrastra conceptos aquí</p>
                     </div>
+
+                    <!-- Selected Concepts Tree -->
+                    <ng-container *ngFor="let node of selectedTree">
+                        <ng-container *ngTemplateOutlet="categoryNodeTemplate; context: { $implicit: node, level: 0, isSelectionMode: true }"></ng-container>
+                    </ng-container>
                 </div>
             </div>
 
@@ -177,17 +149,21 @@
     </div>
 
     <!-- Recursive Category Node Template -->
-    <ng-template #categoryNodeTemplate let-node let-level="level">
+    <ng-template #categoryNodeTemplate let-node let-level="level" let-isSelectionMode="isSelectionMode">
         <div class="mb-1">
             <!-- Category Header -->
-            <div (click)="toggleCategory(node.id)" 
-                class="flex items-center gap-2 py-1.5 px-2 rounded cursor-pointer select-none hover:bg-neutral-800/50 transition-colors group"
+            <div (click)="!isSelectionMode ? toggleCategory(node.id) : null" 
+                class="flex items-center gap-2 py-1 px-2 rounded cursor-pointer select-none hover:bg-neutral-800/50 transition-colors group"
                 [style.margin-left.px]="level * 12">
                 
-                <span class="material-icons text-neutral-500 text-[14px] transition-transform duration-200"
+                <span *ngIf="!isSelectionMode" class="material-icons text-neutral-500 text-[14px] transition-transform duration-200"
                       [class.rotate-90]="node.isExpanded">chevron_right</span>
                 
-                <span class="text-xs font-bold text-neutral-400 group-hover:text-white uppercase tracking-wide">
+                <span *ngIf="isSelectionMode" class="w-1.5 h-1.5 rounded-full bg-[#CCFF00]"></span>
+
+                <span class="text-[10px] font-bold uppercase tracking-wide"
+                    [class.text-neutral-400]="!isSelectionMode"
+                    [class.text-[#CCFF00]]="isSelectionMode">
                     {{ node.name }}
                 </span>
                 
@@ -196,27 +172,56 @@
                 </span>
             </div>
 
-            <!-- Expanded Body -->
-            <div *ngIf="node.isExpanded">
+            <!-- Body (Always expanded in selection mode, toggled in library) -->
+            <div *ngIf="isSelectionMode || node.isExpanded">
                 
-                <!-- Concepts List (Direct Children) -->
-                <div class="flex flex-col gap-1 mt-1 mb-2" [style.padding-left.px]="(level + 1) * 12 + 8">
+                <!-- Concepts List -->
+                <div class="flex flex-col gap-1 mt-1 mb-2" [style.padding-left.px]="(level + 1) * 12 + (isSelectionMode ? 4 : 8)">
                     <div *ngFor="let conceptWrapper of node.concepts" cdkDrag [cdkDragData]="conceptWrapper"
-                        class="group relative bg-neutral-800/80 hover:bg-neutral-800 border border-neutral-700 hover:border-[#CCFF00]/50 rounded transition-all cursor-grab active:cursor-grabbing select-none">
+                        class="group relative rounded border transition-all cursor-grab active:cursor-grabbing select-none overflow-hidden"
+                        [class.bg-neutral-800/80]="!isSelectionMode"
+                        [class.hover:bg-neutral-800]="!isSelectionMode"
+                        [class.border-neutral-700]="!isSelectionMode"
+                        [class.hover:border-[#CCFF00]/50]="!isSelectionMode"
+                        [class.bg-neutral-800]="isSelectionMode"
+                        [class.border-[#CCFF00]/40]="isSelectionMode"
+                        [class.hover:border-[#CCFF00]]="isSelectionMode">
                         
-                        <div (click)="moveToSelected(conceptWrapper)" class="p-2 flex items-center gap-2 cursor-pointer">
-                             <!-- Quick Add -->
-                            <div class="text-neutral-600 group-hover:text-[#CCFF00] group-hover:bg-[#CCFF00]/10 rounded-full p-1 transition-all shrink-0">
-                                <span class="material-icons text-[16px]">add</span>
+                        <!-- Selected Indicator -->
+                        <div *ngIf="isSelectionMode" class="absolute left-0 top-0 bottom-0 w-1 bg-[#CCFF00]"></div>
+
+                        <div (click)="isSelectionMode ? moveToAvailable(conceptWrapper) : moveToSelected(conceptWrapper)" 
+                            class="p-2 flex items-center gap-2 cursor-pointer"
+                            [class.ml-1]="isSelectionMode">
+                            
+                             <!-- Action Icon -->
+                            <div class="rounded-full p-1 transition-all shrink-0"
+                                [class.text-neutral-600]="!isSelectionMode"
+                                [class.group-hover:text-[#CCFF00]]="!isSelectionMode"
+                                [class.group-hover:bg-[#CCFF00]/10]="!isSelectionMode"
+                                [class.text-neutral-500]="isSelectionMode"
+                                [class.group-hover:text-red-500]="isSelectionMode"
+                                [class.group-hover:bg-red-500/10]="isSelectionMode">
+                                <span class="material-icons text-[16px]">{{ isSelectionMode ? 'close' : 'add' }}</span>
                             </div>
 
                             <div class="flex-1 min-w-0">
-                                <h4 class="text-xs font-medium text-neutral-300 group-hover:text-white truncate transition-colors">
+                                <h4 class="text-xs font-medium truncate transition-colors"
+                                    [class.text-neutral-300]="!isSelectionMode"
+                                    [class.group-hover:text-white]="!isSelectionMode"
+                                    [class.text-white]="isSelectionMode"
+                                    [class.font-bold]="isSelectionMode">
                                     {{ conceptWrapper.concept.name }}
                                 </h4>
                             </div>
 
-                            <span class="text-[9px] font-mono text-neutral-500 bg-neutral-900/50 px-1.5 py-0.5 rounded border border-neutral-700 shrink-0">
+                            <span class="text-[9px] font-mono px-1.5 py-0.5 rounded border shrink-0"
+                                [class.text-neutral-500]="!isSelectionMode"
+                                [class.bg-neutral-900/50]="!isSelectionMode"
+                                [class.border-neutral-700]="!isSelectionMode"
+                                [class.text-[#CCFF00]]="isSelectionMode"
+                                [class.bg-[#CCFF00]/10]="isSelectionMode"
+                                [class.border-[#CCFF00]/10]="isSelectionMode">
                                 L{{ conceptWrapper.concept.developmentLevel }}
                             </span>
                         </div>
@@ -225,7 +230,7 @@
 
                 <!-- Subcategories (Recursive) -->
                 <ng-container *ngFor="let subNode of node.subCategories">
-                     <ng-container *ngTemplateOutlet="categoryNodeTemplate; context: { $implicit: subNode, level: level + 1 }"></ng-container>
+                     <ng-container *ngTemplateOutlet="categoryNodeTemplate; context: { $implicit: subNode, level: level + 1, isSelectionMode: isSelectionMode }"></ng-container>
                 </ng-container>
             </div>
         </div>

@@ -48,9 +48,9 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
     selectedConcepts: ScoredConceptDto[] = [];
     availableConcepts: ScoredConceptDto[] = [];
     
-    // Map for fast lookups by category ID
     // Key: Category ID, Value: List of concepts
     availableConceptsMap: Map<number, ScoredConceptDto[]> = new Map();
+    selectedConceptsMap: Map<number, ScoredConceptDto[]> = new Map();
 
     private seasonService: SeasonService = inject(SeasonService);
 
@@ -223,21 +223,14 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         return this.expandedCategoryIds.has(categoryId);
     }
 
+    // --- NESTED TREE LOGIC (LIBRARY) ---
+
     /**
-     * Builds the visible tree structure combining:
-     * 1. The Category Tree (ZOOMED to current selection)
-     * 2. The Concepts (mapped to categories)
-     * 3. The Search Query (prunes empty branches)
+     * Builds the visible tree structure for Available Concepts (Library)
      */
     get visibleTree(): CategoryNode[] {
         let roots = this.conceptCategories;
         
-        // ZOOM: If a category is selected, we only show THAT node (and its children recursively)
-        // OR: Do we want to show just the CHILDREN as roots? 
-        // The prompt says "sale sus subcategorias...". 
-        // Let's show the Selected Node as the single root of the tree view, fully expanded.
-        // If nothing selected, show all top roots.
-
         if (this.currentCategoryId !== null) {
             const contextNode = this.findCategoryNode(this.currentCategoryId, this.conceptCategories);
             if (contextNode) {
@@ -249,7 +242,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         const nodes: CategoryNode[] = [];
 
         for (const root of roots) {
-            const node = this.buildNode(root, query);
+            const node = this.buildNode(root, query, this.availableConceptsMap);
             if (node) {
                 nodes.push(node);
             }
@@ -258,20 +251,37 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
         return nodes;
     }
 
-    private buildNode(category: any, query: string): CategoryNode | null {
-        // 1. Get concepts for this category
-        let concepts = this.availableConceptsMap.get(category.id) || [];
+    // --- NESTED TREE LOGIC (SELECTED / PLAN) ---
+
+    /**
+     * Builds the visible tree structure for Selected Concepts (Planification)
+     */
+    get selectedTree(): CategoryNode[] {
+        const nodes: CategoryNode[] = [];
         
-        // 2. Filter concepts by query
+        for (const root of this.conceptCategories) {
+            const node = this.buildNode(root, '', this.selectedConceptsMap);
+            if (node) {
+                nodes.push(node);
+            }
+        }
+        return nodes;
+    }
+
+    private buildNode(category: any, query: string, conceptsMap: Map<number, ScoredConceptDto[]>): CategoryNode | null {
+        // 1. Get concepts for this category from the provided map
+        let concepts = conceptsMap.get(category.id) || [];
+        
+        // 2. Filter by query if applicable (usually for library)
         if (query) {
             concepts = concepts.filter(c => c.concept.name.toLowerCase().includes(query));
         }
 
-        // 3. Process subcategories
+        // 3. Process subcategories recursively
         const subNodes: CategoryNode[] = [];
         if (category.subCategories) {
             for (const sub of category.subCategories) {
-                const subNode = this.buildNode(sub, query);
+                const subNode = this.buildNode(sub, query, conceptsMap);
                 if (subNode) {
                     subNodes.push(subNode);
                 }
@@ -280,15 +290,17 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
 
         const hasConcepts = concepts.length > 0;
         const hasSubNodes = subNodes.length > 0;
-        const matchesQuery = query ? (hasConcepts || hasSubNodes) : true;
+        
+        // If we are building the Selected Tree, we only show nodes that actually have something selected
+        const isValid = query ? (hasConcepts || hasSubNodes) : (hasConcepts || hasSubNodes);
 
-        if (matchesQuery) {
+        if (isValid) {
             return {
                 id: category.id,
                 name: category.name,
                 subCategories: subNodes,
                 concepts: concepts,
-                isExpanded: this.isExpanded(category.id)
+                isExpanded: true // In Plan view we usually want items visible
             };
         }
 
@@ -484,10 +496,10 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             (a.concept.conceptCategory?.name || '').localeCompare(b.concept.conceptCategory?.name || '')
         );
         
-        this.buildAvailableConceptsMap();
+        this.buildConceptsMaps();
     }
 
-    private buildAvailableConceptsMap() {
+    private buildConceptsMaps() {
         this.availableConceptsMap.clear();
         this.availableConcepts.forEach(c => {
             const catId = c.concept.conceptCategory?.id || c.concept.conceptCategoryId;
@@ -496,6 +508,17 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                     this.availableConceptsMap.set(catId, []);
                 }
                 this.availableConceptsMap.get(catId)!.push(c);
+            }
+        });
+
+        this.selectedConceptsMap.clear();
+        this.selectedConcepts.forEach(c => {
+            const catId = c.concept.conceptCategory?.id || c.concept.conceptCategoryId;
+            if (catId) {
+                if (!this.selectedConceptsMap.has(catId)) {
+                    this.selectedConceptsMap.set(catId, []);
+                }
+                this.selectedConceptsMap.get(catId)!.push(c);
             }
         });
     }
@@ -530,8 +553,8 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
             );
         }
         
-        // Rebuild map logic
-        this.buildAvailableConceptsMap(); 
+        // Rebuild maps logic
+        this.buildConceptsMaps(); 
     }
 
     // --- MOVEMENT ACTIONS ---
@@ -546,7 +569,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 this.initialSelectedConceptIds.push(conceptWrapper.concept.id);
             }
             
-            this.buildAvailableConceptsMap();
+            this.buildConceptsMaps();
         }
     }
 
@@ -562,7 +585,7 @@ export class ProposalManagerComponent implements OnInit, OnChanges {
                 this.initialSelectedConceptIds.splice(selIdx, 1);
             }
             
-            this.buildAvailableConceptsMap();
+            this.buildConceptsMaps();
         }
     }
 
