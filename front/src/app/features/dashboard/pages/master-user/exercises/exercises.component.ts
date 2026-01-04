@@ -1,6 +1,7 @@
 import { Component, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 import { ExerciseService } from '../../../../../services/exercise.service';
 import { NotificationService } from '../../../../../services/notification.service';
 import { ConfirmDialogComponent } from '../../../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -30,7 +31,8 @@ export class ExercisesComponent implements OnInit {
     constructor(
         private fb: FormBuilder,
         private exerciseService: ExerciseService,
-        private notificationService: NotificationService
+        private notificationService: NotificationService,
+        private router: Router
     ) {
         this.exerciseForm = this.fb.group({
             name: ['', Validators.required],
@@ -38,6 +40,13 @@ export class ExercisesComponent implements OnInit {
             mediaUrl: ['']
         });
     }
+
+    createTactic(exercise: Exercise) {
+        this.router.navigate(['/dashboard/whiteboard-v2/new'], { 
+            queryParams: { exerciseId: exercise.id } 
+        });
+    }
+
 
     ngOnInit() {
         this.loadExercises();

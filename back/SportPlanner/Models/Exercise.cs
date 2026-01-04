@@ -17,6 +17,9 @@ public class Exercise
     // Many-to-Many with SportConcept
     public ICollection<SportConcept> Concepts { get; set; } = new List<SportConcept>();
 
+    // One-to-Many with TacticalBoard
+    public ICollection<TacticalBoard> TacticalBoards { get; set; } = new List<TacticalBoard>();
+
     public bool IsSystem { get; set; } = true;
     public bool IsActive { get; set; } = true;
 

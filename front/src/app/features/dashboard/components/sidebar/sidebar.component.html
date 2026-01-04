@@ -173,9 +173,23 @@
                         <path d="M7 17h10" />
                     </svg>
                     <span class="ml-3 font-bold tracking-wide truncate">
-                        {{ 'SIDEBAR.WHITEBOARD' | translate }}
+                        {{ 'SIDEBAR.WHITEBOARD' | translate }} (Old)
                     </span>
                 </a>
+                <a routerLink="/dashboard/whiteboard-v2"
+                     routerLinkActive="bg-secondary text-black border-secondary"
+                     class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs select-none">
+                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
+                         class="shrink-0">
+                         <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                         <path d="M4 12h16"></path>
+                         <path d="M12 4v16"></path>
+                     </svg>
+                     <span class="ml-3 font-bold tracking-wide truncate">
+                         Pizarra Táctica V2
+                     </span>
+                 </a>
                 <a routerLink="/dashboard/my-templates"
                     routerLinkActive="bg-secondary text-black border-secondary"
                     class="flex items-center px-4 py-1.5 rounded-none border-2 border-transparent text-gray-400 hover:text-white hover:border-dark-border transition-all group cursor-pointer text-xs select-none">

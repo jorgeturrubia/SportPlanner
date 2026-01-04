@@ -1,3 +1,5 @@
+import { TacticalBoard } from './tactical-board.model';
+
 export interface Exercise {
     id: number;
     name: string;
@@ -9,6 +11,8 @@ export interface Exercise {
     ownerId?: string;
     isSystem?: boolean;
     originSystemId?: number;
+
+    tacticalBoards?: TacticalBoard[];
 }
 
 export interface CreateExerciseDto {

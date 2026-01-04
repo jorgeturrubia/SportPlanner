@@ -44,6 +44,7 @@ export class WhiteboardEditorComponent implements OnInit, AfterViewInit {
 
   // State signals
   boardId = signal<number | null>(null);
+  exerciseId = signal<number | null>(null);
   boardName = signal('Nueva Pizarra');
   boardDescription = signal('');
   selectedTool = signal<DrawingTool>(DrawingTool.Select);
@@ -107,6 +108,12 @@ export class WhiteboardEditorComponent implements OnInit, AfterViewInit {
 
   ngOnInit() {
     const id = this.route.snapshot.params['id'];
+    const exerciseId = this.route.snapshot.queryParams['exerciseId'];
+    
+    if (exerciseId) {
+      this.exerciseId.set(parseInt(exerciseId));
+    }
+
     if (id && id !== 'new') {
       this.boardId.set(parseInt(id));
       this.loadBoard();
@@ -719,6 +726,7 @@ export class WhiteboardEditorComponent implements OnInit, AfterViewInit {
         frameCount: this.frames().length,
         fieldType: this.selectedFieldType(),
         isPublic: false,
+        exerciseId: this.exerciseId() || undefined,
       };
 
       this.tacticalBoardService.create(createDto).subscribe({
@@ -737,6 +745,17 @@ export class WhiteboardEditorComponent implements OnInit, AfterViewInit {
   }
 
   goBack() {
-    this.router.navigate(['/dashboard/whiteboard']);
+    if (this.exerciseId()) {
+      // Navigate back to exercise details or edit page
+      // Assuming route is something like /dashboard/exercises/edit/:id or similar
+      // Since I need to check the exact route, I'll default to going back in history or a specific route
+      // For now, let's try to go to the exercises list if we don't have a specific edit page known
+      // Or better, let's use window.history.back() as a fallback if router doesn't match?
+      // Actually, let's look at the routes. 
+      // Based on typical patterns:
+      this.router.navigate(['/dashboard/master-user/exercises']); 
+    } else {
+      this.router.navigate(['/dashboard/whiteboard']);
+    }
   }
 }

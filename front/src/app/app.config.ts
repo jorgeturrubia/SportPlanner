@@ -74,6 +74,8 @@ export const appConfig: ApplicationConfig = {
           { path: 'master-user/exercises', loadComponent: () => import('./features/dashboard/pages/master-user/exercises/exercises.component').then(m => m.ExercisesComponent) },
           { path: 'whiteboard', loadComponent: () => import('./features/dashboard/pages/whiteboard/whiteboard-list.component').then(m => m.WhiteboardListComponent) },
           { path: 'whiteboard/:id', loadComponent: () => import('./features/dashboard/pages/whiteboard/whiteboard-editor.component').then(m => m.WhiteboardEditorComponent) },
+          { path: 'whiteboard-v2', loadComponent: () => import('./features/dashboard/pages/whiteboard-v2/whiteboard-v2.component').then(m => m.WhiteboardV2Component) },
+          { path: 'whiteboard-v2/:id', loadComponent: () => import('./features/dashboard/pages/whiteboard-v2/whiteboard-v2.component').then(m => m.WhiteboardV2Component) },
           { path: 'master-user/seasons', loadComponent: () => import('./features/dashboard/pages/master-user/seasons/seasons.component').then(m => m.SeasonsComponent) },
           { path: 'core-masters/subscription-sports', loadComponent: () => import('./features/dashboard/pages/core-masters/subscription-sports/subscription-sports.component').then(m => m.SubscriptionSportsComponent) },
           { path: 'plannings/info', loadComponent: () => import('./features/dashboard/pages/plan-info/plan-info.component').then(m => m.PlanInfoComponent) },

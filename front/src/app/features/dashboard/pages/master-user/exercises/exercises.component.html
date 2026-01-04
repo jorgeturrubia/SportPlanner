@@ -63,6 +63,12 @@
             
             <!-- Action Buttons -->
             <div class="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
+                <button (click)="createTactic(exercise)" class="text-gray-700 hover:text-primary p-1" title="Gestionar Tácticas">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2" />
+                    </svg>
+                </button>
                 <button (click)="editExercise(exercise)" class="text-gray-700 hover:text-white p-1">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
