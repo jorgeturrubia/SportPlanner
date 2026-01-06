@@ -1,0 +1,79 @@
+    <div class="flex items-center p-2 rounded-2xl bg-white/80 dark:bg-black/60 backdrop-blur-xl border border-white/20 shadow-2xl transition-all hover:bg-white/90 dark:hover:bg-black/70 gap-4">
+      
+      <!-- Logo / Home -->
+      <div class="flex items-center justify-center w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white shadow-lg cursor-pointer hover:scale-105 transition-transform">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+           <path d="M3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+           <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+      </div>
+
+      <div class="h-8 w-px bg-gray-300 dark:bg-white/10 mx-1"></div>
+
+      <!-- Tools Group -->
+      <div class="flex items-center gap-2">
+          
+          <button (click)="setTool('cursor')" [class.bg-blue-100]="(activeTool$ | async) === 'cursor'" [class.text-blue-600]="(activeTool$ | async) === 'cursor'"
+               [class.bg-transparent]="(activeTool$ | async) !== 'cursor'"
+              class="group relative p-2.5 rounded-xl transition-all hover:bg-blue-50 dark:hover:bg-white/10 text-gray-500 dark:text-gray-300" title="Seleccionar">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" /></svg>
+              <!-- Tooltip -->
+              <span class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">Mover</span>
+          </button>
+
+          <button (click)="setTool('player')" [class.bg-blue-100]="(activeTool$ | async) === 'player'" [class.text-blue-600]="(activeTool$ | async) === 'player'"
+              class="group relative p-2.5 rounded-xl transition-all hover:bg-blue-50 dark:hover:bg-white/10 text-gray-500 dark:text-gray-300" title="Jugador">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+              <span class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">Jugador</span>
+          </button>
+
+          <button (click)="setTool('ball')" [class.bg-blue-100]="(activeTool$ | async) === 'ball'" [class.text-blue-600]="(activeTool$ | async) === 'ball'"
+              class="group relative p-2.5 rounded-xl transition-all hover:bg-blue-50 dark:hover:bg-white/10 text-gray-500 dark:text-gray-300" title="Balón">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              <span class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">Balón</span>
+          </button>
+
+          <button (click)="setTool('cone')" [class.bg-blue-100]="(activeTool$ | async) === 'cone'" [class.text-blue-600]="(activeTool$ | async) === 'cone'"
+              class="group relative p-2.5 rounded-xl transition-all hover:bg-blue-50 dark:hover:bg-white/10 text-gray-500 dark:text-gray-300" title="Cono">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4l-8 16h16z" />
+              </svg>
+              <span class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">Cono</span>
+          </button>
+
+          <button (click)="setTool('arrow')" [class.bg-blue-100]="(activeTool$ | async) === 'arrow'" [class.text-blue-600]="(activeTool$ | async) === 'arrow'"
+              class="group relative p-2.5 rounded-xl transition-all hover:bg-blue-50 dark:hover:bg-white/10 text-gray-500 dark:text-gray-300" title="Flecha">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              <span class="absolute -top-10 left-1/2 -translate-x-1/2 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap">Flecha</span>
+          </button>
+      </div>
+
+      <div class="h-8 w-px bg-gray-300 dark:bg-white/10 mx-1"></div>
+      
+      <!-- Colors -->
+       <div class="flex items-center gap-1.5 px-2">
+            <button *ngFor="let color of colors" 
+                (click)="setColor(color)"
+                [style.background-color]="color"
+                class="w-5 h-5 rounded-full border border-black/10 shadow-sm hover:scale-125 transition-transform duration-200 ring-2 ring-transparent"
+                [class.ring-offset-2]="(activeColor$ | async) === color"
+                [class.!ring-blue-500]="(activeColor$ | async) === color"
+                [title]="color">
+            </button>
+      </div>
+
+       <div class="h-8 w-px bg-gray-300 dark:bg-white/10 mx-1"></div>
+
+       <!-- Sport Selector (Dropdown hidden for now, just toggles) -->
+        <div class="flex bg-gray-100 dark:bg-black/40 rounded-lg p-1 gap-1">
+            <button (click)="setSport('football')" [class.bg-white]="(currentSport$ | async) === 'football'" [class.shadow-sm]="(currentSport$ | async) === 'football'"
+                class="px-3 py-1.5 rounded-md text-xs font-bold uppercase transition-all hover:bg-white/50 text-gray-600 dark:text-gray-300">
+                FUT
+            </button>
+            <button (click)="setSport('basketball')" [class.bg-white]="(currentSport$ | async) === 'basketball'" [class.shadow-sm]="(currentSport$ | async) === 'basketball'"
+                class="px-3 py-1.5 rounded-md text-xs font-bold uppercase transition-all hover:bg-white/50 text-gray-600 dark:text-gray-300">
+                BSK
+            </button>
+        </div>
+
+    </div>

@@ -14,14 +14,19 @@
         <app-navbar [sidebarCollapsed]="sidebarCollapsed()" (toggleSidebar)="toggleSidebar()"></app-navbar>
 
         <!-- Scrollable Content Area -->
-        <main class="flex-1 overflow-y-auto p-6 md:p-8 relative">
+        <main class="flex-1 overflow-y-auto relative" 
+            [class.p-6]="!isWhiteboard()" 
+            [class.md:p-8]="!isWhiteboard()">
+            
             <!-- Background Grid Effect (Optional aesthetic touch) -->
-            <div class="absolute inset-0 opacity-5 pointer-events-none"
+            <div *ngIf="!isWhiteboard()" class="absolute inset-0 opacity-5 pointer-events-none"
                 style="background-image: radial-gradient(#404040 1px, transparent 1px); background-size: 24px 24px;">
             </div>
 
             <!-- Content Container -->
-            <div class="max-w-7xl mx-auto relative">
+            <div class="mx-auto relative"
+                [class.max-w-7xl]="!isWhiteboard()"
+                [class.h-full]="isWhiteboard()">
                 <router-outlet></router-outlet>
             </div>
         </main>

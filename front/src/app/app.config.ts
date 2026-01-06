@@ -84,7 +84,8 @@ export const appConfig: ApplicationConfig = {
           { path: 'my-templates/:id/edit', loadComponent: () => import('./features/planning-templates/template-form/template-form.component').then(m => m.TemplateFormComponent) },
           { path: 'my-templates/:id/concepts', loadComponent: () => import('./features/planning-templates/template-concepts/template-concepts.component').then(m => m.TemplateConceptsComponent) },
           { path: 'proposals', loadChildren: () => import('./features/proposals/proposals.routes').then(m => m.PROPOSALS_ROUTES) },
-          { path: 'trainings', loadChildren: () => import('./features/dashboard/pages/trainings/trainings.routes').then(m => m.TRAININGS_ROUTES) }
+          { path: 'trainings', loadChildren: () => import('./features/dashboard/pages/trainings/trainings.routes').then(m => m.TRAININGS_ROUTES) },
+          { path: 'whiteboard', loadChildren: () => import('./features/whiteboard/whiteboard.routes').then(m => m.WHITEBOARD_ROUTES) }
         ]
       }
     ])
