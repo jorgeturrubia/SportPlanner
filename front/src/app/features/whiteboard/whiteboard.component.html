@@ -1,20 +1,49 @@
-<div class="h-screen w-full flex flex-col bg-slate-900 overflow-hidden">
+<div class="h-screen w-full relative bg-slate-900 overflow-hidden">
   
-  <!-- Header (Toolbar) -->
-  <header class="h-auto min-h-[4rem] flex-none flex items-center justify-center relative z-20 pointer-events-none py-2">
-     <div class="pointer-events-auto">
-        <app-toolbar></app-toolbar>
-     </div>
-  </header>
+  <!-- Canvas takes 100% -->
+  <app-canvas class="absolute inset-0 z-0"></app-canvas>
 
-  <!-- Main (Canvas) -->
-  <main class="flex-1 relative z-0 min-h-0">
-    <app-canvas class="block w-full h-full"></app-canvas>
-  </main>
+  <!-- Floating Top Bar (Navigation/Export) -->
+  <div class="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-none">
+      
+      <!-- Left: Back & Actions -->
+      <div class="flex items-center gap-2 pointer-events-auto">
+          <button class="w-10 h-10 rounded-full bg-slate-800/80 backdrop-blur-md text-white flex items-center justify-center hover:bg-slate-700/80 transition-all shadow-lg" title="Volver">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" /></svg>
+          </button>
+          <div class="flex items-center bg-slate-800/80 backdrop-blur-md rounded-full px-1 py-1 shadow-lg">
+              <button class="w-8 h-8 rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all" title="Deshacer">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6" /></svg>
+              </button>
+              <button class="w-8 h-8 rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all" title="Rehacer">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 10H11a8 8 0 00-8 8v2m18-10l-6 6m6-6l-6-6" /></svg>
+              </button>
+              <div class="w-px h-5 bg-white/10 mx-1"></div>
+              <button class="w-8 h-8 rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all" title="Eliminar">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+              </button>
+              <button class="w-8 h-8 rounded-full text-gray-400 hover:text-white hover:bg-white/10 flex items-center justify-center transition-all" title="Compartir">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+              </button>
+          </div>
+      </div>
 
-  <!-- Footer (Scenes & Controls) -->
-  <footer class="h-24 flex-none relative z-20">
+      <!-- Right: Scenes Toggle -->
+      <div class="pointer-events-auto">
+          <button class="w-10 h-10 rounded-full bg-slate-800/80 backdrop-blur-md text-white flex items-center justify-center hover:bg-slate-700/80 transition-all shadow-lg" title="Escenas" (click)="toggleScenes()">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7" /></svg>
+          </button>
+      </div>
+  </div>
+
+  <!-- Floating Bottom Bar (Tools & Colors) -->
+  <div class="absolute bottom-4 left-1/2 -translate-x-1/2 z-30 pointer-events-auto">
+      <app-toolbar></app-toolbar>
+  </div>
+
+  <!-- Scenes Panel (Toggleable Overlay) -->
+  <div class="absolute right-4 top-20 bottom-4 w-48 z-20 transition-all duration-300" [class.translate-x-56]="!showScenes" [class.opacity-0]="!showScenes" [class.pointer-events-none]="!showScenes">
       <app-footer-panel></app-footer-panel>
-  </footer>
+  </div>
 
 </div>

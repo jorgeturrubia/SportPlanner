@@ -13,5 +13,9 @@ import { FooterPanelComponent } from './components/footer-panel/footer-panel.com
   styleUrls: ['./whiteboard.component.css']
 })
 export class WhiteboardComponent {
+  showScenes = false;
 
+  toggleScenes() {
+    this.showScenes = !this.showScenes;
+  }
 }
