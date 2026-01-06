@@ -4,6 +4,7 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 export type SportType = 'football' | 'basketball' | 'futsal' | 'handball';
 export type ToolType = 'cursor' | 'player' | 'ball' | 'cone' | 'arrow' | 'line' | 'zigzag';
+export type ViewMode = 'full' | 'half';
 
 @Injectable({
   providedIn: 'root'
@@ -15,17 +16,20 @@ export class WhiteboardService {
   private activeToolSubject = new BehaviorSubject<ToolType>('cursor');
   activeTool$ = this.activeToolSubject.asObservable();
 
+  private viewModeSubject = new BehaviorSubject<ViewMode>('full');
+  viewMode$ = this.viewModeSubject.asObservable();
+
   private activeColorSubject = new BehaviorSubject<string>('#e74c3c'); // Default Red
   activeColor$ = this.activeColorSubject.asObservable();
 
-  // Counters for auto-numbering players by color
+  // ... (keep usage of playerCounts)
   private playerCounts: { [color: string]: number } = {};
 
   private slidesSubject = new BehaviorSubject<string[]>([]);
   slides$ = this.slidesSubject.asObservable();
 
   private captureRequestSubject = new Subject<void>();
-  captureRequest$ = this.captureRequestSubject.asObservable(); // Emits when we want canvas to send us data
+  captureRequest$ = this.captureRequestSubject.asObservable();
 
   private loadRequestSubject = new BehaviorSubject<string | null>(null);
   loadRequest$ = this.loadRequestSubject.asObservable();
@@ -38,6 +42,10 @@ export class WhiteboardService {
 
   setTool(tool: ToolType) {
     this.activeToolSubject.next(tool);
+  }
+
+  setViewMode(mode: ViewMode) {
+    this.viewModeSubject.next(mode);
   }
 
   setColor(color: string) {

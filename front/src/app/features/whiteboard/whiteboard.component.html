@@ -1,23 +1,20 @@
-<div class="relative w-full h-full bg-slate-900 overflow-hidden">
+<div class="h-screen w-full flex flex-col bg-slate-900 overflow-hidden">
   
-  <!-- Layer 0: Canvas (Background) -->
-  <div class="absolute inset-0 z-0">
-    <app-canvas></app-canvas>
-  </div>
+  <!-- Header (Toolbar) -->
+  <header class="h-auto min-h-[4rem] flex-none flex items-center justify-center relative z-20 pointer-events-none py-2">
+     <div class="pointer-events-auto">
+        <app-toolbar></app-toolbar>
+     </div>
+  </header>
 
-  <!-- Layer 1: UI Overlays (Floating) -->
-  <div class="absolute inset-0 z-10 pointer-events-none">
-    
-    <!-- Top Toolbar (Floating Dock) -->
-    <div class="absolute top-6 left-1/2 transform -translate-x-1/2 pointer-events-auto">
-      <app-toolbar></app-toolbar>
-    </div>
+  <!-- Main (Canvas) -->
+  <main class="flex-1 relative z-0 min-h-0">
+    <app-canvas class="block w-full h-full"></app-canvas>
+  </main>
 
-    <!-- Right Sidebar (Floating Panel) -->
-    <div class="absolute top-6 right-6 bottom-6 w-80 pointer-events-auto">
-      <app-sidebar-panel></app-sidebar-panel>
-    </div>
-
-  </div>
+  <!-- Footer (Scenes & Controls) -->
+  <footer class="h-24 flex-none relative z-20">
+      <app-footer-panel></app-footer-panel>
+  </footer>
 
 </div>

@@ -64,6 +64,27 @@
 
        <div class="h-8 w-px bg-gray-300 dark:bg-white/10 mx-1"></div>
 
+       <!-- View Mode Selector -->
+       <div class="flex bg-gray-100 dark:bg-black/40 rounded-lg p-1 gap-1">
+            <button (click)="setViewMode('full')" [class.bg-white]="(viewMode$ | async) === 'full'" [class.shadow-sm]="(viewMode$ | async) === 'full'"
+                class="px-2 py-1.5 rounded-md transition-all hover:bg-white/50 text-gray-400 dark:text-gray-400"
+                [class.text-blue-600]="(viewMode$ | async) === 'full'" [class.dark:text-blue-400]="(viewMode$ | async) === 'full'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                </svg>
+            </button>
+            <button (click)="setViewMode('half')" [class.bg-white]="(viewMode$ | async) === 'half'" [class.shadow-sm]="(viewMode$ | async) === 'half'"
+                class="px-2 py-1.5 rounded-md transition-all hover:bg-white/50 text-gray-400 dark:text-gray-400"
+                [class.text-blue-600]="(viewMode$ | async) === 'half'" [class.dark:text-blue-400]="(viewMode$ | async) === 'half'">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="4" width="20" height="16" rx="2" ry="2"></rect>
+                    <line x1="12" y1="4" x2="12" y2="20"></line>
+                </svg>
+            </button>
+       </div>
+
+       <div class="h-8 w-px bg-gray-300 dark:bg-white/10 mx-1"></div>
+
        <!-- Sport Selector (Dropdown hidden for now, just toggles) -->
         <div class="flex bg-gray-100 dark:bg-black/40 rounded-lg p-1 gap-1">
             <button (click)="setSport('football')" [class.bg-white]="(currentSport$ | async) === 'football'" [class.shadow-sm]="(currentSport$ | async) === 'football'"
