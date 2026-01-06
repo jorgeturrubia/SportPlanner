@@ -75,6 +75,17 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
                 timestamp: Date.now()
             };
             this.whiteboardService.saveSlide(JSON.stringify(slideData));
+            
+            // Clear only lines/arrows for new scene (keep players, balls, cones)
+            const children = this.contentGroup.getChildren();
+            const linesToRemove: Konva.Arrow[] = [];
+            children.forEach(child => {
+                if (child.getClassName() === 'Arrow') {
+                    linesToRemove.push(child as Konva.Arrow);
+                }
+            });
+            linesToRemove.forEach(line => line.destroy());
+            this.layer.batchDraw();
         }
     });
 
