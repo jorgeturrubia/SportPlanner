@@ -3,8 +3,9 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 
 export type SportType = 'football' | 'basketball' | 'futsal' | 'handball';
-export type ToolType = 'cursor' | 'player' | 'ball' | 'cone' | 'arrow' | 'line' | 'zigzag';
+export type ToolType = 'cursor' | 'player' | 'ball' | 'cone' | 'arrow' | 'pass' | 'block' | 'movement' | 'shot';
 export type ViewMode = 'full' | 'half';
+export type LineStyle = 'solid' | 'dashed' | 'dotted' | 'wavy';
 
 @Injectable({
   providedIn: 'root'
@@ -22,7 +23,6 @@ export class WhiteboardService {
   private activeColorSubject = new BehaviorSubject<string>('#e74c3c'); // Default Red
   activeColor$ = this.activeColorSubject.asObservable();
 
-  // ... (keep usage of playerCounts)
   private playerCounts: { [color: string]: number } = {};
 
   private slidesSubject = new BehaviorSubject<string[]>([]);

@@ -114,6 +114,9 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
         });
     });
     this.resizeObserver.observe(container);
+
+    // Enable line drawing
+    this.setupLineDrawing();
   }
 
   // ... (keep updateCursor)
@@ -510,6 +513,86 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     } else if (tool === 'ball') {
       this.addBall(pos.x, pos.y);
     }
+    // Line tools are handled by mousedown/mouseup - see setupLineDrawing()
+  }
+
+  // Line drawing state
+  private isDrawingLine = false;
+  private currentLine: Konva.Arrow | null = null;
+  private lineStartPos: { x: number, y: number } | null = null;
+
+  private setupLineDrawing(): void {
+    this.stage.on('mousedown touchstart', (e) => {
+      if (e.target !== this.stage && e.target.getParent() !== this.backgroundGroup) return;
+      
+      const tool = this.activeTool;
+      if (!['pass', 'movement', 'block', 'shot'].includes(tool)) return;
+
+      const pos = this.stage.getPointerPosition();
+      if (!pos) return;
+
+      this.isDrawingLine = true;
+      this.lineStartPos = pos;
+
+      // Create the line arrow
+      const lineConfig = this.getLineConfig(tool);
+      this.currentLine = new Konva.Arrow({
+        points: [pos.x, pos.y, pos.x, pos.y],
+        stroke: this.activeColor,
+        strokeWidth: lineConfig.strokeWidth,
+        dash: lineConfig.dash,
+        pointerLength: 10,
+        pointerWidth: 8,
+        lineCap: 'round',
+        lineJoin: 'round'
+      });
+      this.contentGroup.add(this.currentLine);
+    });
+
+    this.stage.on('mousemove touchmove', () => {
+      if (!this.isDrawingLine || !this.currentLine || !this.lineStartPos) return;
+
+      const pos = this.stage.getPointerPosition();
+      if (!pos) return;
+
+      this.currentLine.points([this.lineStartPos.x, this.lineStartPos.y, pos.x, pos.y]);
+      this.layer.batchDraw();
+    });
+
+    this.stage.on('mouseup touchend', () => {
+      if (!this.isDrawingLine || !this.currentLine) return;
+
+      this.isDrawingLine = false;
+      
+      // If line is too short, remove it
+      const points = this.currentLine.points();
+      const dx = points[2] - points[0];
+      const dy = points[3] - points[1];
+      if (Math.sqrt(dx * dx + dy * dy) < 20) {
+        this.currentLine.destroy();
+      } else {
+        // Make line draggable
+        this.currentLine.draggable(true);
+      }
+
+      this.currentLine = null;
+      this.lineStartPos = null;
+    });
+  }
+
+  private getLineConfig(tool: string): { strokeWidth: number, dash: number[] } {
+    switch (tool) {
+      case 'pass':
+        return { strokeWidth: 3, dash: [] }; // Solid
+      case 'movement':
+        return { strokeWidth: 2, dash: [10, 5] }; // Dashed
+      case 'block':
+        return { strokeWidth: 3, dash: [5, 3, 2, 3] }; // Dotted pattern
+      case 'shot':
+        return { strokeWidth: 4, dash: [] }; // Bold solid
+      default:
+        return { strokeWidth: 2, dash: [] };
+    }
   }
 
   private addPlayer(x: number, y: number, color: string): void {
@@ -590,21 +673,90 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
           draggable: true
       });
 
-      const circle = new Konva.Circle({
-          radius: 10,
-          fill: 'white',
-          stroke: 'black',
-          strokeWidth: 1
-      });
-      // Ball pattern
-      const pattern = new Konva.Path({
-          data: 'M -5 0 L 5 0 M 0 -5 L 0 5', // Simple cross for now
-          stroke: 'black',
-          strokeWidth: 1
-      });
+      const radius = 12;
 
-      group.add(circle);
-      group.add(pattern);
+      if (this.currentSport === 'basketball') {
+          // Basketball: Orange with black lines
+          const ball = new Konva.Circle({
+              radius: radius,
+              fill: '#f97316', // Orange
+              stroke: '#000',
+              strokeWidth: 1.5
+          });
+          group.add(ball);
+
+          // Horizontal line
+          group.add(new Konva.Line({
+              points: [-radius, 0, radius, 0],
+              stroke: '#000',
+              strokeWidth: 1
+          }));
+
+          // Vertical arc (curved lines)
+          group.add(new Konva.Arc({
+              x: 0, y: 0,
+              innerRadius: radius * 0.6,
+              outerRadius: radius * 0.6,
+              angle: 180,
+              rotation: -90,
+              stroke: '#000',
+              strokeWidth: 1
+          }));
+          group.add(new Konva.Arc({
+              x: 0, y: 0,
+              innerRadius: radius * 0.6,
+              outerRadius: radius * 0.6,
+              angle: 180,
+              rotation: 90,
+              stroke: '#000',
+              strokeWidth: 1
+          }));
+
+      } else {
+          // Football/Soccer: White with black pentagon pattern
+          const ball = new Konva.Circle({
+              radius: radius,
+              fill: '#ffffff',
+              stroke: '#000',
+              strokeWidth: 1.5
+          });
+          group.add(ball);
+
+          // Simplified pentagon pattern (center pentagon)
+          const pentagonSize = radius * 0.5;
+          group.add(new Konva.RegularPolygon({
+              x: 0, y: 0,
+              sides: 5,
+              radius: pentagonSize,
+              fill: '#000',
+              rotation: -18 // Rotate to look like a soccer ball
+          }));
+
+          // Small edge pentagons (simplified as dots)
+          const edgeAngles = [0, 72, 144, 216, 288];
+          edgeAngles.forEach(angle => {
+              const rad = (angle * Math.PI) / 180;
+              const px = Math.cos(rad) * radius * 0.7;
+              const py = Math.sin(rad) * radius * 0.7;
+              group.add(new Konva.Circle({
+                  x: px, y: py,
+                  radius: 2,
+                  fill: '#000'
+              }));
+          });
+      }
+
       this.contentGroup.add(group);
+
+      // Animate pop in
+      group.scale({ x: 0, y: 0 });
+      const tween = new Konva.Tween({
+          node: group,
+          scaleX: 1,
+          scaleY: 1,
+          duration: 0.15,
+          easing: Konva.Easings.BackEaseOut
+      });
+      tween.play();
   }
 }

@@ -14,7 +14,8 @@ export class ToolbarComponent {
   activeColor$;
   viewMode$;
 
-  colors = ['#e74c3c', '#f1c40f', '#2ecc71', '#3498db', '#9b59b6', '#34495e', '#ffffff', '#000000'];
+  // Reduced color palette for tactical clarity
+  colors = ['#e74c3c', '#3498db', '#f1c40f', '#ffffff'];
 
   constructor(private whiteboardService: WhiteboardService) {
     this.currentSport$ = this.whiteboardService.currentSport$;
@@ -37,5 +38,17 @@ export class ToolbarComponent {
 
   setColor(color: string) {
     this.whiteboardService.setColor(color);
+  }
+
+  // Line menu dropdown
+  showLineMenu = false;
+
+  toggleLineMenu() {
+    this.showLineMenu = !this.showLineMenu;
+  }
+
+  selectLineType(type: string) {
+    this.whiteboardService.setTool(type as any);
+    this.showLineMenu = false;
   }
 }
