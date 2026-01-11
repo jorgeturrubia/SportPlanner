@@ -483,12 +483,158 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
             this.whiteboardService.setSport(data.sport as SportType);
         }
 
-        // 2. Restore Content
+        // 2. Restore Content with Animation
         if (data.content && this.contentGroup) {
-            this.contentGroup.destroy(); 
-            this.contentGroup = Konva.Node.create(data.content);
-            this.layer.add(this.contentGroup);
-            this.contentGroup.moveToTop();
+            // Parse the target content from JSON
+            const targetContent = JSON.parse(data.content);
+            
+            // Get current children (Groups for players, cones, balls and Arrows for lines)
+            const currentChildren = this.contentGroup.getChildren().slice();
+            
+            // Parse target children from saved data
+            const targetChildren = targetContent.children || [];
+            
+            // Create a map of target positions by the child's attributes (x, y, name or index)
+            const targetPositionsMap = new Map<number, { x: number, y: number, attrs: any }>();
+            targetChildren.forEach((child: any, index: number) => {
+                if (child.attrs) {
+                    targetPositionsMap.set(index, {
+                        x: child.attrs.x || 0,
+                        y: child.attrs.y || 0,
+                        attrs: child.attrs
+                    });
+                }
+            });
+
+            // Animation duration in seconds
+            const animationDuration = 0.6;
+
+            // Keep track of which current children have been matched
+            const matchedCurrentIndices = new Set<number>();
+            
+            // Animate matching children (Groups - players, cones, balls)
+            const groupChildren = currentChildren.filter(child => child.getClassName() === 'Group');
+            const targetGroups = targetChildren.filter((child: any) => child.className === 'Group');
+
+            groupChildren.forEach((currentChild, currentIndex) => {
+                if (currentIndex < targetGroups.length) {
+                    const targetData = targetGroups[currentIndex];
+                    if (targetData && targetData.attrs) {
+                        const targetX = targetData.attrs.x || 0;
+                        const targetY = targetData.attrs.y || 0;
+                        
+                        matchedCurrentIndices.add(currentIndex);
+                        
+                        // Animate position change with smooth easing
+                        const tween = new Konva.Tween({
+                            node: currentChild,
+                            x: targetX,
+                            y: targetY,
+                            duration: animationDuration,
+                            easing: Konva.Easings.EaseInOut,
+                            onFinish: () => {
+                                tween.destroy();
+                            }
+                        });
+                        tween.play();
+                    }
+                }
+            });
+
+            // Handle lines (Arrows) - these don't animate smoothly, just update
+            const currentArrows = currentChildren.filter(child => child.getClassName() === 'Arrow');
+            const targetArrows = targetChildren.filter((child: any) => child.className === 'Arrow');
+
+            // Remove extra current arrows
+            currentArrows.forEach((arrow, index) => {
+                if (index >= targetArrows.length) {
+                    arrow.destroy();
+                } else {
+                    // Update arrow points with animation
+                    const targetArrow = targetArrows[index];
+                    if (targetArrow && targetArrow.attrs && targetArrow.attrs.points) {
+                        const tween = new Konva.Tween({
+                            node: arrow,
+                            points: targetArrow.attrs.points,
+                            duration: animationDuration,
+                            easing: Konva.Easings.EaseInOut,
+                            onFinish: () => {
+                                tween.destroy();
+                            }
+                        });
+                        tween.play();
+                    }
+                }
+            });
+
+            // Add new arrows if target has more
+            if (targetArrows.length > currentArrows.length) {
+                for (let i = currentArrows.length; i < targetArrows.length; i++) {
+                    const arrowData = targetArrows[i];
+                    if (arrowData && arrowData.attrs) {
+                        const newArrow = new Konva.Arrow({
+                            points: arrowData.attrs.points || [0, 0, 0, 0],
+                            stroke: arrowData.attrs.stroke || this.activeColor,
+                            strokeWidth: arrowData.attrs.strokeWidth || 2,
+                            dash: arrowData.attrs.dash || [],
+                            pointerLength: arrowData.attrs.pointerLength || 10,
+                            pointerWidth: arrowData.attrs.pointerWidth || 8,
+                            lineCap: 'round',
+                            lineJoin: 'round',
+                            draggable: true,
+                            opacity: 0
+                        });
+                        this.contentGroup.add(newArrow);
+                        
+                        // Fade in new arrow
+                        new Konva.Tween({
+                            node: newArrow,
+                            opacity: 1,
+                            duration: animationDuration,
+                            easing: Konva.Easings.EaseInOut
+                        }).play();
+                    }
+                }
+            }
+
+            // Handle new Groups (players/cones/balls) if target has more
+            if (targetGroups.length > groupChildren.length) {
+                for (let i = groupChildren.length; i < targetGroups.length; i++) {
+                    const groupData = targetGroups[i];
+                    if (groupData) {
+                        const newGroup = Konva.Node.create(JSON.stringify(groupData)) as Konva.Group;
+                        newGroup.opacity(0);
+                        this.contentGroup.add(newGroup);
+                        
+                        // Fade in new group
+                        new Konva.Tween({
+                            node: newGroup,
+                            opacity: 1,
+                            duration: animationDuration,
+                            easing: Konva.Easings.EaseInOut
+                        }).play();
+                    }
+                }
+            }
+
+            // Remove extra Groups if current has more than target
+            if (groupChildren.length > targetGroups.length) {
+                for (let i = targetGroups.length; i < groupChildren.length; i++) {
+                    const groupToRemove = groupChildren[i];
+                    // Fade out and destroy
+                    new Konva.Tween({
+                        node: groupToRemove,
+                        opacity: 0,
+                        duration: animationDuration * 0.5,
+                        easing: Konva.Easings.EaseInOut,
+                        onFinish: () => {
+                            groupToRemove.destroy();
+                        }
+                    }).play();
+                }
+            }
+
+            this.layer.batchDraw();
         }
 
     } catch (e) {
