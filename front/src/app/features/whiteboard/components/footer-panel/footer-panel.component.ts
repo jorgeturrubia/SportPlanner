@@ -26,8 +26,8 @@ export class FooterPanelComponent implements OnDestroy {
     this.whiteboardService.requestCapture();
   }
 
-  loadSlide(json: string) {
-    this.whiteboardService.loadSlide(json);
+  loadSlide(json: string, index: number) {
+    this.whiteboardService.loadSlide(json, index);
   }
 
   togglePlayback() {
@@ -48,7 +48,7 @@ export class FooterPanelComponent implements OnDestroy {
     // Load first slide
     this.slides$.subscribe(allSlides => {
       if (allSlides.length > 0) {
-        this.loadSlide(allSlides[this.currentSlideIndex]);
+        this.loadSlide(allSlides[this.currentSlideIndex], this.currentSlideIndex);
       }
     }).unsubscribe();
 
@@ -60,7 +60,7 @@ export class FooterPanelComponent implements OnDestroy {
           this.currentSlideIndex = 0; // Loop
         }
         if (allSlides.length > 0) {
-          this.loadSlide(allSlides[this.currentSlideIndex]);
+          this.loadSlide(allSlides[this.currentSlideIndex], this.currentSlideIndex);
         }
       }).unsubscribe();
     }, 1500); // 1.5 seconds per frame

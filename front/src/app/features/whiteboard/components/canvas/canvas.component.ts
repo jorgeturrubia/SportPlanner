@@ -2,7 +2,7 @@ import { Component, ElementRef, OnInit, ViewChild, AfterViewInit, OnDestroy } fr
 import { CommonModule } from '@angular/common';
 import Konva from 'konva';
 import { WhiteboardService, SportType, ViewMode } from '../../services/whiteboard.service';
-import { Subscription } from 'rxjs';
+import { Subscription, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-canvas',
@@ -37,6 +37,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
   private currentSport: SportType = 'football';
   private currentViewMode: ViewMode = 'full';
+  private activeSlideIndex: number = -1;
 
   constructor(private whiteboardService: WhiteboardService) {}
 
@@ -62,6 +63,10 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       this.updateCursor();
     });
     this.colorSub = this.whiteboardService.activeColor$.subscribe(color => this.activeColor = color);
+    
+    this.whiteboardService.activeSlideIndex$.subscribe(index => {
+        this.activeSlideIndex = index;
+    });
   
     // Handle Capture Request
     // ... (keep same capture logic)
@@ -78,10 +83,10 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
             
             // Clear only lines/arrows for new scene (keep players, balls, cones)
             const children = this.contentGroup.getChildren();
-            const linesToRemove: Konva.Arrow[] = [];
+            const linesToRemove: any[] = [];
             children.forEach(child => {
-                if (child.getClassName() === 'Arrow') {
-                    linesToRemove.push(child as Konva.Arrow);
+                if (child.getClassName() === 'Arrow' || child.name() === 'aux_shape') {
+                    linesToRemove.push(child as any);
                 }
             });
             linesToRemove.forEach(line => line.destroy());
@@ -90,9 +95,18 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     });
 
     // Handle Load Request
-    this.whiteboardService.loadRequest$.subscribe(json => {
-        if (json) {
-            this.loadSlideData(json);
+    this.whiteboardService.loadRequest$.subscribe((data: any) => {
+        if (data && data.json) {
+            const stageData = JSON.parse(data.json);
+            this.loadStageData(stageData);
+        }
+    });
+
+    this.whiteboardService.clearBoard$.subscribe(() => {
+        if (this.contentGroup) {
+            this.contentGroup.destroyChildren();
+            this.layer.batchDraw();
+            this.syncState();
         }
     });
   }
@@ -468,10 +482,8 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     this.layer.batchDraw();
   }
 
-  private loadSlideData(json: string): void {
+  private loadStageData(data: any): void {
     try {
-        const data = JSON.parse(json);
-        
         // Handle "Legacy" full-stage saves
         if (data.attrs && data.className === 'Stage') {
              console.warn('Legacy slide format detected. Ignoring.');
@@ -643,7 +655,25 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupEventListeners(): void {
-    this.stage.on('click tap', (e) => {
+    this.stage.on('click tap', (e: Konva.KonvaEventObject<MouseEvent>) => {
+      const tool = this.activeTool;
+      
+      // If clicking on a shape and eraser is active
+      if (tool === 'eraser' && e.target !== this.stage && e.target.getParent() !== this.backgroundGroup) {
+          // Find the top-most group or shape in contentGroup
+          let node: any = e.target;
+          while (node.getParent() && node.getParent() !== (this.contentGroup as any) && node.getParent() !== (this.stage as any)) {
+              node = node.getParent();
+          }
+          
+          if (node.getParent() === this.contentGroup) {
+              node.destroy();
+              this.layer.batchDraw();
+              this.syncState();
+          }
+          return;
+      }
+
       // If clicking on an empty area (stage or background)
       if (e.target === this.stage || e.target.getParent() === this.backgroundGroup) {
         this.handleStageClick();
@@ -653,6 +683,10 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
     // Update cursor based on tool
     this.stage.on('mousemove', () => {
         // Here we could update cursor style
+    });
+
+    this.contentGroup.on('dragend', () => {
+        this.syncState();
     });
   }
 
@@ -669,8 +703,37 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       this.addCone(pos.x, pos.y, color);
     } else if (tool === 'ball') {
       this.addBall(pos.x, pos.y);
+    } else if (tool === 'defender') {
+      this.addDefender(pos.x, pos.y);
+    } else if (tool === 'attacker') {
+      this.addAttacker(pos.x, pos.y);
+    } else if (tool === 'rebound') {
+      this.addRebound(pos.x, pos.y);
+    } else if (tool === 'jump-stop-1') {
+      this.addJumpStop(pos.x, pos.y, 1);
+    } else if (tool === 'jump-stop-2') {
+      this.addJumpStop(pos.x, pos.y, 2);
+    } else if (tool === 'coach') {
+      this.addCoach(pos.x, pos.y);
+    } else if (tool === 'sequence') {
+      this.addSequence(pos.x, pos.y);
     }
     // Line tools are handled by mousedown/mouseup - see setupLineDrawing()
+    
+    this.syncState();
+  }
+
+  private syncState(): void {
+    if (this.activeSlideIndex >= 0 && this.contentGroup) {
+        const contentJson = this.contentGroup.toJSON();
+        const slideData = {
+            sport: this.currentSport,
+            viewMode: this.currentViewMode,
+            content: contentJson,
+            timestamp: Date.now()
+        };
+        this.whiteboardService.saveSlide(JSON.stringify(slideData));
+    }
   }
 
   // Line drawing state
@@ -683,7 +746,7 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       if (e.target !== this.stage && e.target.getParent() !== this.backgroundGroup) return;
       
       const tool = this.activeTool;
-      if (!['pass', 'movement', 'block', 'shot'].includes(tool)) return;
+      if (!['pass', 'movement', 'block', 'shot', 'dribbling', 'bounce-pass', 'pivot', 'hand-off', 'cut'].includes(tool)) return;
 
       const pos = this.stage.getPointerPosition();
       if (!pos) return;
@@ -701,9 +764,16 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
         pointerLength: 10,
         pointerWidth: 8,
         lineCap: 'round',
-        lineJoin: 'round'
+        lineJoin: 'round',
+        hitStrokeWidth: 20
       });
       this.contentGroup.add(this.currentLine);
+
+      if (tool === 'shot') {
+          this.addShotStartSymbol(pos.x, pos.y);
+      }
+      
+      this.layer.batchDraw();
     });
 
     this.stage.on('mousemove touchmove', () => {
@@ -712,7 +782,25 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       const pos = this.stage.getPointerPosition();
       if (!pos) return;
 
-      this.currentLine.points([this.lineStartPos.x, this.lineStartPos.y, pos.x, pos.y]);
+      const tool = this.activeTool;
+      const points = this.getShapePoints(tool, this.lineStartPos, pos);
+      this.currentLine.points(points);
+      
+      // Special handling for some tools
+      if (tool === 'hand-off') {
+          this.currentLine.pointerAtBeginning(true);
+      } else {
+          this.currentLine.pointerAtBeginning(false);
+      }
+
+      if (tool === 'block') {
+          this.currentLine.pointerLength(0);
+          this.currentLine.pointerWidth(0);
+      } else {
+          this.currentLine.pointerLength(10);
+          this.currentLine.pointerWidth(8);
+      }
+
       this.layer.batchDraw();
     });
 
@@ -721,32 +809,48 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
 
       this.isDrawingLine = false;
       
-      // If line is too short, remove it
       const points = this.currentLine.points();
-      const dx = points[2] - points[0];
-      const dy = points[3] - points[1];
-      if (Math.sqrt(dx * dx + dy * dy) < 20) {
-        this.currentLine.destroy();
+      const n = points.length;
+      if (n < 4) {
+          this.currentLine.destroy();
       } else {
-        // Make line draggable
-        this.currentLine.draggable(true);
+          const dx = points[n-2] - points[0];
+          const dy = points[n-1] - points[1];
+          const totalDist = Math.sqrt(dx * dx + dy * dy);
+          
+          if (totalDist < 15) {
+              this.currentLine.destroy();
+          } else {
+              // Handle 'block' T-shape
+              if (this.activeTool === 'block') {
+                  this.addBlockHead(this.currentLine);
+              }
+              this.currentLine.draggable(true);
+          }
       }
 
       this.currentLine = null;
       this.lineStartPos = null;
+      this.syncState();
     });
   }
 
   private getLineConfig(tool: string): { strokeWidth: number, dash: number[] } {
     switch (tool) {
-      case 'pass':
-        return { strokeWidth: 3, dash: [] }; // Solid
       case 'movement':
+        return { strokeWidth: 3, dash: [] }; // Solid
+      case 'pass':
         return { strokeWidth: 2, dash: [10, 5] }; // Dashed
       case 'block':
-        return { strokeWidth: 3, dash: [5, 3, 2, 3] }; // Dotted pattern
+        return { strokeWidth: 3, dash: [] }; // Solid with T-end (handled in points)
+      case 'dribbling':
+        return { strokeWidth: 2, dash: [] }; // Wavy (handled in points)
+      case 'bounce-pass':
+        return { strokeWidth: 2, dash: [5, 5] }; // Curved Dashed (handled in points)
       case 'shot':
-        return { strokeWidth: 4, dash: [] }; // Bold solid
+        return { strokeWidth: 4, dash: [] }; // Bold
+      case 'hand-off':
+        return { strokeWidth: 2, dash: [] }; // Double arrow
       default:
         return { strokeWidth: 2, dash: [] };
     }
@@ -820,6 +924,119 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
       });
 
       group.add(triangle);
+      this.contentGroup.add(group);
+  }
+
+  private getShapePoints(tool: string, start: { x: number, y: number }, end: { x: number, y: number }): number[] {
+      const dx = end.x - start.x;
+      const dy = end.y - start.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 1) return [start.x, start.y, end.x, end.y];
+
+      const angle = Math.atan2(dy, dx);
+
+      if (tool === 'dribbling') {
+          const points = [];
+          const segments = Math.max(20, Math.floor(dist / 4));
+          const waveAmp = 5;
+          const frequency = 0.25;
+
+          for (let i = 0; i <= segments; i++) {
+              const t = i / segments;
+              const x = start.x + dx * t;
+              const y = start.y + dy * t;
+              
+              // Perpendicular offset for wave
+              const perpX = -Math.sin(angle) * Math.sin(t * dist * frequency) * waveAmp;
+              const perpY = Math.cos(angle) * Math.sin(t * dist * frequency) * waveAmp;
+              
+              points.push(x + perpX, y + perpY);
+          }
+          return points;
+      }
+
+      if (tool === 'bounce-pass' || tool === 'pivot') {
+          const points = [];
+          const segments = 15;
+          const curveAmp = dist * 0.2; // 20% arc
+
+          for (let i = 0; i <= segments; i++) {
+              const t = i / segments;
+              const x = start.x + dx * t;
+              const y = start.y + dy * t;
+              
+              // Bell curve for arc
+              const offset = Math.sin(t * Math.PI) * curveAmp;
+              const perpX = -Math.sin(angle) * offset;
+              const perpY = Math.cos(angle) * offset;
+              
+              points.push(x + perpX, y + perpY);
+          }
+          return points;
+      }
+
+      if (tool === 'cut') {
+          // Angled check/V shape
+          // Go 70% of the way, then sharp turn? 
+          // Actually usually a cut is just an arrow with a specific angle, 
+          // but the image shows a "dar un paso adelante y atrás" which is more like a zigzag.
+          // Let's implement it as a 2-segment line.
+          const midX = start.x + dx * 0.6 + Math.cos(angle + Math.PI/2) * 20;
+          const midY = start.y + dy * 0.6 + Math.sin(angle + Math.PI/2) * 20;
+          return [start.x, start.y, midX, midY, end.x, end.y];
+      }
+
+      return [start.x, start.y, end.x, end.y];
+  }
+
+  private addBlockHead(arrow: Konva.Arrow): void {
+      const points = arrow.points();
+      const n = points.length;
+      if (n < 4) return;
+      
+      const lastX = points[n-2];
+      const lastY = points[n-1];
+      const prevX = points[n-4];
+      const prevY = points[n-3];
+      
+      const angle = Math.atan2(lastY - prevY, lastX - prevX);
+      const headSize = 10;
+      
+      const t1x = lastX + Math.cos(angle + Math.PI/2) * headSize;
+      const t1y = lastY + Math.sin(angle + Math.PI/2) * headSize;
+      const t2x = lastX + Math.cos(angle - Math.PI/2) * headSize;
+      const t2y = lastY + Math.sin(angle - Math.PI/2) * headSize;
+      
+      const tLine = new Konva.Line({
+          points: [t1x, t1y, t2x, t2y],
+          stroke: arrow.stroke(),
+          strokeWidth: arrow.strokeWidth(),
+          listening: false,
+          name: 'aux_shape',
+          hitStrokeWidth: 20
+      });
+      
+      arrow.getParent()?.add(tLine);
+      this.layer.batchDraw();
+  }
+
+  private addShotStartSymbol(x: number, y: number): void {
+      const group = new Konva.Group({ x, y, name: 'aux_shape', listening: false });
+      const circle = new Konva.Circle({
+          radius: 8,
+          stroke: this.activeColor,
+          strokeWidth: 2
+      });
+      const text = new Konva.Text({
+          text: 'S',
+          fontSize: 10,
+          fontStyle: 'bold',
+          fill: this.activeColor,
+          offsetX: 3,
+          offsetY: 5
+      });
+      group.add(circle);
+      group.add(text);
       this.contentGroup.add(group);
   }
 
@@ -915,5 +1132,133 @@ export class CanvasComponent implements OnInit, AfterViewInit, OnDestroy {
           easing: Konva.Easings.BackEaseOut
       });
       tween.play();
+  }
+
+  private addDefender(x: number, y: number): void {
+      const number = this.whiteboardService.getNextDefenderNumber();
+      const group = new Konva.Group({ x, y, draggable: true });
+      const text = new Konva.Text({
+          text: `X${number}`,
+          fontSize: 24,
+          fontStyle: 'bold',
+          fill: this.activeColor,
+          offsetX: 12,
+          offsetY: 12
+      });
+      group.add(text);
+      this.contentGroup.add(group);
+      this.animatePopIn(group);
+  }
+
+  private addAttacker(x: number, y: number): void {
+      const number = this.whiteboardService.getNextAttackerNumber();
+      const group = new Konva.Group({ x, y, draggable: true });
+      const text = new Konva.Text({
+          text: `O${number}`,
+          fontSize: 24,
+          fontStyle: 'bold',
+          fill: this.activeColor,
+          offsetX: 12,
+          offsetY: 12
+      });
+      group.add(text);
+      this.contentGroup.add(group);
+      this.animatePopIn(group);
+  }
+
+  private addCoach(x: number, y: number): void {
+      const group = new Konva.Group({ x, y, draggable: true });
+      const text = new Konva.Text({
+          text: 'E',
+          fontSize: 24,
+          fontStyle: 'bold',
+          fill: this.activeColor,
+          offsetX: 8,
+          offsetY: 12
+      });
+      group.add(text);
+      this.contentGroup.add(group);
+      this.animatePopIn(group);
+  }
+
+  private addRebound(x: number, y: number): void {
+      const group = new Konva.Group({ x, y, draggable: true });
+      const circle = new Konva.Circle({
+          radius: 12,
+          stroke: this.activeColor,
+          strokeWidth: 2
+      });
+      const text = new Konva.Text({
+          text: 'R',
+          fontSize: 16,
+          fontStyle: 'bold',
+          fill: this.activeColor,
+          offsetX: 6,
+          offsetY: 8
+      });
+      group.add(circle);
+      group.add(text);
+      this.contentGroup.add(group);
+      this.animatePopIn(group);
+  }
+
+  private addJumpStop(x: number, y: number, times: 1 | 2): void {
+      const group = new Konva.Group({ x, y, draggable: true });
+      const size = 15;
+      if (times === 1) {
+          group.add(new Konva.Rect({
+              x: -size / 2, y: -size / 2,
+              width: size, height: size,
+              stroke: this.activeColor, strokeWidth: 2
+          }));
+      } else {
+          group.add(new Konva.Rect({
+              x: -size - 2, y: -size / 2,
+              width: size, height: size,
+              stroke: this.activeColor, strokeWidth: 2
+          }));
+          group.add(new Konva.Rect({
+              x: 2, y: -size / 2,
+              width: size, height: size,
+              stroke: this.activeColor, strokeWidth: 2
+          }));
+      }
+      this.contentGroup.add(group);
+      this.animatePopIn(group);
+  }
+
+  private addSequence(x: number, y: number): void {
+      const number = this.whiteboardService.getNextSequenceNumber();
+      const group = new Konva.Group({ x, y, draggable: true });
+      const circle = new Konva.Circle({
+          radius: 12,
+          fill: this.activeColor,
+          stroke: 'white',
+          strokeWidth: 1
+      });
+      const text = new Konva.Text({
+          text: number.toString(),
+          fontSize: 14,
+          fontStyle: 'bold',
+          fill: 'white',
+          width: 24,
+          align: 'center',
+          offsetX: 12,
+          offsetY: 7
+      });
+      group.add(circle);
+      group.add(text);
+      this.contentGroup.add(group);
+      this.animatePopIn(group);
+  }
+
+  private animatePopIn(node: Konva.Node): void {
+      node.scale({ x: 0, y: 0 });
+      new Konva.Tween({
+          node: node,
+          scaleX: 1, scaleY: 1,
+          duration: 0.2,
+          easing: Konva.Easings.BackEaseOut
+      }).play();
   }
 }

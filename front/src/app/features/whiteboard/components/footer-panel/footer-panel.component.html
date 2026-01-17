@@ -26,7 +26,7 @@
     <div class="flex-1 overflow-y-auto p-2 space-y-2 custom-scrollbar">
         <div *ngFor="let slide of slides$ | async; let i = index" 
             class="group relative aspect-video w-full bg-slate-700/50 rounded-lg cursor-pointer border-2 border-transparent hover:border-blue-500/50 transition-all overflow-hidden"
-            (click)="loadSlide(slide)">
+            (click)="loadSlide(slide, i)">
             
             <div class="w-full h-full flex items-center justify-center">
                 <span class="text-[10px] text-gray-500 font-mono">FRAME {{i + 1}}</span>
