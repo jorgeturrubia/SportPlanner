@@ -57,7 +57,9 @@ export interface MarketplaceItem {
     ratingCount: number;
     version: number;
     sportName?: string;
+    categoryId?: number;
     categoryName?: string;
+    parentCategoryId?: number;
     elementCount?: number;
     isDownloaded?: boolean;
 }

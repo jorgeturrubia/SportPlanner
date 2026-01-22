@@ -1,4 +1,4 @@
-import { Component, OnInit, signal, OnDestroy } from '@angular/core';
+import { Component, OnInit, signal, OnDestroy, computed } from '@angular/core'; // Trigger rebuild
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { MarketplaceService } from '../../services/marketplace.service';
@@ -19,6 +19,7 @@ import { Subscription } from 'rxjs';
 export class MarketplaceComponent implements OnInit, OnDestroy {
   items = signal<MarketplaceItem[]>([]);
   categories = signal<TeamCategory[]>([]);
+  conceptCategories = signal<any[]>([]); // To hold all categories for hierarchy
   loading = signal<boolean>(false);
   
   // Viewer state
@@ -35,7 +36,7 @@ export class MarketplaceComponent implements OnInit, OnDestroy {
 
   itemTypes = [
     { value: 'itinerary', label: 'Itinerarios' },
-    { value: 'template', label: 'Templates' },
+    { value: 'template', label: 'Planificaciones' },
     { value: 'concept', label: 'Conceptos' },
     { value: 'exercise', label: 'Ejercicios' }
   ];
@@ -62,6 +63,11 @@ export class MarketplaceComponent implements OnInit, OnDestroy {
   loadCategories(): void {
     this.lookupService.getTeamCategories().subscribe(cats => {
       this.categories.set(cats);
+    });
+
+    // Load all concept categories to build hierarchy
+    this.lookupService.getConceptCategories().subscribe(cats => {
+      this.conceptCategories.set(cats);
     });
   }
 
@@ -98,6 +104,50 @@ export class MarketplaceComponent implements OnInit, OnDestroy {
 
   isDownloading(id: number): boolean {
     return this.downloadingItems().has(id);
+  }
+
+  // Hierarchical Concepts logic
+  nestedConcepts = computed(() => {
+    if (this.filter.itemType !== 'concept') return [];
+    
+    const concepts = this.items();
+    const categories = this.conceptCategories();
+    
+    if (concepts.length === 0 || categories.length === 0) return [];
+
+    const categoryMap = new Map<number, any>();
+    categories.forEach(c => categoryMap.set(c.id, { ...c, items: [], subcategories: [], expanded: true }));
+
+    // Add concepts to their categories
+    concepts.forEach(item => {
+      if (item.categoryId && categoryMap.has(item.categoryId)) {
+        categoryMap.get(item.categoryId).items.push(item);
+      }
+    });
+
+    // Build tree
+    const roots: any[] = [];
+    categoryMap.forEach(node => {
+      if (node.parentId && categoryMap.has(node.parentId)) {
+        categoryMap.get(node.parentId).subcategories.push(node);
+      } else {
+        roots.push(node);
+      }
+    });
+
+    // Filter out branches that don't have concepts or subcategories with concepts
+    const filterEmpty = (nodes: any[]): any[] => {
+      return nodes.filter(n => {
+        n.subcategories = filterEmpty(n.subcategories);
+        return n.items.length > 0 || n.subcategories.length > 0;
+      });
+    };
+
+    return filterEmpty(roots);
+  });
+
+  toggleCategory(cat: any) {
+    cat.expanded = !cat.expanded;
   }
 
   download(item: MarketplaceItem): void {
@@ -203,7 +253,7 @@ export class MarketplaceComponent implements OnInit, OnDestroy {
                 this.loadingDetail.set(false);
             },
             error: () => {
-                this.notificationService.error('Error', 'No se pudieron cargar los detalles del template');
+                this.notificationService.error('Error', 'No se pudieron cargar los detalles de la planificación');
                 this.loadingDetail.set(false);
                 this.showViewer.set(false);
             }
@@ -217,5 +267,9 @@ export class MarketplaceComponent implements OnInit, OnDestroy {
 
   hasConcept(template: any, conceptName: string): boolean {
     return template.concepts.includes(conceptName);
+  }
+
+  getItemTypeLabel(value: string): string {
+    return this.itemTypes.find(t => t.value === value)?.label || value;
   }
 }

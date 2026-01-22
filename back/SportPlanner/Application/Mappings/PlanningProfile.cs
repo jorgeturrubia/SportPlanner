@@ -34,7 +34,9 @@ namespace SportPlanner.Application.Mappings
             CreateMap<SportConcept, MarketplaceItemDto>()
                 .ForMember(dest => dest.ItemType, opt => opt.MapFrom(_ => "concept"))
                 .ForMember(dest => dest.SportName, opt => opt.MapFrom(src => src.Sport != null ? src.Sport.Name : null))
+                .ForMember(dest => dest.CategoryId, opt => opt.MapFrom(src => src.ConceptCategoryId))
                 .ForMember(dest => dest.CategoryName, opt => opt.MapFrom(src => src.ConceptCategory != null ? src.ConceptCategory.Name : null))
+                .ForMember(dest => dest.ParentCategoryId, opt => opt.MapFrom(src => src.ConceptCategory != null ? src.ConceptCategory.ParentId : null))
                 .ForMember(dest => dest.ElementCount, opt => opt.MapFrom(src => src.Exercises.Count));
 
             CreateMap<Exercise, MarketplaceItemDto>()

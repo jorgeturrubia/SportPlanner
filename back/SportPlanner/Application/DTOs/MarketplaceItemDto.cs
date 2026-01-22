@@ -17,7 +17,9 @@ public class MarketplaceItemDto
     
     // Specific metadata (optional)
     public string? SportName { get; set; }
+    public int? CategoryId { get; set; }
     public string? CategoryName { get; set; }
+    public int? ParentCategoryId { get; set; }
     public int? ElementCount { get; set; } // e.g., number of templates in itinerary, number of concepts in template
     
     // Indicates if the current user has already downloaded this item
